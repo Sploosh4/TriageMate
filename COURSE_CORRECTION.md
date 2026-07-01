@@ -1,9 +1,10 @@
 # TriageMate — Course Correction Plan
 
-> Created: 30 June 2026
+> **STATUS: COMPLETE** — All 11/11 items implemented and audited. See ROADMAP.md §7b for per-item status.
+> **Commits:** `11dd427` (Phases 1-4), `5ce731e` (post-audit fixes, test isolation, fixable-now enrichments).
+> Created: 30 June 2026 · Completed: 1 July 2026
 > Source: Input Gap Analysis (difference between what the system needs vs. what planned sources provide)
-> See: `ROADMAP.md` for master status, `AI_PROBLEMS.md` for bugs
-> Team instructions: `TEAM_BRIEFING.md`
+> Next: `PRE_DEMO_PLAN.md` — pre-demo hardening (auth, Tenable webhook, degradation visibility, demo logistics)
 
 ---
 

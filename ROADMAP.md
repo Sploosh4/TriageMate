@@ -1,6 +1,6 @@
 # TriageMate — Master Roadmap & Status
 
-> Last updated: 30 June 2026
+> Last updated: 1 July 2026
 > Status key: ✅ Done · 🟡 Needs config · 🔧 In progress · 📋 Todo · ⏭️ Post-MVP · 🐛 Known bug
 
 ---
@@ -11,7 +11,8 @@
 |---|---|---|
 | `MVP_SCOPE.md` | Scope authority — in/out boundaries, verification criteria | Current |
 | `ROADMAP.md` | Master status, file map, quick start, Windows setup | Current |
-| `COURSE_CORRECTION.md` | **Production-readiness plan** — 4 phases, 11 items, team assignments, audit checks | Current |
+| `COURSE_CORRECTION.md` | **Production-readiness plan** — 4 phases, 11 items, team assignments, audit checks | ✅ Complete |
+| `PRE_DEMO_PLAN.md` | **Pre-demo hardening plan** — 3 phases, 9 items (auth, Tenable webhook, observability, demo logistics) | Current |
 | `TEAM_BRIEFING.md` | **Paste-ready team instructions** — Intel, Strike, Audit roles + Commander workflow | Current |
 | `SPRINT_1_HANDOFF.md` | Sprint 1 completion summary, API contracts, demo rows | Current |
 | `AI_PROBLEMS.md` | Bug tracker (source of truth) | Current |
@@ -150,6 +151,25 @@ To switch provider or adjust settings, edit `backend/.env`. See `.env.example` f
 
 ---
 
+## 7c. PRE-DEMO HARDENING (Sprint 4)
+
+> **Full plan:** See `PRE_DEMO_PLAN.md` for detailed scope, dependencies, and effort estimates.
+> **Total:** ~14 hrs across 3 phases, 9 items.
+
+| # | Item | Phase | Priority | Effort | Status |
+|---|---|---|---|---|---|
+| 1.1 | **API auth middleware** (`X-API-Key` on /api/*) | Security | 🔴 Critical | 1.5 hrs | 📋 Todo |
+| 1.2 | **Tenable.io webhook** (`POST /api/ingest/tenable`) | Credibility | 🔴 Critical | 2.5 hrs | 📋 Todo |
+| 2.1 | **Training/production encoding audit** (3 features) | Accuracy | 🟡 High | 1.5 hrs | 📋 Todo |
+| 2.2 | **NVD degradation visibility** (health + case badge) | Observability | 🟡 High | 3 hrs | 📋 Todo |
+| 3.1 | **Demo script** (`DEMO_SCRIPT.md`) | Logistics | 🟡 High | 1 hr | 📋 Todo |
+| 3.2 | **Docker + docker-compose** (one-command deploy) | Logistics | 🟡 High | 2 hrs | 📋 Todo |
+| 3.3 | **Pitch deck / screenshots** (7 captures) | Logistics | 🟠 Medium | 1 hr | 📋 Todo |
+| 3.4 | **Clean machine test** (fresh clone, full verify) | Logistics | 🟠 Medium | 1 hr | 📋 Todo |
+| 3.5 | **Windows setup instructions** (`WINDOWS_SETUP.md`) | Logistics | 🟢 Low | 0.5 hr | 📋 Todo |
+
+---
+
 ## 8. POST-MVP (Deferred / Future)
 
 ### 8.1 Real ML Models (deferred until labeled data exists)
@@ -192,11 +212,11 @@ To switch provider or adjust settings, edit `backend/.env`. See `.env.example` f
 See `AI_PROBLEMS.md` for the authoritative bug tracker with full descriptions and code references.
 
 **Still Unfixed (none block the demo):**
-- 3 HIGH (CWE classifier head naming, pooler_output, cache dir — not in hot path; see AI_PROBLEMS #1–3)
 - 1 MEDIUM (patch features hardcoded in training #10)
 - 1 TRIVIAL/WON'T FIX (Tier 1 heuristic always escalates — fallback path only #14)
 
 **Fixed across all sprints:**
+- Post-Course-Correction: 3 fixable-now enrichments (ExploitDB, Metasploit, patch_available via NVD refs), test DB isolation (tempfile), AI_PROBLEMS #1-3 BYPASSED (CWE classifier deprecated)
 - Sprint 3: XGBoost model retrained (fixes feature mismatch + DMatrix bug)
 - Sprint 2: AI_PROBLEMS #11 (LanceDB path), #12 (FTS logging), #13 (unused variable)
 - Sprint 1: 10 bugs fixed (see AI_PROBLEMS.md Fixed Items section)
@@ -243,9 +263,12 @@ echo 'TRIAGEMATE_LLM_API_KEY=sk-...' > .env
 TriageMate MVP/
 ├── MVP_SCOPE.md                          # Scope authority
 ├── ROADMAP.md                            # This file — master status + file map
-├── COURSE_CORRECTION.md                  # Production-readiness plan (4 phases, 11 items)
+├── COURSE_CORRECTION.md                  # Production-readiness plan (4 phases, 11 items) — COMPLETE
+├── PRE_DEMO_PLAN.md                       # Pre-demo hardening plan (3 phases, 9 items)
 ├── TEAM_BRIEFING.md                      # Paste-ready team instructions (Intel/Strike/Audit)
 ├── SPRINT_1_HANDOFF.md                   # Sprint 1 completion summary
+├── SPRINT_2_HANDOFF.md                   # Sprint 2 completion summary
+├── SPRINT_3_HANDOFF.md                   # Sprint 3 completion summary
 ├── AI_PROBLEMS.md                        # Known bugs & fixes tracker
 ├── index.html                            # Original demo (preserved, unused)
 ├── demo-reference.html                   # Reference for visual comparison
@@ -259,7 +282,8 @@ TriageMate MVP/
 │   ├── database.py                       # SQLite schema + connection
 │   ├── models.py                         # Pydantic models (10 classes)
 │   ├── scoring.py                        # 5-dimension priority score
-│   ├── ingest_helpers.py                 # CMDB stubs, feature builder, RAG query
+│   ├── ingest_helpers.py                 # Feature vector builder, RAG query proxy
+│   ├── ingest_cwe.py                     # CWE lookup (NVD API + regex fallback)
 │   ├── audit.py                          # Background statistical audit
 │   ├── scheduler.py                      # Daily low-severity re-check
 │   ├── seed_data.py                      # Populates 7 demo rows
@@ -269,12 +293,19 @@ TriageMate MVP/
 │   ├── routers/
 │   │   ├── queue.py                      # GET /api/queue + /api/metrics
 │   │   ├── cases.py                      # GET /api/case/{id}
-│   │   └── ingest.py                     # POST /api/ingest
+│   │   └── ingest.py                     # POST /api/ingest + /api/ingest/batch
 │   ├── pipeline/
 │   │   ├── pre_tier.py                   # STUB: hostname dictionary
 │   │   ├── tier_0.py                     # REAL: deterministic rules
 │   │   ├── tier_1.py                     # HYBRID: XGBoost + heuristic fallback
 │   │   └── tier_2.py                     # REAL: multi-provider cloud LLM
+│   ├── integrations/
+│   │   ├── cmdb.py                       # CMDB adapter (stub/ServiceNow/iTop)
+│   │   ├── nvd.py                        # NVD API 2.0 client (7 features)
+│   │   ├── exploitdb.py                  # ExploitDB enrichment (via NVD refs)
+│   │   ├── metasploit.py                 # Metasploit enrichment (via NVD refs)
+│   │   ├── mitre_mapping.py              # CWE → MITRE ATT&CK lookup
+│   │   └── advisories.py                 # CVE → advisory reference lookup
 │   └── ml/
 │       ├── encoder.py                    # SBERT + PCA (32 dims)
 │       ├── xgboost_predictor.py          # XGBoost inference wrapper
@@ -282,7 +313,8 @@ TriageMate MVP/
 │       ├── pca_reducer.pkl               # PCA transformation
 │       ├── train_xgboost.py              # Training pipeline (2-phase)
 │       ├── vector_store.py               # LanceDB RAG store
-│       ├── cwe_classifier.py             # 🐛 BROKEN - not in use
+│       ├── cwe_classifier_deprecated.py  # 🐛 DEPRECATED — replaced by ingest_cwe.py
+│       ├── epss_substitutor.py           # EPSS substitution engine
 │       ├── ingest_docs.py                # Document ingester for RAG
 │       └── README.md                     # Artifact index
 │

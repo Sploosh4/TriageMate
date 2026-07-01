@@ -1,6 +1,6 @@
 # TriageMate MVP — Scope Document
 
-> **Sprint 3 complete:** XGBoost model retrained (68 features, ROC-AUC 0.9677). Tier 1 now real ML, not heuristic. See `SPRINT_3_HANDOFF.md`.
+> **Course Correction complete:** 11/11 items implemented and audited. Pipeline hardened from MVP to production-capable. See `ROADMAP.md` §7b for per-item status and `COURSE_CORRECTION.md` for the full plan. **Next:** `PRE_DEMO_PLAN.md` — pre-demo hardening (9 items).
 
 ## Purpose
 
@@ -114,7 +114,7 @@ Define exactly what the TriageMate Minimum Viable Product delivers, what it expl
 |---|---|
 | **Pre-Tier multi-label classifier** (RandomForest replacing hostname dict) | Requires 200–500 internally labeled WA government assets. No public dataset exists. The stub correctly handles the 7 demo rows and returns conservative defaults for unknowns. |
 | **Tier 1 XGBoost tuning** | **DONE (Sprint 3).** Retrained on 93,018 post-KEV CVEs. 68 features. ROC-AUC 0.9677. Feature mismatch (69→68) fixed. Ensemble variance DMatrix bug fixed. Model running live. |
-| **Tier 2 CWE encoder** (ModernBERT, replacing cloud LLM pre-processing) | The cloud LLM path works without a local encoder. The encoder adds CWE pre-classification before the force-reflection loop — valuable but not required for MVP correctness. |
+| **Tier 2 CWE encoder** (ModernBERT, replacing NVD API CWE lookup) | The NVD API + regex lookup (`ingest_cwe.py`) provides authoritative CWE without the 656MB SecureBERT model. The local encoder adds offline CWE pre-classification — valuable but not required now that NVD provides CWE at ingest time. |
 | **EPSS substitution model** (sector-adjusted EPSS scorer) | Only affects Row 5's display. The stub hardcodes the substitution value. A real model requires sector-weighted exploitation data which is not publicly available. |
 
 **Why defer all four:** Each real ML model requires data collection, training, and validation that is independent of the application scaffolding. The stubs produce correct outputs for the 7 demo rows. Deploying real models before the application is stable would couple ML experimentation risk to application deployment risk. The interface contracts are designed so each stub can be replaced without touching any other file.
@@ -162,9 +162,9 @@ Define exactly what the TriageMate Minimum Viable Product delivers, what it expl
 
 | Deferred Item | Why Out of Scope |
 |---|---|
-| **Fix CWE classifier SecureBERT head naming mismatch (AI_PROBLEMS.md #1)** | The CWE classifier is not used in the MVP — Tier 2 uses cloud LLM directly. Fixing this is only needed when the local encoder replaces the cloud path. |
-| **Fix ModernBERT `pooler_output` missing (AI_PROBLEMS.md #2)** | Same as above — the local encoder is not in the hot path. |
-| **Fix custom cache dir (AI_PROBLEMS.md #3)** | Only matters when the CWE encoder is deployed. |
+| **Fix CWE classifier SecureBERT head naming mismatch (AI_PROBLEMS.md #1)** | ✅ BYPASSED — CWE classifier deprecated in favour of NVD API + regex lookup (`ingest_cwe.py`). The 656MB SecureBERT2.0 model is no longer loaded. `cwe_classifier_deprecated.py` preserved for reference. |
+| **Fix ModernBERT `pooler_output` missing (AI_PROBLEMS.md #2)** | ✅ BYPASSED — same as #1. |
+| **Fix custom cache dir (AI_PROBLEMS.md #3)** | ✅ BYPASSED — same as #1. |
 | **Tier 1 heuristic always escalates (AI_PROBLEMS.md #14)** | Fallback path only — never reached now that the XGBoost model is trained and running. |
 
 **Items fixed in Sprint 2:**
