@@ -69,6 +69,24 @@ def _parse_reference_count(raw: dict) -> int:
     return 0
 
 
+def _parse_references(raw: dict) -> list[dict]:
+    """Extract reference URL and tags from NVD response."""
+    for vuln in raw.get("vulnerabilities", []):
+        refs = vuln.get("cve", {}).get("references", [])
+        return [{"url": r.get("url", ""), "tags": r.get("tags", [])} for r in refs]
+    return []
+
+
+def _has_patch_reference(refs: list[dict]) -> bool:
+    """Check if any NVD reference has a Patch or vendor-advisory tag."""
+    patch_tags = {"Patch", "Vendor Advisory", "vendor-advisory"}
+    for r in refs:
+        for tag in r.get("tags", []):
+            if tag in patch_tags:
+                return True
+    return False
+
+
 def _parse_cvss_scores(raw: dict) -> tuple[float, float]:
     """Extract exploitability sub-score and impact sub-score from NVD response.
 
@@ -108,6 +126,8 @@ def get_nvd_data(cve_id: str) -> dict:
             "vulnerability_age_days": 0,
             "cvss_exploitability_sub": 0.0,
             "cvss_impact_sub": 0.0,
+            "patch_available": True,
+            "references_raw": [],
         }
         _CACHE[cve_id] = (now, result)
         return dict(result)
@@ -128,6 +148,7 @@ def get_nvd_data(cve_id: str) -> dict:
             age = 0
 
     ref_count = _parse_reference_count(raw)
+    refs = _parse_references(raw)
     exploit_sub, impact_sub = _parse_cvss_scores(raw)
 
     result = {
@@ -136,6 +157,8 @@ def get_nvd_data(cve_id: str) -> dict:
         "vulnerability_age_days": age,
         "cvss_exploitability_sub": exploit_sub,
         "cvss_impact_sub": impact_sub,
+        "patch_available": _has_patch_reference(refs),
+        "references_raw": refs,
     }
     _CACHE[cve_id] = (now, result)
     return dict(result)

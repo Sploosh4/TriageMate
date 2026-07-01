@@ -11,6 +11,8 @@ from integrations.cmdb import get_asset_context as _cmdb_context
 from integrations.cmdb import lookup_data_classification as _cmdb_classification
 from integrations.cmdb import is_internet_facing as _cmdb_internet_facing
 from integrations.nvd import get_nvd_data
+from integrations.exploitdb import has_poc as _has_exploitdb_poc
+from integrations.metasploit import has_payload as _has_metasploit_payload
 
 
 def lookup_data_classification(hostname: str) -> str:
@@ -243,7 +245,7 @@ def build_feature_vector(payload, mission_tags: dict, tier_0_result: dict) -> di
         "cvss_a": _cvss_cia(cvss_vec.get("A", "N")),
         "cvss_score": payload.cvss_score,
         "epss_score": payload.epss_score,
-        "patch_available": True,
+        "patch_available": nvd.get("patch_available", True),
         "patch_applied": False,
         "internet_facing": internet_facing,
         "domain_joined": _derive_domain_joined(hostname),
@@ -256,8 +258,8 @@ def build_feature_vector(payload, mission_tags: dict, tier_0_result: dict) -> di
         "boundary_reachability": 0,
         "downstream_assets": 0,
         "patch_lag_days": _compute_patch_lag(last_patch, vulnerability_age),
-        "exploitdb_has_poc": False,
-        "metasploit_has_payload": False,
+        "exploitdb_has_poc": _has_exploitdb_poc(payload.vulnerability_id),
+        "metasploit_has_payload": _has_metasploit_payload(payload.vulnerability_id),
         "internet_scan_detected": False,
         "threat_intel_pulses": 0,
         "nvd_reference_count": nvd.get("nvd_reference_count", 0),

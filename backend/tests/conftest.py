@@ -1,9 +1,11 @@
 """
 Test configuration and fixtures for TriageMate.
+Uses a temporary SQLite database to isolate tests from development data.
 """
 
 import os
 import sys
+import tempfile
 
 # Disable LLM API key before any app imports to prevent real API calls
 # from Tier 2 semantic analysis during tests.
@@ -22,50 +24,48 @@ from httpx import ASGITransport, AsyncClient  # noqa: E402
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_test_db():
-    """Initialize and seed the test database if empty.
+    """Initialize and seed a temporary test database.
 
-    This runs once per test session (before any tests).
-    Uses the existing triagemate.db at the configured DB_PATH.
+    Overrides database.DB_PATH with a temp file to isolate tests
+    from development data in triagemate.db.
     """
-    from database import init_db, get_db
+    import database
+    from seed_data import seed
 
-    # Change to backend directory so SQLite path resolves correctly
-    orig_cwd = os.getcwd()
-    os.chdir(_backend_dir)
+    _tmp_db = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+    _tmp_db.close()
 
-    init_db()
+    database.DB_PATH = _tmp_db.name
 
-    # Seed if the database is empty
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute("SELECT COUNT(*) as cnt FROM vulnerabilities")
-    count = cursor.fetchone()["cnt"]
-    conn.close()
+    database.init_db()
+    seed()
 
-    if count == 0:
-        from seed_data import seed
-
-        seed()
-
-    os.chdir(orig_cwd)
     yield
+
+    os.unlink(_tmp_db.name)
 
 
 @pytest.fixture(scope="session", autouse=True)
 def cleanup_test_records():
     """Delete any CVE-TEST-* records after the full test session.
 
-    Runs after all tests complete to prevent test data from leaking into
-    development or demonstration use of the database.
+    Runs after all tests complete to prevent test data from leaking.
     """
     yield
     import sqlite3
+    import database
 
-    db_path = os.path.join(_backend_dir, "triagemate.db")
-    conn = sqlite3.connect(db_path)
-    conn.execute("DELETE FROM vulnerabilities WHERE vulnerability_id LIKE 'CVE-TEST-%'")
-    conn.commit()
-    conn.close()
+    if not os.path.isfile(database.DB_PATH):
+        return
+    try:
+        conn = sqlite3.connect(database.DB_PATH)
+        conn.execute(
+            "DELETE FROM vulnerabilities WHERE vulnerability_id LIKE 'CVE-TEST-%'"
+        )
+        conn.commit()
+        conn.close()
+    except sqlite3.OperationalError:
+        pass
 
 
 @pytest.fixture

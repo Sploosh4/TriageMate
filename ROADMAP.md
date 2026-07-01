@@ -140,7 +140,7 @@ To switch provider or adjust settings, edit `backend/.env`. See `.env.example` f
 | 1.1 | **CMDB adapter** (replace KNOWN_HOSTS hardcode) | Foundation | 🔴 Critical | 2 hrs | ✅ Done |
 | 1.2 | **Scanner output fields** in IngestRequest | Foundation | 🔴 Critical | 0.5 hr | ✅ Done |
 | 2.1 | **NVD API client** (CVE metadata enrichment) | Tier 1 Data | 🟡 High | 3 hrs | ✅ Done |
-| 2.2 | **Threat intel enrichment** (ExploitDB, GreyNoise, OTX) | Tier 1 Data | 🟡 High | 5 hrs | ✅ Done |
+| 2.2 | **Threat intel enrichment** — feature slots + status dict (scaffolding) | Tier 1 Data | 🟡 High | 1 hr | ✅ Done |
 | 2.3 | **Patch feature real values** (lag days, vendor) | Tier 1 Data | 🟡 High | 1 hr | ✅ Done |
 | 3.1 | **MITRE ATT&CK dynamic mapping** (CWE → techniques) | Output Quality | 🟡 High | 2 hrs | ✅ Done |
 | 3.2 | **Summary paragraph generation** | Output Quality | 🟠 Medium | 1–3 hrs | ✅ Done |
