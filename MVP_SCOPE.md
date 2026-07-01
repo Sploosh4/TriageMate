@@ -1,5 +1,7 @@
 # TriageMate MVP — Scope Document
 
+> **Sprint 3 complete:** XGBoost model retrained (68 features, ROC-AUC 0.9677). Tier 1 now real ML, not heuristic. See `SPRINT_3_HANDOFF.md`.
+
 ## Purpose
 
 Define exactly what the TriageMate Minimum Viable Product delivers, what it explicitly defers, and the rationale behind each boundary decision. This document serves as the single source of truth for scope decisions during and after Sprint 1.
@@ -58,17 +60,18 @@ Define exactly what the TriageMate Minimum Viable Product delivers, what it expl
   - All else → escalate to Tier 1
 - **Reason:** Zero ML, zero training data, zero external dependencies. The rules embody the WA SOC's deterministic baseline logic. The only future work is threshold tuning.
 
-#### Tier 1: STUB (heuristic function)
-- **IN scope:** A heuristic blending function (CVSS × 0.4 + EPSS × 0.3 + environmental modifiers)
-- **Reason:** A real XGBoost model requires 2,000–5,000 labeled exploitation outcomes plus SBERT embedding pipeline. The heuristic reproduces demo rows to within spec. The Shannon entropy gate (H(p) > 0.35 → escalate) is implemented and ready for the real model.
-- **XGBoost model replacement is POST-MVP** (see §3)
+#### Tier 1: REAL (XGBoost model, retrained Sprint 3)
+- **IN scope:** XGBoost model (`xgboost_model.pkl`) trained on 93,018 post-KEV CVEs with 68-feature hybrid vector (36 tabular + 32 PCA text). ROC-AUC 0.9677. Ensemble std routing (threshold 0.15) determines escalation to Tier 2. Heuristic fallback available when model is absent.
+- **Reason:** Model was retrained in Sprint 3 to fix the 69→68 feature mismatch caused by the `cisa_kev` label-leakage removal. The model now produces real exploitation probabilities for all cases. All 7 demo rows validated with exact expected scores.
 
-#### Tier 2: REAL for cloud LLM + KNOWN_CONFLICTS fallback
+#### Tier 2: REAL (multi-provider cloud LLM + Known Conflicts cache)
 - **IN scope:**
   - Cloud LLM integration with OpenAI / Anthropic / Together AI, configurable via env vars
+  - Backup provider support (primary + secondary) with automatic failover
+  - Exponential backoff retry (3 attempts, 2^N seconds)
   - Force-reflection prompt template (Step A → B → C → structured JSON output)
   - `KNOWN_CONFLICTS` dictionary with pre-resolved assessments for the 3 SLM demo CVEs
-  - Graceful degradation: cache-first, neutral-default when API is unavailable
+  - Graceful degradation: retry → backup provider → known conflicts → neutral default
 - **Reason:** The cloud LLM path costs ~$0.0004 per analysis (gpt-4o-mini). The KNOWN_CONFLICTS fallback is zero-cost and handles the demo rows. Together these provide the "SLM Tier" capability without waiting for a local model.
 - **Local CWE encoder (ModernBERT) replacement is POST-MVP** (see §3)
 
@@ -86,12 +89,15 @@ Define exactly what the TriageMate Minimum Viable Product delivers, what it expl
 | **Background audit sample:** 7.5% random sample of auto-resolved Tier 0/1 cases flagged for independent review | Detects model/concept drift without adding latency to the live pipeline (per Additional Information.md §Background Process) |
 | Both run as `asyncio` background tasks within the same process | No separate scheduler process needed for MVP |
 
-### 2.7 RAG Vector Store (LanceDB — seeded with demo documents)
+### 2.7 RAG Vector Store (LanceDB — seeded with demo documents, TTL cache)
 | Component | Reason |
 |---|---|
-| LanceDB store at `/tmp/triagemate_lancedb` seeded with 3 demo document chunks | Enables the Tier 2 prompt to include RAG context for the 3 SLM CVEs |
-| `query_rag()` function called from the ingest pipeline | Returns configuration context for the target hostname |
-| FTS (full-text search) index for fallback | Improves retrieval robustness |
+| LanceDB store at `backend/data/lancedb` seeded with 7 demo document chunks (1 per demo host) | Enables the Tier 2 prompt to include RAG context for all 7 hosts, not just SLM CVEs. Each document describes the host's software stack, network position, and relevant mitigations |
+| `query_rag()` function called from the ingest pipeline | Returns formatted configuration context for the target hostname to inject into the LLM force-reflection prompt |
+| TTL cache (60s) keyed by hostname | Avoids redundant LanceDB queries when multiple CVEs on the same host are ingested concurrently |
+| `threading.Lock` guarding write operations | Prevents manifest corruption on concurrent `add()` calls. Reads are lock-free (safe via Lance manifest versioning) |
+| Document ingestion CLI (`ingest_docs.py`) | Enables analysts to add internal documentation via `--file` or `--dir` flags with path traversal protection and file size limits |
+| FTS (full-text search) index for fallback | Improves retrieval robustness. Failures are logged, not silently suppressed |
 
 ### 2.8 Seed Data
 | Component | Reason |
@@ -107,7 +113,7 @@ Define exactly what the TriageMate Minimum Viable Product delivers, what it expl
 | Deferred Item | Why Out of Scope for MVP |
 |---|---|
 | **Pre-Tier multi-label classifier** (RandomForest replacing hostname dict) | Requires 200–500 internally labeled WA government assets. No public dataset exists. The stub correctly handles the 7 demo rows and returns conservative defaults for unknowns. |
-| **Tier 1 XGBoost model** (replacing heuristic blend) | Requires 2,000–5,000 labeled exploitation outcomes + SBERT embedding pipeline + PCA training. The heuristic reproduces demo scores to spec. Training data can be gathered from public sources (NVD, EPSS, CISA KEV) but the feature engineering, model training, and validation pipeline is a separate workstream. |
+| **Tier 1 XGBoost tuning** | **DONE (Sprint 3).** Retrained on 93,018 post-KEV CVEs. 68 features. ROC-AUC 0.9677. Feature mismatch (69→68) fixed. Ensemble variance DMatrix bug fixed. Model running live. |
 | **Tier 2 CWE encoder** (ModernBERT, replacing cloud LLM pre-processing) | The cloud LLM path works without a local encoder. The encoder adds CWE pre-classification before the force-reflection loop — valuable but not required for MVP correctness. |
 | **EPSS substitution model** (sector-adjusted EPSS scorer) | Only affects Row 5's display. The stub hardcodes the substitution value. A real model requires sector-weighted exploitation data which is not publicly available. |
 
@@ -156,13 +162,17 @@ Define exactly what the TriageMate Minimum Viable Product delivers, what it expl
 
 | Deferred Item | Why Out of Scope |
 |---|---|
-| Fix CWE classifier SecureBERT head naming mismatch (AI_PROBLEMS.md #1) | The CWE classifier is not used in the MVP — Tier 2 uses cloud LLM directly. Fixing this is only needed when the local encoder replaces the cloud path. |
-| Fix ModernBERT `pooler_output` missing (AI_PROBLEMS.md #2) | Same as above — the local encoder is not in the hot path. |
-| Fix custom cache dir (AI_PROBLEMS.md #3) | Only matters when the CWE encoder is deployed. |
-| Persistent LanceDB path (currently `/tmp/`) | Demo documents are seeded on every startup if the store is empty. Data loss on reboot is acceptable for MVP. |
-| FTS exception suppression (AI_PROBLEMS.md #12) | Cosmetic — the exception catch prevents crashes, which works. Logging the exception would be better but is not blocking. |
-| Remove unused `t2_score_adjustment` variable in ingest.py (AI_PROBLEMS.md #13) | Trivial unused variable; no functional impact. |
-| Tier 1 heuristic always escalates (AI_PROBLEMS.md #14) | Only triggered in fallback path (when XGBoost model is absent). Once the real model is trained, this code path is never reached. |
+| **Fix CWE classifier SecureBERT head naming mismatch (AI_PROBLEMS.md #1)** | The CWE classifier is not used in the MVP — Tier 2 uses cloud LLM directly. Fixing this is only needed when the local encoder replaces the cloud path. |
+| **Fix ModernBERT `pooler_output` missing (AI_PROBLEMS.md #2)** | Same as above — the local encoder is not in the hot path. |
+| **Fix custom cache dir (AI_PROBLEMS.md #3)** | Only matters when the CWE encoder is deployed. |
+| **Tier 1 heuristic always escalates (AI_PROBLEMS.md #14)** | Fallback path only — never reached now that the XGBoost model is trained and running. |
+
+**Items fixed in Sprint 2:**
+| Now Fixed | Fix |
+|---|---|
+| **LanceDB path ephemeral (AI_PROBLEMS.md #11)** | Moved from `/tmp/` to persistent `backend/data/lancedb`. Write lock added. |
+| **FTS exception suppression (AI_PROBLEMS.md #12)** | Now logs the exception via `logging.warning()` instead of bare `except: pass`. |
+| **Unused `t2_score_adjustment` (AI_PROBLEMS.md #13)** | Removed from `ingest.py`. |
 
 **Reasoning for all deferrals:** Every item above either (a) has no functional impact on the 7-row demo, (b) requires a decision or input that doesn't exist yet, or (c) adds complexity that would slow down the core value proposition — getting a working triage pipeline into a user's hands. Each is tracked in `AI_PROBLEMS.md` or this document for future prioritisation.
 
@@ -176,11 +186,11 @@ Define exactly what the TriageMate Minimum Viable Product delivers, what it expl
 | **API** | GET /queue, GET /case/{id}, GET /metrics, POST /ingest | Rate limiting, API keys, multi-versioning |
 | **Pipeline Pre-Tier** | Hostname dictionary stub | Multi-label RandomForest classifier |
 | **Pipeline Tier 0** | Deterministic rules (production-ready) | Threshold tuning (future refinement) |
-| **Pipeline Tier 1** | Heuristic stub | XGBoost model + SBERT embeddings |
+| **Pipeline Tier 1** | XGBoost model (68 features, ROC-AUC 0.9677) | WA-specific tuning (post-MVP) |
 | **Pipeline Tier 2** | Cloud LLM + KNOWN_CONFLICTS cache | Local CWE encoder (ModernBERT) |
 | **Scoring** | 5-dimension weighted score + band mapping | Dynamic weight learning |
 | **Database** | SQLite, single table | PostgreSQL, migrations, multi-table normalisation |
-| **RAG** | LanceDB with 3 demo documents | Full index of Confluence/SharePoint |
+| **RAG** | LanceDB with 7 demo documents, TTL cache, write lock, ingestion CLI | Full index of Confluence/SharePoint |
 | **Scheduler** | Daily low re-check, 7.5% audit sampling | Dashboard, alerting |
 | **Ops** | `uvicorn main:app` on localhost | Docker, CI/CD, HTTPS, auth, backups |
 | **ML Ops** | None | Model versioning, experiment tracking, A/B testing |
@@ -197,7 +207,7 @@ Define exactly what the TriageMate Minimum Viable Product delivers, what it expl
 | **Tier 1 heuristic stub** | May not generalise to unknown CVEs; all new cases may escalate to Tier 2 | Confirmed acceptable: the heuristic exists only until the XGBoost model is trained. All demo rows score correctly. |
 | **Tier 2 cloud LLM dependency** | API key management, internet requirement, vendor API changes | `KNOWN_CONFLICTS` fallback works without internet. Cloud LLM is additive, not required. |
 | **Single SQLite table** | JSON columns cannot be queried efficiently; schema rigidity | Acceptable for 7–1,000 rows. Column count (52) is manageable. JSON fields are parsed at the API layer, not queried. |
-| **LanceDB in /tmp/** | Data lost on reboot | Demo documents are re-seeded on startup if empty. Production data would never be in MVP. |
+| **LanceDB in /tmp/** (Sprint 1 risk — ✅ mitigated) | (Former) Data lost on reboot | Sprint 2 moved to persistent `backend/data/lancedb` with TTL cache and write lock. No longer a risk. |
 
 ---
 
@@ -215,3 +225,5 @@ The MVP is complete when:
 8. Text-conflict rows (5, 6, 7) show yellow highlight
 9. Row 5 shows the substitution block
 10. The Swagger UI at `/docs` renders all 4 endpoints
+11. (Sprint 2) `POST /api/ingest` with a CVE that reaches Tier 2 returns a `textConflict` value set by the LLM (not `NOT_QUERIED`), and the server logs show `"event":"llm_call"` with token counts
+12. (Sprint 2) `/api/health` returns `llm_available: true` when API key is configured, `rag_documents: 7` when seeded

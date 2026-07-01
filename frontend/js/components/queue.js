@@ -1,5 +1,8 @@
-// queue.js — Queue table rendering
-// Helpers
+// queue.js — Queue table rendering with search, sort, and tier badges
+
+// Sort state
+var sortState = { column: 'priorityScore', direction: 'desc' };
+
 function getRiskColour(score) {
   if (score <= 25) return '#22C55E';
   if (score <= 50) return '#F59E0B';
@@ -12,9 +15,23 @@ function getComplianceClass(category) {
 }
 
 function escHtml(str) {
-  const div = document.createElement('div');
+  var div = document.createElement('div');
   div.textContent = str;
   return div.innerHTML;
+}
+
+function getTierBadgeClass(tier) {
+  if (tier === 'Deterministic') return 'tier-badge-det';
+  if (tier === 'ML Tier') return 'tier-badge-ml';
+  return 'tier-badge-slm';
+}
+
+function stripTierFromReason(reason, tier) {
+  var prefix = tier + ': ';
+  if (reason.indexOf(prefix) === 0) {
+    return reason.substring(prefix.length);
+  }
+  return reason;
 }
 
 function metricFilterMatch(row, filter) {
@@ -34,41 +51,86 @@ function metricFilterMatch(row, filter) {
   return false;
 }
 
-function filterRows(rows, filter, activeMetricFilter) {
-  let filtered = rows;
+function searchMatch(row, query) {
+  if (!query) return true;
+  var q = query.toLowerCase();
+  return (row.vulnerabilityId || '').toLowerCase().indexOf(q) !== -1 ||
+         (row.hostname || '').toLowerCase().indexOf(q) !== -1 ||
+         (row.detectionReason || '').toLowerCase().indexOf(q) !== -1;
+}
+
+function sortRows(rows, column, direction) {
+  return rows.slice().sort(function(a, b) {
+    var va = a[column];
+    var vb = b[column];
+    if (typeof va === 'string') va = va.toLowerCase();
+    if (typeof vb === 'string') vb = vb.toLowerCase();
+    if (va === vb) return 0;
+    var cmp = va < vb ? -1 : 1;
+    return direction === 'asc' ? cmp : -cmp;
+  });
+}
+
+function filterRows(rows, filter, activeMetricFilter, searchQuery) {
+  var filtered = rows;
   if (filter !== 'All Tiers') {
-    filtered = filtered.filter(r => r.tier === filter);
+    filtered = filtered.filter(function(r) { return r.tier === filter; });
   }
   if (activeMetricFilter) {
-    filtered = filtered.filter(r => metricFilterMatch(r, activeMetricFilter));
+    filtered = filtered.filter(function(r) { return metricFilterMatch(r, activeMetricFilter); });
+  }
+  if (searchQuery) {
+    filtered = filtered.filter(function(r) { return searchMatch(r, searchQuery); });
   }
   return filtered;
 }
 
-// Render queue
-function renderQueue(rows, filter, activeMetricFilter) {
-  const tbody = document.getElementById('queue-body');
-  const filtered = filterRows(rows, filter, activeMetricFilter);
+function updateSortArrows() {
+  var headers = document.querySelectorAll('#queue-table th.sortable');
+  headers.forEach(function(th) {
+    var arrow = th.querySelector('.sort-arrow');
+    if (arrow) {
+      if (th.dataset.sort === sortState.column) {
+        arrow.textContent = sortState.direction === 'asc' ? '\u25B2' : '\u25BC';
+        arrow.classList.add('active');
+      } else {
+        arrow.textContent = '';
+        arrow.classList.remove('active');
+      }
+    }
+  });
+}
 
-  if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" class="queue-empty">No rows match the selected filter.</td></tr>';
+// Render queue
+function renderQueue(rows, filter, activeMetricFilter, searchQuery) {
+  var tbody = document.getElementById('queue-body');
+  var filtered = filterRows(rows, filter, activeMetricFilter, searchQuery);
+  var sorted = sortRows(filtered, sortState.column, sortState.direction);
+
+  if (sorted.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="99" class="queue-empty">No rows match the current filters.</td></tr>';
     return;
   }
 
-  tbody.innerHTML = filtered.map(r => {
-    const colour = getRiskColour(r.priorityScore);
-    return `<tr tabindex="0" data-row-id="${r.id}">
-      <td><span class="queue-id">${escHtml(r.vulnerabilityId)}</span></td>
-      <td><span class="queue-hostname">${escHtml(r.hostname)}</span></td>
-      <td>
-        <span class="queue-score-cell">
-          <span class="queue-score-circle" style="background:${colour}"></span>
-          <span class="queue-score-text" style="color:${colour}">${r.priorityScore}</span>
-        </span>
-      </td>
-      <td><span class="queue-risk-text" style="color:${colour}">${escHtml(r.riskBand)}</span></td>
-      <td><span class="queue-reason" title="${escHtml(r.detectionReason)}">${escHtml(r.detectionReason)}</span></td>
-      <td><span class="compliance-badge ${getComplianceClass(r.complianceCategory)}">${r.compliance.replace('Category ', 'CAT ')}</span></td>
-    </tr>`;
+  tbody.innerHTML = sorted.map(function(r) {
+    var colour = getRiskColour(r.priorityScore);
+    var reasonStripped = stripTierFromReason(r.detectionReason, r.tier);
+    return '<tr tabindex="0" data-row-id="' + r.id + '">' +
+      '<td data-label="Vulnerability ID"><span class="queue-id">' + escHtml(r.vulnerabilityId) + '</span></td>' +
+      '<td data-label="Hostname"><span class="queue-hostname">' + escHtml(r.hostname) + '</span></td>' +
+      '<td data-label="Score">' +
+        '<span class="queue-score-cell">' +
+          '<span class="queue-score-circle" style="background:' + colour + '"></span>' +
+          '<span class="queue-score-text" style="color:' + colour + '">' + r.priorityScore + '</span>' +
+        '</span>' +
+      '</td>' +
+      '<td data-label="Risk"><span class="queue-risk-text" style="color:' + colour + '">' + escHtml(r.riskBand) + '</span></td>' +
+      '<td data-label="Tier"><span class="' + getTierBadgeClass(r.tier) + '">' + escHtml(r.tier) + '</span></td>' +
+      '<td data-label="Reason"><span class="queue-reason" title="' + escHtml(r.detectionReason) + '">' + escHtml(reasonStripped) + '</span></td>' +
+      '<td data-label="Compliance"><span class="compliance-badge ' + getComplianceClass(r.complianceCategory) + '">' + r.compliance.replace('Category ', 'CAT ') + '</span></td>' +
+      '<td data-label="Since"><span class="queue-time">' + escHtml(r.createdAt || '') + '</span></td>' +
+    '</tr>';
   }).join('');
+
+  updateSortArrows();
 }

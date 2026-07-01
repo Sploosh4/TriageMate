@@ -12,8 +12,13 @@ LOW_CVSS_THRESHOLD = 4.0
 LOW_EPSS_THRESHOLD = 0.10
 
 
-def evaluate_tier_0(cvss_score: float, cisa_kev: bool, epss_score: float,
-                    data_classification: str, internet_facing: bool) -> dict:
+def evaluate_tier_0(
+    cvss_score: float,
+    cisa_kev: bool,
+    epss_score: float,
+    data_classification: str,
+    internet_facing: bool,
+) -> dict:
     """
     Deterministic rules for Tier 0 routing.
 
@@ -36,12 +41,20 @@ def evaluate_tier_0(cvss_score: float, cisa_kev: bool, epss_score: float,
 
     # Auto-resolve as Very Critical if:
     # - CISA KEV listed AND EPSS >= 0.90 AND data classification is Category 3 or 4
-    if cisa_kev and epss_score >= KEV_EPSS_THRESHOLD and data_classification in ("Category 3", "Category 4"):
+    if (
+        cisa_kev
+        and epss_score >= KEV_EPSS_THRESHOLD
+        and data_classification in ("Category 3", "Category 4")
+    ):
         return {"routing": "auto_resolved", "resolution": "very_critical"}
 
     # Auto-resolve as Low if:
     # - Not CISA KEV AND CVSS < 4.0 AND EPSS < 0.10
-    if not cisa_kev and cvss_score < LOW_CVSS_THRESHOLD and epss_score < LOW_EPSS_THRESHOLD:
+    if (
+        not cisa_kev
+        and cvss_score < LOW_CVSS_THRESHOLD
+        and epss_score < LOW_EPSS_THRESHOLD
+    ):
         return {"routing": "auto_resolved", "resolution": "low"}
 
     # Everything else is ambiguous — escalate to Tier 1

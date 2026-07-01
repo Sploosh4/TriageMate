@@ -1,3 +1,11 @@
+# ARCHIVED — TriageMate ML Research Prompt
+
+> **Status:** ARCHIVED — this document is the research **questionnaire/input** used to commission ML research. It contains questions, not answers.  
+> **Superseded by:** `TriageMate ML Implementation Plan — Final.md` (which provides the answers to these questions and corrects outdated assumptions).  
+> **Date archived:** 30 June 2026
+
+---
+
 # TriageMate ML Research Prompt
 
 ## Your Role

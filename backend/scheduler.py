@@ -5,8 +5,6 @@ Handles: daily EPSS refresh, daily KEV poll, low-severity re-checks,
 quarterly retraining triggers.
 """
 
-import asyncio
-
 
 async def recheck_low_severity():
     """
@@ -40,18 +38,24 @@ async def recheck_low_severity():
         conn = get_db()
         try:
             if new_t0["resolution"] != "low":
-                conn.execute("""
+                conn.execute(
+                    """
                     UPDATE vulnerabilities
                     SET tier_0_resolution = ?, tier_0_routing = ?,
                         updated_at = CURRENT_TIMESTAMP
                     WHERE id = ?
-                """, (new_t0["resolution"], new_t0["routing"], row["id"]))
+                """,
+                    (new_t0["resolution"], new_t0["routing"], row["id"]),
+                )
                 conn.commit()
 
-            conn.execute("""
+            conn.execute(
+                """
                 UPDATE vulnerabilities
                 SET last_recheck_date = CURRENT_TIMESTAMP WHERE id = ?
-            """, (row["id"],))
+            """,
+                (row["id"],),
+            )
             conn.commit()
         finally:
             conn.close()

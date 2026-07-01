@@ -1,0 +1,15 @@
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff check
+        entry: ./backend/venv/bin/python -m ruff check .
+        language: system
+        types: [python]
+        pass_filenames: false
+      - id: ruff-format
+        name: ruff format
+        entry: ./backend/venv/bin/python -m ruff format --check .
+        language: system
+        types: [python]
+        pass_filenames: false

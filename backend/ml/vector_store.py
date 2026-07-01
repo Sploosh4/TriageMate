@@ -3,56 +3,32 @@ LanceDB embedded vector store for RAG document retrieval.
 
 Stores internal agency documentation as chunked embeddings.
 Runs in-process within the FastAPI application — no server required.
+Reads are lock-free (LanceDB uses immutable file manifests).
+Writes are guarded by a threading.Lock for safety.
 """
+
+import logging
+import threading
+from pathlib import Path
+from typing import Optional
 
 import lancedb
 import pyarrow as pa
-from pathlib import Path
 from sentence_transformers import SentenceTransformer
 
-DB_PATH = Path("/tmp/triagemate_lancedb")
+logger = logging.getLogger("triagemate.vector_store")
+
+DB_PATH = Path(__file__).parent.parent / "data" / "lancedb"
 TABLE_NAME = "asset_documentation"
 EMBEDDING_DIM = 384
-MAX_RAG_CHARS = 8000
+MAX_RAG_CHARS = 5000
 
 _embedder = None
 _db = None
+_write_lock = threading.Lock()
 
 
-def _get_embedder() -> SentenceTransformer:
-    global _embedder
-    if _embedder is None:
-        _embedder = SentenceTransformer("all-MiniLM-L6-v2", device="cpu")
-    return _embedder
-
-
-def init_vector_store() -> lancedb.DBConnection:
-    """Initialize the LanceDB database and create the table if it doesn't exist."""
-    global _db
-    DB_PATH.mkdir(parents=True, exist_ok=True)
-    _db = lancedb.connect(str(DB_PATH))
-
-    schema = pa.schema([
-        pa.field("vector", pa.list_(pa.float32(), EMBEDDING_DIM)),
-        pa.field("text", pa.string()),
-        pa.field("hostname", pa.string()),
-        pa.field("document_type", pa.string()),
-        pa.field("source", pa.string()),
-    ])
-
-    if TABLE_NAME not in _db.table_names():
-        _db.create_table(TABLE_NAME, schema=schema, exist_ok=True)
-
-    table = _db.open_table(TABLE_NAME)
-    try:
-        table.create_fts_index("text", replace=True)
-    except Exception:
-        pass
-
-    return _db
-
-
-SEED_DOCUMENTS = [
+_SEED_DOCUMENTS = [
     {
         "hostname": "PRD-MOVEIT-WEB01.health.wa.gov.au",
         "document_type": "cmdb_record",
@@ -157,52 +133,187 @@ SEED_DOCUMENTS = [
             "Risk: If SAML is ever enabled, vulnerability reactivates."
         ),
     },
+    {
+        "hostname": "__generic__",
+        "document_type": "security_baseline",
+        "source": "WA Government Security Baseline",
+        "text": (
+            "WA Government Windows Server Security Baseline. "
+            "Microsoft Defender for Endpoint: Required on all domain-joined servers. "
+            "ASR Rules: Block Office child processes (D4F940AB-401B-4EFC-AADC-AD5F3C50688A), "
+            "Block Win32 API calls from Office macros (92E97FA1-2EDF-4476-BDD6-9DD0B4DDDC7B). "
+            "SMB: SMBv1 disabled. SMB signing: Required. SMB encryption: Optional. "
+            "RDP: Network Level Authentication required. "
+            "Patch cycle: Monthly via WSUS/SCCM. "
+            "Audit policy: Advanced audit logging enabled for logon/logoff, object access."
+        ),
+    },
+    {
+        "hostname": "__generic__",
+        "document_type": "iam_policy",
+        "source": "WA Government Identity Policy",
+        "text": (
+            "WA Government Service Account Policy. "
+            "Service accounts: Should not be granted interactive logon rights. "
+            "Managed Service Accounts (gMSA) preferred over standard user accounts. "
+            "Privileged access workstations (PAWs) required for admin access to Tier 0 assets. "
+            "Multi-factor authentication: Required for all internet-facing admin interfaces. "
+            "Default domain admin accounts: Renamed, with honeypot accounts deployed. "
+            "Kerberos: AES256 encryption preferred. RC4/HMAC-MD5 disabled where compatible."
+        ),
+    },
 ]
 
 
-def seed_demo_documents(db: lancedb.DBConnection | None = None) -> int:
+def _get_embedder() -> SentenceTransformer:
+    global _embedder
+    if _embedder is None:
+        _embedder = SentenceTransformer("all-MiniLM-L6-v2", device="cpu")
+    return _embedder
+
+
+def _get_db() -> lancedb.DBConnection:
+    global _db
+    if _db is None:
+        DB_PATH.mkdir(parents=True, exist_ok=True)
+        _db = lancedb.connect(str(DB_PATH))
+    return _db
+
+
+def init_vector_store() -> lancedb.DBConnection:
+    """Initialize the LanceDB database and create the table if it doesn't exist."""
+    db = _get_db()
+
+    schema = pa.schema(
+        [
+            pa.field("vector", pa.list_(pa.float32(), EMBEDDING_DIM)),
+            pa.field("text", pa.string()),
+            pa.field("hostname", pa.string()),
+            pa.field("document_type", pa.string()),
+            pa.field("source", pa.string()),
+        ]
+    )
+
+    if TABLE_NAME not in db.table_names():
+        db.create_table(TABLE_NAME, schema=schema, exist_ok=True)
+
+    table = db.open_table(TABLE_NAME)
+    with _write_lock:
+        try:
+            table.create_fts_index("text", replace=True)
+        except Exception as e:
+            logger.warning("FTS index creation skipped: %s", e)
+
+    return db
+
+
+def seed_demo_documents(db: Optional[lancedb.DBConnection] = None) -> int:
     """Seed the vector store with known configurations for the 7 demo hosts."""
     if db is None:
-        db = lancedb.connect(str(DB_PATH))
+        db = _get_db()
     embedder = _get_embedder()
     table = db.open_table(TABLE_NAME)
 
-    texts = [doc["text"] for doc in SEED_DOCUMENTS]
+    texts = [doc["text"] for doc in _SEED_DOCUMENTS]
     vectors = embedder.encode(texts, show_progress_bar=False)
 
     records = []
-    for i, doc in enumerate(SEED_DOCUMENTS):
-        records.append({
-            "vector": vectors[i].tolist(),
-            "text": doc["text"],
-            "hostname": doc["hostname"],
-            "document_type": doc["document_type"],
-            "source": doc["source"],
-        })
+    for i, doc in enumerate(_SEED_DOCUMENTS):
+        records.append(
+            {
+                "vector": vectors[i].tolist(),
+                "text": doc["text"],
+                "hostname": doc["hostname"],
+                "document_type": doc["document_type"],
+                "source": doc["source"],
+            }
+        )
 
-    table.add(records)
+    with _write_lock:
+        table.add(records)
     return len(records)
+
+
+def clear_documents(db: Optional[lancedb.DBConnection] = None):
+    """Remove all documents from the vector store."""
+    if db is None:
+        db = _get_db()
+    table = db.open_table(TABLE_NAME)
+    with _write_lock:
+        table.delete("true")
+
+
+def add_documents(docs: list[dict], db: Optional[lancedb.DBConnection] = None) -> int:
+    """Add a batch of documents to the vector store.
+
+    Each dict must have: text, hostname, document_type, source.
+    The vector embedding is computed automatically.
+    """
+    if db is None:
+        db = _get_db()
+    embedder = _get_embedder()
+    table = db.open_table(TABLE_NAME)
+
+    texts = [d["text"] for d in docs]
+    vectors = embedder.encode(texts, show_progress_bar=True)
+
+    records = []
+    for i, doc in enumerate(docs):
+        records.append(
+            {
+                "vector": vectors[i].tolist(),
+                "text": doc["text"],
+                "hostname": doc["hostname"],
+                "document_type": doc.get("document_type", "unknown"),
+                "source": doc.get("source", "manual_ingest"),
+            }
+        )
+
+    with _write_lock:
+        table.add(records)
+    return len(records)
+
+
+def _empty_result(status: str, message: str) -> dict:
+    return {"documents": [], "status": status, "rag_context": message}
+
+
+_rag_cache = {}
+_RAG_CACHE_TTL = 60
 
 
 def query_rag(hostname: str, cwe_class: str = "", top_k: int = 3) -> dict:
     """
     Query the vector store for asset configuration context.
 
+    Results are cached per hostname for _RAG_CACHE_TTL seconds to avoid
+    redundant LanceDB lookups for concurrent ingest of different CVEs
+    on the same hostname.
+
     Returns dict with: documents, status, rag_context.
     Status values: STORE_EMPTY, STORE_ERROR, SEARCH_ERROR, NO_MATCHES, RESULTS_FOUND
     """
+    cache_key = f"{hostname}::{cwe_class}::{top_k}"
+    import time
+
+    now = time.time()
+    cached = _rag_cache.get(cache_key)
+    if cached and (now - cached["ts"]) < _RAG_CACHE_TTL:
+        return cached["result"]
+
     try:
-        db = lancedb.connect(str(DB_PATH))
+        db = _get_db()
         if TABLE_NAME not in db.table_names():
             return _empty_result(
                 "STORE_EMPTY",
                 "RAG document store has not been populated. "
-                "No internal configuration data is available for this asset."
+                "No internal configuration data is available for this asset.",
             )
         table = db.open_table(TABLE_NAME)
     except Exception as e:
-        return _empty_result("STORE_ERROR",
-                             f"RAG vector store unavailable: {str(e)[:100]}")
+        return _empty_result(
+            "STORE_ERROR", f"RAG vector store unavailable: {str(e)[:100]}"
+        )
 
     query = (
         f"Security configurations, mitigations, default settings, "
@@ -220,26 +331,28 @@ def query_rag(hostname: str, cwe_class: str = "", top_k: int = 3) -> dict:
     except Exception:
         try:
             results = table.search(query, query_type="fts").limit(top_k).to_list()
-        except Exception:
-            return _empty_result("SEARCH_ERROR", "Vector search failed.")
+        except Exception as e:
+            return _empty_result(
+                "SEARCH_ERROR", f"Vector search failed: {str(e)[:100]}"
+            )
 
     if not results:
-        return _empty_result(
+        result = _empty_result(
             "NO_MATCHES",
             f"No internal documentation found for {hostname}. "
-            f"Configuration status is unknown."
+            f"Configuration status is unknown.",
         )
+        _rag_cache[cache_key] = {"result": result, "ts": now}
+        return result
 
     rag_text = "\n\n".join(
         f"[{r.get('document_type', 'doc')}] {r['text']}" for r in results
     )
 
-    return {
+    result = {
         "documents": results,
         "status": "RESULTS_FOUND",
         "rag_context": rag_text[:MAX_RAG_CHARS],
     }
-
-
-def _empty_result(status: str, message: str) -> dict:
-    return {"documents": [], "status": status, "rag_context": message}
+    _rag_cache[cache_key] = {"result": result, "ts": now}
+    return result

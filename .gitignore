@@ -14,6 +14,12 @@ backend/ml/nvd_checkpoint.json
 backend/ml/enriched_cves.json
 backend/ml/training_data.npz
 
+# RAG vector store (persistent, auto-created)
+backend/data/
+
+# Environment file (secrets)
+.env
+
 # OS
 .DS_Store
 Thumbs.db

@@ -1,3 +1,12 @@
+# SUPERSEDED — TriageMate MVP Transformation Plan
+
+> **Status:** ARCHIVED — this document was the original blueprint for transforming the single-file demo into the MVP architecture.  
+> **Superseded by:** `SPRINT_1_HANDOFF.md` (Sprint 1 completion summary) and the actual code in `backend/`.  
+> **Reason:** The transformation is complete. Code examples, file paths, and model counts in this doc are stale compared to the live implementation.  
+> **Date archived:** 30 June 2026
+
+---
+
 # TriageMate MVP Transformation Plan
 
 ## Overview
@@ -1275,38 +1284,3 @@ is designed to support it.
 ## Section 10: What This Plan Intentionally Avoids
 
 - **Authentication and user management.** The MVP has no login. It runs on localhost.
-- **Database migrations.** SQLite is file-based. The schema is recreated from `init_db()` on startup. No Alembic, no migration scripts.
-- **Docker and containerization.** Added later, not needed for a single-machine MVP.
-- **CI/CD.** Not needed until there are multiple developers.
-- **Model versioning and experiment tracking.** Not needed until models are being iterated.
-- **Real-time vulnerability scanner integration.** The `POST /api/ingest` endpoint exists and works, but no scanner is connected to it. Ingest is manual via curl or a script.
-- **The RAG document store.** The stub returns hardcoded RAG results. Building the actual vector database and document ingestion pipeline is a separate project.
-
----
-
-## Summary of File Changes from Demo to MVP
-
-| File | Action | Lines of New Code |
-|---|---|---|
-| `frontend/css/triagemate.css` | Extract from demo | 0 (copy) |
-| `frontend/js/api.js` | New | ~25 |
-| `frontend/js/app.js` | New | ~60 |
-| `frontend/js/components/queue.js` | Refactor from demo | 0 (move) |
-| `frontend/js/components/caseView.js` | Refactor from demo | 0 (move) |
-| `frontend/js/components/metricBoxes.js` | Refactor from demo | 0 (move) |
-| `frontend/index.html` | Remove inline style/script, add links | ~10 |
-| `backend/main.py` | New | ~25 |
-| `backend/database.py` | New | ~80 |
-| `backend/models.py` | New | ~70 |
-| `backend/scoring.py` | New | ~60 |
-| `backend/routers/queue.py` | New | ~30 |
-| `backend/routers/cases.py` | New | ~40 |
-| `backend/routers/ingest.py` | New | ~50 |
-| `backend/pipeline/pre_tier.py` | New (stub) | ~35 |
-| `backend/pipeline/tier_0.py` | New (real) | ~30 |
-| `backend/pipeline/tier_1.py` | New (stub) | ~55 |
-| `backend/pipeline/tier_2.py` | New (stub) | ~70 |
-| `backend/seed_data.py` | New | ~150 |
-| `backend/requirements.txt` | New | 3 |
-
-Total new code: approximately 800 lines. The frontend refactoring moves existing code without rewriting it. The backend is all new but each file is small and single-purpose.

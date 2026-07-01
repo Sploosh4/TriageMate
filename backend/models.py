@@ -1,12 +1,11 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from typing import Optional
-from datetime import date
 
 
 def camel_case(s: str) -> str:
     """Convert snake_case to camelCase for API responses."""
-    parts = s.split('_')
-    return parts[0] + ''.join(p.capitalize() for p in parts[1:])
+    parts = s.split("_")
+    return parts[0] + "".join(p.capitalize() for p in parts[1:])
 
 
 class BaseModelConfig(BaseModel):
@@ -74,6 +73,7 @@ class QueueRow(BaseModelConfig):
     compliance: str
     compliance_category: int
     interface_type: str = ""
+    created_at: str = ""
 
 
 class QueueResponse(BaseModelConfig):
@@ -98,6 +98,26 @@ class IngestRequest(BaseModelConfig):
     cvss_score: float
     cvss_vector: Optional[str] = None
     cisa_kev: bool = False
-    epss_score: float = 0.0
+    epss_score: Optional[float] = None
     target_ip: str = ""
     raw_description: str = ""
+    scanner_output_raw: str = ""
+    weakness_template_raw: str = ""
+    exploit_maturity: int = 0
+    has_public_poc: bool = False
+    vendor_patch_status: int = 0
+
+
+class TriageConflictResult(BaseModel):
+    """Schema for structured LLM output in Tier 2 force-reflection analysis.
+
+    All fields are required (no Optional/Union) to maintain compatibility
+    with Anthropic's JSON Schema subset which does not support anyOf/oneOf.
+    """
+
+    text_conflict: bool
+    conflict_note: str
+    rag_result: str
+    resolution: str
+    confidence: float
+    score_adjustment: int

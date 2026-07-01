@@ -1,3 +1,11 @@
+# ARCHIVED — Following a Piece of Data: The TriageMate Pipeline Journey
+
+> **Status:** ARCHIVED — this document's pipeline description content has been absorbed into the ML Implementation Plan — Final (see §1 Architecture Overview, §3.2 Low-Severity 7-Day Re-Check, §7 Background Statistical Audit and Tier 3 Human Review).  
+> **Superseded by:** `TriageMate ML Implementation Plan — Final.md`  
+> **Date archived:** 30 June 2026
+
+---
+
 # **Following a Piece of Data: The TriageMate Pipeline Journey**
 
 ## Phase 1: Pre-Tier Ingestion and Validation
@@ -80,4 +88,3 @@ Background Process: Continuous Statistical Audit
 * **The Decoupled Path:** Had this piece of data successfully achieved a high-confidence auto-approval at Tier 0 or Tier 1, it would exit the live linear cascade immediately.  
 * **Asynchronous Sampling:** Upon auto-approval, it enters an asynchronous background pool where it stands a 5% to 10% chance of being randomly selected for a statistical audit.  
 * **Audit Purpose:** If selected, it is reviewed independently against calibrated criteria to establish true error rates, safely catching model or concept drift without introducing any latency to the live production pipeline.
-

@@ -8,20 +8,43 @@ JSON response with the conflict assessment and final resolution.
 
 Supported providers (configured via environment variable):
 - OpenAI (gpt-4o-mini recommended for MVP cost optimization)
-- Anthropic (claude-3-haiku recommended for MVP cost optimization)
+- Anthropic (claude-haiku-4-5 recommended for MVP cost optimization)
 - Together AI (hosted open-weight models)
 """
 
 import os
 import json
-import httpx
-from typing import Optional
+import logging
+import asyncio
+from dotenv import load_dotenv
+
+load_dotenv()
+
+logger = logging.getLogger("triagemate.tier_2")
 
 # Provider configuration from environment
 LLM_PROVIDER = os.getenv("TRIAGEMATE_LLM_PROVIDER", "openai")
 LLM_API_KEY = os.getenv("TRIAGEMATE_LLM_API_KEY", "")
 LLM_MODEL = os.getenv("TRIAGEMATE_LLM_MODEL", "gpt-4o-mini")
+LLM_MAX_TOKENS = int(os.getenv("TRIAGEMATE_LLM_MAX_TOKENS", "1024"))
 LLM_TIMEOUT = int(os.getenv("TRIAGEMATE_LLM_TIMEOUT", "30"))
+
+BACKUP_PROVIDER = os.getenv("TRIAGEMATE_LLM_BACKUP_PROVIDER", "")
+BACKUP_API_KEY = os.getenv("TRIAGEMATE_LLM_BACKUP_API_KEY", "")
+BACKUP_MODEL = os.getenv("TRIAGEMATE_LLM_BACKUP_MODEL", "")
+
+_MAX_RETRIES = 3
+_BASE_DELAY = 1.0
+
+# Together AI models known to support json_schema response_format
+# https://docs.together.ai/docs/json-mode
+TOGETHER_JSON_SCHEMA_MODELS = frozenset(
+    {
+        "meta-llama/Llama-3.3-70B-Instruct-Turbo",
+        "Qwen/Qwen3.5-9B",
+        "Qwen/Qwen3.5-32B",
+    }
+)
 
 # Known conflict resolutions — used as fallback when API is unavailable
 KNOWN_CONFLICTS = {
@@ -36,9 +59,9 @@ KNOWN_CONFLICTS = {
         ),
         "rag_result": "UNCERTAIN — CMDB records conflict",
         "resolution": "Exploitability signal dominates. Mitigation status unverifiable. "
-                      "Assign score 63 — Critical band. Flag for manual ASR verification.",
+        "Assign score 63 — Critical band. Flag for manual ASR verification.",
         "confidence": 0.72,
-        "score_adjustment": -15
+        "score_adjustment": -15,
     },
     "CVE-2023-22515": {
         "text_conflict": True,
@@ -51,10 +74,10 @@ KNOWN_CONFLICTS = {
         ),
         "rag_result": "UNCERTAIN — hostname alias confusion",
         "resolution": "Scanner evidence carries more weight than change record. "
-                      "Assign score 41 — Medium band. ICT team demonstrated awareness "
-                      "within 14 days, reducing urgency.",
+        "Assign score 41 — Medium band. ICT team demonstrated awareness "
+        "within 14 days, reducing urgency.",
         "confidence": 0.68,
-        "score_adjustment": -37
+        "score_adjustment": -37,
     },
     "CVE-2022-47966": {
         "text_conflict": True,
@@ -68,183 +91,623 @@ KNOWN_CONFLICTS = {
         ),
         "rag_result": "CONFIRMED — SAML disabled since 2021 deployment",
         "resolution": "SAML-disabled configuration eliminates attack surface. "
-                      "Assign score 22 — Low band. Persistent flag to alert if "
-                      "SAML is ever enabled. Recommend patching to remove vulnerable libraries.",
+        "Assign score 22 — Low band. Persistent flag to alert if "
+        "SAML is ever enabled. Recommend patching to remove vulnerable libraries.",
         "confidence": 0.91,
-        "score_adjustment": -66
-    }
+        "score_adjustment": -66,
+    },
+}
+
+# Cost tracking — module-level accumulators
+_cost_tracking = {
+    "total_calls": 0,
+    "total_input_tokens": 0,
+    "total_output_tokens": 0,
+    "total_cached_tokens": 0,
+    "estimated_cost_usd": 0.0,
+}
+
+# Approximate per-1M-token pricing (model-specific, used for estimation)
+_COST_RATES = {
+    "openai": {"input": 0.15, "output": 0.60},
+    "anthropic": {"input": 0.25, "output": 1.25},
+    "together": {"input": 0.20, "output": 0.20},
 }
 
 
-def build_prompt(cve_id: str, cvss_score: float, description: str,
-                 config_context: dict, upstream_scores: dict,
-                 mission_tags: dict) -> str:
-    """Build the force-reflection prompt for the cloud LLM."""
+def get_cost_tracking() -> dict:
+    """Return a snapshot of the cost tracking accumulators."""
+    return dict(_cost_tracking)
 
-    return f"""You are a vulnerability prioritization analyst for the Western Australian 
-government. Analyze this vulnerability and determine whether a text conflict exists 
-between the exploitability signals and any mitigating constraints.
 
-CVE ID: {cve_id}
-CVSS Score: {cvss_score}
-Description: {description}
+def _validate_api_keys():
+    """Warn if API keys appear malformed. Doesn't block."""
+    if LLM_API_KEY:
+        if LLM_PROVIDER == "anthropic" and not LLM_API_KEY.startswith("sk-ant-api03-"):
+            logger.warning(
+                "Anthropic API key doesn't match expected prefix 'sk-ant-api03-'"
+            )
+        elif LLM_PROVIDER == "openai" and not (
+            LLM_API_KEY.startswith("sk-") or LLM_API_KEY.startswith("sk-proj-")
+        ):
+            logger.warning(
+                "OpenAI API key doesn't match expected prefix 'sk-' or 'sk-proj-'"
+            )
+    if BACKUP_API_KEY:
+        if BACKUP_PROVIDER == "anthropic" and not BACKUP_API_KEY.startswith(
+            "sk-ant-api03-"
+        ):
+            logger.warning(
+                "Backup Anthropic API key doesn't match expected prefix 'sk-ant-api03-'"
+            )
+        elif BACKUP_PROVIDER == "openai" and not (
+            BACKUP_API_KEY.startswith("sk-") or BACKUP_API_KEY.startswith("sk-proj-")
+        ):
+            logger.warning(
+                "Backup OpenAI API key doesn't match expected prefix 'sk-' or 'sk-proj-'"
+            )
 
-Asset Context:
-- Mission Prevalence: {mission_tags.get('mission_prevalence', 'Unknown')}
-- Public Well-Being Impact: {mission_tags.get('public_wellbeing_impact', 'Unknown')}
-- Configuration: {json.dumps(config_context, indent=2)}
 
-Upstream Tier 1 Scores:
-- Exploitation Probability: {upstream_scores.get('exploitation_probability', 'N/A')}
-- Model Confidence: {upstream_scores.get('confidence', 'N/A')}
+# Validate once at import time
+_validate_api_keys()
 
-Perform the following analysis:
 
-Step A — Primary Exploitability Assessment:
-Based on the CVE description, CVSS score, threat intelligence feeds (CISA KEV status 
-is implicitly reflected in the upstream scores), and the asset context, assess whether 
-this vulnerability presents a credible, exploitable threat to this specific asset.
+# ---------------------------------------------------------------------------
+# Prompt Construction
+# ---------------------------------------------------------------------------
 
-Step B — Counter-Argument:
-Identify any negative constraints in the vulnerability advisory or asset configuration 
-that could nullify or reduce the exploitability. Consider: non-default settings required, 
-mitigation already in place, attack surface not reachable, user interaction requirements, 
-privilege prerequisites.
-
-Step C — Final Determination:
-Weigh the primary assessment against the counter-argument. Determine whether a text 
-conflict exists (where the exploitability signal and the mitigating constraint are in 
-tension and cannot be definitively resolved without human investigation).
-
-Return your analysis as a JSON object with exactly these fields:
-{{
+_SCHEMA_DESCRIPTION = """{
   "text_conflict": true or false,
-  "conflict_note": "Plain-English explanation of the conflict, if any. Max 300 characters.",
-  "rag_result": "UNCERTAIN if documentation is ambiguous, CONFIRMED if configuration is verified, NOT_NEEDED if no conflict exists.",
-  "resolution": "Plain-English resolution recommendation. Max 500 characters.",
-  "confidence": float between 0.0 and 1.0 indicating your certainty in this resolution,
-  "score_adjustment": integer between -70 and +10 representing how many points to add or subtract from the current priority score
-}}
-
-Reply with ONLY the JSON object. No preamble, no explanation, no markdown fences."""
+  "conflict_note": "Plain-English explanation of the conflict (max 300 chars).",
+  "rag_result": "UNCERTAIN if ambiguous, CONFIRMED if verified, NOT_NEEDED if no conflict.",
+  "resolution": "Resolution recommendation (max 500 chars).",
+  "confidence": float 0.0-1.0,
+  "score_adjustment": integer -70 to +10
+}"""
 
 
-async def call_openai(prompt: str) -> dict:
-    """Call OpenAI chat completions API."""
-    async with httpx.AsyncClient(timeout=LLM_TIMEOUT) as client:
-        response = await client.post(
-            "https://api.openai.com/v1/chat/completions",
-            headers={
-                "Authorization": f"Bearer {LLM_API_KEY}",
-                "Content-Type": "application/json"
-            },
-            json={
-                "model": LLM_MODEL,
-                "messages": [{"role": "user", "content": prompt}],
-                "temperature": 0.1,
-                "max_tokens": 500,
-                "response_format": {"type": "json_object"}
-            }
-        )
-        response.raise_for_status()
-        data = response.json()
-        return json.loads(data["choices"][0]["message"]["content"])
+def build_prompt(
+    cve_id: str,
+    cvss_score: float,
+    description: str,
+    rag_context: str,
+    cisa_kev: bool,
+    epss_score: float,
+    cvss_vector: str,
+    upstream_scores: dict,
+    mission_tags: dict,
+    cwe_result: dict | None = None,
+) -> tuple[str, str]:
+    """Build the force-reflection prompt for the cloud LLM.
 
-
-async def call_anthropic(prompt: str) -> dict:
-    """Call Anthropic Messages API."""
-    async with httpx.AsyncClient(timeout=LLM_TIMEOUT) as client:
-        response = await client.post(
-            "https://api.anthropic.com/v1/messages",
-            headers={
-                "x-api-key": LLM_API_KEY,
-                "anthropic-version": "2023-06-01",
-                "Content-Type": "application/json"
-            },
-            json={
-                "model": LLM_MODEL,
-                "max_tokens": 500,
-                "temperature": 0.1,
-                "messages": [{"role": "user", "content": prompt}]
-            }
-        )
-        response.raise_for_status()
-        data = response.json()
-        text = data["content"][0]["text"]
-        if text.startswith("```"):
-            text = text.split("\n", 1)[1]
-            if text.endswith("```"):
-                text = text[:-3]
-        return json.loads(text)
-
-
-async def call_together(prompt: str) -> dict:
-    """Call Together AI API for open-weight models."""
-    async with httpx.AsyncClient(timeout=LLM_TIMEOUT) as client:
-        response = await client.post(
-            "https://api.together.xyz/v1/chat/completions",
-            headers={
-                "Authorization": f"Bearer {LLM_API_KEY}",
-                "Content-Type": "application/json"
-            },
-            json={
-                "model": LLM_MODEL,
-                "messages": [{"role": "user", "content": prompt}],
-                "temperature": 0.1,
-                "max_tokens": 500
-            }
-        )
-        response.raise_for_status()
-        data = response.json()
-        text = data["choices"][0]["message"]["content"]
-        if text.startswith("```"):
-            text = text.split("\n", 1)[1]
-            if text.endswith("```"):
-                text = text[:-3]
-        return json.loads(text)
-
-
-async def evaluate_tier_2(cve_id: str, cvss_score: float, description: str,
-                          config_context: dict, upstream_scores: dict,
-                          mission_tags: dict) -> dict:
-    """
-    Evaluate a vulnerability using a cloud-hosted language model.
-    Falls back to known conflict resolutions if the API is unavailable
-    or returns an unparseable response.
+    Returns (system_content, user_content) for use in message-based APIs.
+    System content is static (cacheable); user content is dynamic per request.
     """
 
-    prompt = build_prompt(cve_id, cvss_score, description, config_context,
-                          upstream_scores, mission_tags)
+    system_content = (
+        "You are a vulnerability prioritization analyst for the Western Australian "
+        "government. Analyze this vulnerability and determine whether a text conflict "
+        "exists between the exploitability signals and any mitigating constraints.\n\n"
+        "Perform the following analysis:\n\n"
+        "Step A — Primary Exploitability Assessment:\n"
+        "Based on the CVE description, CVSS score, threat intelligence feeds (CISA KEV status "
+        "is implicitly reflected in the upstream scores), and the asset context, assess whether "
+        "this vulnerability presents a credible, exploitable threat to this specific asset.\n\n"
+        "Step B — Counter-Argument:\n"
+        "Identify any negative constraints in the vulnerability advisory or asset configuration "
+        "that could nullify or reduce the exploitability. Consider: non-default settings required, "
+        "mitigation already in place, attack surface not reachable, user interaction requirements, "
+        "privilege prerequisites.\n\n"
+        "Step C — Final Determination:\n"
+        "Weigh the primary assessment against the counter-argument. Determine whether a text "
+        "conflict exists (where the exploitability signal and the mitigating constraint are in "
+        "tension and cannot be definitively resolved without human investigation).\n\n"
+        f"Return your analysis as a JSON object with exactly these fields:\n"
+        f"{_SCHEMA_DESCRIPTION}\n\n"
+        "Reply with ONLY the JSON object. No preamble, no explanation, no markdown fences."
+    )
 
-    try:
-        if LLM_PROVIDER == "openai":
-            result = await call_openai(prompt)
-        elif LLM_PROVIDER == "anthropic":
-            result = await call_anthropic(prompt)
-        elif LLM_PROVIDER == "together":
-            result = await call_together(prompt)
-        else:
-            raise ValueError(f"Unknown LLM provider: {LLM_PROVIDER}")
+    cwe_block = ""
+    if cwe_result:
+        cwe_block = (
+            f"- CWE Pillar: {cwe_result.get('cwe_pillar', 'Unknown')}\n"
+            f"- CWE Class: {cwe_result.get('cwe_class', 'Unknown')}\n"
+            f"- CWE Base: {cwe_result.get('cwe_base', 'Unknown')}\n"
+            f"- CWE Variant: {cwe_result.get('cwe_variant', 'Unknown')}\n"
+        )
 
-        required = ["text_conflict", "conflict_note", "rag_result",
-                    "resolution", "confidence", "score_adjustment"]
-        for field in required:
-            if field not in result:
-                raise ValueError(f"Missing field in LLM response: {field}")
+    user_content = (
+        f"CVE ID: {cve_id}\n"
+        f"CVSS Score: {cvss_score}\n"
+        f"CISA KEV: {cisa_kev}\n"
+        f"EPSS Score: {epss_score}\n"
+        f"CVSS Vector: {cvss_vector}\n"
+        f"Description: {description}\n\n"
+        f"Asset Context:\n"
+        f"- Mission Prevalence: {mission_tags.get('mission_prevalence', 'Unknown')}\n"
+        f"- Public Well-Being Impact: {mission_tags.get('public_wellbeing_impact', 'Unknown')}\n\n"
+        f"CWE Classification:\n{cwe_block}"
+        f"RAG Context:\n{rag_context}\n\n"
+        f"Upstream Tier 1 Scores:\n"
+        f"- Exploitation Probability: {upstream_scores.get('exploitation_probability', 'N/A')}\n"
+        f"- Model Confidence: {upstream_scores.get('confidence', 'N/A')}"
+    )
 
-        return result
+    return system_content, user_content
 
-    except Exception as e:
-        if cve_id in KNOWN_CONFLICTS:
-            result = dict(KNOWN_CONFLICTS[cve_id])
-            result["conflict_note"] += f" [Note: Cloud LLM unavailable ({str(e)[:100]}). Using cached resolution.]"
+
+# ---------------------------------------------------------------------------
+# OpenAI Provider
+# ---------------------------------------------------------------------------
+
+
+def _build_openai_schema() -> dict:
+    """Build the OpenAI json_schema response_format from TriageConflictResult."""
+    from models import TriageConflictResult
+
+    schema = TriageConflictResult.model_json_schema()
+    schema["additionalProperties"] = False
+    return {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "triage_conflict",
+            "strict": True,
+            "schema": schema,
+        },
+    }
+
+
+async def call_openai(
+    system_content: str, user_content: str, api_key: str, model: str
+) -> dict:
+    """Call OpenAI Chat Completions with json_schema response format.
+
+    Uses json_schema mode (not json_object) for schema-enforced output.
+    Handles refusals (content_filter finish_reason).
+    """
+    import httpx
+
+    timeout = httpx.Timeout(LLM_TIMEOUT, connect=10.0)
+    schema = _build_openai_schema()
+
+    for attempt in range(_MAX_RETRIES + 1):
+        try:
+            async with httpx.AsyncClient(timeout=timeout) as client:
+                response = await client.post(
+                    "https://api.openai.com/v1/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {api_key}",
+                        "Content-Type": "application/json",
+                    },
+                    json={
+                        "model": model,
+                        "messages": [
+                            {"role": "system", "content": system_content},
+                            {"role": "user", "content": user_content},
+                        ],
+                        "temperature": 0.1,
+                        "max_tokens": LLM_MAX_TOKENS,
+                        "response_format": schema,
+                    },
+                )
+                response.raise_for_status()
+                data = response.json()
+                choice = data["choices"][0]
+                message = choice["message"]
+
+                # Check for refusal
+                if choice.get("finish_reason") == "content_filter":
+                    refusal = message.get("refusal", "Content filter triggered")
+                    logger.warning(f"OpenAI refusal: {refusal}")
+                    raise ValueError(f"OpenAI content filter refusal: {refusal}")
+
+                content = message.get("content")
+                if not content:
+                    raise ValueError("OpenAI returned empty content")
+
+                result = json.loads(content)
+
+                # Log usage for cost tracking
+                usage = data.get("usage", {})
+                _record_api_call("openai", model, usage)
+
+                required = [
+                    "text_conflict",
+                    "conflict_note",
+                    "rag_result",
+                    "resolution",
+                    "confidence",
+                    "score_adjustment",
+                ]
+                for field in required:
+                    if field not in result:
+                        raise ValueError(f"Missing field in LLM response: {field}")
+
+                return result
+
+        except httpx.HTTPStatusError as e:
+            if e.response.status_code == 429:
+                retry_after = e.response.headers.get("Retry-After")
+                delay = (
+                    float(retry_after) if retry_after else _BASE_DELAY * (2**attempt)
+                )
+                await asyncio.sleep(delay)
+                continue
+            if e.response.status_code >= 500 and attempt < _MAX_RETRIES:
+                await asyncio.sleep(_BASE_DELAY * (2**attempt))
+                continue
+            raise
+        except (httpx.ConnectTimeout, httpx.ConnectError):
+            if attempt < _MAX_RETRIES:
+                await asyncio.sleep(_BASE_DELAY * (2**attempt))
+                continue
+            raise
+        except httpx.ReadTimeout:
+            raise
+
+    raise RuntimeError("OpenAI max retries exceeded")
+
+
+# ---------------------------------------------------------------------------
+# Anthropic Provider
+# ---------------------------------------------------------------------------
+
+
+def _build_anthropic_schema() -> dict:
+    """Build the Anthropic json_schema output_config format."""
+    from models import TriageConflictResult
+
+    schema = TriageConflictResult.model_json_schema()
+    schema["additionalProperties"] = False
+    return {
+        "format": {
+            "type": "json_schema",
+            "schema": schema,
+        }
+    }
+
+
+async def call_anthropic(
+    system_content: str, user_content: str, api_key: str, model: str
+) -> dict:
+    """Call Anthropic Messages API with structured output via SDK.
+
+    Uses client.messages.parse() with Pydantic-based output_config.
+    Handles refusals (stop_reason="refusal") and max_tokens truncation.
+    """
+    from anthropic import (
+        AsyncAnthropic,
+        APIConnectionError,
+        APITimeoutError,
+        RateLimitError,
+        APIStatusError,
+    )
+
+    client = AsyncAnthropic(api_key=api_key)
+    output_config = _build_anthropic_schema()
+    max_tokens = LLM_MAX_TOKENS
+
+    for attempt in range(_MAX_RETRIES + 1):
+        try:
+            response = await client.messages.parse(
+                model=model,
+                max_tokens=max_tokens,
+                system=[
+                    {
+                        "type": "text",
+                        "text": system_content,
+                        "cache_control": {"type": "ephemeral"},
+                    }
+                ],
+                messages=[{"role": "user", "content": user_content}],
+                output_config=output_config,
+            )
+
+            if response.parsed_output is None:
+                stop_reason = response.stop_reason
+                if stop_reason == "refusal":
+                    logger.warning("Anthropic refusal: model declined to answer")
+                    raise ValueError("Anthropic refusal: model declined to answer")
+                if stop_reason == "max_tokens" and attempt < _MAX_RETRIES:
+                    max_tokens = max_tokens * 2
+                    logger.info(
+                        f"Anthropic response truncated, retrying with max_tokens={max_tokens}"
+                    )
+                    await asyncio.sleep(1.0)
+                    continue
+                raise ValueError(
+                    f"Anthropic returned unparseable response (stop_reason={stop_reason})"
+                )
+
+            result = response.parsed_output.model_dump()
+
+            # Log usage — Anthropic returns usage in response.usage
+            if hasattr(response, "usage") and response.usage:
+                _record_api_call(
+                    "anthropic",
+                    model,
+                    {
+                        "prompt_tokens": response.usage.input_tokens,
+                        "completion_tokens": response.usage.output_tokens,
+                        "cached_tokens": getattr(
+                            response.usage, "cache_read_input_tokens", None
+                        )
+                        or 0,
+                    },
+                )
+            else:
+                _record_api_call("anthropic", model, {})
+
             return result
 
-        return {
-            "text_conflict": False,
-            "conflict_note": f"Cloud LLM unavailable ({str(e)[:100]}). No cached resolution available.",
-            "rag_result": "NOT_QUERIED",
-            "resolution": "Unable to perform semantic analysis. Deferring to Tier 1 score.",
-            "confidence": 0.30,
-            "score_adjustment": 0
-        }
+        except RateLimitError as e:
+            retry_after = float(
+                e.response.headers.get("retry-after", _BASE_DELAY * (2**attempt))
+            )
+            await asyncio.sleep(retry_after)
+            continue
+        except (APIConnectionError, APITimeoutError):
+            if attempt < _MAX_RETRIES:
+                await asyncio.sleep(_BASE_DELAY * (2**attempt))
+                continue
+            raise
+        except APIStatusError as e:
+            if e.status_code >= 500 and attempt < _MAX_RETRIES:
+                await asyncio.sleep(_BASE_DELAY * (2**attempt))
+                continue
+            raise
+
+    raise RuntimeError("Anthropic max retries exceeded")
+
+
+# ---------------------------------------------------------------------------
+# Together AI Provider
+# ---------------------------------------------------------------------------
+
+
+def _build_together_schema() -> dict:
+    """Build the Together AI json_schema response_format."""
+    from models import TriageConflictResult
+
+    schema = TriageConflictResult.model_json_schema()
+    return {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "triage_conflict",
+            "schema": schema,
+        },
+    }
+
+
+def _together_supports_json_schema(model: str) -> bool:
+    """Check if the model supports json_schema response_format."""
+    return model in TOGETHER_JSON_SCHEMA_MODELS
+
+
+async def call_together(
+    system_content: str, user_content: str, api_key: str, model: str
+) -> dict:
+    """Call Together AI API for open-weight models.
+
+    Uses json_schema response_format if supported by the model.
+    Always embeds the schema text in the system prompt for guidance
+    (Together AI's json_schema mode is best-effort, not constrained decoding).
+    """
+    import httpx
+
+    timeout = httpx.Timeout(LLM_TIMEOUT, connect=10.0)
+    supports_schema = _together_supports_json_schema(model)
+
+    request_body = {
+        "model": model,
+        "messages": [
+            {"role": "system", "content": system_content},
+            {"role": "user", "content": user_content},
+        ],
+        "temperature": 0.1,
+        "max_tokens": LLM_MAX_TOKENS,
+    }
+
+    if supports_schema:
+        request_body["response_format"] = _build_together_schema()
+
+    for attempt in range(_MAX_RETRIES + 1):
+        try:
+            async with httpx.AsyncClient(timeout=timeout) as client:
+                response = await client.post(
+                    "https://api.together.xyz/v1/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {api_key}",
+                        "Content-Type": "application/json",
+                    },
+                    json=request_body,
+                )
+                response.raise_for_status()
+                data = response.json()
+                text = data["choices"][0]["message"]["content"]
+                if not text:
+                    raise ValueError("Together AI returned empty content")
+
+                if text.startswith("```"):
+                    text = text.split("\n", 1)[1]
+                    if text.endswith("```"):
+                        text = text[:-3]
+
+                result = json.loads(text)
+
+                # Log usage
+                usage = data.get("usage", {})
+                _record_api_call("together", model, usage)
+
+                required = [
+                    "text_conflict",
+                    "conflict_note",
+                    "rag_result",
+                    "resolution",
+                    "confidence",
+                    "score_adjustment",
+                ]
+                for field in required:
+                    if field not in result:
+                        raise ValueError(f"Missing field in LLM response: {field}")
+
+                return result
+
+        except httpx.HTTPStatusError as e:
+            if e.response.status_code == 429:
+                retry_after = e.response.headers.get("Retry-After")
+                delay = (
+                    float(retry_after) if retry_after else _BASE_DELAY * (2**attempt)
+                )
+                await asyncio.sleep(delay)
+                continue
+            if e.response.status_code >= 500 and attempt < _MAX_RETRIES:
+                await asyncio.sleep(_BASE_DELAY * (2**attempt))
+                continue
+            raise
+        except (httpx.ConnectTimeout, httpx.ConnectError):
+            if attempt < _MAX_RETRIES:
+                await asyncio.sleep(_BASE_DELAY * (2**attempt))
+                continue
+            raise
+        except httpx.ReadTimeout:
+            raise
+
+    raise RuntimeError("Together AI max retries exceeded")
+
+
+# ---------------------------------------------------------------------------
+# Cost Tracking
+# ---------------------------------------------------------------------------
+
+
+def _record_api_call(provider: str, model: str, usage: dict):
+    """Record API call metrics for cost tracking."""
+    prompt_tokens = usage.get("prompt_tokens", 0) or usage.get("input_tokens", 0) or 0
+    completion_tokens = (
+        usage.get("completion_tokens", 0) or usage.get("output_tokens", 0) or 0
+    )
+    cached_tokens = usage.get("cached_tokens", 0) or 0
+
+    rates = _COST_RATES.get(provider, {"input": 0.0, "output": 0.0})
+    cost = (prompt_tokens / 1_000_000) * rates["input"] + (
+        completion_tokens / 1_000_000
+    ) * rates["output"]
+
+    _cost_tracking["total_calls"] += 1
+    _cost_tracking["total_input_tokens"] += prompt_tokens
+    _cost_tracking["total_output_tokens"] += completion_tokens
+    _cost_tracking["total_cached_tokens"] += cached_tokens
+    _cost_tracking["estimated_cost_usd"] += cost
+
+    logger.info(
+        json.dumps(
+            {
+                "event": "llm_call",
+                "provider": provider,
+                "model": model,
+                "input_tokens": prompt_tokens,
+                "output_tokens": completion_tokens,
+                "cached_tokens": cached_tokens,
+                "estimated_cost_usd": round(cost, 6),
+                "total_cost_usd": round(_cost_tracking["estimated_cost_usd"], 4),
+            }
+        )
+    )
+
+
+# ---------------------------------------------------------------------------
+# Main Entry Point
+# ---------------------------------------------------------------------------
+
+
+def _neutral_default(cve_id: str, error_msg: str) -> dict:
+    """Return a neutral assessment when no provider or cache is available."""
+    return {
+        "text_conflict": False,
+        "conflict_note": f"Cloud LLM unavailable ({error_msg[:200]}). No cached resolution available.",
+        "rag_result": "NOT_QUERIED",
+        "resolution": "Unable to perform semantic analysis. Deferring to Tier 1 score.",
+        "confidence": 0.30,
+        "score_adjustment": 0,
+    }
+
+
+async def evaluate_tier_2(
+    cve_id: str,
+    cvss_score: float,
+    description: str,
+    rag_context: str,
+    cisa_kev: bool,
+    epss_score: float,
+    cvss_vector: str,
+    upstream_scores: dict,
+    mission_tags: dict,
+    cwe_result: dict | None = None,
+) -> dict:
+    """
+    Evaluate a vulnerability using a cloud-hosted language model.
+
+    Falls back through: primary provider → backup provider → KNOWN_CONFLICTS → neutral default.
+    Each provider uses its own retry-with-backoff logic internally.
+    """
+
+    system_content, user_content = build_prompt(
+        cve_id,
+        cvss_score,
+        description,
+        rag_context,
+        cisa_kev,
+        epss_score,
+        cvss_vector,
+        upstream_scores,
+        mission_tags,
+        cwe_result=cwe_result,
+    )
+
+    # Build provider order
+    providers = [(LLM_PROVIDER, LLM_API_KEY, LLM_MODEL)]
+    if BACKUP_PROVIDER and BACKUP_API_KEY:
+        providers.append((BACKUP_PROVIDER, BACKUP_API_KEY, BACKUP_MODEL or LLM_MODEL))
+
+    last_error = None
+    for provider, api_key, model in providers:
+        try:
+            if provider == "openai":
+                result = await call_openai(system_content, user_content, api_key, model)
+            elif provider == "anthropic":
+                result = await call_anthropic(
+                    system_content, user_content, api_key, model
+                )
+            elif provider == "together":
+                result = await call_together(
+                    system_content, user_content, api_key, model
+                )
+            else:
+                raise ValueError(f"Unknown LLM provider: {provider}")
+
+            logger.info(f"Tier 2 resolved by {provider} ({model}) for {cve_id}")
+            return result
+
+        except Exception as e:
+            last_error = e
+            logger.warning(
+                f"Tier 2 provider {provider} ({model}) failed for {cve_id}: {str(e)[:200]}"
+            )
+            continue
+
+    # Fallback: use known conflict resolutions
+    if cve_id in KNOWN_CONFLICTS:
+        result = dict(KNOWN_CONFLICTS[cve_id])
+        result["conflict_note"] += (
+            f" [Note: Cloud LLM unavailable"
+            f" ({str(last_error)[:100] if last_error else 'all providers failed'})."
+            f" Using cached resolution.]"
+        )
+        logger.warning(f"Tier 2 using KNOWN_CONFLICTS fallback for {cve_id}")
+        return result
+
+    # Neutral default for unknown CVEs
+    error_msg = str(last_error)[:200] if last_error else "All providers unavailable"
+    logger.error(f"Tier 2 no resolution available for {cve_id}: {error_msg}")
+    return _neutral_default(cve_id, error_msg)

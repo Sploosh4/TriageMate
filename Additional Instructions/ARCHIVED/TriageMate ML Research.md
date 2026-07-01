@@ -1,8 +1,16 @@
-# **Machine Learning Architecture and Implementation Roadmap for the TriageMate Vulnerability Prioritization Platform**
+# ARCHIVED — Machine Learning Architecture and Implementation Roadmap
 
-## **Component 1 — XGBoost Exploitation Probability Model**
+> **Status:** ARCHIVED — this document is the raw research output with references to a local 7B-8B decoder approach that was later rejected in favor of cloud LLM.  
+> **Superseded by:** `TriageMate ML Implementation Plan — Final.md` (which corrects errors from this source, e.g., RRF ensemble → Standard XGBoost, local decoder → cloud LLM).  
+> **Date archived:** 30 June 2026
 
-### **Feature Engineering and Temporal Safety Analysis**
+---
+
+# Machine Learning Architecture and Implementation Roadmap for the TriageMate Vulnerability Prioritization Platform
+
+## Component 1 — XGBoost Exploitation Probability Model
+
+### Feature Engineering and Temporal Safety Analysis
 
 To implement the Tier 1 predictive layer, the TriageMate platform constructs a hybrid feature matrix consisting of exactly 37 tabular features concatenated with a compressed representation of security text embeddings. These features capture the dimensional relationships between vulnerability severity, global threat posture, and local network topologies.  
 To prevent model degradation and look-ahead bias, every metric must be strictly "temporally safe" at the moment of evaluation. Temporal safety dictates that no information regarding post-evaluation events (such as subsequent exploitation or delayed patch details) is leaked into the training set.  
@@ -50,14 +58,14 @@ The tabular component of the hybrid matrix contains the 37 features defined in t
 
 Each category of tabular metrics is designed to prevent "look-ahead bias" during training. Features related to vulnerability metadata are static values assigned at disclosure, while environmental parameters represent the configuration state of the asset at the exact millisecond of evaluation. This ensures that the model relies exclusively on historical and contemporary indicators, rather than future outcomes.
 
-### **Text Embedding Integration and Dimensionality Reduction**
+### Text Embedding Integration and Dimensionality Reduction
 
 Integrating raw high-dimensional text embeddings directly into gradient boosted trees causes significant coordinate-wise tree partitioning failures15. Because tree-based split selection evaluates orthogonal boundaries along single dimensions, a 384- or 768-dimensional space is highly sparse, leading to computational inefficiency, a high risk of overfitting, and split-evaluation failures on limited datasets15.  
 For the text embedding component, the all-MiniLM-L6-v2 SBERT model (384 dimensions) is recommended16. In resource-constrained developer environments running strictly on CPU, this model executes approximately 1.66x faster than larger options such as all-mpnet-base-v2 (768 dimensions), while retaining nearly equivalent downstream semantic capture17.  
 To compress the SBERT embeddings before concatenating them with the 37 tabular features, Principal Component Analysis (PCA) is preferred over Uniform Manifold Approximation and Projection (UMAP)18. Although UMAP preserves local topological structures14, its out-of-sample projection is computationally intensive, non-linear, and mathematically unstable during real-time inference on a CPU18. In contrast, PCA is a deterministic, linear projection18. Benchmarks show that PCA achieves comparable downstream classification accuracy to UMAP while running up to 54x faster18.  
-Projecting the 384-dimensional SBERT vectors down to 32 dimensions preserves more than 85% of the textual variance18. This reduction maintains a compact feature space, allowing the combined feature matrix (37 tabular features \+ 32 PCA text dimensions \= 69 features) to be processed efficiently by a gradient boosting engine15.
+Projecting the 384-dimensional SBERT vectors down to 32 dimensions preserves more than 85% of the textual variance18. This reduction maintains a compact feature space, allowing the combined feature matrix (37 tabular features + 32 PCA text dimensions = 69 features) to be processed efficiently by a gradient boosting engine15.
 
-### **Training Data Construction and Class Alignment**
+### Training Data Construction and Class Alignment
 
 The primary challenge in building an exploitation probability model is aligning public threat feeds with asset-specific states. A robust, open-source dataset can be constructed through structured data ingestion:
 
@@ -65,7 +73,7 @@ The primary challenge in building an exploitation probability model is aligning 
 * **Handling Class Imbalance**: With only approximately 1,200 entries in the CISA KEV catalog compared to over 200,000 total CVEs21, the dataset exhibits an extreme class imbalance (![][image8]). Resampling techniques like SMOTE can distort high-dimensional text structures if applied prior to dimensionality reduction19. The recommended path is cost-sensitive learning implemented directly within the XGBoost loss function using the scale\_pos\_weight parameter21. This parameter is set to the ratio of negative to positive samples, penalizing false negatives on the minority class without introducing synthetic data distortion21.  
 * **Asset-Level Probability Adjustment**: No public dataset contains specific enterprise internal asset exploitation records4. Therefore, the core model must be trained on global exploitation outcomes utilizing NVD, EPSS, and threat indicators27. Asset customization is achieved at runtime by including the 11 asset-specific environmental features (Features 11–21 in the feature table) within the feature matrix. At inference time, the tree splits naturally adjust the global exploitation probability based on asset parameters, such as whether the system is internet-facing or missing a critical patch5.
 
-### **Model Training, Calibration, and Entropy-Based Escalation**
+### Model Training, Calibration, and Entropy-Based Escalation
 
 For a dataset containing 5,000 to 20,000 records, the baseline hyperparameters for the XGBoost binary classifier are configured to prevent overfitting on the PCA-projected text dimensions:
 
@@ -94,9 +102,9 @@ Thus, the escalation rule is defined as:
 ![][image13]  
 This means that if the calibrated probability of exploitation within 30 days is between ![][image14] and ![][image15], the prediction entropy exceeds ![][image16]28, and the vulnerability must be escalated to the Tier 2 Small Language Model for structural conflict resolution.
 
-## **Component 2 — Small Language Model for Text Conflict Resolution**
+## Component 2 — Small Language Model for Text Conflict Resolution
 
-### **Local Encoder Selection for CWE Classification**
+### Local Encoder Selection for CWE Classification
 
 For mapping unstructured CVE descriptions to the MITRE Common Weakness Enumeration (CWE) hierarchy, the local encoder model should be selected based on computational efficiency and task specialization23.  
 Between ModernBERT and RoBERTa-base, ModernBERT-base is selected17. Incorporating architectural improvements such as FlashAttention, rotary positional embeddings, GeGLU activations, and the removal of bias terms, ModernBERT achieves a 1.66x increase in CPU inference throughput and a 39% reduction in training sequence encoding time compared to standard RoBERTa17. Additionally, ModernBERT natively supports an 8192-token context window, eliminating sequence truncation issues during the ingestion of dense technical advisories17.  
@@ -107,7 +115,7 @@ The optimal off-the-shelf classifier for this task is bziemba/SecureBERT2.0-fina
 
 If custom fine-tuning is required, the National Vulnerability Database (NVD) contains over 200,000 labeled CVE-to-CWE mappings, which provides a highly sufficient training set21. The dataset should be partitioned using an 80/10/10 train/validation/test split stratified across the top 50 CWE parent categories to ensure robust representation of rare vulnerability classes23.
 
-### **Cloud LLM Provider and Structured Output Selection**
+### Cloud LLM Provider and Structured Output Selection
 
 For the reasoning and text-conflict resolution phase, hosting a local 7B or 8B parameter model on a developer machine can introduce significant CPU and memory bottleneck issues31. To optimize performance, the MVP utilizes a cloud-based LLM API. The table below details the performance, compliance, and cost characteristics of key cloud providers:
 
@@ -117,7 +125,7 @@ For the reasoning and text-conflict resolution phase, hosting a local 7B or 8B p
 | **Anthropic** | claude-3-5-sonnet | Tool Use forcing response schema35 | Exceptional | ![][image17] | $3.0037 | $15.0037 |
 | **Together AI** | meta-llama/Llama-3-8b | JSON Mode (syntax-only validation)32 | Moderate | ![][image17] | $0.20 | $0.20 |
 
-OpenAI’s gpt-4o-mini is recommended as the primary model for the MVP, with Anthropic’s claude-3-5-sonnet configured as a secondary high-accuracy fallback34. OpenAI's "Structured Outputs" engine provides a distinct technical advantage for security parsing: when strict: true is enabled, the API compiles the target JSON schema into a Context-Free Grammar or Finite State Machine (FSM) at the decoding layer32. This limits token selection to schema-valid transitions, guaranteeing 100% adherence to the requested data model32. This avoids the validation failures common to standard regex parsing or syntax-only JSON modes32.  
+OpenAI's gpt-4o-mini is recommended as the primary model for the MVP, with Anthropic's claude-3-5-sonnet configured as a secondary high-accuracy fallback34. OpenAI's "Structured Outputs" engine provides a distinct technical advantage for security parsing: when strict: true is enabled, the API compiles the target JSON schema into a Context-Free Grammar or Finite State Machine (FSM) at the decoding layer32. This limits token selection to schema-valid transitions, guaranteeing 100% adherence to the requested data model32. This avoids the validation failures common to standard regex parsing or syntax-only JSON modes32.  
 The KNOWN\_CONFLICTS fallback dictionary is initialized with verified historical CVE mappings to handle known edge cases deterministically. The adversarial prompt is structured to guide the model through a logical "force-reflection" sequence:
 
 Python  
@@ -145,7 +153,7 @@ def resolve\_vulnerability\_conflict(cve\_desc: str, cwe\_class: str, epss: floa
         "3. Incorporate the provided RAG context to verify whether the asset is configured with these mitigations.\\n"  
         "4. Determine the final risk adjustment and output the result in the required JSON schema."  
     )  
-      
+       
     user\_content \= (  
         f"CVE Description: {cve\_desc}\\n"  
         f"Predicted CWE Class: {cwe\_class}\\n"  
@@ -163,10 +171,10 @@ def resolve\_vulnerability\_conflict(cve\_desc: str, cwe\_class: str, epss: floa
         response\_format=ConflictResolution, \# Guarantees 100% schema compliance via FSM constraint  
         temperature=0.0                    \# Set to zero to minimize hallucination and ensure output consistency  
     )  
-      
+       
     return completion.choices\[0\].message.parsed
 
-### **Retrieval-Augmented Generation (RAG) Architecture**
+### Retrieval-Augmented Generation (RAG) Architecture
 
 To verify asset configurations against vendor-defined mitigations, a local-first RAG pipeline is implemented31.  
 The embedding model and vector database selection are optimized for CPU environments using local resources31:
@@ -186,16 +194,16 @@ Python
 def retrieve\_asset\_context(hostname: str, predicted\_cwe: str) \-\> str:  
     \# Build a targeted hybrid query combining local hostname and mapped CWE class  
     query\_text \= f"Security configurations, mitigations, default settings, and active hardening parameters for {hostname} to resolve {predicted\_cwe}"  
-      
+       
     \# Query LanceDB table using hybrid semantic search  
     table \= db.open\_table("asset\_documentation")  
     results \= table.search(query\_text).limit(3).to\_list()  
-      
+       
     return "\\n\\n".join(\[r\["text"\] for r in results\])
 
 Retrieved RAG documents are injected directly into the user prompt as structured context44. To balance inference costs with retrieval quality, context injection is restricted to a maximum window of 2,000 tokens (approximately 4 high-relevance chunks)46. This minimizes API input costs and prevents model attention degradation ("lost in the middle" effects) during processing46.
 
-### **Graceful Degradation and API Resilience**
+### Graceful Degradation and API Resilience
 
 To ensure the automated triage pipeline remains resilient during cloud API outages, the platform implements a structured fallback sequence:
 
@@ -205,19 +213,19 @@ To ensure the automated triage pipeline remains resilient during cloud API outag
 
 This fail-secure strategy ensures that critical vulnerabilities are never missed due to temporary API failures3.
 
-### **Prompt Caching and Token Cost Optimization**
+### Prompt Caching and Token Cost Optimization
 
-To minimize operational costs, the prompt structure is optimized for provider-side caching engines, such as Anthropic’s prompt caching and OpenAI’s automated cache lookups46.  
+To minimize operational costs, the prompt structure is optimized for provider-side caching engines, such as Anthropic's prompt caching and OpenAI's automated cache lookups46.  
 Because both providers perform cache lookups from the beginning of the prompt sequence46, the prompt is structured hierarchically. The static, high-token instructions (such as the system prompt, output JSON schemas, and structural reasoning guidelines) are placed first to maximize prefix matches across repeated executions46:
 
 1. **Static Segment (Cache Key Prefix)**: Contains the system instructions, operational constraints, and target JSON schema (approx. 1,250 tokens)46. This remains identical across all API calls46.  
 2. **Dynamic Segment (Cache Uncached Suffix)**: Contains the retrieved RAG document chunks, target CVE metrics, and specific asset attributes (approx. 1,500 tokens). This changes with each unique vulnerability assessment.
 
-Under this layout, the static segment remains cached in memory46. On OpenAI, cache hits receive a 50% discount46, while Anthropic’s explicit cache reads are discounted by up to 90%, significantly reducing the operational cost of the RAG pipeline46.
+Under this layout, the static segment remains cached in memory46. On OpenAI, cache hits receive a 50% discount46, while Anthropic's explicit cache reads are discounted by up to 90%, significantly reducing the operational cost of the RAG pipeline46.
 
-## **Component 3 — Pre-Tier — Mission Prevalence and Public Well-Being Multi-Label Classifier**
+## Component 3 — Pre-Tier — Mission Prevalence and Public Well-Being Multi-Label Classifier
 
-### **Feature Engineering for Asset Classification**
+### Feature Engineering for Asset Classification
 
 To determine an asset's organizational criticality and impact prior to vulnerability triage, the model relies on typical Active Directory (AD) configurations, network scans, and system architecture features50. The table below outlines the extraction and encoding strategies for these high-cardinality and categorical attributes:
 
@@ -230,7 +238,7 @@ To determine an asset's organizational criticality and impact prior to vulnerabi
 | **Hostname Nomenclature** | Extracts subdomains from host strings (e.g., .health.wa.gov.au ![][image22] health) | **Binary Indicators** per designated public sector category | Maps hostnames directly to functional domains like emergency services, finance, or law enforcement. |
 | **Connection Counts** | Integrates inbound/outbound edge volumes from network flow logs | **Logarithmic Scaling**: ![][image23] | Compresses heavily skewed network flow metrics to stabilize model training. |
 
-### **Model Architecture for Multi-Label Asset Criticality**
+### Model Architecture for Multi-Label Asset Criticality
 
 The classification task requires predicting two distinct multi-class target labels for each asset:
 
@@ -241,7 +249,7 @@ Because neural networks tend to overfit on small asset datasets (typically 200�
 The ensemble configures 150 decision trees with max\_depth=6 to restrict model capacity and prevent the memorization of high-cardinality noise52.  
 To handle class imbalance—such as the relative scarcity of Core/Severe assets compared to Support/Minimal systems—the classifier uses the balanced\_subsample weighting scheme. This dynamically adjusts the class weights per tree based on the bootstrap distribution, correcting for class imbalance without the computational overhead of synthetic sampling algorithms like SMOTE-NC on mixed data types19.
 
-### **Training Data Construction and Active Learning**
+### Training Data Construction and Active Learning
 
 To bootstrap the training process without an existing labeled corpus, security analysts can define initial rules-based mappings by leveraging public sector cybersecurity standards:
 
@@ -251,9 +259,9 @@ To bootstrap the training process without an existing labeled corpus, security a
 These standards are used to write a deterministic heuristics parser that automatically labels an initial set of 200 assets based on active directory path keywords and hostname subdomains50.  
 To optimize manual labeling efforts, the platform implements an uncertainty active learning loop44. The active learning engine runs model inference across the unlabeled asset inventory and selects the top 20 assets where prediction entropy is highest (representing maximum classification uncertainty)44. These high-value samples are sent to security analysts for validation44. This loop reduces the total labeling requirement by up to 60% compared to random sampling, establishing a high-accuracy baseline with minimal manual input44.
 
-## **Component 4 — EPSS Substitution Model**
+## Component 4 — EPSS Substitution Model
 
-### **Model Design: Sector-Adjusted Meta-Scorer**
+### Model Design: Sector-Adjusted Meta-Scorer
 
 The standard Exploit Prediction Scoring System (EPSS) calculates global exploitation probabilities, which can fail to reflect risk when vulnerabilities are weaponized against specific industry sectors3. For example, a CVE targeting public administration or social services infrastructure might maintain a low global EPSS score of 0.065, while actively posing a critical threat to specialized public sector systems3.  
 To resolve this limitation, the platform implements a meta-scorer that dynamically adjusts the base EPSS score using industry-specific threat signals:
@@ -264,7 +272,7 @@ To resolve this limitation, the platform implements a meta-scorer that dynamical
                                    \[Sector Threat Multiplier (S\_m)\]  
                                                  |  
                                                  v  
-                                \[Adjusted EPSS \= Raw EPSS \* S\_m\]
+                                \[Adjusted EPSS = Raw EPSS \* S\_m\]
 
 The Sector Threat Multiplier (![][image24]) is calculated dynamically using real-time threat data:  
 ![][image25]  
@@ -281,15 +289,15 @@ These threat signals can be constructed from public sources:
 
 This meta-model architecture provides a highly targeted, sector-specific exploitation probability estimate.
 
-### **Pipeline Integration and Visualization**
+### Pipeline Integration and Visualization
 
 The substitution model is integrated directly within the feature pre-processing pipeline. It runs selectively based on a threshold-based activation rule. It is triggered only when:  
 ![][image32]  
 This ensures that the model only alters global values when there is a significant, sector-specific threat3.  
 To maintain transparency, the original EPSS score remains visible within the user interface3. The modified score is presented alongside it, clearly labeled as a "TriageMate Internal Alternate Metric Substituted"3, and includes a structural explanation detailing the sector-based justification:
 
-\+-------------------------------------------------------------------------------+  
-| \[\!\] TRIAGEMATE RISK EXCEPTION: METRIC SUBSTITUTION DETECTED                   |  
++-------------------------------------------------------------------------------+  
+| \[!\] TRIAGEMATE RISK EXCEPTION: METRIC SUBSTITUTION DETECTED                   |  
 |-------------------------------------------------------------------------------|  
 | Global EPSS Score (Raw):    0.065  (Low predicted probability)                |  
 | Substituted Local Metric:   0.720  (High local sector risk)                   |  
@@ -299,13 +307,13 @@ To maintain transparency, the original EPSS score remains visible within the use
 | Active target campaigns detected targeting the government social services    |  
 | sector (Sector Threat Multiplier: 11.08x). CVE-2023-36884 is weaponized       |  
 | against regional public sector assets.                                        |  
-\+-------------------------------------------------------------------------------+
++-------------------------------------------------------------------------------+
 
-## **Consolidated Implementation Priority and Technical Specification**
+## Consolidated Implementation Priority and Technical Specification
 
 The structured implementation roadmap below outlines the deployment priority for each component, organized from immediate, data-independent tasks to long-term data collection efforts.
 
-### **1\. Tier 2 Cloud LLM Triage Interface**
+### 1. Tier 2 Cloud LLM Triage Interface
 
 * **Priority**: High (Can implement today with zero external data).  
 * **Technical Objective**: Implement the core fastapi routing structure, connect to OpenAI's structured completions API, and wire up the fallback dictionary for known edge cases33.  
@@ -330,7 +338,7 @@ The structured implementation roadmap below outlines the deployment priority for
       }  
   }
 
-### **2\. Embedded Document Store and RAG Core**
+### 2. Embedded Document Store and RAG Core
 
 * **Priority**: High (Can implement today with zero external data).  
 * **Technical Objective**: Deploy an embedded, local vector database inside the application process to handle query vector operations and chunk management38.  
@@ -350,7 +358,7 @@ The structured implementation roadmap below outlines the deployment priority for
   \])  
   tbl \= db.create\_table("asset\_documentation", schema=schema, exist\_ok=True)
 
-### **3\. Tier 1 SBERT Encoder and Dimensionality Reduction**
+### 3. Tier 1 SBERT Encoder and Dimensionality Reduction
 
 * **Priority**: Medium (Can implement this week using public data only).  
 * **Technical Objective**: Deploy the local text classification engine, configure SBERT encoding, and implement the PCA dimensionality reduction step18.  
@@ -366,7 +374,7 @@ The structured implementation roadmap below outlines the deployment priority for
   embedder \= SentenceTransformer('all-MiniLM-L6-v2', device='cpu')  
   pca\_reducer \= PCA(n\_components=32, random\_state=42)
 
-### **4\. CWE Multi-Head Encoder Classifier**
+### 4. CWE Multi-Head Encoder Classifier
 
 * **Priority**: Medium (Can implement this week using public data only).  
 * **Technical Objective**: Configure the local multi-head classifier to resolve CVE descriptions to the CWE taxonomy1.  
@@ -381,7 +389,7 @@ The structured implementation roadmap below outlines the deployment priority for
   tokenizer \= AutoTokenizer.from\_pretrained("bziemba/SecureBERT2.0-final")  
   config \= AutoConfig.from\_pretrained("bziemba/SecureBERT2.0-final")
 
-### **5\. Tier 1 XGBoost Exploitation Predictor**
+### 5. Tier 1 XGBoost Exploitation Predictor
 
 * **Priority**: Medium (Can implement this week using public data only).  
 * **Technical Objective**: Train and export the gradient boosting classifier, utilizing cost-sensitive learning to balance classes21.  
@@ -399,7 +407,7 @@ The structured implementation roadmap below outlines the deployment priority for
       tree\_method="hist"  
   )
 
-### **6\. Pre-Tier Asset Criticality Model**
+### 6. Pre-Tier Asset Criticality Model
 
 * **Priority**: Low (Requires 1–4 weeks of internal asset data collection).  
 * **Technical Objective**: Train a multi-label classification model on analyst-labeled assets, using AD and network configuration features50.  
@@ -418,7 +426,7 @@ The structured implementation roadmap below outlines the deployment priority for
       )  
   )
 
-### **7\. EPSS Dynamic Substitution Engine**
+### 7. EPSS Dynamic Substitution Engine
 
 * **Priority**: Low (Requires 1–4 weeks of threat intelligence feed integration).  
 * **Technical Objective**: Implement the dynamic adjustment module to modify global EPSS scores based on sector-specific threat activity3.  
@@ -433,7 +441,7 @@ The structured implementation roadmap below outlines the deployment priority for
       adjusted\_epss \= raw\_epss \* sector\_multiplier  
       return float(np.clip(adjusted\_epss, 0.0, 1.0))
 
-#### **Works cited**
+#### Works cited
 
 1. bziemba/SecureBERT2.0-final \- Hugging Face, [https://huggingface.co/bziemba/SecureBERT2.0-final](https://huggingface.co/bziemba/SecureBERT2.0-final)  
 2. Severity prediction of software vulnerabilities using convolutional neural networks | Information and Computer Security \- Emerald Insight, [https://www.emerald.com/ics/article/33/4/613/1249850/Severity-prediction-of-software-vulnerabilities](https://www.emerald.com/ics/article/33/4/613/1249850/Severity-prediction-of-software-vulnerabilities)  
@@ -489,5 +497,3 @@ The structured implementation roadmap below outlines the deployment priority for
 52. Artificial Intelligence-Driven Supervised Classification Algorithm for Website Vulnerability Detection Using MITRE NVD CVE Scores \- Preprints.org, [https://www.preprints.org/manuscript/202602.0475](https://www.preprints.org/manuscript/202602.0475)  
 53. BD Pro, [http://www.bdpro.ca/wp-content/uploads/2016/02/NIST800-53r4\_CSE-ITSG33\_mapping-20Feb16p.pdf](http://www.bdpro.ca/wp-content/uploads/2016/02/NIST800-53r4_CSE-ITSG33_mapping-20Feb16p.pdf)  
 54. The "4W+1H" of Software Supply Chain Security Checklist for Critical Infrastructure \- arXiv, [https://arxiv.org/html/2510.26174v1](https://arxiv.org/html/2510.26174v1)  
-55. 1\. About information security, [https://nzism.gcsb.govt.nz/assets/NZISM/ISM-Document-V.-3.8-September-2024-12.pdf](https://nzism.gcsb.govt.nz/assets/NZISM/ISM-Document-V.-3.8-September-2024-12.pdf)  
-56. Government | Deepinfo for National, Ministry, and Municipal Agencies, [https://www.deepinfo.com/solutions/industries/government/](https://www.deepinfo.com/solutions/industries/government/)

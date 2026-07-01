@@ -1,10 +1,21 @@
 import json
+from pydantic import BaseModel
 from fastapi import APIRouter, HTTPException
 from database import get_db
 from models import (
-    QueueRow, CaseResponse, CaseViewData,
-    MitreTechnique, ScoringWeight, AssetRegistryEntry, SubstitutionBlock,
+    QueueRow,
+    CaseResponse,
+    CaseViewData,
+    MitreTechnique,
+    ScoringWeight,
+    AssetRegistryEntry,
+    SubstitutionBlock,
 )
+
+
+class NotesUpdate(BaseModel):
+    notes: str
+
 
 router = APIRouter(tags=["Cases"])
 
@@ -40,8 +51,12 @@ def _row_to_case_view(r) -> CaseViewData:
     if r["epss_substituted"]:
         substitution_block = SubstitutionBlock(
             original_epss=str(r["epss_score"]) if r["epss_score"] is not None else "0",
-            substituted_epss=str(r["epss_substituted_value"]) if r["epss_substituted_value"] is not None else "0",
-            model_confidence=str(r["epss_substitution_confidence"]) if r["epss_substitution_confidence"] is not None else "0",
+            substituted_epss=str(r["epss_substituted_value"])
+            if r["epss_substituted_value"] is not None
+            else "0",
+            model_confidence=str(r["epss_substitution_confidence"])
+            if r["epss_substitution_confidence"] is not None
+            else "0",
             reason=r["epss_substitution_reason"] or "",
         )
 
@@ -52,7 +67,9 @@ def _row_to_case_view(r) -> CaseViewData:
 
     mitre_techniques = [MitreTechnique(**m) for m in mitre_data if isinstance(m, dict)]
     scoring_weights = [ScoringWeight(**s) for s in scoring_data if isinstance(s, dict)]
-    asset_registry = [AssetRegistryEntry(**a) for a in asset_data if isinstance(a, dict)]
+    asset_registry = [
+        AssetRegistryEntry(**a) for a in asset_data if isinstance(a, dict)
+    ]
     summary_paragraphs = [str(s) for s in summary_data]
 
     return CaseViewData(
@@ -103,3 +120,19 @@ def get_case(case_id: int):
     case_view = _row_to_case_view(r)
 
     return CaseResponse(queue_row=queue_row, case_view=case_view)
+
+
+@router.patch("/api/case/{case_id}/notes")
+def update_notes(case_id: int, body: NotesUpdate):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute(
+        "UPDATE vulnerabilities SET investigation_notes = ? WHERE id = ?",
+        (body.notes, case_id),
+    )
+    if cursor.rowcount == 0:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Case not found")
+    conn.commit()
+    conn.close()
+    return {"status": "ok"}

@@ -1,5 +1,4 @@
 import sqlite3
-import json
 
 DB_PATH = "triagemate.db"
 
@@ -108,7 +107,9 @@ def init_db():
     conn.commit()
 
     _migrate_add_column(conn, "vulnerabilities", "last_recheck_date", "TEXT")
-    _migrate_add_column(conn, "vulnerabilities", "audit_selected", "BOOLEAN DEFAULT FALSE")
+    _migrate_add_column(
+        conn, "vulnerabilities", "audit_selected", "BOOLEAN DEFAULT FALSE"
+    )
     _migrate_add_column(conn, "vulnerabilities", "audit_result", "TEXT")
     _migrate_add_column(conn, "vulnerabilities", "audit_date", "TEXT")
 

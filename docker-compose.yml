@@ -1,0 +1,23 @@
+services:
+  triagemate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - triagemate-data:/app/backend
+    environment:
+      - TRIAGEMATE_LLM_API_KEY=${TRIAGEMATE_LLM_API_KEY:-}
+      - TRIAGEMATE_LLM_PROVIDER=${TRIAGEMATE_LLM_PROVIDER:-openai}
+      - TRIAGEMATE_LLM_MODEL=${TRIAGEMATE_LLM_MODEL:-gpt-4o-mini}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 6
+      start_period: 90s
+    restart: unless-stopped
+
+volumes:
+  triagemate-data:

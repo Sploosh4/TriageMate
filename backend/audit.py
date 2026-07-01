@@ -23,8 +23,8 @@ def select_for_audit(row_id: int):
     conn = get_db()
     try:
         conn.execute(
-            "UPDATE vulnerabilities SET audit_selected = TRUE WHERE id = ?",
-            (row_id,))
+            "UPDATE vulnerabilities SET audit_selected = TRUE WHERE id = ?", (row_id,)
+        )
         conn.commit()
     finally:
         conn.close()
@@ -34,13 +34,16 @@ def get_audit_queue(limit: int = 20) -> list:
     """Get cases pending audit review."""
     conn = get_db()
     try:
-        rows = conn.execute("""
+        rows = conn.execute(
+            """
             SELECT id, vulnerability_id, hostname, priority_score, risk_band,
                    detection_tier, tier_0_resolution, tier_1_confidence
             FROM vulnerabilities
             WHERE audit_selected = TRUE AND audit_result IS NULL
             LIMIT ?
-        """, (limit,)).fetchall()
+        """,
+            (limit,),
+        ).fetchall()
     finally:
         conn.close()
     return [dict(r) for r in rows]
@@ -50,10 +53,13 @@ def record_audit_result(row_id: int, result: str):
     """Record audit outcome: 'PASS', 'FAIL_LOW', 'FAIL_HIGH'."""
     conn = get_db()
     try:
-        conn.execute("""
+        conn.execute(
+            """
             UPDATE vulnerabilities
             SET audit_result = ?, audit_date = CURRENT_TIMESTAMP WHERE id = ?
-        """, (result, row_id))
+        """,
+            (result, row_id),
+        )
         conn.commit()
     finally:
         conn.close()

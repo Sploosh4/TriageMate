@@ -4,31 +4,17 @@ Documentation of incorrect AI-generated code, mismatches between code and actual
 
 ---
 
-## HIGH (Breaks functionality)
+## ~~HIGH (Breaks functionality)~~ — RESOLVED
 
-### 1. CWE Classifier: Head naming mismatch with SecureBERT2.0
-**File:** `backend/ml/cwe_classifier.py:50`
-**Code:** `getattr(model, f"cwe_head_{i}", None)` expects `cwe_head_0`...`cwe_head_3`
-**Reality:** SecureBERT2.0 stores heads as `cwe_heads.pillar`, `cwe_heads.class`, `cwe_heads.base`, `cwe_heads.variant` (nested under `cwe_heads` with group names, not `_0` suffix)
-**Impact:** Returns "Unknown" for all CWE levels — RAG query builder gets useless input
-**Fix:** Map `CWE_HEAD_NAMES` to actual model attribute paths, or subclass `ModernBertModel` with explicit `cwe_heads` attributes
-**Status:** 🔴 UNFIXED
+### ~~1. CWE Classifier: Head naming mismatch with SecureBERT2.0~~ ✅ BYPASSED
+**File:** `backend/ml/cwe_classifier_deprecated.py` (renamed, no longer in hot path)
+**Status:** The local SecureBERT2.0 classifier has been deprecated. Replaced by `backend/ingest_cwe.py` which uses NVD API 2.0 lookup + regex fallback. The deprecated file is preserved as `backend/ml/cwe_classifier_deprecated.py` for reference.
 
-### 2. CWE Classifier: ModernBERT has no pooler_output
-**File:** `backend/ml/cwe_classifier.py:46`
-**Code:** `outputs = model(**inputs)` then `pooled = outputs.pooler_output`
-**Reality:** ModernBERT (SecureBERT2.0 base) does not have a pooler — uses `final_norm` + CLS token
-**Impact:** Crashes with `AttributeError` (no `pooler_output` attribute) on first CWE classification
-**Fix:** Replace with `outputs.last_hidden_state[:, 0, :]` or equivalent CLS extraction
-**Status:** 🔴 UNFIXED
+### ~~2. CWE Classifier: ModernBERT has no pooler_output~~ ✅ BYPASSED
+**Status:** Same as #1 — deprecated in favour of NVD API + regex path.
 
-### 3. CWE Classifier: Cache dir bypasses shared HuggingFace cache
-**File:** `backend/ml/cwe_classifier.py:13`
-**Code:** `MODEL_DIR = Path(__file__).parent / "securebert_cache"`
-**Reality:** Model was downloaded to `~/.cache/huggingface/hub/` (656MB). The custom `cache_dir` causes a redundant download or fails to find cached weights because the `cache_dir` is a project-local path
-**Impact:** Wastes 656MB disk or fails to load on subsequent runs (depending on order of operations)
-**Fix:** Remove `cache_dir` parameter to use the default HuggingFace cache
-**Status:** 🔴 UNFIXED
+### ~~3. CWE Classifier: Cache dir bypasses shared HuggingFace cache~~ ✅ BYPASSED
+**Status:** Same as #1 — deprecated. The 656MB SecureBERT2.0 model is no longer loaded at startup.
 
 ---
 
@@ -39,6 +25,7 @@ Documentation of incorrect AI-generated code, mismatches between code and actual
 **Old code:** `predict_proba(X, ntree_limit=end, iteration_range=(i, end))` — `ntree_limit` deprecated, conflicted with `iteration_range`. Each 100-tree block got the same value assigned to all 100 positions.
 **Impact:** Ensemble std was computed from 8 distinct batch-level predictions instead of per-tree predictions.
 **Fix applied:** Replaced with `booster.predict(X, iteration_range=(0, n_t), output_margin=True)` at 100-tree checkpoints. Computes std of cumulative prediction trajectory (8 checkpoints). Uses `booster` directly instead of sklearn wrapper's predict_proba.
+**Sprint 3 addendum:** XGBoost 3.3.0 requires DMatrix for `booster.predict()`. Updated to `booster.predict(xgb.DMatrix(X), iteration_range=(0, n_t), output_margin=True)`. Added `import xgboost as xgb` to predictor.
 
 ### ~~5. XGBoost Predictor: Calibrated classifier internals fragile~~ ✅ FIXED
 **File:** `backend/ml/xgboost_predictor.py:47-48`
@@ -142,28 +129,34 @@ Documentation of incorrect AI-generated code, mismatches between code and actual
 
 ---
 
-## LOW (Nuisance / cosmetic)
+### ~~J. XGBoost model trained with wrong feature count (69→68)~~ ✅ FIXED (Sprint 3)
+**Root cause:** `cisa_kev` was removed as a training feature (label leakage fix, Item A), reducing features from 37→36 tabular (69→68 total). The training data migration (`load_training_data`) correctly strips column 9 from legacy data, and `build_tabular_features()` allocates 36 columns. But the `xgboost_model.pkl` was **never retrained** — the old 69-feature model was still deployed. At runtime, the predictor built 68 features, handed them to a model expecting 69, and raised `ValueError: Feature shape mismatch`.
+**Fix applied:** Ran `python -m ml.train_xgboost --train` to retrain the model from the existing 68-column `training_data.npz` (93,018 records). Model now expects 68 features. ROC-AUC: 0.9677.
 
-### 11. LanceDB vector store path is ephemeral
-**File:** `backend/ml/vector_store.py:13`
-**Path:** `/tmp/triagemate_lancedb`
-**Impact:** Lost on reboot. Startup re-seeds gracefully (checks count == 0), but any custom data added to the store is lost
-**Fix:** Move to a persistent location (e.g., `backend/data/lancedb`)
-**Status:** 🟡 UNFIXED
+---
 
-### 12. Vector store: FTS index exception fully suppressed
-**File:** `backend/ml/vector_store.py:48-50`
-**Code:** `except Exception: pass`
-**Impact:** If FTS index creation fails, the FTS fallback search path in `query_rag()` will also silently fail
-**Fix:** Log the exception or re-raise if the store depends on FTS
-**Status:** 🟡 UNFIXED
+## LOW (Nuisance / cosmetic — now fixed)
 
-### 13. Ingest pipeline: Unused variable `t2_score_adjustment`
-**File:** `backend/routers/ingest.py:75`
-**Code:** `t2_score_adjustment = t2_result.get("score_adjustment") if t2_result else None`
-**Impact:** Declared but never referenced — the score adjustment is applied inside `calculate_final_score()` via `tier_2_result` directly
-**Fix:** Remove unused variable
-**Status:** 🟢 TRIVIAL
+### ~~11. LanceDB vector store path is ephemeral~~ ✅ FIXED (Sprint 2)
+**File:** `backend/ml/vector_store.py:20`
+**Old path:** `/tmp/triagemate_lancedb`
+**Impact:** Lost on reboot. Startup re-seeded gracefully, but custom data was lost.
+**Fix applied:** Moved to `backend/data/lancedb` (resolved relative to `__file__`). Added `threading.Lock` for write safety. Added `backend/data/` to `.gitignore`.
+**Status:** ✅ FIXED
+
+### ~~12. Vector store: FTS index exception fully suppressed~~ ✅ FIXED (Sprint 2)
+**File:** `backend/ml/vector_store.py:87-89`
+**Old code:** `except Exception: pass`
+**Impact:** FTS index creation failures were invisible.
+**Fix applied:** Replaced with `logging.warning("FTS index creation skipped: %s", e)`.
+**Status:** ✅ FIXED
+
+### ~~13. Ingest pipeline: Unused variable `t2_score_adjustment`~~ ✅ FIXED (Sprint 2)
+**File:** `backend/routers/ingest.py`
+**Old code:** `t2_score_adjustment = t2_result.get("score_adjustment") if t2_result else None`
+**Impact:** Declared but never referenced.
+**Fix applied:** Removed the unused variable line.
+**Status:** ✅ FIXED
 
 ### 14. Tier 1 heuristic: Confidence range routing logic always escalates
 **File:** `backend/pipeline/tier_1.py:63`

@@ -61,18 +61,41 @@ DOS_PATTERNS = [r"denial of service", r"dos", r"resource exhaustion"]
 TRAVERSAL_PATTERNS = [r"directory traversal", r"path traversal", r"\.\.[\\/]"]
 
 MITRE_TOP_25_CWES = {
-    "CWE-787", "CWE-79", "CWE-89", "CWE-416", "CWE-78",
-    "CWE-20", "CWE-125", "CWE-22", "CWE-352", "CWE-434",
-    "CWE-862", "CWE-476", "CWE-287", "CWE-190", "CWE-502",
-    "CWE-77", "CWE-119", "CWE-798", "CWE-918", "CWE-306",
-    "CWE-362", "CWE-269", "CWE-94", "CWE-863", "CWE-276",
+    "CWE-787",
+    "CWE-79",
+    "CWE-89",
+    "CWE-416",
+    "CWE-78",
+    "CWE-20",
+    "CWE-125",
+    "CWE-22",
+    "CWE-352",
+    "CWE-434",
+    "CWE-862",
+    "CWE-476",
+    "CWE-287",
+    "CWE-190",
+    "CWE-502",
+    "CWE-77",
+    "CWE-119",
+    "CWE-798",
+    "CWE-918",
+    "CWE-306",
+    "CWE-362",
+    "CWE-269",
+    "CWE-94",
+    "CWE-863",
+    "CWE-276",
 }
 
 # ─── SAVE / LOAD ───────────────────────────────────────────────────────────
 
+
 def save_enriched_cves(cves: list[dict], path: Path):
     """Save NVD CVEs with merged EPSS/KEV to JSON."""
-    print(f"  Writing {len(cves)} enriched CVEs to {path.name} ... ", end="", flush=True)
+    print(
+        f"  Writing {len(cves)} enriched CVEs to {path.name} ... ", end="", flush=True
+    )
     with open(path, "w") as f:
         json.dump(cves, f)
     print("done.")
@@ -87,8 +110,9 @@ def load_enriched_cves(path: Path) -> list[dict]:
     return cves
 
 
-def save_training_data(X: np.ndarray, y: np.ndarray, dates: np.ndarray,
-                       cve_ids: np.ndarray, path: Path):
+def save_training_data(
+    X: np.ndarray, y: np.ndarray, dates: np.ndarray, cve_ids: np.ndarray, path: Path
+):
     """Save (n, 36+32) features, labels, dates, and CVE IDs to compressed .npz."""
     print(f"  Writing training data to {path.name} ... ", end="", flush=True)
     np.savez_compressed(path, X=X, y=y, dates=dates, cve_ids=cve_ids)
@@ -107,7 +131,9 @@ def load_training_data(path: Path) -> tuple:
     n_cols = X.shape[1]
     data.close()
     if n_cols == 69:
-        print(f"\n  [migrate] Old 69-column data detected. Stripping cisa_kev (column 9)...")
+        print(
+            "\n  [migrate] Old 69-column data detected. Stripping cisa_kev (column 9)..."
+        )
         keep = [i for i in range(69) if i != 9]
         X = X[:, keep]
         save_training_data(X, y_arr, dates_arr, cve_ids_arr, path)
@@ -116,6 +142,7 @@ def load_training_data(path: Path) -> tuple:
 
 
 # ─── QUALITY REPORT ────────────────────────────────────────────────────────
+
 
 def print_quality_report(cves: list[dict], y: np.ndarray, dates: np.ndarray):
     """Print a data-quality summary before training."""
@@ -128,8 +155,10 @@ def print_quality_report(cves: list[dict], y: np.ndarray, dates: np.ndarray):
     print("=" * 60)
 
     print(f"\n  Total CVEs:           {n_total:,}")
-    print(f"  Exploited (label=1):  {n_pos:,}  ({n_pos/n_total:.3%})")
-    print(f"  Not exploited:        {n_total - n_pos:,}  ({(n_total-n_pos)/n_total:.3%})")
+    print(f"  Exploited (label=1):  {n_pos:,}  ({n_pos / n_total:.3%})")
+    print(
+        f"  Not exploited:        {n_total - n_pos:,}  ({(n_total - n_pos) / n_total:.3%})"
+    )
 
     train = dates <= TRAIN_CUTOFF
     val = (dates > TRAIN_CUTOFF) & (dates <= VAL_CUTOFF)
@@ -144,15 +173,23 @@ def print_quality_report(cves: list[dict], y: np.ndarray, dates: np.ndarray):
     pos_ids = cve_ids_arr[y == 1]
     print(f"\n  Positive CVE IDs (first 20): {', '.join(pos_ids[:20].tolist())}")
 
-    pos_cwes = Counter(cve["cwe_id"] for cve, lab in zip(cves, y) if lab == 1 and cve["cwe_id"])
-    neg_cwes = Counter(cve["cwe_id"] for cve, lab in zip(cves, y) if lab == 0 and cve["cwe_id"])
+    pos_cwes = Counter(
+        cve["cwe_id"] for cve, lab in zip(cves, y) if lab == 1 and cve["cwe_id"]
+    )
+    neg_cwes = Counter(
+        cve["cwe_id"] for cve, lab in zip(cves, y) if lab == 0 and cve["cwe_id"]
+    )
     common_pos = pos_cwes.most_common(10)
     common_neg = neg_cwes.most_common(10)
 
     if common_pos:
-        print(f"\n  Top CWE among exploited: {', '.join(f'{c} ({n})' for c, n in common_pos)}")
+        print(
+            f"\n  Top CWE among exploited: {', '.join(f'{c} ({n})' for c, n in common_pos)}"
+        )
     if common_neg:
-        print(f"  Top CWE among non-exploited: {', '.join(f'{c} ({n})' for c, n in common_neg[:5])}")
+        print(
+            f"  Top CWE among non-exploited: {', '.join(f'{c} ({n})' for c, n in common_neg[:5])}"
+        )
 
     pos_cvss = [c["cvss_score"] for c, lab in zip(cves, y) if lab == 1]
     neg_cvss = [c["cvss_score"] for c, lab in zip(cves, y) if lab == 0]
@@ -179,6 +216,7 @@ def print_quality_report(cves: list[dict], y: np.ndarray, dates: np.ndarray):
 
 
 # ─── NVD FETCHING ──────────────────────────────────────────────────────────
+
 
 def _date_chunks(start_date: str, end_date: str) -> list[tuple[str, str]]:
     """Split a date range into 3-month chunks to avoid NVD total-results limit."""
@@ -258,16 +296,24 @@ def fetch_nvd_cves(start_date: str, end_date: str) -> list[dict]:
             resp = None
             for attempt in range(5):
                 try:
-                    resp = requests.get(NVD_API, params=params, headers=headers, timeout=120)
+                    resp = requests.get(
+                        NVD_API, params=params, headers=headers, timeout=120
+                    )
                     break
                 except requests.exceptions.RequestException as e:
                     wait = (attempt + 1) * 15
-                    print(f"    {type(e).__name__}, retrying in {wait}s (attempt {attempt+1}/5)...")
+                    print(
+                        f"    {type(e).__name__}, retrying in {wait}s (attempt {attempt + 1}/5)..."
+                    )
                     time.sleep(wait)
             else:
-                print(f"    Failed after 5 attempts. Progress saved ({len(all_cves)} CVEs). Resume by re-running.")
+                print(
+                    f"    Failed after 5 attempts. Progress saved ({len(all_cves)} CVEs). Resume by re-running."
+                )
                 _save_progress(all_cves, chunk_key, start_idx)
-                raise RuntimeError(f"Failed after 5 attempts at {chunk_start}..{chunk_end} index {start_idx}")
+                raise RuntimeError(
+                    f"Failed after 5 attempts at {chunk_start}..{chunk_end} index {start_idx}"
+                )
 
             resp.raise_for_status()
             data = resp.json()
@@ -287,17 +333,21 @@ def fetch_nvd_cves(start_date: str, end_date: str) -> list[dict]:
                         break
                 if not desc_en:
                     continue
-                all_cves.append({
-                    "cve_id": cve["id"],
-                    "description": desc_en,
-                    "cvss_score": cvss_v31["baseScore"],
-                    "cvss_vector": cvss_v31["vectorString"],
-                    "published_date": cve.get("published", "")[:10],
-                    "cwe_id": _extract_cwe(cve),
-                    "reference_count": len(cve.get("references", [])),
-                    "cvss_exploitability_sub": cvss_v31.get("exploitabilityScore", 0),
-                    "cvss_impact_sub": cvss_v31.get("impactScore", 0),
-                })
+                all_cves.append(
+                    {
+                        "cve_id": cve["id"],
+                        "description": desc_en,
+                        "cvss_score": cvss_v31["baseScore"],
+                        "cvss_vector": cvss_v31["vectorString"],
+                        "published_date": cve.get("published", "")[:10],
+                        "cwe_id": _extract_cwe(cve),
+                        "reference_count": len(cve.get("references", [])),
+                        "cvss_exploitability_sub": cvss_v31.get(
+                            "exploitabilityScore", 0
+                        ),
+                        "cvss_impact_sub": cvss_v31.get("impactScore", 0),
+                    }
+                )
 
             _save_progress(all_cves, chunk_key, start_idx + BATCH_SIZE)
 
@@ -320,6 +370,7 @@ def _extract_cwe(cve: dict) -> str:
 
 # ─── EPSS / KEV FETCHING ──────────────────────────────────────────────────
 
+
 def fetch_epss() -> dict:
     """Fetch all EPSS scores from FIRST.org as {CVE-ID: score} (paginated)."""
     print("  Fetching EPSS scores...")
@@ -327,7 +378,9 @@ def fetch_epss() -> dict:
     offset = 0
     limit = 1000
     while True:
-        resp = requests.get(EPSS_API, params={"offset": offset, "limit": limit}, timeout=60)
+        resp = requests.get(
+            EPSS_API, params={"offset": offset, "limit": limit}, timeout=60
+        )
         resp.raise_for_status()
         data = resp.json()
         for entry in data.get("data", []):
@@ -358,6 +411,7 @@ def fetch_kev() -> dict[str, str]:
 
 # ─── FEATURE ENGINEERING ───────────────────────────────────────────────────
 
+
 def construct_labels(cves: list[dict], kev_data: dict[str, str]) -> list[int]:
     """Label each CVE: 1 = appears in CISA KEV catalog (exploited), 0 = not."""
     kev_set = set(kev_data.keys())
@@ -370,8 +424,10 @@ def construct_labels(cves: list[dict], kev_data: dict[str, str]) -> list[int]:
         else:
             labels.append(0)
 
-    print(f"  Labels: {pos_count} positive (in KEV) out of {len(labels)} "
-          f"({pos_count/len(labels):.1%})")
+    print(
+        f"  Labels: {pos_count} positive (in KEV) out of {len(labels)} "
+        f"({pos_count / len(labels):.1%})"
+    )
     return labels
 
 
@@ -423,12 +479,30 @@ def build_tabular_features(cves: list[dict]) -> np.ndarray:
 def _parse_cvss(vector: str) -> dict:
     return {p.split(":")[0]: p.split(":")[1] for p in vector.split("/")}
 
-def _av_map(v): return {"N": 3, "A": 2, "L": 1, "P": 0}.get(v, 3)
-def _ac_map(v): return {"L": 1, "H": 0}.get(v, 1)
-def _pr_map(v): return {"N": 2, "L": 1, "H": 0}.get(v, 2)
-def _ui_map(v): return {"N": 1, "R": 0}.get(v, 1)
-def _s_map(v):  return {"C": 1, "U": 0}.get(v, 0)
-def _cia_map(v): return {"H": 2, "L": 1, "N": 0}.get(v, 0)
+
+def _av_map(v):
+    return {"N": 3, "A": 2, "L": 1, "P": 0}.get(v, 3)
+
+
+def _ac_map(v):
+    return {"L": 1, "H": 0}.get(v, 1)
+
+
+def _pr_map(v):
+    return {"N": 2, "L": 1, "H": 0}.get(v, 2)
+
+
+def _ui_map(v):
+    return {"N": 1, "R": 0}.get(v, 1)
+
+
+def _s_map(v):
+    return {"C": 1, "U": 0}.get(v, 0)
+
+
+def _cia_map(v):
+    return {"H": 2, "L": 1, "N": 0}.get(v, 0)
+
 
 def _compute_age_days(pub_date: str) -> int:
     if not pub_date:
@@ -441,6 +515,7 @@ def _compute_age_days(pub_date: str) -> int:
 
 
 # ─── PHASE 1: GATHER DATA ─────────────────────────────────────────────────
+
 
 def phase_gather() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """
@@ -472,7 +547,9 @@ def phase_gather() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
             cve["epss_score"] = epss.get(cve["cve_id"], 0.0)
             if cve["cve_id"] in epss:
                 epss_hits += 1
-        print(f"  EPSS merged: {epss_hits}/{len(cves)} CVEs matched ({epss_hits/len(cves):.1%}).")
+        print(
+            f"  EPSS merged: {epss_hits}/{len(cves)} CVEs matched ({epss_hits / len(cves):.1%})."
+        )
 
         # Step 3: KEV
         print("\n[3/6] Fetching CISA KEV catalog...")
@@ -510,8 +587,10 @@ def phase_gather() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     post_kev_mask = dates_arr >= KEV_START
     dropped = int(sum(~post_kev_mask))
     remaining = int(sum(post_kev_mask))
-    print(f"\n  Filtering to post-{KEV_START} CVEs: "
-          f"keeping {remaining:,}, dropping {dropped:,} pre-KEV CVEs.")
+    print(
+        f"\n  Filtering to post-{KEV_START} CVEs: "
+        f"keeping {remaining:,}, dropping {dropped:,} pre-KEV CVEs."
+    )
     X = X[post_kev_mask]
     y_arr = y_arr[post_kev_mask]
     dates_arr = dates_arr[post_kev_mask]
@@ -519,8 +598,10 @@ def phase_gather() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     cves = [c for c, m in zip(cves, post_kev_mask) if m]
 
     pos_total = int(sum(y_arr == 1))
-    print(f"  Post-filter positive rate: {pos_total}/{remaining} "
-          f"({pos_total/remaining:.1%})")
+    print(
+        f"  Post-filter positive rate: {pos_total}/{remaining} "
+        f"({pos_total / remaining:.1%})"
+    )
     if pos_total == 0:
         print("  WARNING: No positive labels after filtering. Cannot train.")
         sys.exit(1)
@@ -533,8 +614,10 @@ def phase_gather() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     obs_mask = dates_arr <= obs_cutoff_str
     obs_dropped = int(sum(~obs_mask))
     obs_kept = int(sum(obs_mask))
-    print(f"  Excluding {obs_dropped:,} CVEs published after {obs_cutoff_str} "
-          f"({OBS_WINDOW}-day observation window). Keeping {obs_kept:,}.")
+    print(
+        f"  Excluding {obs_dropped:,} CVEs published after {obs_cutoff_str} "
+        f"({OBS_WINDOW}-day observation window). Keeping {obs_kept:,}."
+    )
     X = X[obs_mask]
     y_arr = y_arr[obs_mask]
     dates_arr = dates_arr[obs_mask]
@@ -542,7 +625,7 @@ def phase_gather() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     cves = [c for c, m in zip(cves, obs_mask) if m]
 
     obs_pos = int(sum(y_arr == 1))
-    print(f"  Final positive rate: {obs_pos}/{obs_kept} ({obs_pos/obs_kept:.1%})")
+    print(f"  Final positive rate: {obs_pos}/{obs_kept} ({obs_pos / obs_kept:.1%})")
 
     # SAVE POINT 2: training data (X, y, dates, cve_ids)
     save_training_data(X, y_arr, dates_arr, cve_ids_arr, TRAINING_DATA_FILE)
@@ -555,6 +638,7 @@ def phase_gather() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
 
 # ─── PHASE 2: TRAIN MODEL ─────────────────────────────────────────────────
 
+
 def phase_train(X: np.ndarray, y: np.ndarray, dates: np.ndarray):
     """Train XGBoost + Platt calibration from pre-built features."""
     print("=" * 60)
@@ -566,7 +650,7 @@ def phase_train(X: np.ndarray, y: np.ndarray, dates: np.ndarray):
     test_mask = dates > VAL_CUTOFF
 
     X_train, y_train = X[train_mask], y[train_mask]
-    X_val, y_val = X[val_mask], y[val_mask]
+    X_val, _ = X[val_mask], y[val_mask]
     X_test, y_test = X[test_mask], y[test_mask]
 
     print(f"\n  Train: {len(X_train):,}, Val: {len(X_val):,}, Test: {len(X_test):,}")
@@ -578,9 +662,13 @@ def phase_train(X: np.ndarray, y: np.ndarray, dates: np.ndarray):
 
     print("\n  Training XGBoost (binary:logistic, no separate calibration)...")
     model = xgb.XGBClassifier(
-        max_depth=4, learning_rate=0.03, n_estimators=800,
-        subsample=0.8, colsample_bytree=0.8,
-        scale_pos_weight=sw, tree_method="hist",
+        max_depth=4,
+        learning_rate=0.03,
+        n_estimators=800,
+        subsample=0.8,
+        colsample_bytree=0.8,
+        scale_pos_weight=sw,
+        tree_method="hist",
         random_state=42,
     )
     model.fit(X_train, y_train, verbose=False)
@@ -591,8 +679,11 @@ def phase_train(X: np.ndarray, y: np.ndarray, dates: np.ndarray):
     print("\n" + "=" * 60)
     print("TEST SET RESULTS")
     print("=" * 60)
-    print(classification_report(y_test, y_pred, target_names=["Not Exploited", "Exploited"],
-                                 zero_division=0))
+    print(
+        classification_report(
+            y_test, y_pred, target_names=["Not Exploited", "Exploited"], zero_division=0
+        )
+    )
     roc = roc_auc_score(y_test, y_prob)
     print(f"  ROC-AUC: {roc:.4f}")
 
@@ -603,6 +694,7 @@ def phase_train(X: np.ndarray, y: np.ndarray, dates: np.ndarray):
 
 
 # ─── MAIN ──────────────────────────────────────────────────────────────────
+
 
 def main():
     do_gather = "--gather" in sys.argv
@@ -619,7 +711,9 @@ def main():
     if do_gather:
         X, y, dates, cve_ids = phase_gather()
         if not do_train:
-            print("\n  Gather complete. Run with --train to train or re-run without flags.")
+            print(
+                "\n  Gather complete. Run with --train to train or re-run without flags."
+            )
             return
 
     if do_train:

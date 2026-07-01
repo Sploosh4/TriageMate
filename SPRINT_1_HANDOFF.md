@@ -1,5 +1,9 @@
 # Sprint 1 Handoff — TriageMate MVP
 
+> **Sprint 3 status:** XGBoost model retrained and running (68 features, ROC-AUC 0.9677). See `SPRINT_3_HANDOFF.md` for details.
+> **Sprint 2 status:** Cloud LLM Tier 2 enabled and RAG vector store built. See `SPRINT_2_HANDOFF.md` for details.
+> This document remains the definitive reference for API contracts (§8), demo rows (§6), and design decisions (§5).
+
 **Date:** 29 June 2026
 **Status:** Application scaffolding complete. All API endpoints, pipeline stubs, and frontend refactoring done and verified. Ready for ML model replacement and RAG integration.
 
@@ -15,15 +19,16 @@ The application runs with `uvicorn main:app` from the `backend/` directory and s
 
 ## 2. Project Structure
 
+> **Note:** This structure is updated for Sprint 2. See `ROADMAP.md §8` for the authoritative project file map.
+
 ```
 TriageMate MVP/
 ├── index.html                              # Original demo (preserved, unused)
 ├── demo-reference.html                     # Original demo with header comment
 ├── SPRINT_1_HANDOFF.md                     # This file
 ├── Additional Instructions/
-│   ├── TriageMate MVP Transformation.md    # THE authoritative spec (1312 lines)
-│   ├── TriageMate ML Research Prompt.md    # Research questions for ML components
-│   └── TriageMate ML Research.md           # Pre-existing (may contain answers)
+│   ├── TriageMate ML Implementation Plan — Final.md  # ML architecture decisions
+│   └── ARCHIVED/                            # Superseded documents
 │
 ├── backend/
 │   ├── main.py                             # FastAPI entry point
@@ -32,24 +37,29 @@ TriageMate MVP/
 │   ├── scoring.py                          # Final priority score calculation (pure math)
 │   ├── ingest_helpers.py                   # CMDB stubs (KNOWN_HOSTS dictionary)
 │   ├── seed_data.py                        # Populates DB with the 7 demo rows
-│   ├── requirements.txt                    # fastapi, uvicorn, pydantic, httpx
+│   ├── requirements.txt                    # fastapi, uvicorn, pydantic, httpx, anthropic, etc
+│   ├── .env.example                        # Environment variable template
 │   ├── triagemate.db                       # SQLite database (auto-created)
-│   ├── venv/                               # Python virtual environment
-│   ├── __init__.py
+│   ├── data/                               # Persistent LanceDB vector store (auto-created)
 │   ├── routers/
-│   │   ├── __init__.py
 │   │   ├── queue.py                        # GET /api/queue + GET /api/metrics
 │   │   ├── cases.py                        # GET /api/case/{id}
 │   │   └── ingest.py                       # POST /api/ingest (runs full pipeline)
 │   ├── pipeline/
-│   │   ├── __init__.py
 │   │   ├── pre_tier.py                     # STUB: Dictionary of 7 known hosts
 │   │   ├── tier_0.py                       # REAL: Deterministic rules (no ML)
-│   │   ├── tier_1.py                       # STUB: Heuristic blending function
-│   │   └── tier_2.py                       # STUB: Cloud LLM integration + KNOWN_CONFLICTS cache
+│   │   ├── tier_1.py                       # HYBRID: XGBoost + heuristic fallback
+│   │   └── tier_2.py                       # REAL: Multi-provider cloud LLM + KNOWN_CONFLICTS fallback
 │   └── ml/
-│       ├── __init__.py
-│       └── README.md                       # Placeholder for future ML artifacts
+│       ├── encoder.py                      # SBERT + PCA feature encoding
+│       ├── xgboost_predictor.py            # XGBoost inference wrapper
+│       ├── xgboost_model.pkl               # Trained model (~96K CVEs)
+│       ├── pca_reducer.pkl                 # PCA transformation
+│       ├── train_xgboost.py                # Training pipeline (2-phase)
+│       ├── vector_store.py                 # LanceDB RAG store (persistent, TTL cache, write lock)
+│       ├── cwe_classifier.py               # 🐛 BROKEN — not in use
+│       ├── ingest_docs.py                  # Document ingestion for RAG
+│       └── README.md                       # Artifact index
 │
 └── frontend/
     ├── index.html                          # Stripped HTML (140 lines, no mock data)
@@ -68,22 +78,16 @@ TriageMate MVP/
 
 ## 3. How to Run
 
+See `ROADMAP.md §7` for full setup and run instructions.
+
+Quick summary:
 ```bash
 cd "TriageMate MVP/backend"
-
-# Activate virtual environment
 source venv/bin/activate
-
-# Seed the database (one-time; already done)
 python seed_data.py
-
-# Start the server
 uvicorn main:app --reload
+# Open http://localhost:8000
 ```
-
-Then open `http://localhost:8000`. The frontend loads, fetches from `/api/queue`, and renders identically to `demo-reference.html`.
-
-**API docs:** `http://localhost:8000/docs` (auto-generated OpenAPI/Swagger UI).
 
 **Ingest a new vulnerability:**
 ```bash
@@ -144,23 +148,43 @@ Three rules with configurable threshold constants:
 
 No ML needed. The only future work is tuning the threshold constants.
 
-### Tier 1 — Heuristic Stub
+### Tier 1 — Hybrid (XGBoost + Heuristic Fallback)
 
 File: `backend/pipeline/tier_1.py`
 
-Current implementation: a heuristic function blending CVSS (40%), EPSS (30%), and environmental modifiers (mission tags, internet-facing, lateral reachability, domain-joined, privileged accounts, cross-boundary). Returns exploitation probability, confidence, and routing decision.
+Current implementation has two paths:
+1. **XGBoost model** (primary): Calls `ml/xgboost_predictor.predict()` with a 68-feature hybrid vector (36 tabular + 32 PCA text features). The model was trained on ~96K post-KEV CVEs using public NVD + EPSS + CISA KEV data.
+2. **Heuristic fallback** (when model unavailable): Blends CVSS (40%), EPSS (30%), and environmental modifiers. Returns exploitation probability, confidence, and routing decision.
 
-Replace with: an XGBoost model using a 37-feature hybrid matrix (tabular features + SBERT text embeddings compressed to 16-64 dimensions via PCA/UMAP). Research priority: **Can implement this week** using public NVD + EPSS + CISA KEV data.
+The heuristic exists only as a fallback for environments where the ML model is not yet deployed. The XGBoost path is the primary evaluation route.
 
-### Tier 2 — Cloud LLM + Known Conflicts Cache
+### Tier 2 — Real: Multi-Provider Cloud LLM + Known Conflicts Cache (Sprint 2)
 
 File: `backend/pipeline/tier_2.py`
 
-Current implementation has two paths:
-1. **Cloud LLM** (if API key configured): Sends force-reflection prompt to OpenAI/Anthropic/Together AI. Provider configured via env vars `TRIAGEMATE_LLM_PROVIDER`, `TRIAGEMATE_LLM_API_KEY`, `TRIAGEMATE_LLM_MODEL`.
-2. **Known Conflicts Fallback** (always available): The `KNOWN_CONFLICTS` dictionary contains pre-resolved assessments for CVE-2023-36884, CVE-2023-22515, and CVE-2022-47966. Unknown CVEs return a neutral default (`text_conflict: false, confidence: 0.30, score_adjustment: 0`).
+**Production-ready cloud LLM integration with three provider backends:**
 
-The cloud LLM integration is production-ready. Cost at gpt-4o-mini pricing: ~$0.0004 per analysis (~$0.40 per 1,000 vulnerabilities). To enable it, set `TRIAGEMATE_LLM_API_KEY` in the environment.
+1. **OpenAI:** Schema-enforced via `response_format: {"type": "json_schema", "strict": true}` with `TriageConflictResult` Pydantic model. Handles refusals (`finish_reason: "content_filter"`). Keep-alive via `httpx`.
+2. **Anthropic:** Structured outputs via `client.messages.parse()` with `output_config.format` and Pydantic model. Handles refusals (`stop_reason="refusal"`) and truncation (`stop_reason="max_tokens"` retry). `cache_control` blocks for prompt caching.
+3. **Together AI:** JSON Schema guidance via `response_format` (best-effort, not constrained decoding). Schema always embedded in prompt text. Hardcoded model support set (e.g., `Llama-3.3-70B`).
+
+**Resilience:** Exponential backoff retry (3 attempts, 1s/2s/4s) on `ConnectTimeout`, `ConnectError`, 5xx. Respects `Retry-After` on 429. Do NOT retry on `ReadTimeout` (partial request cost risk) or 4xx auth errors. Backup provider automatic failover (primary → backup → KNOWN_CONFLICTS → neutral default).
+
+**Prompt caching:** OpenAI uses automatic prefix matching (static system message first). Anthropic uses explicit `cache_control: {"type": "ephemeral"}` on system block. Together AI has no caching.
+
+**Configuration (via environment variables or `.env`):**
+- `TRIAGEMATE_LLM_PROVIDER` — `openai` | `anthropic` | `together`
+- `TRIAGEMATE_LLM_API_KEY` — Provider API key
+- `TRIAGEMATE_LLM_MODEL` — Default: `gpt-4o-mini`
+- `TRIAGEMATE_LLM_MAX_TOKENS` — Default: `1024`
+- `TRIAGEMATE_LLM_TIMEOUT` — Default: `30` seconds
+- `TRIAGEMATE_LLM_BACKUP_PROVIDER` — Optional secondary provider
+- `TRIAGEMATE_LLM_BACKUP_API_KEY` — Backup provider API key
+- `TRIAGEMATE_LLM_BACKUP_MODEL` — Backup provider model
+
+**Fallback cache:** The `KNOWN_CONFLICTS` dictionary contains pre-resolved assessments for CVE-2023-36884, CVE-2023-22515, and CVE-2022-47966. Unknown CVEs without API key return a neutral default (`text_conflict: false, confidence: 0.30, score_adjustment: 0`).
+
+**Cost tracking:** Module-level accumulators log per-call metrics (provider, model, latency, input/output/cached tokens, estimated cost) as JSON lines. Accessible via `get_cost_tracking()`.
 
 ---
 
@@ -220,16 +244,18 @@ Special features to note:
 
 ---
 
-## 7. What Sprint 1 Intentionally Avoided
+## 7. What Sprint 1 Intentionally Avoided (and Sprint 2 Status)
 
-- Authentication / user management
-- Database migrations (Alembic)
-- Docker / containerization
-- CI/CD
-- Model versioning / experiment tracking
-- Real-time vulnerability scanner integration
-- RAG document store (returns empty stub)
-- API authentication or rate limiting
+| Avoided | Sprint 2 Status |
+|---|---|
+| Authentication / user management | Still avoided (MVP on localhost) |
+| Database migrations (Alembic) | Still avoided (SQLite single table) |
+| Docker / containerization | Still avoided |
+| CI/CD | Still avoided |
+| Model versioning / experiment tracking | Still avoided |
+| Real-time vulnerability scanner integration | Still avoided |
+| **RAG document store** (returns empty stub) | **✅ Built in Sprint 2** — see SPRINT_2_HANDOFF.md |
+| API authentication or rate limiting | Still avoided |
 
 ---
 
@@ -249,6 +275,9 @@ Returns `{"queueRow": QueueRow, "caseView": CaseViewData}`.
 
 ### GET /api/metrics
 Returns `{"criticalActions": int, "lowConfidence": int, "exposed": int, "needsHumanValidation": int}`
+
+### GET /api/health (Sprint 2)
+Returns `{"status": "ok", "version": "0.2.0", "tier_2_provider": str, "llm_available": bool, "rag_documents": int, "rag_store_path": str}`. Does NOT probe the LLM API (would incur cost) — reports configuration status only.
 
 ### POST /api/ingest
 Accepts `IngestRequest`:
@@ -273,44 +302,42 @@ The frontend renders the API response directly. Key points:
 
 ---
 
-## 10. What Remains — Implementation Priority
+## 10. Implementation Priority (as of Sprint 2)
 
-These are ordered by easiest-to-hardest (matching the ML Research Prompt's implementation priority).
+> **Sprint 3 delivered:** Priority 3 below is now **complete** (XGBoost model retrained and validated). See `SPRINT_3_HANDOFF.md` for details.
+> **Sprint 2 delivered:** Priorities 1 and 2 below are now **complete**. See `SPRINT_2_HANDOFF.md` for full details.
 
-### Priority 1: Enable Cloud LLM Tier 2 (5 minutes)
+### ✅ Priority 3: Tier 1 XGBoost Tuning — DONE (Sprint 3)
+Retrained the XGBoost model on 93,018 post-KEV CVEs with 68 features (36 tabular + 32 PCA text). ROC-AUC 0.9677. Fixed the 69→68 feature count mismatch caused by the `cisa_kev` label-leakage removal. Fixed XGBoost 3.3.0 DMatrix compatibility in the ensemble variance computation. All 7 demo rows validated with exact expected scores.
 
-Already built. Just set environment variables:
-```bash
-export TRIAGEMATE_LLM_API_KEY="sk-..."
-export TRIAGEMATE_LLM_PROVIDER="openai"   # or "anthropic" or "together"
-export TRIAGEMATE_LLM_MODEL="gpt-4o-mini"
-```
-The `KNOWN_CONFLICTS` fallback already handles the 3 demo SLM CVEs. An API key enables live analysis for unknown CVEs at ~$0.0004 per call.
+### ✅ Priority 1: Enable Cloud LLM Tier 2 — DONE (Sprint 2)
+Multi-provider cloud LLM integration (OpenAI/Anthropic/Together AI) with:
+- Schema-enforced structured outputs via `json_schema` / `client.messages.parse()`
+- Exponential backoff retry (3 attempts, `Retry-After` respect)
+- Backup provider automatic failover
+- Prompt caching structure (static first → dynamic second)
+- Cost tracking with per-call token logging
+- API key validation and startup warnings
 
-### Priority 2: RAG Vector Store
+### ✅ Priority 2: RAG Vector Store — DONE (Sprint 2)
+LanceDB vector store at `backend/data/lancedb` with:
+- 7 seeded demo documents (1 per hostname, covering CMDB records, GPO reports, change records, application configs)
+- TTL cache (60s, keyed by hostname)
+- `threading.Lock` for write safety
+- `ingest_docs.py` CLI with chunking, path traversal protection, file size limits
+- FTS index fallback with logged errors
 
-File to create: `backend/ml/vector_store.py`
-Vector database: LanceDB (recommended for single-machine MVP — zero config, embedded, fast on CPU). ChromaDB or FAISS are alternatives.
+### Priority 3: Tier 1 XGBoost Tuning (Model Already Trained)
 
-Needs:
-- An embedding model for indexing internal documentation
-- A chunking strategy for technical docs
-- Integration into `ingest_helpers.py` → `query_rag()` (currently returns empty dict)
-- RAG context passed into `tier_2.py`'s `build_prompt()`
+**Current state:** `backend/pipeline/tier_1.py` — hybrid (tries XGBoost, falls back to heuristic).  
+**Model file:** `backend/ml/xgboost_model.pkl` — trained on ~96K post-KEV CVEs with 36 tabular + 32 PCA text features.  
+**Predictor:** `backend/ml/xgboost_predictor.py` — loads the model, builds feature vector, ensemble variance routing.  
 
-### Priority 3: Tier 1 XGBoost Model
-
-**Current stub:** `backend/pipeline/tier_1.py` — heuristic function (~55 lines).
-**Target:** `backend/ml/xgboost_predictor.py` — loads a trained XGBoost model.
-
-Training data: Public NVD + EPSS + CISA KEV (no proprietary data needed). The ML Research Prompt has detailed questions about the 37 features, SBERT embedding dimensionality, PCA vs UMAP, and hyperparameters.
-
-Replacement steps:
-1. Train model in a Jupyter notebook using public data
-2. Export with `joblib.dump(model, "backend/ml/xgboost_model.pkl")`
-3. Create `backend/ml/xgboost_predictor.py` that loads the model and exposes a `predict(features) -> dict` function
-4. Update `tier_1.py` to call the predictor instead of the heuristic
-5. Add Shannon entropy check: `H(p) > 0.35` → escalate to Tier 2
+Remaining work:
+1. Validate model accuracy against the 7 demo rows (±3 point tolerance)
+2. Tune hyperparameters using WA-specific validation data when available
+3. Replace the heuristic fallback with a pass-through once the model is validated
+4. Add Shannon entropy check: `H(p) > 0.35` → escalate to Tier 2 (currently using ensemble std)
 
 ### Priority 4: CWE Encoder (Tier 2 pre-processing)
 

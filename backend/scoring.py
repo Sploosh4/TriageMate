@@ -6,10 +6,19 @@ with per-dimension breakdown for the frontend scoring weights display.
 """
 
 
-def calculate_final_score(cvss_score, epss_score, mission_prevalence,
-                          public_wellbeing, data_classification, internet_facing,
-                          patch_available=True, patch_applied=False,
-                          tier_1_result=None, tier_2_result=None) -> dict:
+def calculate_final_score(
+    cvss_score,
+    epss_score,
+    mission_prevalence,
+    public_wellbeing,
+    data_classification,
+    internet_facing,
+    patch_available=True,
+    patch_applied=False,
+    tier_1_result=None,
+    tier_2_result=None,
+    substituted_epss=None,
+) -> dict:
     """
     Calculate the 0-100 priority score from five weighted dimensions.
 
@@ -36,10 +45,14 @@ def calculate_final_score(cvss_score, epss_score, mission_prevalence,
     cvss_pct = cvss_score / 10.0
     dimensions["cvss"] = round(cvss_pct * 40)
 
-    # EPSS contribution (max 20)
-    dimensions["epss"] = round(epss_score * 20)
+    # EPSS contribution (max 20) — use substituted EPSS if available
+    effective_epss = substituted_epss if substituted_epss is not None else epss_score
+    dimensions["epss"] = round(effective_epss * 20)
 
     # Asset criticality (max 20) — based on data classification and mission tags
+    # POLICY NOTE: The 12/8/4/0 point spread for Category 4/3/2/1 is an
+    # operational policy choice calibrated against WA SOC risk appetite.
+    # It is NOT mandated by the PRIS Act itself.
     criticality = 0
     if data_classification == "Category 4":
         criticality += 12
@@ -91,8 +104,4 @@ def calculate_final_score(cvss_score, epss_score, mission_prevalence,
     else:
         band = "Very Critical"
 
-    return {
-        "total": total,
-        "band": band,
-        "dimensions": dimensions
-    }
+    return {"total": total, "band": band, "dimensions": dimensions}

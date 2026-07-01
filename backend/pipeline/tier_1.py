@@ -21,8 +21,9 @@ def evaluate_tier_1(features: dict) -> dict:
     """
     try:
         from ml.xgboost_predictor import predict
+
         return predict(features)
-    except (FileNotFoundError, ImportError, ModuleNotFoundError):
+    except (FileNotFoundError, ImportError, ModuleNotFoundError, ValueError):
         return _heuristic_evaluate(features)
 
 
