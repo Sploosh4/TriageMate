@@ -6,11 +6,22 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - triagemate-data:/app/backend
+      - triagemate-data:/app/backend/data
     environment:
+      # API auth (optional — leave unset for localhost-only)
+      - TRIAGEMATE_API_KEY=${TRIAGEMATE_API_KEY:-}
+      # LLM provider (optional — KNOWN_CONFLICTS fallback used if unset)
       - TRIAGEMATE_LLM_API_KEY=${TRIAGEMATE_LLM_API_KEY:-}
       - TRIAGEMATE_LLM_PROVIDER=${TRIAGEMATE_LLM_PROVIDER:-openai}
       - TRIAGEMATE_LLM_MODEL=${TRIAGEMATE_LLM_MODEL:-gpt-4o-mini}
+      - TRIAGEMATE_LLM_MAX_TOKENS=${TRIAGEMATE_LLM_MAX_TOKENS:-1024}
+      - TRIAGEMATE_LLM_TIMEOUT=${TRIAGEMATE_LLM_TIMEOUT:-30}
+      # CMDB provider (defaults to stub)
+      - TRIAGEMATE_CMDB_PROVIDER=${TRIAGEMATE_CMDB_PROVIDER:-stub}
+      # NVD API key (optional — rate-limited without one)
+      - NVD_API_KEY=${NVD_API_KEY:-}
+      # Disable HuggingFace HTTP in container (model pre-cached in image)
+      - HF_HUB_OFFLINE=1
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
       interval: 30s

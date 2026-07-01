@@ -1,6 +1,7 @@
 import os
 import logging
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from database import init_db
@@ -14,6 +15,24 @@ logger = logging.getLogger("triagemate")
 
 app = FastAPI(title="TriageMate API", version="0.2.0")
 app.state.cwe_available = False  # Will be updated on startup if CWE model loads
+
+_API_KEY = os.getenv("TRIAGEMATE_API_KEY", "")
+
+
+@app.middleware("http")
+async def api_key_auth(request: Request, call_next):
+    if _API_KEY:
+        path = request.url.path
+        if path.startswith("/api/") and not path.startswith("/api/health"):
+            header_key = request.headers.get("X-API-Key", "")
+            if header_key != _API_KEY:
+                return JSONResponse(
+                    status_code=401,
+                    content={"detail": "Missing or invalid X-API-Key header"},
+                )
+    response = await call_next(request)
+    return response
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -117,6 +136,9 @@ async def health():
         doc_count = -1
 
     from ml.vector_store import DB_PATH as rag_db_path
+    from integrations.nvd import get_nvd_health
+
+    nvd_health = get_nvd_health()
 
     return {
         "status": "ok",
@@ -126,4 +148,6 @@ async def health():
         "rag_documents": doc_count,
         "rag_store_path": str(rag_db_path),
         "cwe_available": getattr(app.state, "cwe_available", False),
+        "nvd_last_success": nvd_health["nvd_last_success"],
+        "nvd_status": nvd_health["nvd_status"],
     }

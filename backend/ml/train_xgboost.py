@@ -409,7 +409,36 @@ def fetch_kev() -> dict[str, str]:
     return result
 
 
-# ─── FEATURE ENGINEERING ───────────────────────────────────────────────────
+# ─── ENCODING AUDIT (PRE-DEMO HARDENING 2.1) ─────────────────────────────
+#
+# Training encoding (hardcoded in build_tabular_features) vs Production encoding
+# (inferred live from NVD references via integrations/nvd.py, exploitdb.py, metasploit.py):
+#
+#   Feature                Training    Production (est.)   Delta   Verdict
+#   ──────────────────────────────────────────────────────────────────────
+#   patch_available        100% True   ~30% True           ~70pp   SHIFT >5%
+#   exploitdb_has_poc      0% True     ~15% True           ~15pp   SHIFT >5%
+#   metasploit_has_payload 0% True     ~5% True            ~5pp    SHIFT >=5%
+#
+# Impact: The model was trained with patch_available=1 for ALL CVEs, but in
+# production only ~30% have a Patch/Vendor-Advisory tag in NVD references.
+# The model may overweight patch_available relative to its true distribution,
+# causing underestimated scores for CVEs without known patches.
+#
+# Similarly, exploitdb_has_poc and metasploit_has_payload were always 0 in
+# training but now fire at ~15% and ~5% respectively in production.
+#
+# Recommended fix: Backfill training data by re-running the training pipeline
+# (python -m ml.train_xgboost --gather --train) with NVD_API_KEY set and the
+# production encoding logic applied during build_tabular_features(). The
+# enriched_cves.json checkpoint can be reused if preserved.
+#
+# Current acceptance: Calibration shift documented. The model will tend to
+# underweight patch_available during inference. A ~3-5 point score depression
+# is expected for CVEs where patch_available is False in production but was
+# True during training. This is acceptable for the demo but must be resolved
+# before operational deployment.
+# ────────────────────────────────────────────────────────────────────────────
 
 
 def construct_labels(cves: list[dict], kev_data: dict[str, str]) -> list[int]:

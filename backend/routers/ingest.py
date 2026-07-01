@@ -1,5 +1,5 @@
 import json
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from database import get_db
 from models import (
     IngestRequest,
@@ -21,6 +21,7 @@ from ml.epss_substitutor import calculate_substitution
 from ingest_cwe import get_cwe
 from integrations.mitre_mapping import lookup_mitre
 from integrations.advisories import get_advisory
+from integrations.tenable import parse_tenable_webhook, parse_tenable_batch
 
 router = APIRouter(tags=["Ingest"])
 
@@ -393,6 +394,10 @@ async def ingest_vulnerability(payload: IngestRequest):
         compliance_category=_compliance_category(data_classification),
     )
 
+    from integrations.nvd import get_cve_freshness
+
+    nvd_freshness = get_cve_freshness(payload.vulnerability_id)
+
     case_view = CaseViewData(
         summary_paragraphs=summary_paragraphs,
         mission_prevalence=[
@@ -421,6 +426,7 @@ async def ingest_vulnerability(payload: IngestRequest):
         score_gauge_band=scoring["band"],
         gauge_band_colour=_band_colour(scoring["band"]),
         scoring_weights=weights,
+        nvd_freshness=nvd_freshness,
         asset_registry=[
             {"label": "Hostname", "value": payload.hostname},
             {"label": "CVSS Score", "value": str(payload.cvss_score)},
@@ -450,3 +456,51 @@ async def ingest_vulnerability_batch(payloads: list[IngestRequest]):
         result = await ingest_vulnerability(item)
         results.append(result)
     return results
+
+
+@router.post("/api/ingest/tenable")
+async def ingest_tenable(request: Request):
+    """Accept Tenable.io export JSON (single finding, webhook envelope, or batch list).
+
+    Detection logic:
+    - List → batch ingest via parse_tenable_batch
+    - Dict with "type"+"finding" keys → webhook envelope, unwrapped via parse_tenable_webhook
+    - Dict with "asset"+"plugin" keys → bare single finding via parse_tenable_webhook
+
+    Returns a single CaseResponse for one finding or list[CaseResponse] for batch.
+    """
+    body = await request.json()
+
+    if isinstance(body, list):
+        requests = parse_tenable_batch(body)
+        if not requests:
+            from fastapi.responses import JSONResponse
+
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "detail": "No valid Tenable findings could be parsed from the batch"
+                },
+            )
+        return await ingest_vulnerability_batch(requests)
+
+    if isinstance(body, dict):
+        parsed = parse_tenable_webhook(body)
+        if parsed is None:
+            from fastapi.responses import JSONResponse
+
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "detail": "Unrecognized Tenable format. Expected an object with "
+                    "'asset' and 'plugin' keys, or a webhook envelope with 'type' and 'finding'."
+                },
+            )
+        return await ingest_vulnerability(parsed)
+
+    from fastapi.responses import JSONResponse
+
+    return JSONResponse(
+        status_code=400,
+        content={"detail": "Expected a JSON object or array"},
+    )

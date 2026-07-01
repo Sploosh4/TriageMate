@@ -18,9 +18,14 @@ logger = logging.getLogger("triagemate.nvd")
 _CACHE: dict[str, tuple[float, dict]] = {}
 _TTL_SECONDS = 86400  # 24 hours
 
+# NVD health tracking
+_NVD_LAST_SUCCESS: float | None = None
+_NVD_LAST_STATUS: str = "ok"  # "ok" | "degraded" | "unreachable"
+
 
 def _fetch_cve_data(cve_id: str) -> dict:
     """Query NVD API 2.0 for a single CVE. Returns raw JSON dict or empty dict."""
+    global _NVD_LAST_SUCCESS, _NVD_LAST_STATUS
     api_key = os.getenv("NVD_API_KEY", "")
     url = f"https://services.nvd.nist.gov/rest/json/cves/2.0?cveId={cve_id}"
     headers = {"User-Agent": "TriageMate/0.2.0"}
@@ -30,6 +35,8 @@ def _fetch_cve_data(cve_id: str) -> dict:
     try:
         req = urllib.request.Request(url, headers=headers)
         with urllib.request.urlopen(req, timeout=10) as resp:
+            _NVD_LAST_SUCCESS = time.time()
+            _NVD_LAST_STATUS = "ok"
             return json.loads(resp.read().decode("utf-8"))
     except (
         urllib.error.URLError,
@@ -38,6 +45,7 @@ def _fetch_cve_data(cve_id: str) -> dict:
         OSError,
     ) as e:
         logger.warning("NVD fetch failed for %s: %s", cve_id, e)
+        _NVD_LAST_STATUS = "degraded"
         return {}
 
 
@@ -162,3 +170,32 @@ def get_nvd_data(cve_id: str) -> dict:
     }
     _CACHE[cve_id] = (now, result)
     return dict(result)
+
+
+def get_nvd_health() -> dict:
+    """Return NVD API health status for the observability endpoint."""
+    last_success_iso = ""
+    if _NVD_LAST_SUCCESS is not None:
+        from datetime import timezone as tz_mod
+
+        last_success_iso = (
+            datetime.fromtimestamp(_NVD_LAST_SUCCESS, tz=tz_mod.utc)
+            .isoformat()
+            .replace("+00:00", "Z")
+        )
+    return {
+        "nvd_last_success": last_success_iso,
+        "nvd_status": _NVD_LAST_STATUS,
+    }
+
+
+def get_cve_freshness(cve_id: str) -> int:
+    """Return seconds since NVD data was last fetched for this CVE.
+
+    Returns -1 if the CVE has never been fetched.
+    """
+    now = time.time()
+    if cve_id in _CACHE:
+        ts, _ = _CACHE[cve_id]
+        return int(now - ts)
+    return -1

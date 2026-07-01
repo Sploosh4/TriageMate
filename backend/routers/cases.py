@@ -72,6 +72,10 @@ def _row_to_case_view(r) -> CaseViewData:
     ]
     summary_paragraphs = [str(s) for s in summary_data]
 
+    from integrations.nvd import get_cve_freshness
+
+    nvd_freshness = get_cve_freshness(r["vulnerability_id"])
+
     return CaseViewData(
         summary_paragraphs=summary_paragraphs,
         mission_prevalence=[
@@ -93,6 +97,7 @@ def _row_to_case_view(r) -> CaseViewData:
         gauge_band_colour=_band_colour(r["risk_band"]),
         scoring_weights=scoring_weights,
         asset_registry=asset_registry,
+        nvd_freshness=nvd_freshness,
     )
 
 

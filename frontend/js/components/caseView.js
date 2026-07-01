@@ -82,11 +82,19 @@ function renderCase(caseResponse) {
     subBlock.style.display = 'none';
   }
 
+  // Enrichment staleness badge
+  var staleBadge = '';
+  if (cv.nvdFreshness !== undefined && cv.nvdFreshness > 86400) {
+    staleBadge = '<span class="enrichment-stale-badge">Enrichment Stale</span>';
+  } else if (cv.nvdFreshness === -1) {
+    staleBadge = '<span class="enrichment-stale-badge">Enrichment Stale</span>';
+  }
+
   // Panel 4
   const p4 = document.getElementById('panel-4');
   p4.innerHTML = `
     <div class="panel-4-half">
-      <div class="p4-section-title">Scoring Weight Itemisation</div>
+      <div class="p4-section-title">Scoring Weight Itemisation ${staleBadge}</div>
       ${cv.scoringWeights.map(w => {
         let extra = '';
         if (w.isSubstituted) {

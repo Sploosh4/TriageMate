@@ -60,6 +60,7 @@ class CaseViewData(BaseModelConfig):
     gauge_band_colour: str
     scoring_weights: list[ScoringWeight]
     asset_registry: list[AssetRegistryEntry]
+    nvd_freshness: int = -1
 
 
 class QueueRow(BaseModelConfig):

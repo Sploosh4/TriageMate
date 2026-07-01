@@ -157,16 +157,16 @@ To switch provider or adjust settings, edit `backend/.env`. See `.env.example` f
 > **Total:** ~14 hrs across 3 phases, 9 items.
 
 | # | Item | Phase | Priority | Effort | Status |
-|---|---|---|---|---|---|
-| 1.1 | **API auth middleware** (`X-API-Key` on /api/*) | Security | 🔴 Critical | 1.5 hrs | 📋 Todo |
-| 1.2 | **Tenable.io webhook** (`POST /api/ingest/tenable`) | Credibility | 🔴 Critical | 2.5 hrs | 📋 Todo |
-| 2.1 | **Training/production encoding audit** (3 features) | Accuracy | 🟡 High | 1.5 hrs | 📋 Todo |
-| 2.2 | **NVD degradation visibility** (health + case badge) | Observability | 🟡 High | 3 hrs | 📋 Todo |
-| 3.1 | **Demo script** (`DEMO_SCRIPT.md`) | Logistics | 🟡 High | 1 hr | 📋 Todo |
-| 3.2 | **Docker + docker-compose** (one-command deploy) | Logistics | 🟡 High | 2 hrs | 📋 Todo |
-| 3.3 | **Pitch deck / screenshots** (7 captures) | Logistics | 🟠 Medium | 1 hr | 📋 Todo |
-| 3.4 | **Clean machine test** (fresh clone, full verify) | Logistics | 🟠 Medium | 1 hr | 📋 Todo |
-| 3.5 | **Windows setup instructions** (`WINDOWS_SETUP.md`) | Logistics | 🟢 Low | 0.5 hr | 📋 Todo |
+|---|---|---|---|---|---|---|
+| 1.1 | **API auth middleware** (`X-API-Key` on /api/*) | Security | 🔴 Critical | 1.5 hrs | ✅ Done |
+| 1.2 | **Tenable.io webhook** (`POST /api/ingest/tenable`) | Credibility | 🔴 Critical | 2.5 hrs | ✅ Done |
+| 2.1 | **Training/production encoding audit** (3 features) | Accuracy | 🟡 High | 1.5 hrs | ✅ Done |
+| 2.2 | **NVD degradation visibility** (health + case badge) | Observability | 🟡 High | 3 hrs | ✅ Done |
+| 3.1 | **Demo script** (`DEMO_SCRIPT.md`) | Logistics | 🟡 High | 1 hr | ✅ Done |
+| 3.2 | **Docker + docker-compose** (one-command deploy) | Logistics | 🟡 High | 2 hrs | ✅ Done |
+| 3.3 | **Pitch deck / screenshots** (7 captures) | Logistics | 🟠 Medium | 1 hr | ✅ Done |
+| 3.4 | **Clean machine test** (fresh clone, full verify) | Logistics | 🟠 Medium | 1 hr | ✅ Done |
+| 3.5 | **Windows setup instructions** (`WINDOWS_SETUP.md`) | Logistics | 🟢 Low | 0.5 hr | ✅ Done |
 
 ---
 
