@@ -13,6 +13,8 @@ from integrations.cmdb import is_internet_facing as _cmdb_internet_facing
 from integrations.nvd import get_nvd_data
 from integrations.exploitdb import has_poc as _has_exploitdb_poc
 from integrations.metasploit import has_payload as _has_metasploit_payload
+from integrations.greynoise import query_greynoise
+from integrations.otx import query_otx_pulses
 
 
 def lookup_data_classification(hostname: str) -> str:
@@ -206,6 +208,123 @@ _MITRE_TOP_25_CWES = {
 }
 
 
+def _synthetic_patch_applied(
+    patch_available: bool, cvss: float, last_patch: str, vuln_age: int
+) -> bool:
+    """Synthetically determine if a patch has likely been applied.
+
+    Uses CMDB last_patch_date, CVSS severity, and vulnerability age to
+    model common SOC patching behaviour.
+    """
+    if not patch_available:
+        return False
+    if not last_patch:
+        return False
+
+    from datetime import date
+
+    parsed = _parse_cmdb_date(last_patch)
+    if parsed is None:
+        return False
+    days_since_patch = (date.today() - parsed).days
+
+    if days_since_patch <= 30:
+        return True
+    if cvss >= 9.0 and days_since_patch <= 90:
+        return True
+    if cvss >= 7.0 and days_since_patch <= 60:
+        return True
+    if vuln_age > 180 and cvss >= 7.0:
+        return True
+    return False
+
+
+def _synthetic_lateral(asset_ctx: dict) -> int:
+    """Estimate how many hosts this asset can reach based on zone and role."""
+    zone = (asset_ctx.get("network_zone") or "").lower()
+    role = (asset_ctx.get("role") or "").lower()
+
+    ZONE_BASELINE = {
+        "protected": 15,
+        "restricted": 8,
+        "dmz": 5,
+        "management": 3,
+    }
+    base = 5
+    for key, val in ZONE_BASELINE.items():
+        if key in zone:
+            base = val
+            break
+
+    role_lower = role
+    if any(
+        k in role_lower
+        for k in ("server", "database", "domain controller", "file", "application")
+    ):
+        base += 5
+
+    return base
+
+
+def _synthetic_boundary(asset_ctx: dict, internet_facing: bool) -> int:
+    """Can this asset cross network boundaries? 1 = yes, 0 = no."""
+    zone = (asset_ctx.get("network_zone") or "").lower()
+    if internet_facing or "dmz" in zone:
+        return 1
+    return 0
+
+
+def _synthetic_downstream(asset_ctx: dict) -> int:
+    """Number of assets that depend on this one — from CMDB or role estimation."""
+    deps = asset_ctx.get("dependent_assets", "")
+    if isinstance(deps, list) and len(deps) > 0:
+        return len(deps)
+    if isinstance(deps, str) and deps.strip():
+        items = [d.strip() for d in deps.split(",") if d.strip()]
+        if len(items) > 0:
+            return len(items)
+
+    role = (asset_ctx.get("role") or "").lower()
+    if "domain controller" in role:
+        return 20
+    if "database" in role:
+        return 10
+    if "file server" in role or "file" in role:
+        return 8
+    if "application" in role or "web server" in role:
+        return 5
+    if any(k in role for k in ("print", "dns", "dhcp")):
+        return 15
+    return 2
+
+
+def _enrich_internet_scan(cve_id: str) -> bool:
+    grey = query_greynoise(cve_id)
+    return grey.get("seen", False)
+
+
+def _internet_scan_status(grey_result: dict) -> str:
+    if not grey_result.get("queried", False):
+        return "not_configured"
+    if grey_result.get("seen", False):
+        return f"actively_scanned_by_{grey_result.get('scanning_ips', 'unknown')}_ips"
+    return "no_scan_activity_detected"
+
+
+def _enrich_threat_pulses(cve_id: str) -> int:
+    otx = query_otx_pulses(cve_id)
+    return otx.get("pulse_count", 0)
+
+
+def _threat_pulses_status(otx_result: dict) -> str:
+    if not otx_result.get("queried", False):
+        return "not_configured"
+    count = otx_result.get("pulse_count", 0)
+    if count > 0:
+        return f"{count}_threat_pulses"
+    return "no_threat_intel_available"
+
+
 def build_feature_vector(payload, mission_tags: dict, tier_0_result: dict) -> dict:
     """Build the full 37-feature dict + description for the Tier 1 XGBoost model.
 
@@ -234,6 +353,9 @@ def build_feature_vector(payload, mission_tags: dict, tier_0_result: dict) -> di
     last_patch = asset_ctx.get("last_patch_date", "")
     operating_system = asset_ctx.get("operating_system", "")
 
+    grey_result = query_greynoise(payload.vulnerability_id)
+    otx_result = query_otx_pulses(payload.vulnerability_id)
+
     return {
         "cvss_av": _cvss_av(cvss_vec.get("AV", "N")),
         "cvss_ac": _cvss_ac(cvss_vec.get("AC", "L")),
@@ -246,7 +368,12 @@ def build_feature_vector(payload, mission_tags: dict, tier_0_result: dict) -> di
         "cvss_score": payload.cvss_score,
         "epss_score": payload.epss_score,
         "patch_available": nvd.get("patch_available", True),
-        "patch_applied": False,
+        "patch_applied": _synthetic_patch_applied(
+            nvd.get("patch_available", False),
+            payload.cvss_score,
+            last_patch,
+            vulnerability_age,
+        ),
         "internet_facing": internet_facing,
         "domain_joined": _derive_domain_joined(hostname),
         "data_classification": data_classification,
@@ -254,14 +381,14 @@ def build_feature_vector(payload, mission_tags: dict, tier_0_result: dict) -> di
         "public_wellbeing_impact": mission_tags.get(
             "public_wellbeing_impact", "Minimal"
         ),
-        "lateral_reachability": 0,
-        "boundary_reachability": 0,
-        "downstream_assets": 0,
+        "lateral_reachability": _synthetic_lateral(asset_ctx),
+        "boundary_reachability": _synthetic_boundary(asset_ctx, internet_facing),
+        "downstream_assets": _synthetic_downstream(asset_ctx),
         "patch_lag_days": _compute_patch_lag(last_patch, vulnerability_age),
         "exploitdb_has_poc": _has_exploitdb_poc(payload.vulnerability_id),
         "metasploit_has_payload": _has_metasploit_payload(payload.vulnerability_id),
-        "internet_scan_detected": False,
-        "threat_intel_pulses": 0,
+        "internet_scan_detected": grey_result.get("seen", False),
+        "threat_intel_pulses": otx_result.get("pulse_count", 0),
         "nvd_reference_count": nvd.get("nvd_reference_count", 0),
         "cve_desc_tokens": len(description),
         "vulnerability_age_days": vulnerability_age,
@@ -283,8 +410,8 @@ def build_feature_vector(payload, mission_tags: dict, tier_0_result: dict) -> di
             any(re.search(p, description) for p in _TRAVERSAL_PATTERNS)
         ),
         "threat_intel_status": {
-            "internet_scan": "not_configured",
-            "threat_pulses": "not_configured",
+            "internet_scan": _internet_scan_status(grey_result),
+            "threat_pulses": _threat_pulses_status(otx_result),
         },
         "description": payload.raw_description or "",
     }
