@@ -1,4 +1,21 @@
 services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: triagemate
+      POSTGRES_PASSWORD: triagemate
+      POSTGRES_DB: triagemate
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U triagemate"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
   triagemate:
     build:
       context: .
@@ -8,6 +25,8 @@ services:
     volumes:
       - triagemate-data:/app/backend/data
     environment:
+      # Database — unset = SQLite; set to PostgreSQL URL for production
+      - DATABASE_URL=postgresql://triagemate:triagemate@db:5432/triagemate
       # API auth (optional — leave unset for localhost-only)
       - TRIAGEMATE_API_KEY=${TRIAGEMATE_API_KEY:-}
       # LLM provider (optional — KNOWN_CONFLICTS fallback used if unset)
@@ -22,6 +41,9 @@ services:
       - NVD_API_KEY=${NVD_API_KEY:-}
       # Disable HuggingFace HTTP in container (model pre-cached in image)
       - HF_HUB_OFFLINE=1
+    depends_on:
+      db:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
       interval: 30s
@@ -32,3 +54,4 @@ services:
 
 volumes:
   triagemate-data:
+  pgdata:

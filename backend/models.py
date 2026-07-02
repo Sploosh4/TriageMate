@@ -122,3 +122,27 @@ class TriageConflictResult(BaseModel):
     resolution: str
     confidence: float
     score_adjustment: int
+
+
+# ── Auth models ───────────────────────────────────────────────────────────
+
+
+class LoginRequest(BaseModelConfig):
+    """Login payload: username + password."""
+
+    username: str
+    password: str
+
+
+class TokenResponse(BaseModelConfig):
+    """JWT token response returned by login and refresh endpoints."""
+
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"
+
+
+class RefreshRequest(BaseModelConfig):
+    """Refresh request payload: the refresh token."""
+
+    refresh_token: str

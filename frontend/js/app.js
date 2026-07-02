@@ -35,6 +35,13 @@ function refreshQueue() {
 }
 
 async function init() {
+  // First, check auth status. If auth is required and user is not logged in,
+  // initAuth will show the login modal and we stop here.
+  if (typeof initAuth === 'function') {
+    await initAuth();
+  }
+
+  // Auth is disabled or user is authenticated — proceed normally
   try {
     var results = await Promise.all([
       fetchQueue(),
