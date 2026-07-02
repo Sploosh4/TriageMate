@@ -1,6 +1,6 @@
 # TriageMate — Master Roadmap & Status
 
-> Last updated: 1 July 2026
+> Last updated: 2 July 2026
 > Status key: ✅ Done · 🟡 Needs config · 🔧 In progress · 📋 Todo · ⏭️ Post-MVP · 🐛 Known bug
 
 ---
@@ -15,6 +15,7 @@
 | `PRE_DEMO_PLAN.md` | **Pre-demo hardening plan** — 3 phases, 9 items (auth, Tenable webhook, observability, demo logistics) | Current |
 | `TEAM_BRIEFING.md` | **Paste-ready team instructions** — Intel, Strike, Audit roles + Commander workflow | Current |
 | `SPRINT_1_HANDOFF.md` | Sprint 1 completion summary, API contracts, demo rows | Current |
+| `SPRINT_7_HANDOFF.md` | **Commander handoff** — full project state, remaining work, agent roster, recommended Sprint 7 scope | Current |
 | `AI_PROBLEMS.md` | Bug tracker (source of truth) | Current |
 | `backend/ml/README.md` | ML artifact index | Current |
 | `Additional Instructions/TriageMate ML Implementation Plan — Final.md` | ML architecture decisions, training blueprint | Current |
@@ -170,6 +171,49 @@ To switch provider or adjust settings, edit `backend/.env`. See `.env.example` f
 
 ---
 
+## 7d. DEMO DATA GENERATOR (Sprint 5)
+
+> **Full plan:** See `DEMO_DATA_GENERATOR_PLAN.md` for detailed scope, dependencies, and effort estimates.
+> **Total:** ~21 hrs across 6 phases, 17 items. External auditor reviewed, 2 BLOCKERs and 2 HIGH findings resolved.
+
+| # | Item | Phase | Priority | Effort | Status |
+|---|---|---|---|---|---|---|---|
+| 1.1 | Mock CMDB JSON (28 hosts) | Foundation | 🔴 Critical | 1.5 hrs | ✅ Done |
+| 1.2 | Pre-tier model retrain | Foundation | 🔴 Critical | 1 hr | ✅ Done |
+| 2.1 | NVD cache builder script | Data Caches | 🟡 High | 2 hrs | ✅ Done |
+| 2.3 | KEV cache builder script | Data Caches | 🟡 High | 0.5 hr | ✅ Done |
+| 2.4 | Populate cache data | Data Caches | 🟡 High | 0.5 hr | ✅ Done |
+| 2.5 | Cache-to-pipeline wiring (BLOCKER D5) | Pipeline | 🔴 Critical | 3 hrs | ✅ Done |
+| 3.1 | Curated scenarios JSON | Generator | 🟡 High | 1.5 hrs | ✅ Done |
+| 3.2 | Generator logic | Generator | 🟡 High | 3.5 hrs | ✅ Done |
+| 3.3 | API endpoints (demo + clear) | API | 🟡 High | 1.5 hrs | ✅ Done |
+| 4.1 | Archive table migration | DB | 🟠 Medium | 0.5 hr | ✅ Done |
+| 4.2 | Clear endpoint (rate-limited) | API | 🟠 Medium | 1 hr | ✅ Done |
+| 5.1 | Demo controls JS | Frontend | 🟠 Medium | 1.5 hrs | ✅ Done |
+| 5.2 | HTML integration | Frontend | 🟠 Medium | 0.25 hr | ✅ Done |
+| 5.3 | CSS additions | Frontend | 🟠 Medium | 0.25 hr | ✅ Done |
+| 5.4 | App.js integration | Frontend | 🟢 Low | 0.25 hr | ✅ Done |
+| 6.1 | Generator tests (17 tests) | Testing | 🟡 High | 2 hrs | ✅ Done |
+
+---
+
+## 7e. PRODUCTION HARDENING (Sprint 6)
+
+> **Full plan:** See `TEAM_BRIEFING.md` §Sprint 6 for agent hierarchy, track details, and merge workflow.
+> **Total:** ~8 hrs across 2 parallel tracks. Lead Agent + Worker Agent model.
+
+| # | Item | Track | Priority | Effort | Status |
+|---|---|---|---|---|---|---|---|
+| A.1 | DatabaseManager class (SQLite + PostgreSQL) | A | 🔴 Critical | 2 hrs | ✅ Done |
+| A.2 | docker-compose + .env + requirements | A | 🟡 High | 2 hrs | ✅ Done |
+| B.1 | JWT auth backend (auth.py + main.py + models) | B | 🔴 Critical | 2 hrs | ✅ Done |
+| B.2 | Frontend auth (auth.js + login UI + api.js) | B | 🟡 High | 2 hrs | ✅ Done |
+| C.1 | Integration audit (cross-track verification) | Audit | 🟡 High | 1.5 hrs | ✅ Done |
+
+**Verification:** 37/37 tests pass. 5/5 audit checks pass. Auth enabled → login/refresh/protected endpoints work. Auth disabled → backward-compat no-op.
+
+---
+
 ## 8. POST-MVP (Deferred / Future)
 
 ### 8.1 Real ML Models (deferred until labeled data exists)
@@ -185,15 +229,14 @@ To switch provider or adjust settings, edit `backend/.env`. See `.env.example` f
 
 | Item | Status | Notes |
 |---|---|---|
-| Authentication / login | ⏭️ Post-MVP | Needed before any network exposure |
-| Role-based access control | ⏭️ Post-MVP | Analyst vs admin views |
-| API key protection for /api/ingest | ⏭️ Post-MVP | Webhook secret for scanner integration |
-| Docker + docker-compose | ⏭️ Post-MVP | For repeatable deployment |
-| CI/CD pipeline | ⏭️ Post-MVP | GitHub Actions |
+| Authentication / login | ✅ Done (Sprint 6) | JWT + bcrypt, HTTPBearer, login/refresh endpoints. Backward-compat no-op when unconfigured. |
 | Database migrations (Alembic) | ⏭️ Post-MVP | Needed when schema changes in production |
-| PostgreSQL migration | ⏭️ Post-MVP | When SQLite scale limit reached |
+| PostgreSQL migration | ✅ Done (Sprint 6) | DatabaseManager class, DATABASE_URL env var, psycopg2. SQLite stays default. |
+| Docker + docker-compose | ✅ Done (Sprint 4/6) | PostgreSQL service added in Sprint 6 |
 | HTTPS / TLS | ⏭️ Post-MVP | For any network-exposed deployment |
 | Rate limiting | ⏭️ Post-MVP | Protect /api/ingest from abuse |
+| CI/CD pipeline | ⏭️ Post-MVP | GitHub Actions |
+| Role-based access control | ⏭️ Post-MVP | Analyst vs admin views |
 
 ### 8.3 Features
 

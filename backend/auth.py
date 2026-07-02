@@ -29,6 +29,12 @@ REFRESH_TOKEN_EXPIRE_DAYS = 7
 
 ADMIN_USER = os.getenv("TRIAGEMATE_ADMIN_USER")
 ADMIN_PASS = os.getenv("TRIAGEMATE_ADMIN_PASS", "")
+ADMIN_PASS_HASH = os.getenv("TRIAGEMATE_ADMIN_PASS_HASH", "")
+
+if ADMIN_PASS and not ADMIN_PASS_HASH:
+    ADMIN_PASS_HASH = bcrypt.hashpw(
+        ADMIN_PASS.encode("utf-8"), bcrypt.gensalt()
+    ).decode("utf-8")
 
 # When TRIAGEMATE_ADMIN_USER is unset, all routes pass through without auth
 AUTH_DISABLED = not ADMIN_USER

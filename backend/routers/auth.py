@@ -6,18 +6,21 @@ Endpoints:
   POST /api/auth/refresh  — exchange a valid refresh token → new access TokenResponse
 """
 
+import logging
 from fastapi import APIRouter, HTTPException, status
 
 from auth import (
     AUTH_DISABLED,
     ADMIN_USER,
-    ADMIN_PASS,
+    ADMIN_PASS_HASH,
+    verify_password,
     create_access_token,
     create_refresh_token,
     verify_token,
 )
 from models import LoginRequest, RefreshRequest, TokenResponse
 
+logger = logging.getLogger("triagemate.auth")
 router = APIRouter(tags=["Auth"])
 
 
@@ -34,12 +37,22 @@ def login(body: LoginRequest):
             detail="Authentication is not configured on this server",
         )
 
-    if body.username != ADMIN_USER or body.password != ADMIN_PASS:
+    if body.username != ADMIN_USER or not verify_password(
+        body.password, ADMIN_PASS_HASH
+    ):
+        logger.warning(
+            "Failed login attempt for user %s",
+            body.username,
+            extra={"event": "auth_login"},
+        )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid username or password",
         )
 
+    logger.info(
+        "Successful login for user %s", body.username, extra={"event": "auth_login"}
+    )
     access_token = create_access_token(body.username)
     refresh_token = create_refresh_token(body.username)
 

@@ -213,11 +213,44 @@ class DatabaseManager:
         return _PGConnection(raw)
 
     # ------------------------------------------------------------------
+    #  Alembic migrations
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def run_migrations():
+        """Run Alembic migrations if Alembic is available."""
+        try:
+            from alembic.config import Config
+            from alembic import command
+            import os as _os
+
+            alembic_cfg = Config(
+                _os.path.join(_os.path.dirname(__file__), "alembic.ini")
+            )
+            # Override DB URL with runtime path (supports test isolation via DB_PATH)
+            _db_url = _os.getenv("DATABASE_URL", "").strip()
+            if _db_url:
+                alembic_cfg.set_main_option("sqlalchemy.url", _db_url)
+            else:
+                alembic_cfg.set_main_option("sqlalchemy.url", f"sqlite:///{DB_PATH}")
+            command.upgrade(alembic_cfg, "head")
+            return True
+        except ImportError:
+            return False
+        except Exception as e:
+            logging.warning(
+                "Alembic migration failed: %s. Falling back to inline DDL.", e
+            )
+            return False
+
+    # ------------------------------------------------------------------
     #  Schema initialisation
     # ------------------------------------------------------------------
 
     def init_db(self):
         """Create tables if they do not exist.  Uses SQL-dialect-aware DDL."""
+        if self.run_migrations():
+            return
         conn = self.get_connection()
         try:
             if self._is_postgres:

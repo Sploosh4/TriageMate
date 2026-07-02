@@ -5,6 +5,10 @@ No ML required. These rules are production-ready from day one.
 Thresholds are configurable constants at the top of the file.
 """
 
+import logging
+
+logger = logging.getLogger("triagemate.tier_0")
+
 # Threshold constants
 KEV_CVSS_THRESHOLD = 9.0
 KEV_EPSS_THRESHOLD = 0.90
@@ -37,6 +41,10 @@ def evaluate_tier_0(
     # Auto-resolve as Very Critical if:
     # - CISA KEV listed AND CVSS >= 9.0 AND internet-facing
     if cisa_kev and cvss_score >= KEV_CVSS_THRESHOLD and internet_facing:
+        logger.info(
+            "Tier 0 auto-resolve very_critical for KEV+CVSS+IF",
+            extra={"event": "tier_0_resolve"},
+        )
         return {"routing": "auto_resolved", "resolution": "very_critical"}
 
     # Auto-resolve as Very Critical if:
@@ -46,6 +54,10 @@ def evaluate_tier_0(
         and epss_score >= KEV_EPSS_THRESHOLD
         and data_classification in ("Category 3", "Category 4")
     ):
+        logger.info(
+            "Tier 0 auto-resolve very_critical for KEV+EPSS+Cat3/4",
+            extra={"event": "tier_0_resolve"},
+        )
         return {"routing": "auto_resolved", "resolution": "very_critical"}
 
     # Auto-resolve as Low if:
@@ -55,8 +67,13 @@ def evaluate_tier_0(
         and cvss_score < LOW_CVSS_THRESHOLD
         and epss_score < LOW_EPSS_THRESHOLD
     ):
+        logger.info(
+            "Tier 0 auto-resolve low for CVSS+EPSS thresholds",
+            extra={"event": "tier_0_resolve"},
+        )
         return {"routing": "auto_resolved", "resolution": "low"}
 
+    logger.info("Tier 0 escalate ambiguous", extra={"event": "tier_0_resolve"})
     # Everything else is ambiguous — escalate to Tier 1
     return {"routing": "escalated", "resolution": "ambiguous"}
 

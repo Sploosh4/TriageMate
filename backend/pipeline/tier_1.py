@@ -5,6 +5,10 @@ Uses the trained XGBoost model from backend/ml/xgboost_predictor.py.
 Falls back to a heuristic stub if the model is not yet trained.
 """
 
+import logging
+
+logger = logging.getLogger("triagemate.tier_1")
+
 
 def evaluate_tier_1(features: dict) -> dict:
     """
@@ -22,9 +26,25 @@ def evaluate_tier_1(features: dict) -> dict:
     try:
         from ml.xgboost_predictor import predict
 
-        return predict(features)
+        result = predict(features)
+        logger.info(
+            "Tier 1 XGBoost: prob=%.3f, conf=%.3f, routing=%s",
+            result["exploitation_probability"],
+            result["confidence"],
+            result["routing"],
+            extra={"event": "tier_1_predict"},
+        )
+        return result
     except (FileNotFoundError, ImportError, ModuleNotFoundError, ValueError):
-        return _heuristic_evaluate(features)
+        result = _heuristic_evaluate(features)
+        logger.info(
+            "Tier 1 heuristic: prob=%.3f, conf=%.3f, routing=%s",
+            result["exploitation_probability"],
+            result["confidence"],
+            result["routing"],
+            extra={"event": "tier_1_predict"},
+        )
+        return result
 
 
 def _heuristic_evaluate(features: dict) -> dict:

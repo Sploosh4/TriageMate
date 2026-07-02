@@ -1,4 +1,5 @@
 import json
+import logging
 import os as _os
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
@@ -25,6 +26,7 @@ from integrations.mitre_mapping import lookup_mitre
 from integrations.advisories import get_advisory
 from integrations.tenable import parse_tenable_webhook, parse_tenable_batch
 
+logger = logging.getLogger("triagemate.ingest")
 router = APIRouter(tags=["Ingest"])
 
 
@@ -389,6 +391,16 @@ async def ingest_vulnerability(payload: IngestRequest):
     # 13. Record audit selection for auto-resolved cases
     if audit_selected:
         select_for_audit(new_id)
+
+    logger.info(
+        "Ingest complete for %s on %s — score %d, band %s, tier %s",
+        payload.vulnerability_id,
+        payload.hostname,
+        scoring["total"],
+        scoring["band"],
+        detection_tier,
+        extra={"event": "ingest_complete"},
+    )
 
     # 14. Build response
     queue_row = QueueRow(

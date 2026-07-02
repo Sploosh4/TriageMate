@@ -194,7 +194,7 @@ def init_vector_store() -> lancedb.DBConnection:
         ]
     )
 
-    if TABLE_NAME not in db.table_names():
+    if TABLE_NAME not in db.list_tables().tables:
         db.create_table(TABLE_NAME, schema=schema, exist_ok=True)
 
     table = db.open_table(TABLE_NAME)
@@ -303,7 +303,7 @@ def query_rag(hostname: str, cwe_class: str = "", top_k: int = 3) -> dict:
 
     try:
         db = _get_db()
-        if TABLE_NAME not in db.table_names():
+        if TABLE_NAME not in db.list_tables().tables:
             return _empty_result(
                 "STORE_EMPTY",
                 "RAG document store has not been populated. "

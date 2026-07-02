@@ -93,6 +93,7 @@ def _read_from_demo_cache(cve_id: str) -> dict | None:
 def _fetch_cve_data(cve_id: str) -> dict:
     """Query NVD API 2.0 for a single CVE. Returns raw JSON dict or empty dict."""
     global _NVD_LAST_SUCCESS, _NVD_LAST_STATUS
+    start = time.time()
     api_key = os.getenv("NVD_API_KEY", "")
     url = f"https://services.nvd.nist.gov/rest/json/cves/2.0?cveId={cve_id}"
     headers = {"User-Agent": "TriageMate/0.2.0"}
@@ -104,6 +105,13 @@ def _fetch_cve_data(cve_id: str) -> dict:
         with urllib.request.urlopen(req, timeout=10) as resp:
             _NVD_LAST_SUCCESS = time.time()
             _NVD_LAST_STATUS = "ok"
+            duration_ms = int((time.time() - start) * 1000)
+            logger.info(
+                "NVD API call for %s succeeded in %dms",
+                cve_id,
+                duration_ms,
+                extra={"event": "nvd_api_call", "duration_ms": duration_ms},
+            )
             return json.loads(resp.read().decode("utf-8"))
     except (
         urllib.error.URLError,
@@ -111,7 +119,14 @@ def _fetch_cve_data(cve_id: str) -> dict:
         json.JSONDecodeError,
         OSError,
     ) as e:
-        logger.warning("NVD fetch failed for %s: %s", cve_id, e)
+        duration_ms = int((time.time() - start) * 1000)
+        logger.warning(
+            "NVD fetch failed for %s in %dms: %s",
+            cve_id,
+            duration_ms,
+            e,
+            extra={"event": "nvd_api_call", "duration_ms": duration_ms},
+        )
         _NVD_LAST_STATUS = "degraded"
         return {}
 

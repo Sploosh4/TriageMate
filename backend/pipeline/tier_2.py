@@ -601,18 +601,23 @@ def _record_api_call(provider: str, model: str, usage: dict):
     _cost_tracking["estimated_cost_usd"] += cost
 
     logger.info(
-        json.dumps(
-            {
-                "event": "llm_call",
-                "provider": provider,
-                "model": model,
-                "input_tokens": prompt_tokens,
-                "output_tokens": completion_tokens,
-                "cached_tokens": cached_tokens,
-                "estimated_cost_usd": round(cost, 6),
-                "total_cost_usd": round(_cost_tracking["estimated_cost_usd"], 4),
-            }
-        )
+        "LLM call %s/%s: %d in, %d out, $%.4f total",
+        provider,
+        model,
+        prompt_tokens,
+        completion_tokens,
+        _cost_tracking["estimated_cost_usd"],
+        extra={
+            "event": "llm_call",
+            "duration_ms": 0,
+            "provider": provider,
+            "model": model,
+            "input_tokens": prompt_tokens,
+            "output_tokens": completion_tokens,
+            "cached_tokens": cached_tokens,
+            "estimated_cost_usd": round(cost, 6),
+            "total_cost_usd": round(_cost_tracking["estimated_cost_usd"], 4),
+        },
     )
 
 

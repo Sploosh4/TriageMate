@@ -1238,6 +1238,9 @@ def seed():
     conn = get_db()
     cursor = conn.cursor()
 
+    conn.execute("DELETE FROM vulnerabilities")
+    conn.execute("DELETE FROM resolved_vulnerabilities")
+
     INSERT_SQL = """
         INSERT INTO vulnerabilities (
             vulnerability_id, hostname, cvss_score, cvss_vector, cisa_kev, epss_score,

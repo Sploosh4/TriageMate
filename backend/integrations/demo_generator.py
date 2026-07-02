@@ -629,6 +629,7 @@ def generate_scenario_findings(scenario_id: str) -> list[dict]:
         scenario_id,
         len(results),
         len(findings),
+        extra={"event": "demo_generate"},
     )
     return results
 
@@ -815,7 +816,12 @@ def generate_random_wave(
         )
         results.append(payload)
 
-    logger.info("Generated random wave '%s': %d findings", size, len(results))
+    logger.info(
+        "Generated random wave '%s': %d findings",
+        size,
+        len(results),
+        extra={"event": "demo_generate"},
+    )
     return results
 
 
