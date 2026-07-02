@@ -1,5 +1,12 @@
 """
-GreyNoise Community API client for internet scan detection.
+DEPRECATED: GreyNoise free tier (10 queries/day, 50/week) is too restrictive
+for the TriageMate ingest pipeline. Replaced by _synthetic_internet_scan()
+in ingest_helpers.py which derives scan activity from KEV + EPSS + exploit data.
+
+This file is preserved for reference. If GreyNoise offers a better free tier
+in future, un-deprecate and re-wire the import in ingest_helpers.py.
+
+Original: GreyNoise Community API client for internet scan detection.
 
 Returns whether a CVE is being actively scanned on the public internet.
 1-hour TTL in-memory cache. TRIAGEMATE_GREYNOISE_API_KEY env var is optional.

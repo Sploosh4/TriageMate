@@ -13,7 +13,6 @@ from integrations.cmdb import is_internet_facing as _cmdb_internet_facing
 from integrations.nvd import get_nvd_data
 from integrations.exploitdb import has_poc as _has_exploitdb_poc
 from integrations.metasploit import has_payload as _has_metasploit_payload
-from integrations.greynoise import query_greynoise
 from integrations.otx import query_otx_pulses
 
 
@@ -298,17 +297,32 @@ def _synthetic_downstream(asset_ctx: dict) -> int:
     return 2
 
 
-def _enrich_internet_scan(cve_id: str) -> bool:
-    grey = query_greynoise(cve_id)
-    return grey.get("seen", False)
+def _synthetic_internet_scan(
+    cisa_kev: bool,
+    epss_score: float,
+    exploitdb_has_poc: bool,
+    vulnerability_age_days: int,
+    cvss_score: float,
+) -> bool:
+    """Determine if attackers are actively scanning for a CVE.
+
+    Uses KEV status, EPSS score, exploit availability, CVE age, and CVSS
+    to estimate whether internet-wide scanning is likely occurring.
+    No external API required.
+    """
+    if cisa_kev:
+        return True
+    if epss_score >= 0.50 and exploitdb_has_poc:
+        return True
+    if 0 < vulnerability_age_days < 30 and cvss_score >= 9.0:
+        return True
+    if epss_score >= 0.90:
+        return True
+    return False
 
 
-def _internet_scan_status(grey_result: dict) -> str:
-    if not grey_result.get("queried", False):
-        return "not_configured"
-    if grey_result.get("seen", False):
-        return f"actively_scanned_by_{grey_result.get('scanning_ips', 'unknown')}_ips"
-    return "no_scan_activity_detected"
+def _synthetic_scan_status(detected: bool) -> str:
+    return "active_scanning_detected" if detected else "no_scan_activity"
 
 
 def _enrich_threat_pulses(cve_id: str) -> int:
@@ -353,7 +367,16 @@ def build_feature_vector(payload, mission_tags: dict, tier_0_result: dict) -> di
     last_patch = asset_ctx.get("last_patch_date", "")
     operating_system = asset_ctx.get("operating_system", "")
 
-    grey_result = query_greynoise(payload.vulnerability_id)
+    exploitdb_has_poc = _has_exploitdb_poc(payload.vulnerability_id)
+    internet_scan = _synthetic_internet_scan(
+        payload.cisa_kev
+        if hasattr(payload, "cisa_kev") and payload.cisa_kev
+        else False,
+        payload.epss_score or 0.0,
+        exploitdb_has_poc,
+        vulnerability_age,
+        payload.cvss_score or 0.0,
+    )
     otx_result = query_otx_pulses(payload.vulnerability_id)
 
     return {
@@ -385,9 +408,9 @@ def build_feature_vector(payload, mission_tags: dict, tier_0_result: dict) -> di
         "boundary_reachability": _synthetic_boundary(asset_ctx, internet_facing),
         "downstream_assets": _synthetic_downstream(asset_ctx),
         "patch_lag_days": _compute_patch_lag(last_patch, vulnerability_age),
-        "exploitdb_has_poc": _has_exploitdb_poc(payload.vulnerability_id),
+        "exploitdb_has_poc": exploitdb_has_poc,
         "metasploit_has_payload": _has_metasploit_payload(payload.vulnerability_id),
-        "internet_scan_detected": grey_result.get("seen", False),
+        "internet_scan_detected": internet_scan,
         "threat_intel_pulses": otx_result.get("pulse_count", 0),
         "nvd_reference_count": nvd.get("nvd_reference_count", 0),
         "cve_desc_tokens": len(description),
@@ -410,7 +433,7 @@ def build_feature_vector(payload, mission_tags: dict, tier_0_result: dict) -> di
             any(re.search(p, description) for p in _TRAVERSAL_PATTERNS)
         ),
         "threat_intel_status": {
-            "internet_scan": _internet_scan_status(grey_result),
+            "internet_scan": _synthetic_scan_status(internet_scan),
             "threat_pulses": _threat_pulses_status(otx_result),
         },
         "description": payload.raw_description or "",
