@@ -1,0 +1,338 @@
+{
+  "CVE-2021-31196": {
+    "known_exploited": true,
+    "date_added": "2024-08-21",
+    "due_date": "2024-09-11",
+    "action": "Apply mitigations per vendor instructions or discontinue use of the product if mitigations are unavailable.",
+    "note": "https://msrc.microsoft.com/update-guide/en-US/advisory/CVE-2021-31196; https://nvd.nist.gov/vuln/detail/CVE-2021-31196"
+  },
+  "CVE-2024-30051": {
+    "known_exploited": true,
+    "date_added": "2024-05-14",
+    "due_date": "2024-06-04",
+    "action": "Apply mitigations per vendor instructions or discontinue use of the product if mitigations are unavailable.",
+    "note": "https://msrc.microsoft.com/update-guide/vulnerability/CVE-2024-30051; https://nvd.nist.gov/vuln/detail/CVE-2024-30051"
+  },
+  "CVE-2023-29360": {
+    "known_exploited": true,
+    "date_added": "2024-02-29",
+    "due_date": "2024-03-21",
+    "action": "Apply mitigations per vendor instructions or discontinue use of the product if mitigations are unavailable.",
+    "note": "https://msrc.microsoft.com/update-guide/vulnerability/CVE-2023-29360 ;https://nvd.nist.gov/vuln/detail/CVE-2023-29360"
+  },
+  "CVE-2024-1709": {
+    "known_exploited": true,
+    "date_added": "2024-02-22",
+    "due_date": "2024-02-29",
+    "action": "Apply mitigations per vendor instructions or discontinue use of the product if mitigations are unavailable.",
+    "note": "https://www.connectwise.com/company/trust/security-bulletins/connectwise-screenconnect-23.9.8; https://nvd.nist.gov/vuln/detail/CVE-2024-1709"
+  },
+  "CVE-2023-36025": {
+    "known_exploited": true,
+    "date_added": "2023-11-14",
+    "due_date": "2023-12-05",
+    "action": "Apply mitigations per vendor instructions or discontinue use of the product if mitigations are unavailable.",
+    "note": "https://msrc.microsoft.com/update-guide/en-US/vulnerability/CVE-2023-36025;  https://nvd.nist.gov/vuln/detail/CVE-2023-36025"
+  },
+  "CVE-2023-36036": {
+    "known_exploited": true,
+    "date_added": "2023-11-14",
+    "due_date": "2023-12-05",
+    "action": "Apply mitigations per vendor instructions or discontinue use of the product if mitigations are unavailable.",
+    "note": "https://msrc.microsoft.com/update-guide/en-US/vulnerability/CVE-2023-36036 ;  https://nvd.nist.gov/vuln/detail/CVE-2023-36036"
+  },
+  "CVE-2023-4966": {
+    "known_exploited": true,
+    "date_added": "2023-10-18",
+    "due_date": "2023-11-08",
+    "action": "Apply mitigations and kill all active and persistent sessions per vendor instructions [https://www.netscaler.com/blog/news/cve-2023-4966-critical-security-update-now-available-for-netscaler-adc-and-netscaler-gateway/] OR discontinue use of the product if mitigations are unavailable.",
+    "note": "https://www.netscaler.com/blog/news/cve-2023-4966-critical-security-update-now-available-for-netscaler-adc-and-netscaler-gateway/, https://support.citrix.com/article/CTX579459/netscaler-adc-and-netscaler-gateway-security-bulletin-for-cve20234966-and-cve20234967 ;  https://nvd.nist.gov/vuln/detail/CVE-2023-4966"
+  },
+  "CVE-2023-44487": {
+    "known_exploited": true,
+    "date_added": "2023-10-10",
+    "due_date": "2023-10-31",
+    "action": "Apply mitigations per vendor instructions, follow applicable BOD 22-01 guidance for cloud services, or discontinue use of the product if mitigations are unavailable.",
+    "note": "This vulnerability affects a common open-source component, third-party library, or protocol used by different products. For more information, please see: HTTP/2 Rapid Reset Vulnerability, CVE-2023-44487 | CISA: https://www.cisa.gov/news-events/alerts/2023/10/10/http2-rapid-reset-vulnerability-cve-2023-44487; https://blog.cloudflare.com/technical-breakdown-http2-rapid-reset-ddos-attack/;  https://nvd.nist.gov/vuln/detail/CVE-2023-44487"
+  },
+  "CVE-2023-22515": {
+    "known_exploited": true,
+    "date_added": "2023-10-05",
+    "due_date": "2023-10-13",
+    "action": "Apply mitigations per vendor instructions or discontinue use of the product if mitigations are unavailable. Check all affected Confluence instances for evidence of compromise per vendor instructions and report any positive findings to CISA.",
+    "note": "https://confluence.atlassian.com/security/cve-2023-22515-privilege-escalation-vulnerability-in-confluence-data-center-and-server-1295682276.html;  https://nvd.nist.gov/vuln/detail/CVE-2023-22515"
+  },
+  "CVE-2023-36761": {
+    "known_exploited": true,
+    "date_added": "2023-09-12",
+    "due_date": "2023-10-03",
+    "action": "Apply mitigations per vendor instructions or discontinue use of the product if mitigations are unavailable.",
+    "note": "https://msrc.microsoft.com/update-guide/vulnerability/CVE-2023-36761;  https://nvd.nist.gov/vuln/detail/CVE-2023-36761"
+  },
+  "CVE-2023-3519": {
+    "known_exploited": true,
+    "date_added": "2023-07-19",
+    "due_date": "2023-08-09",
+    "action": "Apply mitigations per vendor instructions or discontinue use of the product if mitigations are unavailable.",
+    "note": "https://support.citrix.com/article/CTX561482/citrix-adc-and-citrix-gateway-security-bulletin-for-cve20233519-cve20233466-cve20233467;  https://nvd.nist.gov/vuln/detail/CVE-2023-3519"
+  },
+  "CVE-2023-36884": {
+    "known_exploited": true,
+    "date_added": "2023-07-17",
+    "due_date": "2023-08-29",
+    "action": "Apply mitigations per vendor instructions or discontinue use of the product if mitigations are unavailable.",
+    "note": "https://msrc.microsoft.com/update-guide/vulnerability/CVE-2023-36884;  https://nvd.nist.gov/vuln/detail/CVE-2023-36884"
+  },
+  "CVE-2023-35311": {
+    "known_exploited": true,
+    "date_added": "2023-07-11",
+    "due_date": "2023-08-01",
+    "action": "Apply updates per vendor instructions or discontinue use of the product if updates are unavailable.",
+    "note": "https://msrc.microsoft.com/update-guide/en-US/vulnerability/CVE-2023-35311;  https://nvd.nist.gov/vuln/detail/CVE-2023-35311"
+  },
+  "CVE-2023-34362": {
+    "known_exploited": true,
+    "date_added": "2023-06-02",
+    "due_date": "2023-06-23",
+    "action": "Apply updates per vendor instructions.",
+    "note": "This CVE has a CISA AA located here: https://www.cisa.gov/news-events/cybersecurity-advisories/aa23-158a. Please see the AA for associated IOCs. Additional information is available at: https://community.progress.com/s/article/MOVEit-Transfer-Critical-Vulnerability-31May2023.;  https://nvd.nist.gov/vuln/detail/CVE-2023-34362"
+  },
+  "CVE-2023-27350": {
+    "known_exploited": true,
+    "date_added": "2023-04-21",
+    "due_date": "2023-05-12",
+    "action": "Apply updates per vendor instructions.",
+    "note": "https://www.papercut.com/kb/Main/PO-1216-and-PO-1219;  https://nvd.nist.gov/vuln/detail/CVE-2023-27350"
+  },
+  "CVE-2023-28252": {
+    "known_exploited": true,
+    "date_added": "2023-04-11",
+    "due_date": "2023-05-02",
+    "action": "Apply updates per vendor instructions.",
+    "note": "https://msrc.microsoft.com/update-guide/en-US/vulnerability/CVE-2023-28252;  https://nvd.nist.gov/vuln/detail/CVE-2023-28252"
+  },
+  "CVE-2023-23397": {
+    "known_exploited": true,
+    "date_added": "2023-03-14",
+    "due_date": "2023-04-04",
+    "action": "Apply updates per vendor instructions.",
+    "note": "https://msrc.microsoft.com/update-guide/en-US/vulnerability/CVE-2023-23397, https://msrc.microsoft.com/blog/2023/03/microsoft-mitigates-outlook-elevation-of-privilege-vulnerability/, ;  https://nvd.nist.gov/vuln/detail/CVE-2023-23397"
+  },
+  "CVE-2022-47966": {
+    "known_exploited": true,
+    "date_added": "2023-01-23",
+    "due_date": "2023-02-13",
+    "action": "Apply updates per vendor instructions.",
+    "note": "https://www.manageengine.com/security/advisory/CVE/cve-2022-47966.html;  https://nvd.nist.gov/vuln/detail/CVE-2022-47966"
+  },
+  "CVE-2022-41040": {
+    "known_exploited": true,
+    "date_added": "2022-09-30",
+    "due_date": "2022-10-21",
+    "action": "Apply updates per vendor instructions.",
+    "note": "https://msrc-blog.microsoft.com/2022/09/29/customer-guidance-for-reported-zero-day-vulnerabilities-in-microsoft-exchange-server/;  https://nvd.nist.gov/vuln/detail/CVE-2022-41040"
+  },
+  "CVE-2022-37969": {
+    "known_exploited": true,
+    "date_added": "2022-09-14",
+    "due_date": "2022-10-05",
+    "action": "Apply updates per vendor instructions.",
+    "note": "https://msrc.microsoft.com/update-guide/en-US/vulnerability/CVE-2022-37969;  https://nvd.nist.gov/vuln/detail/CVE-2022-37969"
+  },
+  "CVE-2022-22963": {
+    "known_exploited": true,
+    "date_added": "2022-08-25",
+    "due_date": "2022-09-15",
+    "action": "Apply updates per vendor instructions.",
+    "note": "https://tanzu.vmware.com/security/cve-2022-22963;  https://nvd.nist.gov/vuln/detail/CVE-2022-22963"
+  },
+  "CVE-2022-26925": {
+    "known_exploited": true,
+    "date_added": "2022-07-01",
+    "due_date": "2022-07-22",
+    "action": "Apply remediation actions outlined in CISA guidance [https://www.cisa.gov/guidance-applying-june-microsoft-patch].",
+    "note": "WARNING: This update is required on all Microsoft Windows endpoints but if deployed to domain controllers without additional configuration changes the update breaks PIV/CAC authentication. Read CISA implementation guidance carefully before deploying to domain controllers.;  https://nvd.nist.gov/vuln/detail/CVE-2022-26925"
+  },
+  "CVE-2022-30190": {
+    "known_exploited": true,
+    "date_added": "2022-06-14",
+    "due_date": "2022-07-05",
+    "action": "Apply updates per vendor instructions.",
+    "note": "https://nvd.nist.gov/vuln/detail/CVE-2022-30190"
+  },
+  "CVE-2022-26134": {
+    "known_exploited": true,
+    "date_added": "2022-06-02",
+    "due_date": "2022-06-06",
+    "action": "Immediately block all internet traffic to and from affected products AND apply the update per vendor instructions [https://confluence.atlassian.com/doc/confluence-security-advisory-2022-06-02-1130377146.html] OR remove the affected products by the due date on the right. Note: Once the update is successfully deployed, agencies can reassess the internet blocking rules.",
+    "note": "https://nvd.nist.gov/vuln/detail/CVE-2022-26134"
+  },
+  "CVE-2010-0840": {
+    "known_exploited": true,
+    "date_added": "2022-05-25",
+    "due_date": "2022-06-15",
+    "action": "Apply updates per vendor instructions.",
+    "note": "https://nvd.nist.gov/vuln/detail/CVE-2010-0840"
+  },
+  "CVE-2022-1388": {
+    "known_exploited": true,
+    "date_added": "2022-05-10",
+    "due_date": "2022-05-31",
+    "action": "Apply updates per vendor instructions.",
+    "note": "https://nvd.nist.gov/vuln/detail/CVE-2022-1388"
+  },
+  "CVE-2021-40450": {
+    "known_exploited": true,
+    "date_added": "2022-04-25",
+    "due_date": "2022-05-16",
+    "action": "Apply updates per vendor instructions.",
+    "note": "https://nvd.nist.gov/vuln/detail/CVE-2021-40450"
+  },
+  "CVE-2007-3010": {
+    "known_exploited": true,
+    "date_added": "2022-04-15",
+    "due_date": "2022-05-06",
+    "action": "Apply updates per vendor instructions.",
+    "note": "https://nvd.nist.gov/vuln/detail/CVE-2007-3010"
+  },
+  "CVE-2022-22954": {
+    "known_exploited": true,
+    "date_added": "2022-04-14",
+    "due_date": "2022-05-05",
+    "action": "Apply updates per vendor instructions.",
+    "note": "https://nvd.nist.gov/vuln/detail/CVE-2022-22954"
+  },
+  "CVE-2022-24521": {
+    "known_exploited": true,
+    "date_added": "2022-04-13",
+    "due_date": "2022-05-04",
+    "action": "Apply updates per vendor instructions.",
+    "note": "https://nvd.nist.gov/vuln/detail/CVE-2022-24521"
+  },
+  "CVE-2021-42287": {
+    "known_exploited": true,
+    "date_added": "2022-04-11",
+    "due_date": "2022-05-02",
+    "action": "Apply updates per vendor instructions.",
+    "note": "https://nvd.nist.gov/vuln/detail/CVE-2021-42287"
+  },
+  "CVE-2021-42278": {
+    "known_exploited": true,
+    "date_added": "2022-04-11",
+    "due_date": "2022-05-02",
+    "action": "Apply updates per vendor instructions.",
+    "note": "https://nvd.nist.gov/vuln/detail/CVE-2021-42278"
+  },
+  "CVE-2022-22965": {
+    "known_exploited": true,
+    "date_added": "2022-04-04",
+    "due_date": "2022-04-25",
+    "action": "Apply updates per vendor instructions.",
+    "note": "https://nvd.nist.gov/vuln/detail/CVE-2022-22965"
+  },
+  "CVE-2010-2861": {
+    "known_exploited": true,
+    "date_added": "2022-03-25",
+    "due_date": "2022-04-15",
+    "action": "Apply updates per vendor instructions.",
+    "note": "https://nvd.nist.gov/vuln/detail/CVE-2010-2861"
+  },
+  "CVE-2009-1151": {
+    "known_exploited": true,
+    "date_added": "2022-03-25",
+    "due_date": "2022-04-15",
+    "action": "Apply updates per vendor instructions.",
+    "note": "https://nvd.nist.gov/vuln/detail/CVE-2009-1151"
+  },
+  "CVE-2005-2773": {
+    "known_exploited": true,
+    "date_added": "2022-03-25",
+    "due_date": "2022-04-15",
+    "action": "Apply updates per vendor instructions.",
+    "note": "https://nvd.nist.gov/vuln/detail/CVE-2005-2773"
+  },
+  "CVE-2020-0796": {
+    "known_exploited": true,
+    "date_added": "2022-02-10",
+    "due_date": "2022-08-10",
+    "action": "Apply updates per vendor instructions.",
+    "note": "https://nvd.nist.gov/vuln/detail/CVE-2020-0796"
+  },
+  "CVE-2022-21882": {
+    "known_exploited": true,
+    "date_added": "2022-02-04",
+    "due_date": "2022-02-18",
+    "action": "Apply updates per vendor instructions.",
+    "note": "https://nvd.nist.gov/vuln/detail/CVE-2022-21882"
+  },
+  "CVE-2021-43890": {
+    "known_exploited": true,
+    "date_added": "2021-12-15",
+    "due_date": "2021-12-29",
+    "action": "Apply updates per vendor instructions.",
+    "note": "https://nvd.nist.gov/vuln/detail/CVE-2021-43890"
+  },
+  "CVE-2021-44228": {
+    "known_exploited": true,
+    "date_added": "2021-12-10",
+    "due_date": "2021-12-24",
+    "action": "For all affected software assets for which updates exist, the only acceptable remediation actions are: 1) Apply updates; OR 2) remove affected assets from agency networks. Temporary mitigations using one of the measures provided at https://www.cisa.gov/uscert/ed-22-02-apache-log4j-recommended-mitigation-measures are only acceptable until updates are available.",
+    "note": "https://nvd.nist.gov/vuln/detail/CVE-2021-44228"
+  },
+  "CVE-2019-19781": {
+    "known_exploited": true,
+    "date_added": "2021-11-03",
+    "due_date": "2022-05-03",
+    "action": "Apply updates per vendor instructions.",
+    "note": "https://nvd.nist.gov/vuln/detail/CVE-2019-19781"
+  },
+  "CVE-2021-31955": {
+    "known_exploited": true,
+    "date_added": "2021-11-03",
+    "due_date": "2021-11-17",
+    "action": "Apply updates per vendor instructions.",
+    "note": "https://nvd.nist.gov/vuln/detail/CVE-2021-31955"
+  },
+  "CVE-2021-34523": {
+    "known_exploited": true,
+    "date_added": "2021-11-03",
+    "due_date": "2021-11-17",
+    "action": "Apply updates per vendor instructions.",
+    "note": "https://nvd.nist.gov/vuln/detail/CVE-2021-34523"
+  },
+  "CVE-2021-31207": {
+    "known_exploited": true,
+    "date_added": "2021-11-03",
+    "due_date": "2021-11-17",
+    "action": "Apply updates per vendor instructions.",
+    "note": "https://nvd.nist.gov/vuln/detail/CVE-2021-31207"
+  },
+  "CVE-2021-40444": {
+    "known_exploited": true,
+    "date_added": "2021-11-03",
+    "due_date": "2021-11-17",
+    "action": "Apply updates per vendor instructions.",
+    "note": "https://nvd.nist.gov/vuln/detail/CVE-2021-40444"
+  },
+  "CVE-2021-26855": {
+    "known_exploited": true,
+    "date_added": "2021-11-03",
+    "due_date": "2022-05-03",
+    "action": "Apply updates per vendor instructions.",
+    "note": "Reference CISA's ED 21-02 (https://www.cisa.gov/news-events/directives/ed-21-02-mitigate-microsoft-exchange-premises-product-vulnerabilities) for further guidance and requirements. Note: The due date for addressing this vulnerability aligns with the requirements outlined in ED 21-02. https://nvd.nist.gov/vuln/detail/CVE-2021-26855"
+  },
+  "CVE-2021-27065": {
+    "known_exploited": true,
+    "date_added": "2021-11-03",
+    "due_date": "2022-05-03",
+    "action": "Apply updates per vendor instructions.",
+    "note": "Reference CISA's ED 21-02 (https://www.cisa.gov/news-events/directives/ed-21-02-mitigate-microsoft-exchange-premises-product-vulnerabilities) for further guidance and requirements. Note: The due date for addressing this vulnerability aligns with the requirements outlined in ED 21-02. https://nvd.nist.gov/vuln/detail/CVE-2021-27065"
+  },
+  "CVE-2021-1675": {
+    "known_exploited": true,
+    "date_added": "2021-11-03",
+    "due_date": "2021-11-17",
+    "action": "Apply updates per vendor instructions.",
+    "note": "https://nvd.nist.gov/vuln/detail/CVE-2021-1675"
+  }
+}

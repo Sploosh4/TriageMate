@@ -1,8 +1,29 @@
-# Demo Data Generator — Implementation Plan
+# Demo Data Generator — Implementation Plan (Revision 1)
 
 > **Based on:** `DEMO_DATA_GENERATOR_SCOPE.md` (Intel Team, 1 July 2026)
-> **Current state:** Codebase studied. 5 dependency phases, ~13 hrs. Each phase broken into sub-tasks with exact file paths, function signatures, and implementation logic.
+> **External Audit:** 2 BLOCKERs, 2 HIGH findings, 15 MEDIUM/LOW concerns identified. All addressed in this revision.
+> **Revised estimate:** ~21 hrs (was 13; +8 hrs for BLOCKER fixes, parser robustness, gating, tests)
+> **Current state:** Codebase studied. 5 dependency phases, each broken into sub-tasks with exact file paths, function signatures, and implementation logic.
 > **Convention:** Match existing patterns — `joblib` for ML artifacts, `json` for data files, vanilla JS for frontend, FastAPI routers for endpoints, `logging.getLogger()` for logs.
+
+---
+
+## Auditor Findings Summary
+
+| Finding | Severity | Resolution |
+|---|---|---|
+| **B5** — `cisa_kev` never injected; KEV cache dead data | **BLOCKER** | New `inject_enrichment()` in demo_generator.py patches KEV + EPSS into IngestRequest before ingest (Phase 3.3) |
+| **D5** — Pipeline hits live NVD, not `nvd_cache.json` | **BLOCKER** | New `_read_from_demo_cache()` in nvd.py; when `DEMO_MODE=true`, reads from `nvd_cache.json` instead of live API (Phase 2.5 — NEW) |
+| **B4** — `exploitdb_has_poc`/`metasploit_has_payload` dead in cache | **HIGH** | Fixed by D5 — patch-level references_raw synthesis makes exploitdb/metasploit helpers work from cache |
+| **F3** — Audit checklist missing critical checks | **HIGH** | 9 missing checks added to Phase 7 checklist |
+| **A3** — No deduplication on repeated Generate | MEDIUM | `generate_random_wave()` samples without replacement against current queue; "Generate" disabled during flight |
+| **A4** — `mixed-tier-demo` duplicates seed rows with wrong scores | MEDIUM | Scenario **dropped**. Seed rows ARE the mixed-tier demo. No generation needed. |
+| **B1** — Missing `patch_publication_date` → all `vendor_patch_status=0` | MEDIUM | Added to Tenable payload template + generator |
+| **C1** — `registered_applications` parser fragile | MEDIUM | Explicit normaliser with 28-host test fixture; OS-level fallback |
+| **C4** — Low-severity scenario CVEs not validated <4.0 | MEDIUM | CVEs constrained in scenario definition; audit check added |
+| **D3** — No `DEMO_MODE` gate on endpoints or cmdb | MEDIUM | `DEMO_MODE` env var gates cmdb file-load and all demo/clear endpoints |
+| **E2** — Clear endpoint no rate limit | MEDIUM | Server-side rate limit (1 per 30s); `confirm_token` param |
+| **G3** — 13h estimate under-scoped | — | Revised to ~21 hrs |
 
 ---
 
@@ -73,17 +94,19 @@
            return _FILE_CMDB
    ```
 
-3. **Modify `_stub_lookup()`** in `cmdb.py:178` — Check file CMDB first, fall through to `KNOWN_HOSTS` dict, then defaults:
+3. **Modify `_stub_lookup()`** in `cmdb.py:178` — Check file CMDB first (only if `DEMO_MODE=true`), fall through to `KNOWN_HOSTS` dict, then defaults:
    ```python
    def _stub_lookup(hostname: str) -> dict:
-       file_db = _load_file_cmdb()
-       if hostname in file_db:
-           return dict(file_db[hostname])
+       demo_mode = os.getenv("DEMO_MODE", "").lower() == "true"
+       if demo_mode:
+           file_db = _load_file_cmdb()
+           if hostname in file_db:
+               return dict(file_db[hostname])
        if hostname in KNOWN_HOSTS:
            return dict(KNOWN_HOSTS[hostname])
        return { /* existing defaults */ }
    ```
-   This preserves backward compat — the 7 originals are in both places, but any new host from the JSON file is also found.
+   This preserves backward compat — the 7 originals are in both places. When `DEMO_MODE` is unset, file CMDB is never loaded, preventing mock hosts from polluting a production database. When `DEMO_MODE=true`, the expanded 28-host CMDB is active.
 
 **Files changed:** `backend/data/mock_cmdb.json` (NEW), `backend/integrations/cmdb.py` (modified)
 
@@ -248,6 +271,107 @@ All three are committed to the repo. The refresh script exists for periodic upda
 
 ---
 
+### 2.5 — Cache-to-Pipeline Wiring (`backend/integrations/nvd.py`)
+
+**Rationale (External Auditor BLOCKER D5):** The plan's `nvd_cache.json` is consumed only by the demo generator to build Tenable payloads. The ingest pipeline (`build_feature_vector`, `get_cwe`, `exploitdb.has_poc`, `metasploit.has_payload`) all call live `nvd.get_nvd_data()` — which hits the NVD API over HTTP. The `nvd_cache.json` enrichment fields (`cwe_class`, `nvd_reference_count`, `vulnerability_age_days`, `cvss_exploitability_sub`, `cvss_impact_sub`, `patch_available`) are completely dead. An offline demo produces degenerate zero-valued XGBoost features and empty CWE → no MITRE techniques. This section adds a file-backed read path so the pipeline consumes the same cache the generator builds.
+
+**Modify `backend/integrations/nvd.py`:**
+
+Add at module level:
+```python
+import os as _os
+_DEMO_MODE = _os.getenv("DEMO_MODE", "").lower() == "true"
+_DEMO_CACHE_PATH = Path(__file__).parent.parent / "data" / "nvd_cache.json"
+_DEMO_CACHE: dict | None = None
+
+def _load_demo_cache() -> dict:
+    """Lazy-load nvd_cache.json, cached in module memory."""
+    global _DEMO_CACHE
+    if _DEMO_CACHE is not None:
+        return _DEMO_CACHE
+    try:
+        with open(_DEMO_CACHE_PATH) as f:
+            _DEMO_CACHE = json.load(f)
+        logger.info("Loaded %d CVE entries from nvd_cache.json for demo mode", len(_DEMO_CACHE))
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        logger.warning("Demo cache not loaded: %s", e)
+        _DEMO_CACHE = {}
+    return _DEMO_CACHE
+
+def _read_from_demo_cache(cve_id: str) -> dict | None:
+    """Read a CVE entry from nvd_cache.json and convert to pipeline dict shape.
+
+    Translates the flat cache schema (scope §3.1) to the dict shape
+    get_nvd_data() returns, so all downstream consumers work unchanged.
+
+    Returns None if the CVE is not in the cache.
+    """
+    cache = _load_demo_cache()
+    entry = cache.get(cve_id)
+    if entry is None:
+        return None
+
+    # Synthesize references_raw so exploitdb.has_poc() and
+    # metasploit.has_payload() work from cache data
+    references_raw = []
+    if entry.get("exploitdb_has_poc"):
+        references_raw.append({"url": f"https://www.exploit-db.com/search?cve={cve_id}", "tags": ["Exploit"]})
+    if entry.get("metasploit_has_payload"):
+        references_raw.append({"url": f"https://www.rapid7.com/db/search?q={cve_id}", "tags": ["Exploit", "Metasploit"]})
+
+    return {
+        "cwe_class": entry.get("cwe_class", ""),
+        "nvd_reference_count": entry.get("nvd_reference_count", 0),
+        "vulnerability_age_days": entry.get("vulnerability_age_days", 0),
+        "cvss_exploitability_sub": entry.get("cvss_exploitability_sub", 0.0),
+        "cvss_impact_sub": entry.get("cvss_impact_sub", 0.0),
+        "patch_available": entry.get("patch_available", False),
+        "references_raw": references_raw,
+    }
+```
+
+**Modify `get_nvd_data()`** in `nvd.py:115` — add demo-mode check at top:
+```python
+def get_nvd_data(cve_id: str) -> dict:
+    """Fetch NVD enrichment data for a CVE with 24h in-memory TTL cache.
+
+    In DEMO_MODE, reads from nvd_cache.json instead of the live NVD API.
+    Falls through to live API if the CVE is not in the demo cache.
+    """
+    # Demo mode: read from file cache first
+    if _DEMO_MODE:
+        cached = _read_from_demo_cache(cve_id)
+        if cached is not None:
+            # Still update the in-memory TTL cache so nvd_freshness works
+            now = time.time()
+            _CACHE[cve_id] = (now, cached)
+            return dict(cached)
+        # CVE not in demo cache — fall through to live API
+        logger.warning("CVE %s not in nvd_cache.json — falling back to live NVD", cve_id)
+
+    # Original live-path code follows...
+    now = time.time()
+    if cve_id in _CACHE:
+        ts, data = _CACHE[cve_id]
+        if now - ts < _TTL_SECONDS:
+            return dict(data)
+    # ... rest of existing function unchanged
+```
+
+**Impact on other integrations:**
+- `integrations/exploitdb.has_poc()` calls `get_nvd_data()` → reads `references_raw` → checks for "Exploit" tag → works from synthetic references
+- `integrations/metasploit.has_payload()` same pattern — checks for "Metasploit" tag
+- `ingest_helpers.build_feature_vector()` calls `get_nvd_data()` directly → gets all fields from cache
+- `ingest_cwe.get_cwe()` calls `get_nvd_data()` → gets `cwe_class` from cache → MITRE techniques resolve
+
+**Backward compat:** When `DEMO_MODE` is unset, the function behaves exactly as before (live API only). The `_read_from_demo_cache` path is only entered when the env var is set.
+
+**Files changed:** `backend/integrations/nvd.py` (modify `get_nvd_data`, add `_read_from_demo_cache`, `_load_demo_cache`)
+
+**Effort:** ~3 hrs (was missing from original plan; now on critical path)
+
+---
+
 ## Phase 3: Generator Engine
 
 ### 3.1 — Curated Scenarios (`backend/data/demo_scenarios.json`)
@@ -258,14 +382,19 @@ All three are committed to the repo. The refresh script exists for periodic upda
 
 | ID | Name | Findings | Demo Purpose |
 |---|---|---|---|
-| `ransomware-incident` | Ransomware Incident — Health Sector | 5 critical CVEs on MOVEit + file server | Show clustering, priority escalation |
-| `perimeter-breach` | Perimeter Breach — Transport | 4 CVEs on Citrix ADC + marine systems | Internet-facing focus, MITRE techniques |
+| `ransomware-incident` | Ransomware Incident — Health Sector | 5 critical CVEs on MOVEit + file server | Show clustering, priority escalation, KEV auto-resolve |
+| `perimeter-breach` | Perimeter Breach — Transport | 4 CVEs on Citrix ADC + marine systems | Internet-facing focus, MITRE techniques, KEV auto-resolve |
 | `insider-exfil` | Insider Data Exfiltration — Communities | 4 CVEs on file server + casemgt app | Category 4 data, high wellbeing impact |
 | `supply-chain` | Supply Chain Attack — Finance | 3 CVEs on ITSM tool + budget DB | Show medium-severity triage |
 | `low-severity-hygiene` | Low-Severity Hygiene — Education | 5 CVEs on print server + student DB | Auto-resolve demo, filter by severity |
-| `mixed-tier-demo` | Mixed Tier Demo (Original 7) | Re-uses 7 seed row CVEs + hosts | Backward compat, showcases all tiers |
 
-**Scenario object format:**
+**NOT included: `mixed-tier-demo`.** The 7 seed rows from `seed_data.py` already serve as the mixed-tier demo — they are inserted at startup, score correctly (94, 87, 71, 55, 63, 41, 22), and cover all four tiers. Regenerating them via the generator would create duplicate rows with degraded scores (because `cisa_kev` and `epss_score` flow through different paths). The seed rows are always present; no scenario needed. If the queue was cleared, re-run `python seed_data.py`.
+
+**Scenario CVE validation rules:**
+- Every CVE in `ransomware-incident` and `perimeter-breach` MUST be in `kev_cache.json` (KEV-listed) so the deterministic "Very Critical" auto-resolve fires.
+- Every CVE in `low-severity-hygiene` MUST have `cvss_v3_score < 4.0` in `nvd_cache.json` so auto-resolve "low" fires.
+- Every CVE's `vendor`/`product` in `nvd_cache.json` MUST be compatible with the target host's `operating_system` and `registered_applications` (no Linux-only CVEs on Windows hosts).
+- **Intel Team must review and sign off the exact CVE list for each scenario before `demo_scenarios.json` is written.** This is a pre-build gate.
 ```json
 {
   "id": "ransomware-incident",
@@ -306,25 +435,110 @@ def generate_scenario_findings(scenario_id: str, cmdb_hosts: dict) -> list[dict]
     6. Return list of Tenable payload dicts
     """
 
-def generate_random_wave(size: str, cmdb_hosts: dict) -> list[dict]:
+def generate_random_wave(size: str, existing_queue: list[dict] | None = None) -> list[dict]:
     """Generate a batch of host-appropriate findings.
 
     size: "small" (5-10), "medium" (15-30), "large" (40-60)
 
+    Deduplication: If existing_queue is provided, samples without replacement
+    against current (vulnerability_id, hostname) pairs. Repeated generates
+    will not produce duplicates unless the pool is exhausted.
+
     Algorithm:
     1. For each host in CMDB:
-       a. Extract OS keyword (e.g. "Windows Server 2019")
-       b. Parse registered_applications string → list of app names
+       a. Extract OS keyword via _extract_os_keyword() (e.g. "Windows Server 2019" → "windows")
+       b. Parse registered_applications via _parse_applications() (normalised vendor/product list)
        c. Query nvd_cache for CVEs matching (os + apps)
-       d. Score relevance: exact product match = high, vendor match = medium, keyword in description = low
+       d. Score relevance: exact product match = 3, vendor match = 2, OS match = 1, keyword in description = 0.5
+       e. If a host yields zero matches, fall back to OS-level CVEs (e.g., Windows→windows CVEs)
     2. Weight host selection by internet_facing (2x weight for exposed hosts)
     3. Sample findings from the matched pool with severity distribution:
-       - 20% Critical (CVSS 9.0+)
-       - 30% High (CVSS 7.0-8.9)
-       - 30% Medium (CVSS 4.0-6.9)
-       - 20% Low (CVSS <4.0)
-    4. For each sampled CVE+host pair, construct Tenable payload (same as scenario mode)
+       - 10% Critical (CVSS 9.0+) — bias toward internet-facing
+       - 20% High (CVSS 7.0-8.9)
+       - 40% Medium (CVSS 4.0-6.9)
+       - 30% Low (CVSS <4.0)
+       This matches real enterprise scan distributions better than the original 20/30/30/20.
+    4. Exclude any (cve_id, hostname) already in existing_queue
+    5. For each sampled CVE+host pair, construct Tenable payload (same as scenario mode)
     """
+
+def _extract_os_keyword(operating_system: str) -> str:
+    """Extract a normalised OS keyword from the CMDB OS string.
+
+    Examples:
+        "Windows Server 2019 Standard" → "windows"
+        "Ubuntu 22.04.3 LTS" → "linux"
+        "Citrix NetScaler ADC VPX 13.1-49.13 (FreeBSD-based)" → "freebsd"
+    """
+    os_lower = operating_system.lower()
+    if "windows" in os_lower:
+        return "windows"
+    if any(distro in os_lower for distro in ("ubuntu", "debian", "centos", "rhel", "linux")):
+        return "linux"
+    if "freebsd" in os_lower:
+        return "freebsd"
+    if "solaris" in os_lower:
+        return "solaris"
+    return os_lower.split()[0] if os_lower else "unknown"
+
+def _parse_applications(registered_apps: str) -> list[dict]:
+    """Parse the registered_applications string into a list of normalised
+    {name, vendor, product} dicts for NVD cache matching.
+
+    Examples:
+        "Progress MOVEit Transfer 2023.0.0, IIS 10.0"
+        → [{"name": "Progress MOVEit Transfer", "vendor": "progress", "product": "moveit transfer"},
+           {"name": "IIS", "vendor": "microsoft", "product": "internet information services"}]
+
+    Normalisation:
+        1. Split on commas
+        2. Strip version tokens (\\d+(\\.\\d+)*)
+        3. Lowercase
+        4. Map known product aliases to canonical NVD vendor/product names
+    """
+    if not registered_apps:
+        return []
+
+    import re
+    apps = []
+    KNOWN_ALIASES = {
+        "iis": ("microsoft", "internet information services"),
+        "apache httpd": ("apache", "http server"),
+        "confluence": ("atlassian", "confluence"),
+        "postgresql": ("postgresql", "postgresql"),
+        "connectwise screenconnect": ("connectwise", "screenconnect"),
+        "papercut mf": ("papercut", "papercut mf"),
+        "papercut": ("papercut", "papercut mf"),
+        "manageengine servicedesk plus": ("zoho", "manageengine servicedesk plus"),
+        "servicedesk plus": ("zoho", "manageengine servicedesk plus"),
+        "moveit transfer": ("progress", "moveit transfer"),
+        "moveit": ("progress", "moveit transfer"),
+        "microsoft office": ("microsoft", "office"),
+        "microsoft sql server": ("microsoft", "sql server"),
+        "citrix gateway": ("citrix", "gateway"),
+        "citrix adc": ("citrix", "application delivery controller"),
+        "netscaler": ("citrix", "netscaler"),
+        "java": ("oracle", "jre"),
+    }
+
+    for segment in registered_apps.split(","):
+        stripped = re.sub(r"\d+(\.\d+)*(-\d+)?", "", segment).strip()
+        clean = re.sub(r"\s+", " ", stripped).lower()
+        if not clean or len(clean) < 3:
+            continue
+
+        # Check known aliases
+        matched = False
+        for alias_key, (vendor, product) in KNOWN_ALIASES.items():
+            if alias_key in clean or clean in alias_key:
+                apps.append({"name": segment.strip(), "vendor": vendor, "product": product})
+                matched = True
+                break
+        if not matched:
+            # Best-effort: treat as vendor=product=clean
+            apps.append({"name": segment.strip(), "vendor": clean, "product": clean})
+
+    return apps
 
 def generate_tenable_payload(cve_id: str, hostname: str, cmdb_host: dict,
                               nvd_entry: dict, epss_entry: dict | None,
@@ -334,13 +548,18 @@ def generate_tenable_payload(cve_id: str, hostname: str, cmdb_host: dict,
     Uses the template from Scope §5.3. Fills in:
     - asset.fqdn, asset.hostname, asset.ipv4, asset.operating_system
     - plugin.cve, plugin.cvss3_base_score, plugin.cvss3_vector
-    - plugin.description, plugin.synopsis, plugin.exploit_available
+    - plugin.description, plugin.synopsis, plugin.exploit_available,
+      plugin.exploit_framework_metasploit, plugin.has_patch,
+      plugin.patch_publication_date  ← REQUIRED for vendor_patch_status
     - output (generated realistic scanner output text)
-    - Picks a sensible plugin.id and plugin.family based on CVE metadata
 
-    Keys decision: Do NOT include EPSS in the Tenable payload (Tenable doesn't provide it).
-    EPSS is fetched separately by the pipeline via the existing substitution engine.
-    cisa_kev is NOT in the Tenable payload — it's set via a separate lookup.
+    Keys decisions:
+    - EPSS is NOT in the Tenable payload — injected post-parse via inject_enrichment()
+    - cisa_kev is NOT in the Tenable payload — injected post-parse via inject_enrichment()
+    - plugin.id is a stable hash of the CVE ID (cosmetic, not used by pipeline)
+    - plugin.family derived from CWE class (cosmetic)
+    - patch_publication_date set to a recent date when has_patch is true
+      (required by _compute_vendor_patch_status() which checks BOTH fields)
     """
 
 def generate_realistic_scanner_output(cve_id: str, description: str) -> str:
@@ -385,21 +604,75 @@ All caches are loaded once per process lifetime and cached in module-level varia
 
 **IP address assignment:**
 - Each host in `mock_cmdb.json` doesn't have `ipv4` but the Tenable payload needs one.
-- The generator assigns **deterministic fake IPs** based on host index: `10.{dept_index}.{host_index % 255}.{50 + (host_index % 200)}`
-- This ensures the same host gets the same IP across all waves and scenarios.
+- The generator assigns **deterministic fake IPs** via a stable hash of the hostname:
+  ```python
+  # Dept index mapped explicitly (not from JSON position)
+  DEPT_NETWORKS = {
+      "health": 1, "transport": 2, "education": 3, "communities": 4,
+      "wapol": 5, "finance": 6, "justice": 7, "water": 8,
+      "sharedservices": 9, "parliament": 10, "dpird": 11, "dfes": 12,
+  }
+
+  def _assign_ip(hostname: str) -> str:
+      """Stable, deterministic IP per hostname."""
+      dept = _extract_department(hostname)  # parse from domain
+      dept_idx = DEPT_NETWORKS.get(dept, 0)
+      host_hash = abs(hash(hostname)) % 255
+      return f"10.{dept_idx}.{host_hash}.50"
+  ```
+- This ensures the same host gets the same IP across all waves, scenarios, and runs. Hash-based (not array-position-based) so re-ordering `mock_cmdb.json` does not change IPs.
 
 ---
 
-### 3.3 — Integration with Ingest Router
+### 3.3 — Enrichment Injection + API Integration
 
-**Modify `backend/routers/ingest.py`:**
+**Rationale (External Auditor BLOCKER B5):** `parse_tenable_finding()` hardcodes `cisa_kev=False` and `epss_score=None`. The KEV and EPSS caches exist but are never injected into the IngestRequest before ingest. Without KEV, no generated finding can trigger Tier 0's "Very Critical" deterministic auto-resolve — the headline demo behaviour. This section adds an explicit injection step.
 
-Add two new endpoints:
+**New function in `backend/integrations/demo_generator.py`:**
 
 ```python
+def inject_enrichment(ingest_requests: list) -> list:
+    """Patch IngestRequest objects with KEV and EPSS from local caches.
+
+    Args:
+        ingest_requests: List of IngestRequest produced by parse_tenable_batch()
+
+    Returns:
+        Same list, mutated in place, with cisa_kev and epss_score patched
+        where cache data is available.
+    """
+    kev = _load_kev_cache()
+    epss = _load_epss_cache()
+
+    for ir in ingest_requests:
+        cve_id = ir.vulnerability_id
+        if cve_id in kev:
+            ir.cisa_kev = True
+        if cve_id in epss:
+            ir.epss_score = epss[cve_id].get("epss", None)
+
+    return ingest_requests
+```
+
+**New/modified endpoints in `backend/routers/ingest.py`:**
+
+All demo endpoints are gated behind `DEMO_MODE=true`. When unset, they return 404.
+
+```python
+import os
+
+def _demo_only():
+    """Return 404 if DEMO_MODE is not enabled."""
+    if os.getenv("DEMO_MODE", "").lower() != "true":
+        from fastapi.responses import JSONResponse
+        return JSONResponse(status_code=404, content={"detail": "Not Found"})
+
 @router.get("/api/demo/scenarios")
 async def list_demo_scenarios():
     """Return available demo scenarios for the UI picker."""
+    gate = _demo_only()
+    if gate:
+        return gate
     from integrations.demo_generator import get_scenarios_list
     return get_scenarios_list()
 
@@ -414,15 +687,22 @@ async def generate_demo_findings(request: Request):
 
     Internally:
     1. Generates Tenable-format payloads via demo_generator
-    2. Submits each to the existing ingest_tenable logic
-    3. Returns list of CaseResponse
+    2. Parses to IngestRequest via parse_tenable_batch
+    3. Injects KEV + EPSS enrichment from local caches (inject_enrichment)
+    4. Submits to ingest_vulnerability_batch
+    5. Returns list of CaseResponse
     """
+    gate = _demo_only()
+    if gate:
+        return gate
+
     body = await request.json()
     mode = body.get("mode", "scenario")
 
     from integrations.demo_generator import (
         generate_scenario_findings,
         generate_random_wave,
+        inject_enrichment,
     )
 
     if mode == "scenario":
@@ -432,16 +712,27 @@ async def generate_demo_findings(request: Request):
         findings = generate_scenario_findings(scenario_id)
     elif mode == "random":
         size = body.get("size", "small")
-        findings = generate_random_wave(size)
+        # Read current queue to avoid duplicates
+        from database import get_db
+        conn = get_db()
+        cursor = conn.cursor()
+        cursor.execute("SELECT vulnerability_id, hostname FROM vulnerabilities")
+        existing = [{"vulnerability_id": r[0], "hostname": r[1]} for r in cursor.fetchall()]
+        conn.close()
+        findings = generate_random_wave(size, existing_queue=existing)
     else:
         return JSONResponse(status_code=400, content={"detail": f"Unknown mode: {mode}"})
 
     if not findings:
         return JSONResponse(status_code=400, content={"detail": "No findings generated"})
 
-    # Submit via the existing Tenable pipeline
+    # Parse Tenable payloads → IngestRequest list
     from integrations.tenable import parse_tenable_batch
     requests_list = parse_tenable_batch(findings)
+
+    # Inject KEV + EPSS from local caches
+    requests_list = inject_enrichment(requests_list)
+
     return await ingest_vulnerability_batch(requests_list)
 ```
 
@@ -538,79 +829,63 @@ This mirrors `vulnerabilities` exactly plus `resolved_at` and `resolution_reason
 ### 4.2 — Clear Endpoint (`backend/routers/ingest.py`)
 
 ```python
+# Server-side rate limit: max 1 clear per 30 seconds
+_CLEAR_LAST_TIME: float = 0.0
+_CLEAR_MIN_INTERVAL: float = 30.0  # seconds
+
 @router.post("/api/ingest/clear")
 async def clear_all_findings():
     """Archive all findings and clear the queue.
 
-    1. Copy all rows from vulnerabilities → resolved_vulnerabilities
+    Gated behind DEMO_MODE=true (returns 404 otherwise).
+    Rate-limited to prevent abuse (1 per 30s).
+
+    1. Copy all rows from vulnerabilities → resolved_vulnerabilities (atomic)
     2. DELETE FROM vulnerabilities
     3. Return count of archived rows + confirmation
     """
-    conn = get_db()
-    cursor = conn.cursor()
+    gate = _demo_only()
+    if gate:
+        return gate
 
-    # Copy rows
-    cursor.execute("""
-        INSERT INTO resolved_vulnerabilities (
-            original_id, vulnerability_id, hostname, cvss_score, cvss_vector,
-            cisa_kev, epss_score, mission_prevalence, mission_prevalence_conf,
-            public_wellbeing_impact, public_wellbeing_conf,
-            tier_0_routing, tier_0_resolution, tier_1_confidence,
-            tier_1_exploitation_prob, tier_1_routing, tier_2_text_conflict,
-            tier_2_conflict_note, tier_2_rag_result, tier_2_confidence,
-            tier_2_resolution_summary, priority_score, risk_band,
-            cvss_contribution, epss_contribution, asset_criticality_contribution,
-            exposure_contribution, patch_remediation_contribution,
-            epss_substituted, epss_substituted_value, epss_substitution_confidence,
-            epss_substitution_reason, data_classification, network_zone,
-            interface_type, patch_cycle, last_patch_date, last_scan_date,
-            operating_system, role, business_owner, technical_owner,
-            registered_applications, dependent_assets, service_account,
-            detection_tier, detection_reason, scanner_output_raw,
-            weakness_template_raw, advisory_ref_id, advisory_quote,
-            investigation_notes, mitre_techniques_json, scoring_weights_json,
-            asset_registry_json, summary_paragraphs_json,
-            created_at, updated_at, last_recheck_date,
-            audit_selected, audit_result, audit_date,
-            resolution_reason
+    global _CLEAR_LAST_TIME
+    import time as _time
+    now = _time.time()
+    if now - _CLEAR_LAST_TIME < _CLEAR_MIN_INTERVAL:
+        return JSONResponse(
+            status_code=429,
+            content={"detail": f"Rate limited. Try again in {int(_CLEAR_MIN_INTERVAL - (now - _CLEAR_LAST_TIME))}s."}
         )
-        SELECT
-            id, vulnerability_id, hostname, cvss_score, cvss_vector,
-            cisa_kev, epss_score, mission_prevalence, mission_prevalence_conf,
-            public_wellbeing_impact, public_wellbeing_conf,
-            tier_0_routing, tier_0_resolution, tier_1_confidence,
-            tier_1_exploitation_prob, tier_1_routing, tier_2_text_conflict,
-            tier_2_conflict_note, tier_2_rag_result, tier_2_confidence,
-            tier_2_resolution_summary, priority_score, risk_band,
-            cvss_contribution, epss_contribution, asset_criticality_contribution,
-            exposure_contribution, patch_remediation_contribution,
-            epss_substituted, epss_substituted_value, epss_substitution_confidence,
-            epss_substitution_reason, data_classification, network_zone,
-            interface_type, patch_cycle, last_patch_date, last_scan_date,
-            operating_system, role, business_owner, technical_owner,
-            registered_applications, dependent_assets, service_account,
-            detection_tier, detection_reason, scanner_output_raw,
-            weakness_template_raw, advisory_ref_id, advisory_quote,
-            investigation_notes, mitre_techniques_json, scoring_weights_json,
-            asset_registry_json, summary_paragraphs_json,
-            created_at, updated_at, last_recheck_date,
-            audit_selected, audit_result, audit_date,
-            'demo_clear'
-        FROM vulnerabilities
-    """)
-    archived_count = cursor.rowcount
+    _CLEAR_LAST_TIME = now
 
-    # Delete all vulnerabilities
-    cursor.execute("DELETE FROM vulnerabilities")
-    deleted_count = cursor.rowcount
+    conn = get_db()
 
-    conn.commit()
+    # Wrapped in explicit transaction for atomicity
+    with conn:
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            INSERT INTO resolved_vulnerabilities (
+                original_id, vulnerability_id, hostname, cvss_score, cvss_vector,
+                ...all columns..., resolution_reason
+            )
+            SELECT id, vulnerability_id, hostname, cvss_score, cvss_vector,
+                   ...all columns..., 'demo_clear'
+            FROM vulnerabilities
+        """)
+        archived_count = cursor.rowcount
+
+        cursor.execute("DELETE FROM vulnerabilities")
+        deleted_count = cursor.rowcount
+
+        if archived_count != deleted_count:
+            raise RuntimeError(f"Clear mismatch: archived {archived_count} but deleted {deleted_count}")
+
     conn.close()
 
     return {
         "status": "ok",
         "archived_count": archived_count,
-        "deleted_count": deleted_count,
         "message": f"{archived_count} findings archived. Queue cleared."
     }
 ```
@@ -815,6 +1090,8 @@ Add styles for:
 
 **In `wireEventListeners()`:** Add call to `wireDemoEventListeners()` at the end (guarded — only if demo controls exist in DOM).
 
+**Important — X-API-Key compatibility (E1):** The demo controls (and existing `api.js`) do not send the `X-API-Key` header. If `TRIAGEMATE_API_KEY` is set, both the existing UI and demo controls will receive 401s. **For the demo, run with auth unset (localhost).** This is consistent with how the rest of the frontend works — it's a pre-existing gap, not introduced by this plan. If auth is needed in future, `api.js` should be enhanced with a shared `apiFetch()` wrapper that reads the key from a meta tag or `localStorage`.
+
 ---
 
 ## Phase 6: Testing
@@ -826,10 +1103,12 @@ Add styles for:
 **Tests:**
 
 ```python
+# ─── Structural tests ────────────────────────────────────────────────
+
 def test_load_scenarios():
-    """Scenarios JSON loads and has expected structure."""
+    """Scenarios JSON loads and has expected structure (5 scenarios, not 6)."""
     scenarios = load_scenarios()
-    assert len(scenarios) >= 6
+    assert len(scenarios) == 5  # mixed-tier-demo dropped
     for s in scenarios:
         assert "id" in s
         assert "name" in s
@@ -849,17 +1128,15 @@ def test_generate_scenario_findings_returns_list_of_dicts():
         assert "output" in f
 
 def test_generate_tenable_payload_has_required_fields():
-    """Single payload has all Tenable export fields."""
+    """Single payload has all Tenable export fields including patch_publication_date."""
     from integrations.demo_generator import generate_tenable_payload
-    payload = generate_tenable_payload(
-        cve_id="CVE-2024-3094",
-        hostname="PRD-MOVEIT-WEB01.health.wa.gov.au",
-        ...
-    )
+    payload = generate_tenable_payload(...)
     assert payload["asset"]["fqdn"]
     assert payload["plugin"]["cve"]
     assert payload["plugin"]["cvss3_base_score"]
     assert payload["plugin"]["description"]
+    assert payload["plugin"]["has_patch"] is not None
+    assert "patch_publication_date" in payload["plugin"]  # B1 fix
     assert payload["output"]
 
 def test_random_wave_respects_size():
@@ -872,27 +1149,149 @@ def test_random_wave_respects_size():
     assert 15 <= len(medium) <= 30
     assert 40 <= len(large) <= 60
 
-def test_clear_endpoint_archives_rows():
-    """POST /api/ingest/clear archives and empties queue."""
-    # Requires FastAPI TestClient
-
-def test_demo_generate_endpoint_returns_case_responses():
-    """POST /api/demo/generate returns valid CaseResponse list."""
-    # Requires FastAPI TestClient
-
 def test_scenario_findings_map_to_valid_ingest_requests():
-    """Every scenario finding produces a parseable Tenable record."""
-    from integrations.demo_generator import generate_scenario_findings
+    """Every scenario finding produces a parseable Tenable → IngestRequest pipeline."""
+    from integrations.demo_generator import generate_scenario_findings, inject_enrichment
     from integrations.tenable import parse_tenable_batch
     for scenario in load_scenarios():
         findings = generate_scenario_findings(scenario["id"])
         ingests = parse_tenable_batch(findings)
+        ingests = inject_enrichment(ingests)  # B5 — verify injection works
         assert len(ingests) == len(findings)
         for ir in ingests:
             assert ir.vulnerability_id
             assert ir.hostname
             assert ir.cvss_score > 0
+
+# ─── B5: KEV injection test ─────────────────────────────────────────
+
+def test_kev_injection_marks_cisa_kev_true_for_known_cves():
+    """KEV-listed CVEs in scenario findings get cisa_kev=True after inject_enrichment."""
+    from integrations.demo_generator import generate_scenario_findings, inject_enrichment
+    from integrations.tenable import parse_tenable_batch
+
+    # ransomware-incident should have KEV CVEs
+    findings = generate_scenario_findings("ransomware-incident")
+    ingests = parse_tenable_batch(findings)
+    ingests = inject_enrichment(ingests)
+
+    kev_found = any(ir.cisa_kev for ir in ingests)
+    assert kev_found, "No CVE in ransomware-incident was KEV-listed — injection failed or scenario is misconfigured"
+
+# ─── D5: offline NVD enrichment test ────────────────────────────────
+
+def test_demo_cache_nvd_lookup_returns_cwe_class():
+    """When DEMO_MODE=true, get_nvd_data() reads from nvd_cache.json."""
+    os.environ["DEMO_MODE"] = "true"
+    try:
+        from integrations.nvd import get_nvd_data
+        # Pick a CVE known to be in nvd_cache.json
+        data = get_nvd_data("CVE-2023-34362")
+        assert data["cwe_class"] != "", "CWE class is empty — cache not being read"
+        assert data["nvd_reference_count"] > 0
+        assert "references_raw" in data
+    finally:
+        del os.environ["DEMO_MODE"]
+
+def test_demo_cache_synthesizes_references_for_exploits():
+    """When cache has exploitdb_has_poc=True, references_raw has Exploit tag."""
+    os.environ["DEMO_MODE"] = "true"
+    try:
+        from integrations.nvd import get_nvd_data
+        from integrations.exploitdb import has_poc
+        # Pick a CVE with exploitdb_has_poc=True in the cache
+        result = has_poc("CVE-2023-34362")
+        assert result is True, "exploitdb.has_poc() returned False from demo cache"
+    finally:
+        del os.environ["DEMO_MODE"]
+
+# ─── A3: deduplication test ─────────────────────────────────────────
+
+def test_random_wave_deduplicates_against_existing_queue():
+    """Repeated generate excludes CVEs already in queue."""
+    from integrations.demo_generator import generate_random_wave
+    first = generate_random_wave("small")
+    existing = [{"vulnerability_id": f["plugin"]["cve"][0],
+                  "hostname": f["asset"]["fqdn"]} for f in first]
+    second = generate_random_wave("small", existing_queue=existing)
+    # All second-wave findings should be novel
+    first_pairs = {(f["plugin"]["cve"][0], f["asset"]["fqdn"]) for f in first}
+    second_pairs = {(f["plugin"]["cve"][0], f["asset"]["fqdn"]) for f in second}
+    assert first_pairs.isdisjoint(second_pairs), "Duplicate findings in second wave"
+
+# ─── B1: vendor_patch_status test ───────────────────────────────────
+
+def test_generated_finding_with_patch_has_vendor_patch_status_1():
+    """When nvd_cache says patch_available=True AND patch_publication_date is set,
+    _compute_vendor_patch_status() returns 1."""
+    from integrations.tenable import _compute_vendor_patch_status
+    plugin = {"has_patch": True, "patch_publication_date": "2026-01-01"}
+    assert _compute_vendor_patch_status(plugin) == 1
+
+def test_tenable_payload_includes_patch_publication_date():
+    """Every generated finding with has_patch has a non-empty patch_publication_date."""
+    from integrations.demo_generator import generate_tenable_payload
+    # Test with a nvd_cache entry that has patch_available=True
+    payload = generate_tenable_payload("CVE-2023-34362", "PRD-MOVEIT-WEB01.health.wa.gov.au", ...)
+    if payload["plugin"]["has_patch"]:
+        assert payload["plugin"]["patch_publication_date"], "patch_publication_date missing"
+
+# ─── C1: app parser test ────────────────────────────────────────────
+
+def test_parse_applications_normalises_moveit():
+    """Progress MOVEit Transfer normalises to (progress, moveit transfer)."""
+    from integrations.demo_generator import _parse_applications
+    apps = _parse_applications("Progress MOVEit Transfer 2023.0.0")
+    assert any(a["vendor"] == "progress" for a in apps)
+    assert any(a["product"] == "moveit transfer" for a in apps)
+
+def test_parse_applications_normalises_iis():
+    """IIS normalises to microsoft internet information services."""
+    from integrations.demo_generator import _parse_applications
+    apps = _parse_applications("IIS 10.0")
+    assert any(a["vendor"] == "microsoft" for a in apps)
+
+def test_all_cmdb_hosts_yield_at_least_one_application():
+    """Every host in mock_cmdb.json has parseable registered_applications."""
+    import json
+    from integrations.demo_generator import _parse_applications
+    cmdb = json.load(open("data/mock_cmdb.json"))
+    for host in cmdb:
+        apps = _parse_applications(host.get("registered_applications", ""))
+        assert len(apps) > 0, f"Host {host['hostname']} yielded zero apps"
+
+# ─── C4: low-severity auto-resolve test ─────────────────────────────
+
+def test_low_severity_scenario_cves_are_under_cvss_4():
+    """All CVEs in low-severity-hygiene scenario have cvss_v3_score < 4.0."""
+    from integrations.demo_generator import load_scenarios, _load_nvd_cache
+    nvd = _load_nvd_cache()
+    scenarios = load_scenarios()
+    for s in scenarios:
+        if s["id"] == "low-severity-hygiene":
+            for f in s["findings"]:
+                cve_entry = nvd.get(f["cve_id"], {})
+                score = cve_entry.get("cvss_v3_score", 99)
+                assert score < 4.0, f"CVE {f['cve_id']} has CVSS {score} — won't auto-resolve low"
+
+# ─── D3: DEMO_MODE gating test ──────────────────────────────────────
+
+def test_demo_endpoints_return_404_when_demo_mode_off():
+    """When DEMO_MODE is unset, /api/demo/* and /api/ingest/clear return 404."""
+    # Requires FastAPI TestClient
+
+def test_demo_mode_off_cmdb_does_not_load_file():
+    """When DEMO_MODE is unset, _stub_lookup does not read mock_cmdb.json."""
+    # Requires FastAPI TestClient
+
+# ─── D2: clear atomicity test ────────────────────────────────────────
+
+def test_clear_endpoint_is_atomic():
+    """POST /api/ingest/clear archives and deletes same count."""
+    # Requires FastAPI TestClient
 ```
+
+**Effort:** ~2 hrs (was 1.5; +0.5 for the 7 new BLOCKER-targeted tests)
 
 ---
 
@@ -902,9 +1301,9 @@ After implementation, Audit Team verifies:
 
 | # | Check | Method |
 |---|---|---|
-| 7.1 | `mock_cmdb.json` has 25-30 hosts with all 15 fields | Read file, count |
-| 7.2 | All hosts resolve via `get_asset_context()` | `curl` + backend log inspection |
-| 7.3 | Pre-tier model retrained successfully | Run `train_pre_tier.py`, check accuracy |
+| 7.1 | `mock_cmdb.json` has 28 hosts with all 15 fields | Read file, count |
+| 7.2 | All hosts resolve via `get_asset_context()` when DEMO_MODE=true | `curl` + backend log inspection |
+| 7.3 | Pre-tier model retrained successfully (accuracy >0.80 on both labels) | Run `train_pre_tier.py`, check accuracy |
 | 7.4 | `KNOWN_TAGS` includes all 28 hosts | Read `pre_tier.py` |
 | 7.5 | `nvd_cache.json` has 500+ entries | `python3 -c "import json; print(len(json.load(open('backend/data/nvd_cache.json'))))"` |
 | 7.6 | `kev_cache.json` has 50+ entries | Same method |
@@ -912,52 +1311,67 @@ After implementation, Audit Team verifies:
 | 7.8 | Generator produces valid Tenable payloads | Run `test_demo_generator.py` |
 | 7.9 | `POST /api/demo/generate` with scenario → returns CaseResponse list | curl |
 | 7.10 | `POST /api/demo/generate` with random → returns CaseResponse list | curl |
-| 7.11 | Generated findings appear in queue with real scores | curl queue, verify not all same score |
+| 7.11 | Generated findings appear in queue with non-degenerate scores (not all 0, not all identical) | curl queue, verify score variance |
 | 7.12 | `POST /api/ingest/clear` archives + clears queue | curl clear, verify queue empty |
 | 7.13 | Clear counts match; `resolved_vulnerabilities` has the rows | SQLite query |
 | 7.14 | Demo toggle renders in frontend | Browser |
 | 7.15 | Scenario picker populates from API | Browser |
-| 7.16 | "Generate Wave" triggers queue refresh | Browser |
+| 7.16 | "Generate Wave" triggers queue refresh without duplicates | Browser — generate same scenario twice, verify no duplicate rows |
 | 7.17 | "Clear All" archives + empties visually | Browser |
 | 7.18 | 7 seed rows still score within ±3 of expected (94, 87, 71, 55, 63, 41, 22) | curl + compare |
 | 7.19 | All 20+ existing tests still pass | `pytest backend/tests/ -v` |
-| 7.20 | New tests pass | `pytest backend/tests/test_demo_generator.py -v` |
+| 7.20 | New tests pass (17+ tests) | `pytest backend/tests/test_demo_generator.py -v` |
 | 7.21 | Unknown hostname ingest still works (defaults) | curl with made-up hostname |
 | 7.22 | `/docs` shows new endpoints: `/api/demo/scenarios`, `/api/demo/generate`, `/api/ingest/clear` | Browser |
+| **7.23** | **OFFLINE demo works** — disable network, generate scenario, verify non-degenerate scores + MITRE techniques populate | Run server with `DEMO_MODE=true`, no network, generate `ransomware-incident`, check case view has MITRE techniques and score is not 0 |
+| **7.24** | **KEV auto-resolve triggers** — generate `ransomware-incident`; at least one finding has `tier_0_routing="auto_resolved"` and `detection_tier="Deterministic"` | curl queue, grep for "Deterministic" in ransomware findings |
+| **7.25** | **`nvd_cache.json` fields reach XGBoost** — in DEMO_MODE, verify `get_nvd_data()` returns non-zero `nvd_reference_count` and `cwe_class` for a known CVE | Python REPL in backend/ |
+| **7.26** | **`low-severity-hygiene` auto-resolves** — all 5 findings produce `tier_0_routing="auto_resolved"` with `resolution="low"` | curl queue after generating that scenario |
+| **7.27** | **No duplicate seed rows** — after running all scenarios, verify each `(vulnerability_id, hostname)` appears at most once in the queue (seed rows included) | SQL query: `SELECT vulnerability_id, hostname, COUNT(*) FROM vulnerabilities GROUP BY 1,2 HAVING COUNT(*)>1` |
+| **7.28** | **Archive table column parity** — `PRAGMA table_info(vulnerabilities)` matches `PRAGMA table_info(resolved_vulnerabilities)` minus the 2 archive-specific columns | SQLite compare |
+| **7.29** | **Clear is rate-limited** — call `POST /api/ingest/clear` twice within 30s; second call returns 429 | curl |
+| **7.30** | **DEMO_MODE gates endpoints** — with `DEMO_MODE` unset, `/api/demo/scenarios` returns 404 | curl |
+| **7.31** | **DEMO_MODE gates cmdb** — with `DEMO_MODE` unset, a host only in `mock_cmdb.json` (not in `KNOWN_HOSTS`) returns default Category 1 | curl ingest with new hostname, check defaults |
+| **7.32** | **`patch_publication_date` in payload** — generated Tenable findings have non-empty `patch_publication_date` when `has_patch=true` | Inspect raw Tenable payload from generator
 
 ---
 
-## Dependency Order (Strike Team Execution)
+## Dependency Order (Strike Team Execution) — Revised for Auditor Fixes
 
 ```
-Day 1:
-  ┌── 1.1 Mock CMDB JSON + cmdb.py adapter ────── (1 hr)
-  ├── 1.2 Pre-tier training data + retrain ─────── (1 hr, after 1.1)
-  ├── 2.3 KEV cache script ─────────────────────── (0.5 hr, parallel)
-  └── 2.1 NVD cache script ─────────────────────── (2 hrs, parallel with 1.1/1.2)
+Day 1: Foundation + Caches
+  ┌── 1.1 Mock CMDB JSON + cmdb.py adapter (DEMO_MODE gate) ─── (1.5 hrs)
+  ├── 1.2 Pre-tier training data + retrain ───────────────────── (1 hr, after 1.1)
+  ├── 2.1 NVD cache script ───────────────────────────────────── (2 hrs, parallel)
+  ├── 2.3 KEV cache script ───────────────────────────────────── (0.5 hr, parallel)
+  └── 2.4 Run all cache scripts (populate data) ──────────────── (0.5 hr, after 2.1+2.3)
 
-Day 2:
-  ├── 2.4 Run all cache scripts (populate data) ── (0.5 hr, needs 2.1+2.3)
-  ├── 3.1 Scenarios JSON ───────────────────────── (1 hr, needs cache data)
-  └── 3.2 Generator logic ──────────────────────── (3 hrs, needs 3.1 + caches)
+Day 2: Generator + Pipeline Wiring (critical path)
+  ├── 2.5 Cache-to-pipeline wiring (nvd.py _read_from_demo_cache) ─ (3 hrs, BLOCKER D5)
+  ├── 3.1 Scenarios JSON (5 scenarios, CVE validation, Intel review) (1.5 hrs, needs cache data)
+  └── 3.2 Generator logic (with inject_enrichment, app parser, dedup, B1/B2/B5 fixes) (3.5 hrs, needs 3.1 + 2.5)
 
-Day 3:
-  ├── 4.1 Archive table migration ──────────────── (0.5 hr)
-  ├── 4.2 Clear endpoint ───────────────────────── (0.5 hr)
-  ├── 5.1 Demo controls JS ─────────────────────── (1.5 hrs)
-  ├── 5.2 HTML integration ─────────────────────── (0.25 hr)
-  ├── 5.3 CSS additions ────────────────────────── (0.25 hr)
-  └── 6.1 Generator tests ──────────────────────── (1.5 hrs)
+Day 3: API + UI
+  ├── 3.3 API endpoints (DEMO_MODE gates, inject_enrichment, dedup) (1.5 hrs, needs 3.2)
+  ├── 4.1 Archive table migration ──────────────────────────────── (0.5 hr)
+  ├── 4.2 Clear endpoint (DEMO_MODE gate, rate limit, atomic) ── (1 hr)
+  ├── 5.1 Demo controls JS ────────────────────────────────────── (1.5 hrs)
+  ├── 5.2 HTML integration ────────────────────────────────────── (0.25 hr)
+  ├── 5.3 CSS additions ───────────────────────────────────────── (0.25 hr, parallel with 5.1/5.2)
+
+Day 4: Tests + Audit
+  └── 6.1 Generator tests (17 tests including BLOCKER-targeted) ── (2 hrs)
 ```
 
-**Parallel opportunities:**
-- 1.1 + 2.1 + 2.3 all start simultaneously (no shared dependencies)
-- 3.1 + cache population can run in parallel
-- 4.1 + 4.2 are sequential (migration before endpoint)
+**Parallel opportunities (preserved):**
+- 1.1 + 2.1 + 2.3 all start simultaneously
+- 3.1 + cache population can overlap
 - 5.1 + 5.2 + 5.3 can run in parallel
-- 6.1 can start as soon as 3.2 is done (generator tests don't need UI)
+- 6.1 can start as soon as 3.2 is done
 
-**Total: ~13 hrs** across 3 days.
+**New critical path:** 2.5 (cache wiring) → 3.2 (generator) → 3.3 (endpoints) — these are sequential and account for 8 of the 21 hours.
+
+**Total: ~21 hrs** across 4 days. (Original: ~13 hrs; +8 hrs for BLOCKER fixes, app parser, DEMO_MODE gating, additional tests/audit checks.)
 
 ---
 
@@ -966,7 +1380,7 @@ Day 3:
 | File | Action | Phase |
 |---|---|---|
 | `backend/data/mock_cmdb.json` | NEW — 28 host objects | 1.1 |
-| `backend/integrations/cmdb.py` | MODIFY — file-based lookup | 1.1 |
+| `backend/integrations/cmdb.py` | MODIFY — file-based lookup + DEMO_MODE gate | 1.1 |
 | `backend/ml/pretier_training_data.json` | MODIFY — +28 records | 1.2 |
 | `backend/pipeline/pre_tier.py` | MODIFY — KNOWN_TAGS expanded | 1.2 |
 | `backend/ml/pre_tier_model.pkl` | REGENERATE — retrained | 1.2 |
@@ -974,12 +1388,13 @@ Day 3:
 | `backend/scripts/refresh_caches.py` | NEW — unified refresh CLI | 2.1+2.3 |
 | `backend/data/nvd_cache.json` | NEW — 500-1000 NVD entries | 2.1 |
 | `backend/data/kev_cache.json` | NEW — 50-200 KEV entries | 2.3 |
-| `backend/data/demo_scenarios.json` | NEW — 6 curated scenarios | 3.1 |
-| `backend/integrations/demo_generator.py` | NEW — generator engine | 3.2 |
-| `backend/routers/ingest.py` | MODIFY — `/api/demo/*` + `/api/ingest/clear` | 3.3+4.2 |
+| `backend/integrations/nvd.py` | MODIFY — `_read_from_demo_cache()` + demo gate in `get_nvd_data()` | **2.5 (NEW — BLOCKER D5)** |
+| `backend/data/demo_scenarios.json` | NEW — 5 curated scenarios (Intel-reviewed) | 3.1 |
+| `backend/integrations/demo_generator.py` | NEW — generator engine + inject_enrichment + app parser + dedup | 3.2 |
+| `backend/routers/ingest.py` | MODIFY — `/api/demo/*` + `/api/ingest/clear` (all DEMO_MODE gated, rate-limited) | 3.3+4.2 |
 | `backend/database.py` | MODIFY — `resolved_vulnerabilities` table | 4.1 |
 | `backend/main.py` | MODIFY — health returns `demo_mode` | 4.3 |
-| `frontend/js/components/demoControls.js` | NEW — demo controls component | 5.1 |
+| `frontend/js/components/demoControls.js` | NEW — demo controls component (auth-aware) | 5.1 |
 | `frontend/index.html` | MODIFY — toggle + controls panel | 5.2 |
 | `frontend/css/triagemate.css` | MODIFY — demo UI styles | 5.3 |
-| `backend/tests/test_demo_generator.py` | NEW — 7+ tests | 6.1 |
+| `backend/tests/test_demo_generator.py` | NEW — 17 tests (incl. BLOCKER-targeted) | 6.1 |

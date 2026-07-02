@@ -6,8 +6,8 @@ Architecture:
   Phase 1 (ML):  Uses a trained MultiOutputClassifier(RandomForestClassifier)
                  from backend/ml/pre_tier_model.pkl to predict tags for any
                  hostname based on hostname-derived features.
-  Phase 0 (Fallback): Falls back to the KNOWN_TAGS dict for the 7 known demo
-                      hosts, or returns default values if the model is absent.
+   Phase 0 (Fallback): Falls back to the KNOWN_TAGS dict for the 31 known demo
+                       hosts, or returns default values if the model is absent.
 
 The return dict shape (API contract) NEVER changes:
   {
@@ -26,13 +26,39 @@ logger = logging.getLogger(__name__)
 # ─── PHASE 0: KNOWN HOSTS (Demo / Fallback) ────────────────────────────────
 
 KNOWN_TAGS = {
+    # Original 7 (1 renamed)
     "PRD-MOVEIT-WEB01.health.wa.gov.au": ("Core", 0.94, "Severe", 0.96),
     "PRD-CITRIX-ADC01.transport.wa.gov.au": ("Core", 0.91, "Moderate", 0.88),
-    "PRD-PRINT-SVR05.education.wa.edu.au": ("Support", 0.85, "Minimal", 0.82),
-    "PRD-RMM-GW01.sharedservices.wa.gov.au": ("Support", 0.87, "Moderate", 0.84),
+    "PRD-PRINT-SVR05.education.wa.edu.au": ("Support", 0.85, "Minimal", 0.86),
+    "PRD-RMM-GW01.sharedservices.wa.gov.au": ("Support", 0.87, "Moderate", 0.88),
     "PRD-FILE-STORE02.communities.wa.gov.au": ("Core", 0.92, "Severe", 0.95),
-    "PRD-WIKI-CORE01.wapol.internal.wa.gov.au": ("Core", 0.93, "Moderate", 0.86),
+    "PRD-WIKI-CORE01.police.wa.gov.au": ("Core", 0.93, "Moderate", 0.86),
     "PRD-ITSM-TOOL01.finance.wa.gov.au": ("Support", 0.89, "Minimal", 0.91),
+    # New 23
+    "PRD-EHR-APP01.health.wa.gov.au": ("Core", 0.93, "Severe", 0.95),
+    "PRD-SQL-CLUSTER01.health.wa.gov.au": ("Core", 0.91, "Severe", 0.94),
+    "PRD-FILE-SAN01.health.wa.gov.au": ("Core", 0.90, "Severe", 0.93),
+    "PRD-MARINE-DOC01.transport.wa.gov.au": ("Core", 0.88, "Moderate", 0.87),
+    "PRD-TEMIS-APP01.transport.wa.gov.au": ("Core", 0.89, "Moderate", 0.86),
+    "PRD-STUDENT-DB01.education.wa.edu.au": ("Core", 0.92, "Moderate", 0.90),
+    "PRD-EDU-IDM01.education.wa.edu.au": ("Support", 0.87, "Moderate", 0.85),
+    "PRD-CASEMGT-APP01.communities.wa.gov.au": ("Core", 0.94, "Severe", 0.95),
+    "PRD-CAD-DISPATCH01.police.wa.gov.au": ("Core", 0.95, "Severe", 0.96),
+    "PRD-BUDGET-DB01.finance.wa.gov.au": ("Support", 0.86, "Minimal", 0.88),
+    "PRD-COURT-FILE01.justice.wa.gov.au": ("Core", 0.93, "Severe", 0.95),
+    "PRD-JURY-DB01.justice.wa.gov.au": ("Core", 0.90, "Moderate", 0.89),
+    "PRD-WTR-SCADA01.watercorporation.com.au": ("Core", 0.94, "Severe", 0.95),
+    "PRD-FIRE-COMMS01.dfes.wa.gov.au": ("Core", 0.93, "Severe", 0.96),
+    "PRD-ES-DISPATCH01.dfes.wa.gov.au": ("Core", 0.92, "Severe", 0.95),
+    "PRD-SSC-PROXY01.sharedservices.wa.gov.au": ("Support", 0.85, "Minimal", 0.86),
+    "PRD-EXCHANGE-CAS01.health.wa.gov.au": ("Core", 0.91, "Severe", 0.94),
+    "PRD-FLEET-MGMT01.transport.wa.gov.au": ("Support", 0.86, "Moderate", 0.85),
+    "PRD-STAFFPORTAL01.education.wa.edu.au": ("Support", 0.87, "Minimal", 0.86),
+    "PRD-SAP-FIN01.finance.wa.gov.au": ("Core", 0.90, "Moderate", 0.88),
+    "PRD-LEGAL-DB01.justice.wa.gov.au": ("Core", 0.91, "Moderate", 0.89),
+    "PRD-EMS-OPS01.dfes.wa.gov.au": ("Core", 0.93, "Severe", 0.95),
+    "PRD-PARLIAMENT-WEB01.parliament.wa.gov.au": ("Support", 0.88, "Moderate", 0.87),
+    "PRD-AQIS-DB01.dpird.wa.gov.au": ("Support", 0.86, "Moderate", 0.85),
 }
 
 # ─── MODEL (lazy-loaded) ────────────────────────────────────────────────────
@@ -130,7 +156,7 @@ def predict_mission_tags(hostname: str, ip: str) -> dict:
     Predict mission prevalence and public well-being impact for an asset.
 
     Resolution order:
-      1. KNOWN_TAGS dict (7 demo hosts) — always returns hardcoded values
+      1. KNOWN_TAGS dict (31 demo hosts) — always returns hardcoded values
          with original confidence scores.
       2. ML model (if available) — for unknown hosts, extracts hostname
          features and runs the trained classifier.

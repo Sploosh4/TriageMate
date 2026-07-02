@@ -12,15 +12,82 @@ import logging
 import urllib.request
 import urllib.error
 from datetime import datetime, timezone
+from pathlib import Path
 
 logger = logging.getLogger("triagemate.nvd")
 
 _CACHE: dict[str, tuple[float, dict]] = {}
 _TTL_SECONDS = 86400  # 24 hours
 
+# ─── Demo mode: local cache read path ─────────────────────────────────
+_DEMO_MODE = os.getenv("DEMO_MODE", "").lower() == "true"
+_DEMO_CACHE_PATH = Path(__file__).parent.parent / "data" / "nvd_cache.json"
+_DEMO_CACHE: dict | None = None
+
 # NVD health tracking
 _NVD_LAST_SUCCESS: float | None = None
 _NVD_LAST_STATUS: str = "ok"  # "ok" | "degraded" | "unreachable"
+
+
+def _load_demo_cache() -> dict:
+    """Lazy-load nvd_cache.json into module memory."""
+    global _DEMO_CACHE
+    if _DEMO_CACHE is not None:
+        return _DEMO_CACHE
+    try:
+        with open(_DEMO_CACHE_PATH) as f:
+            _DEMO_CACHE = json.load(f)
+        logger.info(
+            "Loaded %d CVE entries from nvd_cache.json for demo mode", len(_DEMO_CACHE)
+        )
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        logger.warning("Demo cache not loaded: %s", e)
+        _DEMO_CACHE = {}
+    return _DEMO_CACHE
+
+
+def _read_from_demo_cache(cve_id: str) -> dict | None:
+    """Read a CVE entry from nvd_cache.json and convert to pipeline dict shape.
+
+    Translates flat cache schema to the same dict shape get_nvd_data() returns,
+    so all downstream consumers (build_feature_vector, get_cwe, exploitdb.has_poc,
+    metasploit.has_payload) work unchanged.
+
+    Synthesizes references_raw from exploitdb_has_poc / metasploit_has_payload
+    flags so the existing Exploit/Metasploit tag detection works from cache.
+
+    Returns None if the CVE is not in the cache.
+    """
+    cache = _load_demo_cache()
+    entry = cache.get(cve_id)
+    if entry is None:
+        return None
+
+    references_raw = []
+    if entry.get("exploitdb_has_poc"):
+        references_raw.append(
+            {
+                "url": f"https://www.exploit-db.com/search?cve={cve_id}",
+                "tags": ["Exploit"],
+            }
+        )
+    if entry.get("metasploit_has_payload"):
+        references_raw.append(
+            {
+                "url": f"https://www.rapid7.com/db/search?q={cve_id}",
+                "tags": ["Exploit", "Metasploit"],
+            }
+        )
+
+    return {
+        "cwe_class": entry.get("cwe_class", ""),
+        "nvd_reference_count": entry.get("nvd_reference_count", 0),
+        "vulnerability_age_days": entry.get("vulnerability_age_days", 0),
+        "cvss_exploitability_sub": entry.get("cvss_exploitability_sub", 0.0),
+        "cvss_impact_sub": entry.get("cvss_impact_sub", 0.0),
+        "patch_available": entry.get("patch_available", False),
+        "references_raw": references_raw,
+    }
 
 
 def _fetch_cve_data(cve_id: str) -> dict:
@@ -115,10 +182,25 @@ def _parse_cvss_scores(raw: dict) -> tuple[float, float]:
 def get_nvd_data(cve_id: str) -> dict:
     """Fetch NVD enrichment data for a CVE with 24h in-memory TTL cache.
 
+    In DEMO_MODE, reads from nvd_cache.json instead of the live NVD API.
+    Falls through to live API if the CVE is not in the demo cache.
+
     Returns:
         dict with keys: cwe_class, nvd_reference_count, vulnerability_age_days,
-                        cvss_exploitability_sub, cvss_impact_sub
+                        cvss_exploitability_sub, cvss_impact_sub, patch_available,
+                        references_raw
     """
+    # Demo mode: read from file cache first
+    if _DEMO_MODE:
+        cached = _read_from_demo_cache(cve_id)
+        if cached is not None:
+            now = time.time()
+            _CACHE[cve_id] = (now, cached)
+            return dict(cached)
+        logger.warning(
+            "CVE %s not in nvd_cache.json — falling back to live NVD", cve_id
+        )
+
     now = time.time()
     if cve_id in _CACHE:
         ts, data = _CACHE[cve_id]

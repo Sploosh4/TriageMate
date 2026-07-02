@@ -1,5 +1,7 @@
 import json
+import os as _os
 from fastapi import APIRouter, Request
+from fastapi.responses import JSONResponse
 from database import get_db
 from models import (
     IngestRequest,
@@ -76,6 +78,13 @@ def _build_summaries(
     paras.append(signal)
 
     return paras
+
+
+def _demo_only():
+    """Return 404 JSONResponse if DEMO_MODE is not enabled."""
+    if _os.getenv("DEMO_MODE", "").lower() != "true":
+        return JSONResponse(status_code=404, content={"detail": "Not Found"})
+    return None
 
 
 @router.post("/api/ingest", response_model=CaseResponse)
@@ -504,3 +513,202 @@ async def ingest_tenable(request: Request):
         status_code=400,
         content={"detail": "Expected a JSON object or array"},
     )
+
+
+# ---------------------------------------------------------------------------
+# Phase 3.3 — Demo API Endpoints (DEMO_MODE must be "true")
+# ---------------------------------------------------------------------------
+
+
+@router.get("/api/demo/scenarios")
+async def list_demo_scenarios():
+    """Return list of available demo scenarios (DEMO_MODE only)."""
+    gate = _demo_only()
+    if gate:
+        return gate
+    try:
+        from integrations.demo_generator import get_scenarios_list
+
+        return get_scenarios_list()
+    except ImportError as e:
+        return JSONResponse(
+            status_code=500, content={"detail": f"Demo generator not available: {e}"}
+        )
+
+
+# Module-level rate limiter for demo requests
+_DEMO_LAST_TIME: float = 0.0
+_DEMO_MIN_INTERVAL: float = 2.0  # seconds
+
+
+@router.post("/api/demo/generate")
+async def generate_demo_findings(request: Request):
+    """Generate demo findings from a scenario or random wave (DEMO_MODE only)."""
+    gate = _demo_only()
+    if gate:
+        return gate
+
+    import time as _time
+
+    global _DEMO_LAST_TIME
+    now = _time.time()
+    if now - _DEMO_LAST_TIME < _DEMO_MIN_INTERVAL:
+        return JSONResponse(
+            status_code=429,
+            content={
+                "detail": f"Rate limited. Try again in {int(_DEMO_MIN_INTERVAL - (now - _DEMO_LAST_TIME))}s."
+            },
+        )
+    _DEMO_LAST_TIME = now
+
+    body = await request.json()
+    mode = body.get("mode", "scenario")
+
+    try:
+        from integrations.demo_generator import (
+            generate_scenario_findings,
+            generate_random_wave,
+            inject_enrichment,
+        )
+        from integrations.tenable import parse_tenable_batch
+    except ImportError as e:
+        return JSONResponse(
+            status_code=500, content={"detail": f"Demo generator not available: {e}"}
+        )
+
+    if mode == "scenario":
+        scenario_id = body.get("scenario_id")
+        if not scenario_id:
+            return JSONResponse(
+                status_code=400, content={"detail": "scenario_id required"}
+            )
+        findings = generate_scenario_findings(scenario_id)
+    elif mode == "random":
+        size = body.get("size", "small")
+        # Read current queue to avoid duplicates
+        conn = get_db()
+        cursor = conn.cursor()
+        cursor.execute("SELECT vulnerability_id, hostname FROM vulnerabilities")
+        existing = [
+            {"vulnerability_id": r[0], "hostname": r[1]} for r in cursor.fetchall()
+        ]
+        conn.close()
+        findings = generate_random_wave(size, existing_queue=existing)
+    else:
+        return JSONResponse(
+            status_code=400, content={"detail": f"Unknown mode: {mode}"}
+        )
+
+    if not findings:
+        return JSONResponse(
+            status_code=400, content={"detail": "No findings generated"}
+        )
+
+    requests_list = parse_tenable_batch(findings)
+    requests_list = inject_enrichment(requests_list)
+
+    return await ingest_vulnerability_batch(requests_list)
+
+
+_CLEAR_LAST_TIME: float = 0.0
+_CLEAR_MIN_INTERVAL: float = 30.0
+
+
+@router.post("/api/ingest/clear")
+async def clear_all_findings():
+    """Archive all current findings and clear the queue (DEMO_MODE only)."""
+    gate = _demo_only()
+    if gate:
+        return gate
+
+    import time as _time
+
+    global _CLEAR_LAST_TIME
+    now = _time.time()
+    if now - _CLEAR_LAST_TIME < _CLEAR_MIN_INTERVAL:
+        return JSONResponse(
+            status_code=429,
+            content={
+                "detail": f"Rate limited. Try again in {int(_CLEAR_MIN_INTERVAL - (now - _CLEAR_LAST_TIME))}s."
+            },
+        )
+    _CLEAR_LAST_TIME = now
+
+    conn = get_db()
+
+    with conn:
+        cursor = conn.cursor()
+        # Archive: copy all from vulnerabilities to resolved_vulnerabilities
+        cursor.execute("""
+            INSERT INTO resolved_vulnerabilities (
+                original_id, vulnerability_id, hostname, cvss_score, cvss_vector,
+                cisa_kev, epss_score,
+                mission_prevalence, mission_prevalence_conf,
+                public_wellbeing_impact, public_wellbeing_conf,
+                tier_0_routing, tier_0_resolution,
+                tier_1_confidence, tier_1_exploitation_prob, tier_1_routing,
+                tier_2_text_conflict, tier_2_conflict_note, tier_2_rag_result,
+                tier_2_confidence, tier_2_resolution_summary,
+                priority_score, risk_band,
+                cvss_contribution, epss_contribution,
+                asset_criticality_contribution, exposure_contribution,
+                patch_remediation_contribution,
+                epss_substituted, epss_substituted_value,
+                epss_substitution_confidence, epss_substitution_reason,
+                data_classification, network_zone, interface_type,
+                patch_cycle, last_patch_date, last_scan_date,
+                operating_system, role, business_owner, technical_owner,
+                registered_applications, dependent_assets, service_account,
+                detection_tier, detection_reason,
+                scanner_output_raw, weakness_template_raw,
+                advisory_ref_id, advisory_quote, investigation_notes,
+                mitre_techniques_json, scoring_weights_json,
+                asset_registry_json, summary_paragraphs_json,
+                created_at, updated_at, last_recheck_date,
+                audit_selected, audit_result, audit_date,
+                resolution_reason
+            )
+            SELECT id, vulnerability_id, hostname, cvss_score, cvss_vector,
+                   cisa_kev, epss_score,
+                   mission_prevalence, mission_prevalence_conf,
+                   public_wellbeing_impact, public_wellbeing_conf,
+                   tier_0_routing, tier_0_resolution,
+                   tier_1_confidence, tier_1_exploitation_prob, tier_1_routing,
+                   tier_2_text_conflict, tier_2_conflict_note, tier_2_rag_result,
+                   tier_2_confidence, tier_2_resolution_summary,
+                   priority_score, risk_band,
+                   cvss_contribution, epss_contribution,
+                   asset_criticality_contribution, exposure_contribution,
+                   patch_remediation_contribution,
+                   epss_substituted, epss_substituted_value,
+                   epss_substitution_confidence, epss_substitution_reason,
+                   data_classification, network_zone, interface_type,
+                   patch_cycle, last_patch_date, last_scan_date,
+                   operating_system, role, business_owner, technical_owner,
+                   registered_applications, dependent_assets, service_account,
+                   detection_tier, detection_reason,
+                   scanner_output_raw, weakness_template_raw,
+                   advisory_ref_id, advisory_quote, investigation_notes,
+                   mitre_techniques_json, scoring_weights_json,
+                   asset_registry_json, summary_paragraphs_json,
+                   created_at, updated_at, last_recheck_date,
+                   audit_selected, audit_result, audit_date,
+                   'demo_clear'
+            FROM vulnerabilities
+        """)
+        archived_count = cursor.rowcount
+        cursor.execute("DELETE FROM vulnerabilities")
+        deleted_count = cursor.rowcount
+
+        if archived_count != deleted_count:
+            raise RuntimeError(
+                f"Clear mismatch: archived {archived_count} but deleted {deleted_count}"
+            )
+
+    conn.close()
+
+    return {
+        "status": "ok",
+        "archived_count": archived_count,
+        "message": f"{archived_count} findings archived. Queue cleared.",
+    }

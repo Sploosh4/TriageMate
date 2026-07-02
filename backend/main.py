@@ -150,4 +150,5 @@ async def health():
         "cwe_available": getattr(app.state, "cwe_available", False),
         "nvd_last_success": nvd_health["nvd_last_success"],
         "nvd_status": nvd_health["nvd_status"],
+        "demo_mode": os.getenv("DEMO_MODE", "false").lower() == "true",
     }

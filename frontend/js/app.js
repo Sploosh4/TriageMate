@@ -207,6 +207,11 @@ function wireEventListeners() {
       showQueue();
     }
   });
+
+  // Demo controls (guarded — only if demo toggle exists in DOM)
+  if (document.getElementById('demo-toggle-btn')) {
+    wireDemoEventListeners();
+  }
 }
 
 document.addEventListener('DOMContentLoaded', init);

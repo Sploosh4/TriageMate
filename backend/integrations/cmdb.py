@@ -10,9 +10,32 @@ Swap the provider via TRIAGEMATE_CMDB_PROVIDER env var:
 """
 
 import os
+import json
 import logging
+from pathlib import Path
 
 logger = logging.getLogger("triagemate.cmdb")
+
+_MOCK_CMDB_PATH = Path(__file__).parent.parent / "data" / "mock_cmdb.json"
+_FILE_CMDB: dict[str, dict] | None = None
+
+
+def _load_file_cmdb() -> dict[str, dict]:
+    """Load the mock CMDB from JSON file, keyed by hostname."""
+    global _FILE_CMDB
+    if _FILE_CMDB is not None:
+        return _FILE_CMDB
+    try:
+        with open(_MOCK_CMDB_PATH) as f:
+            hosts = json.load(f)
+        _FILE_CMDB = {h["hostname"]: h for h in hosts}
+        logger.info("Loaded %d hosts from mock_cmdb.json", len(_FILE_CMDB))
+        return _FILE_CMDB
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        logger.warning("mock_cmdb.json not loaded: %s", e)
+        _FILE_CMDB = {}
+        return _FILE_CMDB
+
 
 KNOWN_HOSTS = {
     "PRD-MOVEIT-WEB01.health.wa.gov.au": {
@@ -176,7 +199,12 @@ def get_asset_context(hostname: str) -> dict:
 
 
 def _stub_lookup(hostname: str) -> dict:
-    """Stub CMDB lookup using the KNOWN_HOSTS dict."""
+    """Stub CMDB lookup — file CMDB (if DEMO_MODE), then KNOWN_HOSTS, then defaults."""
+    demo_mode = os.getenv("DEMO_MODE", "").lower() == "true"
+    if demo_mode:
+        file_db = _load_file_cmdb()
+        if hostname in file_db:
+            return dict(file_db[hostname])
     if hostname in KNOWN_HOSTS:
         return dict(KNOWN_HOSTS[hostname])
     return {

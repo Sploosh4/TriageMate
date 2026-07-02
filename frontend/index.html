@@ -25,6 +25,16 @@
         <option value="ML Tier">ML Tier</option>
         <option value="SLM Tier">SLM Tier</option>
       </select>
+      <button id="demo-toggle-btn" class="demo-toggle-btn" title="Toggle Demo Mode" aria-label="Toggle demo mode">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path>
+          <path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path>
+          <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path>
+          <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path>
+        </svg>
+        Demo
+      </button>
+      <span id="demo-mode-badge" class="demo-mode-badge hidden">DEMO MODE</span>
     </div>
     <div id="metric-boxes-row">
       <div class="metric-box critical clickable" data-metric="critical" tabindex="0" aria-label="Critical actions: 2 items requiring immediate attention">
@@ -77,6 +87,7 @@
         <span class="metric-box-subtitle">Escalated for analyst review</span>
       </div>
     </div>
+    <div id="demo-controls-panel" class="demo-controls hidden"></div>
     <div id="queue-table-container">
       <table id="queue-table">
         <thead>
@@ -138,6 +149,7 @@
 <script src="js/components/queue.js"></script>
 <script src="js/components/caseView.js"></script>
 <script src="js/components/metricBoxes.js"></script>
+<script src="js/components/demoControls.js"></script>
 <script src="js/app.js"></script>
 
 </body>

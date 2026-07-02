@@ -15,7 +15,7 @@ backend/ml/enriched_cves.json
 backend/ml/training_data.npz
 
 # RAG vector store (persistent, auto-created)
-backend/data/
+backend/data/lancedb/
 
 # Environment file (secrets)
 .env
