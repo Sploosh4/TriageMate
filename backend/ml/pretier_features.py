@@ -220,7 +220,7 @@ def extract_features(hostname: str) -> dict:
 
     Args:
         hostname: Fully-qualified hostname, e.g.
-                  "PRD-PATIENT-EMR01.health.wa.gov.au"
+                  "per-PRD-PATIENT-EMR01.health.wa.gov.au"
 
     Returns:
         dict mapping feature name → numeric value.  Use feature_vector_to_array()

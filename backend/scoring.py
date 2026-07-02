@@ -50,15 +50,13 @@ def calculate_final_score(
     dimensions["epss"] = round(effective_epss * 20)
 
     # Asset criticality (max 20) — based on data classification and mission tags
-    # POLICY NOTE: The 12/8/4/0 point spread for Category 4/3/2/1 is an
+    # POLICY NOTE: The 12/4/0 point spread for OFFICIAL Sensitive/OFFICIAL is an
     # operational policy choice calibrated against WA SOC risk appetite.
     # It is NOT mandated by the PRIS Act itself.
     criticality = 0
-    if data_classification == "Category 4":
+    if data_classification == "OFFICIAL Sensitive":
         criticality += 12
-    elif data_classification == "Category 3":
-        criticality += 8
-    elif data_classification == "Category 2":
+    elif data_classification == "OFFICIAL":
         criticality += 4
     if mission_prevalence == "Core":
         criticality += 6

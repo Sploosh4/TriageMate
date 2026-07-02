@@ -40,9 +40,14 @@ def _band_colour(band: str) -> str:
 
 
 def _compliance_category(data_classification: str) -> int:
+    """Map WAICP classification to numeric compliance category."""
+    mapping = {
+        "OFFICIAL Sensitive": 4,
+        "OFFICIAL": 2,
+    }
     try:
-        return int(data_classification.split()[-1])
-    except (ValueError, IndexError):
+        return mapping.get(data_classification, 1)
+    except Exception:
         return 1
 
 

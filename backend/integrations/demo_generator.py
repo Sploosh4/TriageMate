@@ -219,9 +219,9 @@ def _extract_department(hostname: str) -> str:
     false matches.
 
     Examples:
-        PRD-MOVEIT-WEB01.health.wa.gov.au                → ``"health"``
-        PRD-CITRIX-ADC01.transport.wa.gov.au             → ``"transport"``
-        PRD-WTR-SCADA01.watercorporation.com.au          → ``"watercorporation"``
+        per-PRD-MOVEIT-WEB01.health.wa.gov.au                → ``"health"``
+        per-PRD-CITRIX-ADC01.transport.wa.gov.au             → ``"transport"``
+        per-PRD-WTR-SCADA01.watercorporation.com.au          → ``"watercorporation"``
     """
     lower = hostname.lower()
     parts = lower.split(".")

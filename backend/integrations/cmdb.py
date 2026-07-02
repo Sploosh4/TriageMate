@@ -38,8 +38,8 @@ def _load_file_cmdb() -> dict[str, dict]:
 
 
 KNOWN_HOSTS = {
-    "PRD-MOVEIT-WEB01.health.wa.gov.au": {
-        "data_classification": "Category 3",
+    "per-PRD-MOVEIT-WEB01.health.wa.gov.au": {
+        "data_classification": "OFFICIAL Sensitive",
         "internet_facing": True,
         "network_zone": "DMZ-Health-External",
         "operating_system": "Windows Server 2019 Standard",
@@ -51,11 +51,11 @@ KNOWN_HOSTS = {
         "last_patch_date": "14 May 2026",
         "last_scan_date": "27 June 2026",
         "registered_applications": "Progress MOVEit Transfer 2023.0.0, IIS 10.0",
-        "dependent_assets": "PRD-SQL-CLUSTER01.health.wa.gov.au, PRD-FILE-SAN01.health.wa.gov.au",
+        "dependent_assets": "per-PRD-SQL-CLUSTER01.health.wa.gov.au, per-PRD-FILE-SAN01.health.wa.gov.au",
         "service_account": "",
     },
-    "PRD-CITRIX-ADC01.transport.wa.gov.au": {
-        "data_classification": "Category 3",
+    "per-PRD-CITRIX-ADC01.transport.wa.gov.au": {
+        "data_classification": "OFFICIAL Sensitive",
         "internet_facing": True,
         "network_zone": "DMZ-Transport-External",
         "operating_system": "Citrix NetScaler ADC VPX 13.1-49.13 (FreeBSD-based)",
@@ -67,11 +67,11 @@ KNOWN_HOSTS = {
         "last_patch_date": "15 March 2026",
         "last_scan_date": "28 June 2026",
         "registered_applications": "Citrix Gateway, Citrix Load Balancer (TEMIS), Citrix Content Switching (DVS Online)",
-        "dependent_assets": "PRD-TEMIS-APP01.transport.wa.gov.au, PRD-DVS-WEB01.transport.wa.gov.au, PRD-MARINE-DOC01.transport.wa.gov.au (+ 19 others)",
+        "dependent_assets": "per-PRD-TEMIS-APP01.transport.wa.gov.au, per-PRD-DVS-WEB01.transport.wa.gov.au, per-PRD-MARINE-DOC01.transport.wa.gov.au (+ 19 others)",
         "service_account": "",
     },
-    "PRD-PRINT-SVR05.education.wa.edu.au": {
-        "data_classification": "Category 2",
+    "per-PRD-PRINT-SVR05.education.wa.edu.au": {
+        "data_classification": "OFFICIAL",
         "internet_facing": False,
         "network_zone": "EDU-Internal-Servers (VLAN 215)",
         "operating_system": "Windows Server 2022 Standard (build 20348)",
@@ -83,11 +83,11 @@ KNOWN_HOSTS = {
         "last_patch_date": "20 June 2026",
         "last_scan_date": "27 June 2026",
         "registered_applications": "PaperCut MF 22.0.6, Microsoft Print Server role, PaperCut Mobility Print",
-        "dependent_assets": "28 managed printers across 14 school campuses, PRD-FILE-PRINT01.education.wa.edu.au",
+        "dependent_assets": "28 managed printers across 14 school campuses, per-PRD-FILE-PRINT01.education.wa.edu.au",
         "service_account": "DOMAIN_EDU\\svc-papercut-prd",
     },
-    "PRD-RMM-GW01.sharedservices.wa.gov.au": {
-        "data_classification": "Category 3",
+    "per-PRD-RMM-GW01.sharedservices.wa.gov.au": {
+        "data_classification": "OFFICIAL Sensitive",
         "internet_facing": False,
         "network_zone": "SSC-Management-Segment (VLAN 48)",
         "operating_system": "Windows Server 2022 Standard (build 20348)",
@@ -102,8 +102,8 @@ KNOWN_HOSTS = {
         "dependent_assets": "14 managed endpoints across DLGSC, DWER, DPLH, Finance, DBCA",
         "service_account": "SSC-MGMT\\svc-screenconnect",
     },
-    "PRD-FILE-STORE02.communities.wa.gov.au": {
-        "data_classification": "Category 4",
+    "per-PRD-FILE-STORE02.communities.wa.gov.au": {
+        "data_classification": "OFFICIAL Sensitive",
         "internet_facing": False,
         "network_zone": "Communities-Internal-Servers (VLAN 312)",
         "operating_system": "Windows Server 2019 Standard (build 17763)",
@@ -115,11 +115,11 @@ KNOWN_HOSTS = {
         "last_patch_date": "20 June 2026",
         "last_scan_date": "28 June 2026",
         "registered_applications": "Microsoft Office 365 Apps for Enterprise, Windows File Server role, Microsoft Defender for Endpoint",
-        "dependent_assets": "PRD-CASEMGT-APP01.communities.wa.gov.au, PRD-CASEMGT-DB01.communities.wa.gov.au, 42 caseworker workstations",
+        "dependent_assets": "per-PRD-CASEMGT-APP01.communities.wa.gov.au, per-PRD-CASEMGT-DB01.communities.wa.gov.au, 42 caseworker workstations",
         "service_account": "Local System",
     },
-    "PRD-WIKI-CORE01.wapol.internal.wa.gov.au": {
-        "data_classification": "Category 4",
+    "per-PRD-WIKI-CORE01.wapol.internal.wa.gov.au": {
+        "data_classification": "OFFICIAL Sensitive",
         "internet_facing": False,
         "network_zone": "WAPOL-Internal-Management (VLAN 92)",
         "operating_system": "Ubuntu 22.04.3 LTS",
@@ -131,11 +131,11 @@ KNOWN_HOSTS = {
         "last_patch_date": "15 June 2026",
         "last_scan_date": "28 June 2026",
         "registered_applications": "Atlassian Confluence Data Center 8.5.1, PostgreSQL 14.9, Apache HTTPD 2.4",
-        "dependent_assets": "PRD-WIKI-DB01.wapol.internal.wa.gov.au, PRD-WIKI-CORE02.wapol.internal.wa.gov.au",
+        "dependent_assets": "per-PRD-WIKI-DB01.wapol.internal.wa.gov.au, per-PRD-WIKI-CORE02.wapol.internal.wa.gov.au",
         "service_account": "",
     },
-    "PRD-ITSM-TOOL01.finance.wa.gov.au": {
-        "data_classification": "Category 2",
+    "per-PRD-ITSM-TOOL01.finance.wa.gov.au": {
+        "data_classification": "OFFICIAL",
         "internet_facing": False,
         "network_zone": "Finance-Internal-Applications (VLAN 67)",
         "operating_system": "Windows Server 2022 Standard (build 20348)",
@@ -147,7 +147,7 @@ KNOWN_HOSTS = {
         "last_patch_date": "27 June 2026",
         "last_scan_date": "28 June 2026",
         "registered_applications": "Zoho ManageEngine ServiceDesk Plus 14.0, PostgreSQL 14.8, Java Runtime Environment 11.0.19",
-        "dependent_assets": "PRD-DC01.finance.wa.gov.au (LDAP), PRD-ITSM-DB01.finance.wa.gov.au",
+        "dependent_assets": "per-PRD-DC01.finance.wa.gov.au (LDAP), per-PRD-ITSM-DB01.finance.wa.gov.au",
         "service_account": "",
     },
 }

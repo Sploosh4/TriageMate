@@ -17,7 +17,7 @@ async def test_full_pipeline_ingest():
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         payload = {
             "vulnerability_id": "CVE-TEST-FULLPIPE-001",
-            "hostname": "PRD-MOVEIT-WEB01.health.wa.gov.au",
+            "hostname": "per-PRD-MOVEIT-WEB01.health.wa.gov.au",
             "ip_address": "10.1.1.100",
             "cvss_score": 9.8,
             "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
@@ -46,7 +46,7 @@ async def test_full_pipeline_ingest():
         assert isinstance(qr.get("priorityScore"), int), (
             f"priorityScore not int: {type(qr.get('priorityScore'))} ({qr.get('priorityScore')})"
         )
-        assert qr.get("hostname") == "PRD-MOVEIT-WEB01.health.wa.gov.au", (
+        assert qr.get("hostname") == "per-PRD-MOVEIT-WEB01.health.wa.gov.au", (
             f"hostname mismatch: {qr.get('hostname')}"
         )
         assert qr.get("riskBand") in ("Low", "Medium", "Critical", "Very Critical"), (

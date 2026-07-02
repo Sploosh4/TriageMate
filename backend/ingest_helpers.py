@@ -16,7 +16,7 @@ from integrations.metasploit import has_payload as _has_metasploit_payload
 
 
 def lookup_data_classification(hostname: str) -> str:
-    """Look up the PRIS Act data classification for an asset.
+    """Look up the WAICP data classification for an asset.
 
     Delegates to the CMDB adapter. Defaults to Category 1 for unknowns.
     """
@@ -66,7 +66,7 @@ def _cvss_cia(v):
 
 
 def _encode_classification(klass: str) -> int:
-    mapping = {"Category 4": 4, "Category 3": 3, "Category 2": 2, "Category 1": 1}
+    mapping = {"OFFICIAL Sensitive": 4, "OFFICIAL": 2, "Category 1": 1}
     try:
         return mapping.get(klass, 1)
     except Exception:

@@ -41,6 +41,18 @@ async function init() {
     await initAuth();
   }
 
+  // Check demo mode on page load — show watermark if active
+  fetch('/api/health')
+    .then(function(r) { return r.json(); })
+    .then(function(health) {
+      if (health.demo_mode) {
+        var wm = document.getElementById('demo-watermark');
+        if (wm) wm.style.display = 'block';
+        document.body.classList.add('demo-active');
+      }
+    })
+    .catch(function() { /* health endpoint not critical for init */ });
+
   // Auth is disabled or user is authenticated — proceed normally
   try {
     var results = await Promise.all([

@@ -31,7 +31,7 @@ async def recheck_low_severity():
             cvss_score=row["cvss_score"],
             cisa_kev=bool(row["cisa_kev"]),
             epss_score=row["epss_score"] or 0.0,
-            data_classification=row["data_classification"] or "Category 2",
+            data_classification=row["data_classification"] or "OFFICIAL",
             internet_facing=("internet" in (row["interface_type"] or "").lower()),
         )
 

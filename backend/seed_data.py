@@ -12,7 +12,7 @@ SEED_ROWS = [
     # Row 1: CVE-2023-34362 — MOVEit Transfer SQL Injection
     {
         "vulnerability_id": "CVE-2023-34362",
-        "hostname": "PRD-MOVEIT-WEB01.health.wa.gov.au",
+        "hostname": "per-PRD-MOVEIT-WEB01.health.wa.gov.au",
         "cvss_score": 9.8,
         "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
         "cisa_kev": True,
@@ -42,7 +42,7 @@ SEED_ROWS = [
         "epss_substituted_value": None,
         "epss_substitution_confidence": None,
         "epss_substitution_reason": None,
-        "data_classification": "Category 3",
+        "data_classification": "OFFICIAL Sensitive",
         "network_zone": "DMZ-Health-External",
         "interface_type": "Internet-facing HTTPS (no VPN required)",
         "patch_cycle": "Monthly (second Sunday, 0200-0600 AWST)",
@@ -53,15 +53,15 @@ SEED_ROWS = [
         "business_owner": "WA Health — Health Support Services, ICT Operations",
         "technical_owner": "Health Support Services — Infrastructure Platforms Team",
         "registered_applications": "Progress MOVEit Transfer 2023.0.0, IIS 10.0",
-        "dependent_assets": "PRD-SQL-CLUSTER01.health.wa.gov.au (backend database), PRD-FILE-SAN01.health.wa.gov.au (storage target)",
+        "dependent_assets": "per-PRD-SQL-CLUSTER01.health.wa.gov.au (backend database), per-PRD-FILE-SAN01.health.wa.gov.au (storage target)",
         "service_account": "",
         "detection_tier": "Deterministic",
         "detection_reason": "Deterministic match: CVSS 9.8, CISA KEV listed, active exploitation confirmed by WASOC threat intel feed, internet-facing MOVEit Transfer instance on a health data asset.",
-        "scanner_output_raw": "[CRITICAL] CVE-2023-34362 — Progress MOVEit Transfer SQL Injection\nHost: PRD-MOVEIT-WEB01.health.wa.gov.au (10.47.22.18)\nPort: 443/tcp (HTTPS)\nService: Progress MOVEit Transfer 2023.0.0 (build 15.0.0.185)\nDetection Method: Banner grab + HTTP response analysis\nCVSS v3.1: 9.8 (AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H)\nCISA KEV: TRUE\nEPSS Score: 0.974 (97th percentile)\nExploit Maturity: High (weaponised exploit available in multiple C2 frameworks)\nPatch Available: Yes (MOVEit Transfer 2023.0.2 and later)\nPatch Applied: No (version confirmed below fixed threshold)",
-        "weakness_template_raw": 'template_id: DET-2023-MOVEIT-SQLI-001\ntemplate_name: "MOVEit Transfer Pre-Auth SQL Injection — Silent Chaining Detection"\nlogic_chain:\n  - step: 1\n    condition: "software_product == \'Progress MOVEit Transfer\' AND version < 2023.0.2"\n    weight: 0.35\n  - step: 2\n    condition: "exposed_port == 443 AND internet_facing == TRUE"\n    weight: 0.25\n  - step: 3\n    condition: "data_classification IN [Category_3, Category_4]"\n    weight: 0.20\n  - step: 4\n    condition: "cisa_kev == TRUE AND exploit_maturity == \'High\'"\n    weight: 0.15\n  - step: 5\n    condition: "patch_lag_days > 7"\n    weight: 0.05',
+        "scanner_output_raw": "[CRITICAL] CVE-2023-34362 — Progress MOVEit Transfer SQL Injection\nHost: per-PRD-MOVEIT-WEB01.health.wa.gov.au (10.47.22.18)\nPort: 443/tcp (HTTPS)\nService: Progress MOVEit Transfer 2023.0.0 (build 15.0.0.185)\nDetection Method: Banner grab + HTTP response analysis\nCVSS v3.1: 9.8 (AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H)\nCISA KEV: TRUE\nEPSS Score: 0.974 (97th percentile)\nExploit Maturity: High (weaponised exploit available in multiple C2 frameworks)\nPatch Available: Yes (MOVEit Transfer 2023.0.2 and later)\nPatch Applied: No (version confirmed below fixed threshold)",
+        "weakness_template_raw": 'template_id: DET-2023-MOVEIT-SQLI-001\ntemplate_name: "MOVEit Transfer Pre-Auth SQL Injection — Silent Chaining Detection"\nlogic_chain:\n  - step: 1\n    condition: "software_product == \'Progress MOVEit Transfer\' AND version < 2023.0.2"\n    weight: 0.35\n  - step: 2\n    condition: "exposed_port == 443 AND internet_facing == TRUE"\n    weight: 0.25\n  - step: 3\n    condition: "data_classification IN [OFFICIAL_Sensitive]"\n    weight: 0.20\n  - step: 4\n    condition: "cisa_kev == TRUE AND exploit_maturity == \'High\'"\n    weight: 0.15\n  - step: 5\n    condition: "patch_lag_days > 7"\n    weight: 0.05',
         "advisory_ref_id": "ADV-CVE-2023-34362",
         "advisory_quote": "The Western Australian Security Operations Centre assesses with high confidence that Progress MOVEit Transfer instances operated by WA state government entities are being actively targeted by the Clop ransomware group. All agencies must immediately verify MOVEit Transfer version numbers and apply vendor patches within 24 hours. Agencies operating MOVEit Transfer as an internet-facing service must additionally implement network-level access restrictions pending patch application. The WASOC has confirmed that at least three Australian state government entities have been impacted as of 5 June 2023.",
-        "investigation_notes": "The following summary has been pre-filled for analyst review and editing.\n\nThe vulnerability CVE-2023-34362 on PRD-MOVEIT-WEB01.health.wa.gov.au has been automatically assigned a priority score of 94 and a risk band of Very Critical by the Deterministic Tier engine. All four scoring dimensions triggered at maximum severity. The asset is internet-facing on port 443, the MOVEit Transfer version 2023.0.0 is confirmed vulnerable, and the WASOC threat intelligence feed has verified active exploitation by the Clop ransomware group targeting Australian state government entities. The EPSS score of 0.974 indicates a 97.4 percent probability of exploitation within the next 30 days.\n\nThe multi-label classifier has tagged this asset with Mission Prevalence: Core and Public Well-Being Impact: Severe, reflecting its role as the central health data exchange infrastructure for the state.\n\nThe asset is registered as a Category 3 data asset under the PRIS Act, hosting Health Information Exchange records containing protected health information for the WA Country Health Service and metropolitan health campuses. A compromise of this asset would constitute a notifiable data breach.\n\nImmediate recommended action: Apply the MOVEit Transfer security patch to version 2023.0.2 or later. Pending patch application, restrict access to the MOVEit Transfer web interface to internal IP ranges only via the upstream network access control list. Commence a forensic review of MOVEit Transfer IIS logs for indicators of compromise associated with CVE-2023-34362 exploitation.",
+        "investigation_notes": "The following summary has been pre-filled for analyst review and editing.\n\nThe vulnerability CVE-2023-34362 on per-PRD-MOVEIT-WEB01.health.wa.gov.au has been automatically assigned a priority score of 94 and a risk band of Very Critical by the Deterministic Tier engine. All four scoring dimensions triggered at maximum severity. The asset is internet-facing on port 443, the MOVEit Transfer version 2023.0.0 is confirmed vulnerable, and the WASOC threat intelligence feed has verified active exploitation by the Clop ransomware group targeting Australian state government entities. The EPSS score of 0.974 indicates a 97.4 percent probability of exploitation within the next 30 days.\n\nThe multi-label classifier has tagged this asset with Mission Prevalence: Core and Public Well-Being Impact: Severe, reflecting its role as the central health data exchange infrastructure for the state.\n\nThe asset is registered as a OFFICIAL Sensitive data asset under the PRIS Act, hosting Health Information Exchange records containing protected health information for the WA Country Health Service and metropolitan health campuses. A compromise of this asset would constitute a notifiable data breach.\n\nImmediate recommended action: Apply the MOVEit Transfer security patch to version 2023.0.2 or later. Pending patch application, restrict access to the MOVEit Transfer web interface to internal IP ranges only via the upstream network access control list. Commence a forensic review of MOVEit Transfer IIS logs for indicators of compromise associated with CVE-2023-34362 exploitation.",
         "mitre_techniques_json": json.dumps(
             [
                 {
@@ -99,7 +99,7 @@ SEED_ROWS = [
                     "name": "Asset Criticality Contribution",
                     "awarded": 20,
                     "max": 20,
-                    "justification": "This is a Category 3 health data asset hosting patient records with a Mission Prevalence of Core and a Public Well-Being Impact of Severe.",
+                    "justification": "This is a OFFICIAL Sensitive health data asset hosting patient records with a Mission Prevalence of Core and a Public Well-Being Impact of Severe.",
                 },
                 {
                     "name": "Exposure and Network Position",
@@ -118,7 +118,7 @@ SEED_ROWS = [
         "asset_registry_json": json.dumps(
             [
                 {"label": "Asset ID", "value": "AST-HEALTH-00472"},
-                {"label": "Hostname", "value": "PRD-MOVEIT-WEB01.health.wa.gov.au"},
+                {"label": "Hostname", "value": "per-PRD-MOVEIT-WEB01.health.wa.gov.au"},
                 {
                     "label": "IP Address",
                     "value": "10.47.22.18 (internal) / 203.14.xxx.xxx (external NAT)",
@@ -141,7 +141,7 @@ SEED_ROWS = [
                 },
                 {
                     "label": "Data Classification",
-                    "value": "Category 3 — Sensitive (Health) — PRIS Act classification",
+                    "value": "OFFICIAL Sensitive — Sensitive (Health) — PRIS Act classification",
                 },
                 {
                     "label": "Mission Prevalence",
@@ -163,7 +163,7 @@ SEED_ROWS = [
                 },
                 {
                     "label": "Dependent Assets",
-                    "value": "PRD-SQL-CLUSTER01.health.wa.gov.au (backend database), PRD-FILE-SAN01.health.wa.gov.au (storage target)",
+                    "value": "per-PRD-SQL-CLUSTER01.health.wa.gov.au (backend database), per-PRD-FILE-SAN01.health.wa.gov.au (storage target)",
                 },
                 {
                     "label": "Interface Type",
@@ -174,16 +174,16 @@ SEED_ROWS = [
         ),
         "summary_paragraphs_json": json.dumps(
             [
-                "This case concerns a critical SQL injection vulnerability in Progress MOVEit Transfer, tracked as CVE-2023-34362, identified on the host PRD-MOVEIT-WEB01.health.wa.gov.au. The vulnerability permits an unauthenticated attacker to inject structured query language commands into the MOVEit Transfer web application, resulting in complete compromise of the underlying database. The affected database contains Health Information Exchange records, patient referral data, and inter-hospital file transfer metadata for the Western Australian public health system.",
+                "This case concerns a critical SQL injection vulnerability in Progress MOVEit Transfer, tracked as CVE-2023-34362, identified on the host per-PRD-MOVEIT-WEB01.health.wa.gov.au. The vulnerability permits an unauthenticated attacker to inject structured query language commands into the MOVEit Transfer web application, resulting in complete compromise of the underlying database. The affected database contains Health Information Exchange records, patient referral data, and inter-hospital file transfer metadata for the Western Australian public health system.",
                 "The multi-label classifier assessed this asset as having a Mission Prevalence of Core and a Public Well-Being Impact of Severe, reflecting its role as the central health data exchange platform for the WA Country Health Service and metropolitan health campuses.",
-                "The vulnerability was added to the CISA Known Exploited Vulnerabilities catalogue on 2 June 2023, and the WASOC Cyber Threat Intelligence feed has confirmed active exploitation by the Clop ransomware group against Australian state government targets since 27 May 2023. The attack surface is fully exposed: the MOVEit Transfer instance is reachable on TCP port 443 from the public internet with no additional compensating controls, and Shodan scan results confirm the service banner is identifiable. The combination of remote unauthenticated attack vector, confirmed in-the-wild exploitation, direct internet exposure, the Core mission role, and the Category 3 health data asset classification drives the priority score to 94 out of 100.",
+                "The vulnerability was added to the CISA Known Exploited Vulnerabilities catalogue on 2 June 2023, and the WASOC Cyber Threat Intelligence feed has confirmed active exploitation by the Clop ransomware group against Australian state government targets since 27 May 2023. The attack surface is fully exposed: the MOVEit Transfer instance is reachable on TCP port 443 from the public internet with no additional compensating controls, and Shodan scan results confirm the service banner is identifiable. The combination of remote unauthenticated attack vector, confirmed in-the-wild exploitation, direct internet exposure, the Core mission role, and the OFFICIAL Sensitive health data asset classification drives the priority score to 94 out of 100.",
             ]
         ),
     },
     # Row 2: CVE-2023-4966 — Citrix Bleed
     {
         "vulnerability_id": "CVE-2023-4966",
-        "hostname": "PRD-CITRIX-ADC01.transport.wa.gov.au",
+        "hostname": "per-PRD-CITRIX-ADC01.transport.wa.gov.au",
         "cvss_score": 9.4,
         "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:L",
         "cisa_kev": True,
@@ -213,7 +213,7 @@ SEED_ROWS = [
         "epss_substituted_value": None,
         "epss_substitution_confidence": None,
         "epss_substitution_reason": None,
-        "data_classification": "Category 3",
+        "data_classification": "OFFICIAL Sensitive",
         "network_zone": "DMZ-Transport-External",
         "interface_type": "Internet-facing HTTPS (external VIP on port 443)",
         "patch_cycle": "Ad-hoc (appliance updates applied during scheduled maintenance windows)",
@@ -224,15 +224,15 @@ SEED_ROWS = [
         "business_owner": "Department of Transport — ICT Services",
         "technical_owner": "Transport ICT — Networks and Security Team",
         "registered_applications": "Citrix Gateway (VPN virtual server), Citrix Load Balancer (TEMIS backend), Citrix Content Switching (DVS Online)",
-        "dependent_assets": "PRD-TEMIS-APP01.transport.wa.gov.au, PRD-DVS-WEB01.transport.wa.gov.au, PRD-MARINE-DOC01.transport.wa.gov.au (+ 19 other published application targets)",
+        "dependent_assets": "per-PRD-TEMIS-APP01.transport.wa.gov.au, per-PRD-DVS-WEB01.transport.wa.gov.au, per-PRD-MARINE-DOC01.transport.wa.gov.au (+ 19 other published application targets)",
         "service_account": "",
         "detection_tier": "Deterministic",
         "detection_reason": "Deterministic match: CVSS 9.4, CISA KEV listed, session token leakage on perimeter Citrix NetScaler ADC. Baseline algorithm detected unpatched build hash within 72 hours of advisory publication.",
-        "scanner_output_raw": "[CRITICAL] CVE-2023-4966 — Citrix NetScaler ADC/Gateway Session Token Leakage\nHost: PRD-CITRIX-ADC01.transport.wa.gov.au (10.61.5.2)\nPort: 443/tcp (HTTPS)\nService: Citrix NetScaler ADC VPX 13.1-49.13\nDetection Method: HTTP response header analysis + build number extraction via /vpn/index.html\nCVSS v3.1: 9.4 (AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:L)\nCISA KEV: TRUE\nEPSS Score: 0.968 (96th percentile)\nExploit Maturity: High (multiple public PoCs, Metasploit module available)\nPatch Available: Yes (NetScaler ADC 13.1-49.15 and later)\nPatch Applied: No (build 49.13 is vulnerable; builds prior to 49.15 are affected)\nImmediate Risk: Session token harvesting enables lateral movement into internal transport systems",
+        "scanner_output_raw": "[CRITICAL] CVE-2023-4966 — Citrix NetScaler ADC/Gateway Session Token Leakage\nHost: per-PRD-CITRIX-ADC01.transport.wa.gov.au (10.61.5.2)\nPort: 443/tcp (HTTPS)\nService: Citrix NetScaler ADC VPX 13.1-49.13\nDetection Method: HTTP response header analysis + build number extraction via /vpn/index.html\nCVSS v3.1: 9.4 (AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:L)\nCISA KEV: TRUE\nEPSS Score: 0.968 (96th percentile)\nExploit Maturity: High (multiple public PoCs, Metasploit module available)\nPatch Available: Yes (NetScaler ADC 13.1-49.15 and later)\nPatch Applied: No (build 49.13 is vulnerable; builds prior to 49.15 are affected)\nImmediate Risk: Session token harvesting enables lateral movement into internal transport systems",
         "weakness_template_raw": 'template_id: DET-2023-CITRIX-BLEED-001\ntemplate_name: "Citrix NetScaler ADC Pre-Auth Session Token Disclosure — Perimeter Device Risk"\nlogic_chain:\n  - step: 1\n    condition: "software_product == \'Citrix NetScaler ADC\' AND build_number IN affected_range"\n    weight: 0.30\n  - step: 2\n    condition: "device_role == \'perimeter_gateway\' AND internet_facing == TRUE"\n    weight: 0.30\n  - step: 3\n    condition: "authentication_bypass == TRUE AND credential_theft_possible == TRUE"\n    weight: 0.20\n  - step: 4\n    condition: "cisa_kev == TRUE AND days_since_kev_listing >= 7"\n    weight: 0.15\n  - step: 5\n    condition: "downstream_asset_count > 5"\n    weight: 0.05',
         "advisory_ref_id": "ADV-CVE-2023-4966",
         "advisory_quote": "The Western Australian Security Operations Centre is issuing an urgent advisory regarding CVE-2023-4966, a critical session token disclosure vulnerability in Citrix NetScaler ADC and Gateway appliances. This vulnerability has been confirmed as actively exploited in the wild. WA government agencies operating Citrix NetScaler appliances as internet-facing remote access gateways should immediately verify their build version and upgrade to a fixed release. Agencies that cannot patch immediately must implement the vendor-recommended mitigation steps including restricting access to the management interface and terminating all active and persistent sessions.",
-        "investigation_notes": "The following summary has been pre-filled for analyst review and editing.\n\nCVE-2023-4966 on PRD-CITRIX-ADC01.transport.wa.gov.au has been assigned a priority score of 87 and a risk band of Very Critical by the Deterministic Tier engine. The appliance is a perimeter gateway device providing remote access to the Department of Transport internal network. The vulnerability enables session token theft without authentication, which can be leveraged to impersonate authenticated users including system administrators.\n\nImmediate recommended action: Upgrade the NetScaler ADC VPX appliance to build 13.1-49.15 or later. Prior to upgrade, terminate all active and persistent sessions via the NetScaler management interface. Review the ns.log file for anomalous session creation events.",
+        "investigation_notes": "The following summary has been pre-filled for analyst review and editing.\n\nCVE-2023-4966 on per-PRD-CITRIX-ADC01.transport.wa.gov.au has been assigned a priority score of 87 and a risk band of Very Critical by the Deterministic Tier engine. The appliance is a perimeter gateway device providing remote access to the Department of Transport internal network. The vulnerability enables session token theft without authentication, which can be leveraged to impersonate authenticated users including system administrators.\n\nImmediate recommended action: Upgrade the NetScaler ADC VPX appliance to build 13.1-49.15 or later. Prior to upgrade, terminate all active and persistent sessions via the NetScaler management interface. Review the ns.log file for anomalous session creation events.",
         "mitre_techniques_json": json.dumps(
             [
                 {
@@ -289,7 +289,10 @@ SEED_ROWS = [
         "asset_registry_json": json.dumps(
             [
                 {"label": "Asset ID", "value": "AST-TRANSPORT-00089"},
-                {"label": "Hostname", "value": "PRD-CITRIX-ADC01.transport.wa.gov.au"},
+                {
+                    "label": "Hostname",
+                    "value": "per-PRD-CITRIX-ADC01.transport.wa.gov.au",
+                },
                 {
                     "label": "IP Address",
                     "value": "10.61.5.2 (NSIP) / 10.61.5.3 (SNIP) / 203.22.xxx.xxx (VIP external)",
@@ -312,7 +315,7 @@ SEED_ROWS = [
                 },
                 {
                     "label": "Data Classification",
-                    "value": "Category 3 — Sensitive (Protective Security) — PRIS Act classification",
+                    "value": "OFFICIAL Sensitive — Sensitive (Protective Security) — PRIS Act classification",
                 },
                 {
                     "label": "Mission Prevalence",
@@ -334,7 +337,7 @@ SEED_ROWS = [
                 },
                 {
                     "label": "Dependent Assets",
-                    "value": "PRD-TEMIS-APP01.transport.wa.gov.au, PRD-DVS-WEB01.transport.wa.gov.au, PRD-MARINE-DOC01.transport.wa.gov.au (+ 19 other published application targets)",
+                    "value": "per-PRD-TEMIS-APP01.transport.wa.gov.au, per-PRD-DVS-WEB01.transport.wa.gov.au, per-PRD-MARINE-DOC01.transport.wa.gov.au (+ 19 other published application targets)",
                 },
                 {
                     "label": "Interface Type",
@@ -345,7 +348,7 @@ SEED_ROWS = [
         ),
         "summary_paragraphs_json": json.dumps(
             [
-                "This case concerns an improper handling of session tokens in Citrix NetScaler ADC and NetScaler Gateway, known as Citrix Bleed, tracked as CVE-2023-4966. The vulnerability was identified on the host PRD-CITRIX-ADC01.transport.wa.gov.au. The flaw allows an unauthenticated attacker to extract valid session tokens from the appliance memory by sending a crafted HTTP request, without requiring any credentials or user interaction.",
+                "This case concerns an improper handling of session tokens in Citrix NetScaler ADC and NetScaler Gateway, known as Citrix Bleed, tracked as CVE-2023-4966. The vulnerability was identified on the host per-PRD-CITRIX-ADC01.transport.wa.gov.au. The flaw allows an unauthenticated attacker to extract valid session tokens from the appliance memory by sending a crafted HTTP request, without requiring any credentials or user interaction.",
                 "The multi-label classifier assessed this asset as having a Mission Prevalence of Core and a Public Well-Being Impact of Moderate, reflecting its role as the primary remote access gateway for the Department of Transport.",
                 "The appliance serves as the primary remote access gateway for the Department of Transport, providing secure access to the Transport Executive Management Information System, the Driver and Vehicle Services Online platform backend, and the Marine Safety document repository. The Citrix NetScaler ADC is directly exposed to the internet on TCP port 443.",
             ]
@@ -354,7 +357,7 @@ SEED_ROWS = [
     # Row 3: CVE-2023-27350 — PaperCut Auth Bypass
     {
         "vulnerability_id": "CVE-2023-27350",
-        "hostname": "PRD-PRINT-SVR05.education.wa.edu.au",
+        "hostname": "per-PRD-PRINT-SVR05.education.wa.edu.au",
         "cvss_score": 9.8,
         "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
         "cisa_kev": True,
@@ -384,7 +387,7 @@ SEED_ROWS = [
         "epss_substituted_value": None,
         "epss_substitution_confidence": None,
         "epss_substitution_reason": None,
-        "data_classification": "Category 2",
+        "data_classification": "OFFICIAL",
         "network_zone": "EDU-Internal-Servers (VLAN 215)",
         "interface_type": "Internal network only (TCP 9191, TCP 9192, TCP 9164)",
         "patch_cycle": "Monthly (third Saturday, 2200-0400 AWST)",
@@ -395,15 +398,15 @@ SEED_ROWS = [
         "business_owner": "Department of Education — ICT Services and Infrastructure",
         "technical_owner": "Education ICT — End User Computing Team",
         "registered_applications": "PaperCut MF 22.0.6, Microsoft Print Server role, PaperCut Mobility Print",
-        "dependent_assets": "28 managed printers across 14 school campuses, PRD-FILE-PRINT01.education.wa.edu.au (print queue storage)",
+        "dependent_assets": "28 managed printers across 14 school campuses, per-PRD-FILE-PRINT01.education.wa.edu.au (print queue storage)",
         "service_account": "DOMAIN_EDU\\svc-papercut-prd (member of local Administrators group)",
         "detection_tier": "ML Tier",
         "detection_reason": "ML Tier: CVSS 9.8 baseline tempered by network position but elevated by tabular feature combination. Domain-joined print server, privileged service account context, lateral movement reachability to 28 student record endpoints. ML confidence 0.91.",
-        "scanner_output_raw": "[HIGH] CVE-2023-27350 — PaperCut NG/MF Authentication Bypass and Remote Code Execution\nHost: PRD-PRINT-SVR05.education.wa.edu.au (10.82.15.44)\nPort: 9191/tcp (HTTP — PaperCut Application Server)\nService: PaperCut MF 22.0.6 (build 63912)\nDetection Method: HTTP response header + /app?service=page/About version disclosure\nCVSS v3.1: 9.8 (AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H)\nCISA KEV: TRUE (added 24 April 2023)\nEPSS Score: 0.912 (91st percentile)\nExploit Maturity: High (public PoC available, observed in ransomware affiliate playbooks)\nPatch Available: Yes (PaperCut MF 22.0.7 and later)\nPatch Applied: No\nAuthentication Context: PaperCut service runs as DOMAIN_EDU\\svc-papercut-prd (domain user, member of local Administrators group)",
-        "weakness_template_raw": 'template_id: ML-2023-PAPERCUT-LAT-001\ntemplate_name: "PaperCut Auth Bypass — Lateral Movement Amplification Model"\nmodel_type: Gradient Boosted Decision Tree\ntraining_cutoff: 2024-12-31\nfeature_vector:\n  - feature: "cvss_base_score"\n    value: 9.8\n    weight_contribution: 0.18\n  - feature: "epss_score"\n    value: 0.912\n    weight_contribution: 0.12\n  - feature: "domain_joined"\n    value: TRUE\n    weight_contribution: 0.20\n  - feature: "service_account_privilege_level"\n    value: "local_administrator"\n    weight_contribution: 0.18\n  - feature: "lateral_movement_reachability_count"\n    value: 28\n    weight_contribution: 0.22\n  - feature: "internet_facing"\n    value: FALSE\n    weight_contribution: -0.05\n  - feature: "data_classification_level"\n    value: "Category_2"\n    weight_contribution: 0.05\nmodel_confidence: 0.91',
+        "scanner_output_raw": "[HIGH] CVE-2023-27350 — PaperCut NG/MF Authentication Bypass and Remote Code Execution\nHost: per-PRD-PRINT-SVR05.education.wa.edu.au (10.82.15.44)\nPort: 9191/tcp (HTTP — PaperCut Application Server)\nService: PaperCut MF 22.0.6 (build 63912)\nDetection Method: HTTP response header + /app?service=page/About version disclosure\nCVSS v3.1: 9.8 (AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H)\nCISA KEV: TRUE (added 24 April 2023)\nEPSS Score: 0.912 (91st percentile)\nExploit Maturity: High (public PoC available, observed in ransomware affiliate playbooks)\nPatch Available: Yes (PaperCut MF 22.0.7 and later)\nPatch Applied: No\nAuthentication Context: PaperCut service runs as DOMAIN_EDU\\svc-papercut-prd (domain user, member of local Administrators group)",
+        "weakness_template_raw": 'template_id: ML-2023-PAPERCUT-LAT-001\ntemplate_name: "PaperCut Auth Bypass — Lateral Movement Amplification Model"\nmodel_type: Gradient Boosted Decision Tree\ntraining_cutoff: 2024-12-31\nfeature_vector:\n  - feature: "cvss_base_score"\n    value: 9.8\n    weight_contribution: 0.18\n  - feature: "epss_score"\n    value: 0.912\n    weight_contribution: 0.12\n  - feature: "domain_joined"\n    value: TRUE\n    weight_contribution: 0.20\n  - feature: "service_account_privilege_level"\n    value: "local_administrator"\n    weight_contribution: 0.18\n  - feature: "lateral_movement_reachability_count"\n    value: 28\n    weight_contribution: 0.22\n  - feature: "internet_facing"\n    value: FALSE\n    weight_contribution: -0.05\n  - feature: "data_classification_level"\n    value: "OFFICIAL"\n    weight_contribution: 0.05\nmodel_confidence: 0.91',
         "advisory_ref_id": "ADV-CVE-2023-27350",
         "advisory_quote": "The Western Australian Security Operations Centre advises that CVE-2023-27350 affecting PaperCut NG and MF has been observed in active exploitation by multiple threat actor groups, including those affiliated with ransomware operations. Education sector organisations have been disproportionately targeted.",
-        "investigation_notes": "The following summary has been pre-filled for analyst review and editing.\n\nCVE-2023-27350 on PRD-PRINT-SVR05.education.wa.edu.au has been assigned a priority score of 71 and a risk band of Critical by the ML Tier model. The model received a CVSS 9.8 baseline but tempered the initial priority due to the internal-only network position and the multi-label classifier's Support mission tag.\n\nImmediate recommended action: Upgrade PaperCut MF from version 22.0.6 to version 22.0.7 or later.",
+        "investigation_notes": "The following summary has been pre-filled for analyst review and editing.\n\nCVE-2023-27350 on per-PRD-PRINT-SVR05.education.wa.edu.au has been assigned a priority score of 71 and a risk band of Critical by the ML Tier model. The model received a CVSS 9.8 baseline but tempered the initial priority due to the internal-only network position and the multi-label classifier's Support mission tag.\n\nImmediate recommended action: Upgrade PaperCut MF from version 22.0.6 to version 22.0.7 or later.",
         "mitre_techniques_json": json.dumps(
             [
                 {
@@ -441,7 +444,7 @@ SEED_ROWS = [
                     "name": "Asset Criticality Contribution",
                     "awarded": 10,
                     "max": 20,
-                    "justification": "This is a Category 2 asset with a Mission Prevalence of Support and a Public Well-Being Impact of Minimal.",
+                    "justification": "This is a OFFICIAL asset with a Mission Prevalence of Support and a Public Well-Being Impact of Minimal.",
                 },
                 {
                     "name": "Exposure and Network Position",
@@ -460,7 +463,10 @@ SEED_ROWS = [
         "asset_registry_json": json.dumps(
             [
                 {"label": "Asset ID", "value": "AST-EDU-00236"},
-                {"label": "Hostname", "value": "PRD-PRINT-SVR05.education.wa.edu.au"},
+                {
+                    "label": "Hostname",
+                    "value": "per-PRD-PRINT-SVR05.education.wa.edu.au",
+                },
                 {"label": "IP Address", "value": "10.82.15.44"},
                 {
                     "label": "Operating System",
@@ -480,7 +486,7 @@ SEED_ROWS = [
                 },
                 {
                     "label": "Data Classification",
-                    "value": "Category 2 — Sensitive (Personal) — PRIS Act classification",
+                    "value": "OFFICIAL — Sensitive (Personal) — PRIS Act classification",
                 },
                 {
                     "label": "Mission Prevalence",
@@ -502,11 +508,11 @@ SEED_ROWS = [
                 },
                 {
                     "label": "Dependent Assets",
-                    "value": "28 managed printers across 14 school campuses, PRD-FILE-PRINT01.education.wa.gov.au (print queue storage)",
+                    "value": "28 managed printers across 14 school campuses, per-PRD-FILE-PRINT01.education.wa.gov.au (print queue storage)",
                 },
                 {
                     "label": "Service Account",
-                    "value": "DOMAIN_EDU\\svc-papercut-prd (member of local Administrators group on PRD-PRINT-SVR05)",
+                    "value": "DOMAIN_EDU\\svc-papercut-prd (member of local Administrators group on per-PRD-PRINT-SVR05)",
                 },
                 {
                     "label": "Interface Type",
@@ -517,7 +523,7 @@ SEED_ROWS = [
         ),
         "summary_paragraphs_json": json.dumps(
             [
-                "This case concerns an authentication bypass vulnerability in PaperCut NG and PaperCut MF print management software, tracked as CVE-2023-27350, identified on the host PRD-PRINT-SVR05.education.wa.edu.au. The vulnerability permits an unauthenticated remote attacker to bypass the PaperCut login mechanism and execute arbitrary code under the context of the PaperCut application service account.",
+                "This case concerns an authentication bypass vulnerability in PaperCut NG and PaperCut MF print management software, tracked as CVE-2023-27350, identified on the host per-PRD-PRINT-SVR05.education.wa.edu.au. The vulnerability permits an unauthenticated remote attacker to bypass the PaperCut login mechanism and execute arbitrary code under the context of the PaperCut application service account.",
                 "The multi-label classifier assessed this asset as having a Mission Prevalence of Support and a Public Well-Being Impact of Minimal, reflecting its role as a centralised print management server.",
                 "The PaperCut server is deployed on a Windows Server domain-joined host within the Department of Education internal network. The ML Tier model evaluated this vulnerability with its baseline CVSS of 9.8 and tempered the priority due to the internal-only network position.",
             ]
@@ -526,7 +532,7 @@ SEED_ROWS = [
     # Row 4: CVE-2024-1709 — ConnectWise ScreenConnect
     {
         "vulnerability_id": "CVE-2024-1709",
-        "hostname": "PRD-RMM-GW01.sharedservices.wa.gov.au",
+        "hostname": "per-PRD-RMM-GW01.sharedservices.wa.gov.au",
         "cvss_score": 10.0,
         "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
         "cisa_kev": True,
@@ -556,7 +562,7 @@ SEED_ROWS = [
         "epss_substituted_value": None,
         "epss_substitution_confidence": None,
         "epss_substitution_reason": None,
-        "data_classification": "Category 3",
+        "data_classification": "OFFICIAL Sensitive",
         "network_zone": "SSC-Management-Segment (VLAN 48)",
         "interface_type": "Internal network only (TCP 8040 for web interface, TCP 8041 for relay)",
         "patch_cycle": "Monthly (first Sunday, 0100-0600 AWST)",
@@ -571,11 +577,11 @@ SEED_ROWS = [
         "service_account": "SSC-MGMT\\svc-screenconnect (domain service account)",
         "detection_tier": "ML Tier",
         "detection_reason": "ML Tier: CVSS 10.0 tempered by isolated network segment, but ML model elevated score due to RMM tool bridging 14 downstream agency hosts. Tabular feature flag: cross-boundary reachability score 0.78. ML confidence 0.83.",
-        "scanner_output_raw": "[HIGH] CVE-2024-1709 — ConnectWise ScreenConnect Authentication Bypass\nHost: PRD-RMM-GW01.sharedservices.wa.gov.au (10.120.8.17)\nPort: 8040/tcp (HTTPS — ScreenConnect Web Interface)\nService: ConnectWise ScreenConnect 23.9.7.8804\nDetection Method: HTTP response header Server field + /SetupWizard.aspx accessible without authentication\nCVSS v3.1: 10.0 (AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H)\nCISA KEV: TRUE (added 20 February 2024)\nEPSS Score: 0.878 (87th percentile)\nExploit Maturity: High (public PoC available within 48 hours of disclosure)\nPatch Available: Yes (ScreenConnect 23.9.8 and later)\nPatch Applied: No\nCross-Boundary Reachability: 14 downstream agency endpoints across 5 network zones",
-        "weakness_template_raw": 'template_id: ML-2024-SCREENCONNECT-CBR-001\ntemplate_name: "RMM Gateway Compromise — Cross-Boundary Lateral Movement Amplifier"\nmodel_type: XGBoost Reciprocal Rank Fusion (RRF) Ensemble\ntraining_cutoff: 2025-06-30\nfeature_vector:\n  - feature: "cvss_base_score"\n    value: 10.0\n    weight_contribution: 0.15\n  - feature: "epss_score"\n    value: 0.878\n    weight_contribution: 0.12\n  - feature: "software_category"\n    value: "remote_monitoring_and_management"\n    weight_contribution: 0.18\n  - feature: "cross_boundary_reachability_count"\n    value: 14\n    weight_contribution: 0.25\n  - feature: "downstream_network_zone_diversity"\n    value: 5\n    weight_contribution: 0.18\n  - feature: "inbound_network_restriction"\n    value: TRUE\n    weight_contribution: -0.10\n  - feature: "data_classification_level"\n    value: "Category_3"\n    weight_contribution: 0.07\nmodel_confidence: 0.83',
+        "scanner_output_raw": "[HIGH] CVE-2024-1709 — ConnectWise ScreenConnect Authentication Bypass\nHost: per-PRD-RMM-GW01.sharedservices.wa.gov.au (10.120.8.17)\nPort: 8040/tcp (HTTPS — ScreenConnect Web Interface)\nService: ConnectWise ScreenConnect 23.9.7.8804\nDetection Method: HTTP response header Server field + /SetupWizard.aspx accessible without authentication\nCVSS v3.1: 10.0 (AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H)\nCISA KEV: TRUE (added 20 February 2024)\nEPSS Score: 0.878 (87th percentile)\nExploit Maturity: High (public PoC available within 48 hours of disclosure)\nPatch Available: Yes (ScreenConnect 23.9.8 and later)\nPatch Applied: No\nCross-Boundary Reachability: 14 downstream agency endpoints across 5 network zones",
+        "weakness_template_raw": 'template_id: ML-2024-SCREENCONNECT-CBR-001\ntemplate_name: "RMM Gateway Compromise — Cross-Boundary Lateral Movement Amplifier"\nmodel_type: XGBoost Reciprocal Rank Fusion (RRF) Ensemble\ntraining_cutoff: 2025-06-30\nfeature_vector:\n  - feature: "cvss_base_score"\n    value: 10.0\n    weight_contribution: 0.15\n  - feature: "epss_score"\n    value: 0.878\n    weight_contribution: 0.12\n  - feature: "software_category"\n    value: "remote_monitoring_and_management"\n    weight_contribution: 0.18\n  - feature: "cross_boundary_reachability_count"\n    value: 14\n    weight_contribution: 0.25\n  - feature: "downstream_network_zone_diversity"\n    value: 5\n    weight_contribution: 0.18\n  - feature: "inbound_network_restriction"\n    value: TRUE\n    weight_contribution: -0.10\n  - feature: "data_classification_level"\n    value: "OFFICIAL_Sensitive"\n    weight_contribution: 0.07\nmodel_confidence: 0.83',
         "advisory_ref_id": "ADV-CVE-2024-1709",
         "advisory_quote": "The Western Australian Security Operations Centre has assessed CVE-2024-1709 as a high-severity threat to WA government entities using ConnectWise ScreenConnect for remote management. Of particular concern is the risk posed to shared services providers who manage endpoints across multiple agencies.",
-        "investigation_notes": "The following summary has been pre-filled for analyst review and editing.\n\nCVE-2024-1709 on PRD-RMM-GW01.sharedservices.wa.gov.au has been assigned a priority score of 55 and a risk band of Critical by the ML Tier model.\n\nImmediate recommended action: Upgrade ConnectWise ScreenConnect from version 23.9.7.8804 to version 23.9.8 or later. Pending upgrade, temporarily restrict all inbound connections to port 8040.",
+        "investigation_notes": "The following summary has been pre-filled for analyst review and editing.\n\nCVE-2024-1709 on per-PRD-RMM-GW01.sharedservices.wa.gov.au has been assigned a priority score of 55 and a risk band of Critical by the ML Tier model.\n\nImmediate recommended action: Upgrade ConnectWise ScreenConnect from version 23.9.7.8804 to version 23.9.8 or later. Pending upgrade, temporarily restrict all inbound connections to port 8040.",
         "mitre_techniques_json": json.dumps(
             [
                 {
@@ -613,7 +619,7 @@ SEED_ROWS = [
                     "name": "Asset Criticality Contribution",
                     "awarded": 5,
                     "max": 20,
-                    "justification": "Category 3 classification with a Mission Prevalence of Support and a Public Well-Being Impact of Moderate.",
+                    "justification": "OFFICIAL Sensitive classification with a Mission Prevalence of Support and a Public Well-Being Impact of Moderate.",
                 },
                 {
                     "name": "Exposure and Network Position",
@@ -632,7 +638,10 @@ SEED_ROWS = [
         "asset_registry_json": json.dumps(
             [
                 {"label": "Asset ID", "value": "AST-SSC-00041"},
-                {"label": "Hostname", "value": "PRD-RMM-GW01.sharedservices.wa.gov.au"},
+                {
+                    "label": "Hostname",
+                    "value": "per-PRD-RMM-GW01.sharedservices.wa.gov.au",
+                },
                 {"label": "IP Address", "value": "10.120.8.17"},
                 {
                     "label": "Operating System",
@@ -652,7 +661,7 @@ SEED_ROWS = [
                 },
                 {
                     "label": "Data Classification",
-                    "value": "Category 3 — Sensitive (Protective Security) — PRIS Act classification",
+                    "value": "OFFICIAL Sensitive — Sensitive (Protective Security) — PRIS Act classification",
                 },
                 {
                     "label": "Mission Prevalence",
@@ -689,7 +698,7 @@ SEED_ROWS = [
         ),
         "summary_paragraphs_json": json.dumps(
             [
-                "This case concerns an authentication bypass vulnerability in ConnectWise ScreenConnect, tracked as CVE-2024-1709, identified on the host PRD-RMM-GW01.sharedservices.wa.gov.au. ScreenConnect is a remote monitoring and management tool used by the WA Shared Services Centre.",
+                "This case concerns an authentication bypass vulnerability in ConnectWise ScreenConnect, tracked as CVE-2024-1709, identified on the host per-PRD-RMM-GW01.sharedservices.wa.gov.au. ScreenConnect is a remote monitoring and management tool used by the WA Shared Services Centre.",
                 "The multi-label classifier assessed this asset as having a Mission Prevalence of Support and a Public Well-Being Impact of Moderate, reflecting its role as a back-end IT management tool.",
                 "The vulnerability carries a CVSS score of 10.0 and allows an unauthenticated attacker to bypass the ScreenConnect login page and gain administrative access to the ScreenConnect server.",
             ]
@@ -698,7 +707,7 @@ SEED_ROWS = [
     # Row 5: CVE-2023-36884 — Office/Windows Search RCE
     {
         "vulnerability_id": "CVE-2023-36884",
-        "hostname": "PRD-FILE-STORE02.communities.wa.gov.au",
+        "hostname": "per-PRD-FILE-STORE02.communities.wa.gov.au",
         "cvss_score": 7.8,
         "cvss_vector": "AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H",
         "cisa_kev": True,
@@ -728,7 +737,7 @@ SEED_ROWS = [
         "epss_substituted_value": 0.72,
         "epss_substitution_confidence": 0.79,
         "epss_substitution_reason": "The EPSS score of 0.065 is deemed non-representative for sector-specific targeting patterns. An internal ML prediction of 0.72 has been substituted based on sector-specific targeting data from the WASOC threat intelligence feed and confirmed exploitation patterns against Australian state government social services entities.",
-        "data_classification": "Category 3",
+        "data_classification": "OFFICIAL Sensitive",
         "network_zone": "Communities-Internal-Servers (VLAN 312)",
         "interface_type": "Internal network only (SMB TCP 445, RPC dynamic ports)",
         "patch_cycle": "Monthly (second Saturday, 2200-0400 AWST)",
@@ -739,15 +748,15 @@ SEED_ROWS = [
         "business_owner": "Department of Communities — Child Protection and Family Support",
         "technical_owner": "Communities ICT — Infrastructure and Operations",
         "registered_applications": "Microsoft Office 365 Apps for Enterprise, Windows File Server role, Microsoft Defender for Endpoint",
-        "dependent_assets": "PRD-CASEMGT-APP01.communities.wa.gov.au, PRD-CASEMGT-DB01.communities.wa.gov.au, 42 caseworker workstations",
+        "dependent_assets": "per-PRD-CASEMGT-APP01.communities.wa.gov.au, per-PRD-CASEMGT-DB01.communities.wa.gov.au, 42 caseworker workstations",
         "service_account": "Local System",
         "detection_tier": "SLM Tier",
         "detection_reason": "SLM Tier: Text conflict detected. Public exploit code available and actively weaponised in malicious Office documents (high exploitability). Negative constraint: Microsoft mitigation via registry key exists and attack requires user interaction. RAG search unable to confirm ASR rule deployment status on this endpoint.",
-        "scanner_output_raw": "[HIGH] CVE-2023-36884 — Microsoft Office/Windows Search Remote Code Execution\nHost: PRD-FILE-STORE02.communities.wa.gov.au (10.94.33.7)\nPort: 445/tcp (SMB — File Sharing)\nService: Microsoft Windows Server 2019 Standard (build 17763)\nDetection Method: Windows OS build enumeration via SMB dialect negotiation + registry artefact indicating Office 365 Apps for Enterprise installed\nCVSS v3.1: 7.8 (AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H)\nCISA KEV: TRUE (added 11 July 2023)\nEPSS Score: 0.065 (83rd percentile)\nExploit Maturity: High (public exploit code, actively weaponised in spear-phishing campaigns)\nPatch Available: Yes (Microsoft security updates for July 2023 and later; also registry key mitigation available)\nPatch Applied: OS patches current to June 2026; Office patch level uncertain\nMitigation Status: ASR rule blocks Office applications — CMDB reports conflicting GPO application status for this host",
+        "scanner_output_raw": "[HIGH] CVE-2023-36884 — Microsoft Office/Windows Search Remote Code Execution\nHost: per-PRD-FILE-STORE02.communities.wa.gov.au (10.94.33.7)\nPort: 445/tcp (SMB — File Sharing)\nService: Microsoft Windows Server 2019 Standard (build 17763)\nDetection Method: Windows OS build enumeration via SMB dialect negotiation + registry artefact indicating Office 365 Apps for Enterprise installed\nCVSS v3.1: 7.8 (AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H)\nCISA KEV: TRUE (added 11 July 2023)\nEPSS Score: 0.065 (83rd percentile)\nExploit Maturity: High (public exploit code, actively weaponised in spear-phishing campaigns)\nPatch Available: Yes (Microsoft security updates for July 2023 and later; also registry key mitigation available)\nPatch Applied: OS patches current to June 2026; Office patch level uncertain\nMitigation Status: ASR rule blocks Office applications — CMDB reports conflicting GPO application status for this host",
         "weakness_template_raw": 'template_id: SLM-2023-OFFICE-SRCH-001\ntemplate_name: "Office URI Protocol RCE — User Interaction vs Government Targeting Conflict Resolver"\nmodel_type: Small Language Model (SLM) — Textual Conflict Resolution\ninput_documents:\n  - document_type: "exploitability_assessment"\n    source: "WASOC Threat Intelligence Feed + CISA KEV"\n    key_text: "Active exploitation confirmed. Malicious Office documents targeting government social services agencies."\n    sentiment: HIGH_RISK\n  - document_type: "negative_constraint"\n    source: "Microsoft Security Response Center Advisory"\n    key_text: "Customers who apply the registry key mitigation are protected. The attack requires user interaction."\n    sentiment: RISK_MITIGATED\n  - document_type: "rag_retrieval_result"\n    source: "Internal CMDB + Group Policy Management Console"\n    key_text: "CMDB record 2026-03-07: GPO replication failure. UNCERTAIN."\n    sentiment: UNCERTAIN',
         "advisory_ref_id": "ADV-CVE-2023-36884",
         "advisory_quote": "The Western Australian Security Operations Centre has confirmed that CVE-2023-36884 is being actively exploited in targeted spear-phishing campaigns against Australian state government social services agencies. Attackers are sending malicious Office documents themed around child protection case updates.",
-        "investigation_notes": "The following summary has been pre-filled for analyst review and editing.\n\nCVE-2023-36884 on PRD-FILE-STORE02.communities.wa.gov.au has been assigned a priority score of 63 and a risk band of Critical by the SLM Tier engine. This case was escalated to the SLM due to a text conflict between the exploitability assessment and the negative constraint.\n\nImmediate recommended action: Manually verify the status of the Microsoft Defender ASR rule on PRD-FILE-STORE02.",
+        "investigation_notes": "The following summary has been pre-filled for analyst review and editing.\n\nCVE-2023-36884 on per-PRD-FILE-STORE02.communities.wa.gov.au has been assigned a priority score of 63 and a risk band of Critical by the SLM Tier engine. This case was escalated to the SLM due to a text conflict between the exploitability assessment and the negative constraint.\n\nImmediate recommended action: Manually verify the status of the Microsoft Defender ASR rule on per-PRD-FILE-STORE02.",
         "mitre_techniques_json": json.dumps(
             [
                 {
@@ -786,7 +795,7 @@ SEED_ROWS = [
                     "name": "Asset Criticality Contribution",
                     "awarded": 17,
                     "max": 20,
-                    "justification": "Category 3 asset with Core mission and Severe public impact. File server hosts child protection case management data.",
+                    "justification": "OFFICIAL Sensitive asset with Core mission and Severe public impact. File server hosts child protection case management data.",
                 },
                 {
                     "name": "Exposure and Network Position",
@@ -807,7 +816,7 @@ SEED_ROWS = [
                 {"label": "Asset ID", "value": "AST-COMM-00158"},
                 {
                     "label": "Hostname",
-                    "value": "PRD-FILE-STORE02.communities.wa.gov.au",
+                    "value": "per-PRD-FILE-STORE02.communities.wa.gov.au",
                 },
                 {"label": "IP Address", "value": "10.94.33.7"},
                 {
@@ -828,7 +837,7 @@ SEED_ROWS = [
                 },
                 {
                     "label": "Data Classification",
-                    "value": "Category 3 — Sensitive (Health and Legal) — PRIS Act classification",
+                    "value": "OFFICIAL Sensitive — Sensitive (Health and Legal) — PRIS Act classification",
                 },
                 {
                     "label": "Mission Prevalence",
@@ -853,7 +862,7 @@ SEED_ROWS = [
                 },
                 {
                     "label": "Dependent Assets",
-                    "value": "PRD-CASEMGT-APP01.communities.wa.gov.au, PRD-CASEMGT-DB01.communities.wa.gov.au, 42 caseworker workstations",
+                    "value": "per-PRD-CASEMGT-APP01.communities.wa.gov.au, per-PRD-CASEMGT-DB01.communities.wa.gov.au, 42 caseworker workstations",
                 },
                 {"label": "Service Account", "value": "Local System"},
                 {
@@ -869,7 +878,7 @@ SEED_ROWS = [
         ),
         "summary_paragraphs_json": json.dumps(
             [
-                "This case concerns a remote code execution vulnerability in Microsoft Office and Windows Search, tracked as CVE-2023-36884, identified on the host PRD-FILE-STORE02.communities.wa.gov.au. This host is a file storage server used by the Department of Communities, which handles case management documents for child protection, family and domestic violence services, and social housing programs.",
+                "This case concerns a remote code execution vulnerability in Microsoft Office and Windows Search, tracked as CVE-2023-36884, identified on the host per-PRD-FILE-STORE02.communities.wa.gov.au. This host is a file storage server used by the Department of Communities, which handles case management documents for child protection, family and domestic violence services, and social housing programs.",
                 "The multi-label classifier assessed this asset as having a Mission Prevalence of Core and a Public Well-Being Impact of Severe, reflecting its central role in supporting frontline child protection caseworkers.",
                 "This case was escalated to the SLM Tier because the automated pipeline detected a conflict between two competing signals.",
             ]
@@ -878,7 +887,7 @@ SEED_ROWS = [
     # Row 6: CVE-2023-22515 — Confluence Broken Access Control
     {
         "vulnerability_id": "CVE-2023-22515",
-        "hostname": "PRD-WIKI-CORE01.wapol.internal.wa.gov.au",
+        "hostname": "per-PRD-WIKI-CORE01.wapol.internal.wa.gov.au",
         "cvss_score": 10.0,
         "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
         "cisa_kev": True,
@@ -893,7 +902,7 @@ SEED_ROWS = [
         "tier_1_exploitation_prob": 0.72,
         "tier_1_routing": "escalated",
         "tier_2_text_conflict": True,
-        "tier_2_conflict_note": "Primary exploitability assessment: CVSS 10.0, CISA KEV, actively exploited by nation-state groups targeting law enforcement Confluence instances. Negative constraint: Change record CM-2023-10287 documents successful upgrade to 8.5.2, but scanner still fingerprints 8.5.1. RAG search revealed hostname alias confusion with staging server PRD-WIKI-CORE02.",
+        "tier_2_conflict_note": "Primary exploitability assessment: CVSS 10.0, CISA KEV, actively exploited by nation-state groups targeting law enforcement Confluence instances. Negative constraint: Change record CM-2023-10287 documents successful upgrade to 8.5.2, but scanner still fingerprints 8.5.1. RAG search revealed hostname alias confusion with staging server per-PRD-WIKI-CORE02.",
         "tier_2_rag_result": "UNCERTAIN — hostname alias confusion",
         "tier_2_confidence": 0.68,
         "tier_2_resolution_summary": "Scanner evidence carries more weight than change record. Assign score 41 — Medium band. ICT team demonstrated awareness within 14 days, reducing urgency.",
@@ -908,7 +917,7 @@ SEED_ROWS = [
         "epss_substituted_value": None,
         "epss_substitution_confidence": None,
         "epss_substitution_reason": None,
-        "data_classification": "Category 4",
+        "data_classification": "OFFICIAL Sensitive",
         "network_zone": "WAPOL-Internal-Management (VLAN 92)",
         "interface_type": "Internal HTTP via reverse proxy (TCP 8090 on loopback; external access via TCP 443 on reverse proxy, restricted to WAPOL management IP ranges)",
         "patch_cycle": "Ad-hoc (application patches applied outside standard OS patch cycle per vendor advisories)",
@@ -919,15 +928,15 @@ SEED_ROWS = [
         "business_owner": "WA Police Force — ICT Division, Information Management Branch",
         "technical_owner": "WAPOL ICT — Applications and Platforms Team",
         "registered_applications": "Atlassian Confluence Data Center 8.5.1, PostgreSQL 14.9, Apache HTTPD 2.4",
-        "dependent_assets": "PRD-WIKI-DB01.wapol.internal.wa.gov.au, PRD-WIKI-CORE02.wapol.internal.wa.gov.au",
+        "dependent_assets": "per-PRD-WIKI-DB01.wapol.internal.wa.gov.au, per-PRD-WIKI-CORE02.wapol.internal.wa.gov.au",
         "service_account": "",
         "detection_tier": "SLM Tier",
         "detection_reason": "SLM Tier: Text conflict detected. CVSS 10.0, CISA KEV listed as actively exploited. Negative constraint: internal change management records indicate patching was completed 14 days post-disclosure, but scanner fingerprint still returns version 8.5.1. RAG search uncertain — change record references a different hostname alias.",
-        "scanner_output_raw": "[CRITICAL] CVE-2023-22515 — Atlassian Confluence Data Center Broken Access Control\nHost: PRD-WIKI-CORE01.wapol.internal.wa.gov.au (10.185.42.9)\nPort: 8090/tcp (HTTP — Confluence Application)\nService: Atlassian Confluence Data Center 8.5.1\nDetection Method: HTTP response header X-Confluence-Request-Time + /server-info.action version endpoint\nCVSS v3.1: 10.0 (AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H)\nCISA KEV: TRUE (added 5 October 2023)\nEPSS Score: 0.934 (93rd percentile)\nExploit Maturity: High (public PoC available, actively exploited by nation-state groups)\nPatch Available: Yes (Confluence 8.5.2 and later)\nPatch Applied: UNCERTAIN — Scanner detects 8.5.1; change record CM-2023-10287 claims upgrade to 8.5.2 on related hostname alias",
-        "weakness_template_raw": 'template_id: SLM-2023-CONFLUENCE-AC-001\ntemplate_name: "Confluence Broken Access Control — Patch Verification vs Scanner Fingerprint Conflict Resolver"\nmodel_type: Small Language Model (SLM) — Textual Conflict Resolution\ninput_documents:\n  - document_type: "exploitability_assessment"\n    source: "Vulnerability Scanner + CISA KEV + WASOC Threat Intel"\n    key_text: "CVSS 10.0. CISA KEV listed. Scanner fingerprint confirms Confluence 8.5.1."\n    sentiment: HIGH_RISK\n  - document_type: "negative_constraint"\n    source: "Internal Change Management System"\n    key_text: "Change record CM-2023-10287 documents successful upgrade to 8.5.2 on 19-Oct-2023."\n    sentiment: RISK_REMEDIATED\n  - document_type: "rag_retrieval_result"\n    source: "Internal CMDB + DNS Records"\n    key_text: "Change record description references PRD-WIKI-CORE01 but Target Host field contains PRD-WIKI-CORE02."\n    sentiment: UNCERTAIN',
+        "scanner_output_raw": "[CRITICAL] CVE-2023-22515 — Atlassian Confluence Data Center Broken Access Control\nHost: per-PRD-WIKI-CORE01.wapol.internal.wa.gov.au (10.185.42.9)\nPort: 8090/tcp (HTTP — Confluence Application)\nService: Atlassian Confluence Data Center 8.5.1\nDetection Method: HTTP response header X-Confluence-Request-Time + /server-info.action version endpoint\nCVSS v3.1: 10.0 (AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H)\nCISA KEV: TRUE (added 5 October 2023)\nEPSS Score: 0.934 (93rd percentile)\nExploit Maturity: High (public PoC available, actively exploited by nation-state groups)\nPatch Available: Yes (Confluence 8.5.2 and later)\nPatch Applied: UNCERTAIN — Scanner detects 8.5.1; change record CM-2023-10287 claims upgrade to 8.5.2 on related hostname alias",
+        "weakness_template_raw": 'template_id: SLM-2023-CONFLUENCE-AC-001\ntemplate_name: "Confluence Broken Access Control — Patch Verification vs Scanner Fingerprint Conflict Resolver"\nmodel_type: Small Language Model (SLM) — Textual Conflict Resolution\ninput_documents:\n  - document_type: "exploitability_assessment"\n    source: "Vulnerability Scanner + CISA KEV + WASOC Threat Intel"\n    key_text: "CVSS 10.0. CISA KEV listed. Scanner fingerprint confirms Confluence 8.5.1."\n    sentiment: HIGH_RISK\n  - document_type: "negative_constraint"\n    source: "Internal Change Management System"\n    key_text: "Change record CM-2023-10287 documents successful upgrade to 8.5.2 on 19-Oct-2023."\n    sentiment: RISK_REMEDIATED\n  - document_type: "rag_retrieval_result"\n    source: "Internal CMDB + DNS Records"\n    key_text: "Change record description references per-PRD-WIKI-CORE01 but Target Host field contains per-PRD-WIKI-CORE02."\n    sentiment: UNCERTAIN',
         "advisory_ref_id": "ADV-CVE-2023-22515",
         "advisory_quote": "The Western Australian Security Operations Centre is issuing a critical advisory regarding CVE-2023-22515 in Atlassian Confluence Data Center and Server. This vulnerability is being actively exploited by advanced persistent threat groups targeting government knowledge management systems.",
-        "investigation_notes": "The following summary has been pre-filled for analyst review and editing.\n\nCVE-2023-22515 on PRD-WIKI-CORE01.wapol.internal.wa.gov.au has been assigned a priority score of 41 and a risk band of Medium by the SLM Tier engine.\n\nImmediate recommended action: Perform manual verification of the Confluence version on PRD-WIKI-CORE01.",
+        "investigation_notes": "The following summary has been pre-filled for analyst review and editing.\n\nCVE-2023-22515 on per-PRD-WIKI-CORE01.wapol.internal.wa.gov.au has been assigned a priority score of 41 and a risk band of Medium by the SLM Tier engine.\n\nImmediate recommended action: Perform manual verification of the Confluence version on per-PRD-WIKI-CORE01.",
         "mitre_techniques_json": json.dumps(
             [
                 {
@@ -965,7 +974,7 @@ SEED_ROWS = [
                     "name": "Asset Criticality Contribution",
                     "awarded": 8,
                     "max": 20,
-                    "justification": "Category 4 asset with Core mission and Moderate impact. Law enforcement operational doctrine is highly sensitive.",
+                    "justification": "OFFICIAL Sensitive asset with Core mission and Moderate impact. Law enforcement operational doctrine is highly sensitive.",
                 },
                 {
                     "name": "Exposure and Network Position",
@@ -986,7 +995,7 @@ SEED_ROWS = [
                 {"label": "Asset ID", "value": "AST-WAPOL-00012"},
                 {
                     "label": "Hostname",
-                    "value": "PRD-WIKI-CORE01.wapol.internal.wa.gov.au",
+                    "value": "per-PRD-WIKI-CORE01.wapol.internal.wa.gov.au",
                 },
                 {"label": "IP Address", "value": "10.185.42.9"},
                 {"label": "Operating System", "value": "Ubuntu 22.04.3 LTS"},
@@ -1004,7 +1013,7 @@ SEED_ROWS = [
                 },
                 {
                     "label": "Data Classification",
-                    "value": "Category 4 — Highly Protected (Law Enforcement) — PRIS Act classification",
+                    "value": "OFFICIAL Sensitive — Highly Protected (Law Enforcement) — PRIS Act classification",
                 },
                 {
                     "label": "Mission Prevalence",
@@ -1029,7 +1038,7 @@ SEED_ROWS = [
                 },
                 {
                     "label": "Dependent Assets",
-                    "value": "PRD-WIKI-DB01.wapol.internal.wa.gov.au, PRD-WIKI-CORE02.wapol.internal.wa.gov.au",
+                    "value": "per-PRD-WIKI-DB01.wapol.internal.wa.gov.au, per-PRD-WIKI-CORE02.wapol.internal.wa.gov.au",
                 },
                 {
                     "label": "Interface Type",
@@ -1044,7 +1053,7 @@ SEED_ROWS = [
         ),
         "summary_paragraphs_json": json.dumps(
             [
-                "This case concerns a broken access control vulnerability in Atlassian Confluence Data Center and Server, tracked as CVE-2023-22515, identified on the host PRD-WIKI-CORE01.wapol.internal.wa.gov.au.",
+                "This case concerns a broken access control vulnerability in Atlassian Confluence Data Center and Server, tracked as CVE-2023-22515, identified on the host per-PRD-WIKI-CORE01.wapol.internal.wa.gov.au.",
                 "The multi-label classifier assessed this asset as having a Mission Prevalence of Core and a Public Well-Being Impact of Moderate, reflecting its role as the central knowledge management wiki for the WA Police Force.",
                 "This case was escalated to the SLM Tier because the automated pipeline detected a direct conflict between two high-confidence data sources.",
             ]
@@ -1053,7 +1062,7 @@ SEED_ROWS = [
     # Row 7: CVE-2022-47966 — ManageEngine SAML RCE
     {
         "vulnerability_id": "CVE-2022-47966",
-        "hostname": "PRD-ITSM-TOOL01.finance.wa.gov.au",
+        "hostname": "per-PRD-ITSM-TOOL01.finance.wa.gov.au",
         "cvss_score": 9.8,
         "cvss_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
         "cisa_kev": True,
@@ -1083,7 +1092,7 @@ SEED_ROWS = [
         "epss_substituted_value": None,
         "epss_substitution_confidence": None,
         "epss_substitution_reason": None,
-        "data_classification": "Category 2",
+        "data_classification": "OFFICIAL",
         "network_zone": "Finance-Internal-Applications (VLAN 67)",
         "interface_type": "HTTPS via reverse proxy (NGINX) with IP allow-listing; internal network access on TCP 8443",
         "patch_cycle": "Monthly (fourth Saturday, 2200-0400 AWST)",
@@ -1094,15 +1103,15 @@ SEED_ROWS = [
         "business_owner": "Department of Finance — ICT Services",
         "technical_owner": "Finance ICT — Service Management Team",
         "registered_applications": "Zoho ManageEngine ServiceDesk Plus 14.0, PostgreSQL 14.8, Java Runtime Environment 11.0.19",
-        "dependent_assets": "PRD-DC01.finance.wa.gov.au (LDAP), PRD-ITSM-DB01.finance.wa.gov.au",
+        "dependent_assets": "per-PRD-DC01.finance.wa.gov.au (LDAP), per-PRD-ITSM-DB01.finance.wa.gov.au",
         "service_account": "",
         "detection_tier": "SLM Tier",
         "detection_reason": "SLM Tier: Text conflict detected. CVSS 9.8, multiple public PoCs, pre-auth RCE capability (maximum severity signal). Negative constraint: internal RAG search confirmed SAML module is present in installed JAR files but SAML SSO is disabled in application.properties.",
-        "scanner_output_raw": "[CRITICAL] CVE-2022-47966 — Zoho ManageEngine SAML Remote Code Execution (Pre-Auth)\nHost: PRD-ITSM-TOOL01.finance.wa.gov.au (10.33.10.52)\nPort: 8443/tcp (HTTPS — ManageEngine ServiceDesk Plus)\nService: Zoho ManageEngine ServiceDesk Plus 14.0 (build 13000)\nDetection Method: HTTP response header + /SamlResponseServlet endpoint probe (returns 404)\nCVSS v3.1: 9.8 (AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H)\nCISA KEV: TRUE (added 23 January 2023)\nEPSS Score: 0.961 (96th percentile)\nExploit Maturity: High (multiple public PoCs)\nPatch Available: Yes (ManageEngine ServiceDesk Plus build 14004 and later)\nPatch Applied: No (build 13000 detected)\nConfiguration Context: SAML SSO explicitly disabled in application.properties; LDAP only",
+        "scanner_output_raw": "[CRITICAL] CVE-2022-47966 — Zoho ManageEngine SAML Remote Code Execution (Pre-Auth)\nHost: per-PRD-ITSM-TOOL01.finance.wa.gov.au (10.33.10.52)\nPort: 8443/tcp (HTTPS — ManageEngine ServiceDesk Plus)\nService: Zoho ManageEngine ServiceDesk Plus 14.0 (build 13000)\nDetection Method: HTTP response header + /SamlResponseServlet endpoint probe (returns 404)\nCVSS v3.1: 9.8 (AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H)\nCISA KEV: TRUE (added 23 January 2023)\nEPSS Score: 0.961 (96th percentile)\nExploit Maturity: High (multiple public PoCs)\nPatch Available: Yes (ManageEngine ServiceDesk Plus build 14004 and later)\nPatch Applied: No (build 13000 detected)\nConfiguration Context: SAML SSO explicitly disabled in application.properties; LDAP only",
         "weakness_template_raw": 'template_id: SLM-2022-MANAGEENGINE-SAML-001\ntemplate_name: "ManageEngine SAML RCE — Exploitable Code vs Disabled Feature Conflict Resolver"\nmodel_type: Small Language Model (SLM) — Textual Conflict Resolution\ninput_documents:\n  - document_type: "exploitability_assessment"\n    source: "NVD + CISA KEV + ExploitDB"\n    key_text: "CVSS 9.8. Pre-authentication RCE. Affects 24 ManageEngine products. CISA KEV listed."\n    sentiment: MAXIMUM_RISK\n  - document_type: "negative_constraint"\n    source: "Internal RAG Search — application.properties"\n    key_text: "saml.sso.enabled=false. authentication.mode=ldap. Endpoint /SamlResponseServlet not registered."\n    sentiment: RISK_NEGATED_BY_CONFIGURATION\n  - document_type: "rag_retrieval_result"\n    source: "Internal CMDB"\n    key_text: "SAML disabled since initial deployment in 2021. No change requests exist to enable SAML."\n    sentiment: CONFIGURATION_MITIGATED',
         "advisory_ref_id": "ADV-CVE-2022-47966",
         "advisory_quote": "The Western Australian Security Operations Centre advises that CVE-2022-47966 affecting Zoho ManageEngine products has been observed in active exploitation against government IT service management platforms globally. WA agencies operating ManageEngine products should immediately verify their build versions.",
-        "investigation_notes": "The following summary has been pre-filled for analyst review and editing.\n\nCVE-2022-47966 on PRD-ITSM-TOOL01.finance.wa.gov.au has been assigned a priority score of 22 and a risk band of Low by the SLM Tier engine. This case presented the most extreme text conflict in the current triage queue.\n\nImmediate recommended action: Schedule an upgrade of ManageEngine ServiceDesk Plus from build 13000 to build 14004 during the next standard maintenance window.",
+        "investigation_notes": "The following summary has been pre-filled for analyst review and editing.\n\nCVE-2022-47966 on per-PRD-ITSM-TOOL01.finance.wa.gov.au has been assigned a priority score of 22 and a risk band of Low by the SLM Tier engine. This case presented the most extreme text conflict in the current triage queue.\n\nImmediate recommended action: Schedule an upgrade of ManageEngine ServiceDesk Plus from build 13000 to build 14004 during the next standard maintenance window.",
         "mitre_techniques_json": json.dumps(
             [
                 {
@@ -1140,7 +1149,7 @@ SEED_ROWS = [
                     "name": "Asset Criticality Contribution",
                     "awarded": 6,
                     "max": 20,
-                    "justification": "Category 2 asset with Support mission and Minimal public impact.",
+                    "justification": "OFFICIAL asset with Support mission and Minimal public impact.",
                 },
                 {
                     "name": "Exposure and Network Position",
@@ -1159,7 +1168,7 @@ SEED_ROWS = [
         "asset_registry_json": json.dumps(
             [
                 {"label": "Asset ID", "value": "AST-FIN-00291"},
-                {"label": "Hostname", "value": "PRD-ITSM-TOOL01.finance.wa.gov.au"},
+                {"label": "Hostname", "value": "per-PRD-ITSM-TOOL01.finance.wa.gov.au"},
                 {"label": "IP Address", "value": "10.33.10.52"},
                 {
                     "label": "Operating System",
@@ -1179,7 +1188,7 @@ SEED_ROWS = [
                 },
                 {
                     "label": "Data Classification",
-                    "value": "Category 2 — Sensitive (Personal) — PRIS Act classification",
+                    "value": "OFFICIAL — Sensitive (Personal) — PRIS Act classification",
                 },
                 {
                     "label": "Mission Prevalence",
@@ -1204,7 +1213,7 @@ SEED_ROWS = [
                 },
                 {
                     "label": "Dependent Assets",
-                    "value": "PRD-DC01.finance.wa.gov.au (LDAP), PRD-ITSM-DB01.finance.wa.gov.au",
+                    "value": "per-PRD-DC01.finance.wa.gov.au (LDAP), per-PRD-ITSM-DB01.finance.wa.gov.au",
                 },
                 {
                     "label": "Authentication Configuration",

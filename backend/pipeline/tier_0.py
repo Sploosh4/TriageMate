@@ -48,14 +48,14 @@ def evaluate_tier_0(
         return {"routing": "auto_resolved", "resolution": "very_critical"}
 
     # Auto-resolve as Very Critical if:
-    # - CISA KEV listed AND EPSS >= 0.90 AND data classification is Category 3 or 4
+    # - CISA KEV listed AND EPSS >= 0.90 AND data classification is OFFICIAL Sensitive
     if (
         cisa_kev
         and epss_score >= KEV_EPSS_THRESHOLD
-        and data_classification in ("Category 3", "Category 4")
+        and data_classification == "OFFICIAL Sensitive"
     ):
         logger.info(
-            "Tier 0 auto-resolve very_critical for KEV+EPSS+Cat3/4",
+            "Tier 0 auto-resolve very_critical for KEV+EPSS+Sensitive",
             extra={"event": "tier_0_resolve"},
         )
         return {"routing": "auto_resolved", "resolution": "very_critical"}

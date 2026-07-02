@@ -14,7 +14,7 @@ pytestmark = pytest.mark.asyncio
 
 INGEST_PAYLOAD = {
     "vulnerability_id": "CVE-TEST-0001",
-    "hostname": "PRD-PATIENT-EMR01.health.wa.gov.au",
+    "hostname": "per-PRD-PATIENT-EMR01.health.wa.gov.au",
     "ip_address": "10.1.1.100",
     "cvss_score": 9.8,
     "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",

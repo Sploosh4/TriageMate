@@ -78,19 +78,19 @@ class TestStructural:
         from integrations.demo_generator import _load_cmdb
 
         cmdb = _load_cmdb()
-        cmdb_host = cmdb.get("PRD-MOVEIT-WEB01.health.wa.gov.au", {})
+        cmdb_host = cmdb.get("per-PRD-MOVEIT-WEB01.health.wa.gov.au", {})
         assert cmdb_host, "CMDB host must exist for this test"
 
         payload = generate_tenable_payload(
             cve_id="CVE-2023-34362",
-            hostname="PRD-MOVEIT-WEB01.health.wa.gov.au",
+            hostname="per-PRD-MOVEIT-WEB01.health.wa.gov.au",
             cmdb_host=cmdb_host,
             nvd_entry=nvd_entry,
         )
 
         # Asset fields
-        assert payload["asset"]["fqdn"] == "PRD-MOVEIT-WEB01.health.wa.gov.au"
-        assert payload["asset"]["hostname"] == "PRD-MOVEIT-WEB01"
+        assert payload["asset"]["fqdn"] == "per-PRD-MOVEIT-WEB01.health.wa.gov.au"
+        assert payload["asset"]["hostname"] == "per-PRD-MOVEIT-WEB01"
         assert isinstance(payload["asset"]["ipv4"], str) and payload["asset"]["ipv4"]
         assert isinstance(payload["asset"]["operating_system"], list)
         assert len(payload["asset"]["operating_system"]) > 0
@@ -294,11 +294,11 @@ class TestBlocker:
         from integrations.demo_generator import _load_cmdb
 
         cmdb = _load_cmdb()
-        cmdb_host = cmdb.get("PRD-MOVEIT-WEB01.health.wa.gov.au", {})
+        cmdb_host = cmdb.get("per-PRD-MOVEIT-WEB01.health.wa.gov.au", {})
 
         payload = generate_tenable_payload(
             cve_id="CVE-2023-34362",
-            hostname="PRD-MOVEIT-WEB01.health.wa.gov.au",
+            hostname="per-PRD-MOVEIT-WEB01.health.wa.gov.au",
             cmdb_host=cmdb_host,
             nvd_entry=nvd_entry,
         )
@@ -351,10 +351,10 @@ class TestEdgeCases:
         """Tests _extract_department() with health, transport, education,
         communities hostnames, and an unknown hostname."""
         cases = [
-            ("PRD-MOVEIT-WEB01.health.wa.gov.au", "health"),
-            ("PRD-CITRIX-ADC01.transport.wa.gov.au", "transport"),
-            ("PRD-PRINT-SVR05.education.wa.edu.au", "education"),
-            ("PRD-FILE-STORE02.communities.wa.gov.au", "communities"),
+            ("per-PRD-MOVEIT-WEB01.health.wa.gov.au", "health"),
+            ("per-PRD-CITRIX-ADC01.transport.wa.gov.au", "transport"),
+            ("per-PRD-PRINT-SVR05.education.wa.edu.au", "education"),
+            ("per-PRD-FILE-STORE02.communities.wa.gov.au", "communities"),
             ("foo.bar.com", "unknown"),
         ]
         for hostname, expected in cases:
@@ -366,8 +366,8 @@ class TestEdgeCases:
     def test_assign_ip_deterministic(self):
         """Same hostname always returns same IP; different hostnames
         return different IPs."""
-        host_a = "PRD-MOVEIT-WEB01.health.wa.gov.au"
-        host_b = "PRD-CITRIX-ADC01.transport.wa.gov.au"
+        host_a = "per-PRD-MOVEIT-WEB01.health.wa.gov.au"
+        host_b = "per-PRD-CITRIX-ADC01.transport.wa.gov.au"
 
         ip_a1 = _assign_ip(host_a)
         ip_a2 = _assign_ip(host_a)  # same host → same IP

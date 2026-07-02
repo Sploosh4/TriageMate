@@ -32,10 +32,13 @@ function toggleDemoMode() {
   demoState.active = !demoState.active;
   var panel = document.getElementById('demo-controls-panel');
   var badge = document.getElementById('demo-mode-badge');
+  var watermark = document.getElementById('demo-watermark');
 
   if (demoState.active) {
     panel.classList.remove('hidden');
     badge.classList.remove('hidden');
+    if (watermark) watermark.style.display = 'block';
+    document.body.classList.add('demo-active');
     renderDemoControls();
     // Fetch scenarios for the picker
     fetchDemoScenarios().then(function(scenarios) {
@@ -47,6 +50,8 @@ function toggleDemoMode() {
   } else {
     panel.classList.add('hidden');
     badge.classList.add('hidden');
+    if (watermark) watermark.style.display = 'none';
+    document.body.classList.remove('demo-active');
   }
 }
 

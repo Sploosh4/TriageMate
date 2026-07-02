@@ -4,11 +4,11 @@
     "name": "Ransomware Incident — Health Sector",
     "description": "Simulates a ransomware precursor: 5 critical CVEs on MOVEit + file server, targeting the WA Health Sector network.",
     "findings": [
-      {"hostname": "PRD-MOVEIT-WEB01.health.wa.gov.au", "cve_id": "CVE-2023-34362", "cvss_v3_score": 9.8},
-      {"hostname": "PRD-MOVEIT-WEB01.health.wa.gov.au", "cve_id": "CVE-2024-5806", "cvss_v3_score": 9.8},
-      {"hostname": "PRD-MOVEIT-WEB01.health.wa.gov.au", "cve_id": "CVE-2024-0204", "cvss_v3_score": 9.1},
-      {"hostname": "PRD-FILE-STORE02.communities.wa.gov.au", "cve_id": "CVE-2020-0796", "cvss_v3_score": 10.0},
-      {"hostname": "PRD-FILE-STORE02.communities.wa.gov.au", "cve_id": "CVE-2023-23397", "cvss_v3_score": 9.8}
+      {"hostname": "per-PRD-MOVEIT-WEB01.health.wa.gov.au", "cve_id": "CVE-2023-34362", "cvss_v3_score": 9.8},
+      {"hostname": "per-PRD-MOVEIT-WEB01.health.wa.gov.au", "cve_id": "CVE-2024-5806", "cvss_v3_score": 9.8},
+      {"hostname": "per-PRD-MOVEIT-WEB01.health.wa.gov.au", "cve_id": "CVE-2024-0204", "cvss_v3_score": 9.1},
+      {"hostname": "per-PRD-FILE-STORE02.communities.wa.gov.au", "cve_id": "CVE-2020-0796", "cvss_v3_score": 10.0},
+      {"hostname": "per-PRD-FILE-STORE02.communities.wa.gov.au", "cve_id": "CVE-2023-23397", "cvss_v3_score": 9.8}
     ]
   },
   {
@@ -16,10 +16,10 @@
     "name": "Perimeter Breach — Transport",
     "description": "Simulates a perimeter breach via Citrix ADC and Marine GeoView vulnerabilities on the WA Transport network.",
     "findings": [
-      {"hostname": "PRD-CITRIX-ADC01.transport.wa.gov.au", "cve_id": "CVE-2023-3519", "cvss_v3_score": 9.8},
-      {"hostname": "PRD-CITRIX-ADC01.transport.wa.gov.au", "cve_id": "CVE-2019-19781", "cvss_v3_score": 9.8},
-      {"hostname": "PRD-CITRIX-ADC01.transport.wa.gov.au", "cve_id": "CVE-2023-4966", "cvss_v3_score": 8.2},
-      {"hostname": "PRD-MARINE-DOC01.transport.wa.gov.au", "cve_id": "CVE-2021-41063", "cvss_v3_score": 9.8}
+      {"hostname": "per-PRD-CITRIX-ADC01.transport.wa.gov.au", "cve_id": "CVE-2023-3519", "cvss_v3_score": 9.8},
+      {"hostname": "per-PRD-CITRIX-ADC01.transport.wa.gov.au", "cve_id": "CVE-2019-19781", "cvss_v3_score": 9.8},
+      {"hostname": "per-PRD-CITRIX-ADC01.transport.wa.gov.au", "cve_id": "CVE-2023-4966", "cvss_v3_score": 8.2},
+      {"hostname": "per-PRD-MARINE-DOC01.transport.wa.gov.au", "cve_id": "CVE-2021-41063", "cvss_v3_score": 9.8}
     ]
   },
   {
@@ -27,10 +27,10 @@
     "name": "Insider Data Exfiltration — Communities",
     "description": "Simulates insider data exfiltration via file server and case management app on the WA Communities network.",
     "findings": [
-      {"hostname": "PRD-FILE-STORE02.communities.wa.gov.au", "cve_id": "CVE-2020-0796", "cvss_v3_score": 10.0},
-      {"hostname": "PRD-FILE-STORE02.communities.wa.gov.au", "cve_id": "CVE-2023-23397", "cvss_v3_score": 9.8},
-      {"hostname": "PRD-CASEMGT-APP01.communities.wa.gov.au", "cve_id": "CVE-2023-50164", "cvss_v3_score": 9.8},
-      {"hostname": "PRD-CASEMGT-APP01.communities.wa.gov.au", "cve_id": "CVE-2020-0796", "cvss_v3_score": 10.0}
+      {"hostname": "per-PRD-FILE-STORE02.communities.wa.gov.au", "cve_id": "CVE-2020-0796", "cvss_v3_score": 10.0},
+      {"hostname": "per-PRD-FILE-STORE02.communities.wa.gov.au", "cve_id": "CVE-2023-23397", "cvss_v3_score": 9.8},
+      {"hostname": "per-PRD-CASEMGT-APP01.communities.wa.gov.au", "cve_id": "CVE-2023-50164", "cvss_v3_score": 9.8},
+      {"hostname": "per-PRD-CASEMGT-APP01.communities.wa.gov.au", "cve_id": "CVE-2020-0796", "cvss_v3_score": 10.0}
     ]
   },
   {
@@ -38,9 +38,9 @@
     "name": "Supply Chain Attack — Finance",
     "description": "Simulates a supply chain attack via ITSM tool and budget database on the WA Finance network.",
     "findings": [
-      {"hostname": "PRD-ITSM-TOOL01.finance.wa.gov.au", "cve_id": "CVE-2022-47966", "cvss_v3_score": 9.8},
-      {"hostname": "PRD-ITSM-TOOL01.finance.wa.gov.au", "cve_id": "CVE-2024-4317", "cvss_v3_score": 8.7},
-      {"hostname": "PRD-BUDGET-DB01.finance.wa.gov.au", "cve_id": "CVE-2024-4317", "cvss_v3_score": 8.7}
+      {"hostname": "per-PRD-ITSM-TOOL01.finance.wa.gov.au", "cve_id": "CVE-2022-47966", "cvss_v3_score": 9.8},
+      {"hostname": "per-PRD-ITSM-TOOL01.finance.wa.gov.au", "cve_id": "CVE-2024-4317", "cvss_v3_score": 8.7},
+      {"hostname": "per-PRD-BUDGET-DB01.finance.wa.gov.au", "cve_id": "CVE-2024-4317", "cvss_v3_score": 8.7}
     ]
   },
   {
@@ -48,11 +48,11 @@
     "name": "Low-Severity Hygiene — Education",
     "description": "Simulates low-severity hygiene findings: 3 Moodle + 1 Windows CVE on student DB and 1 Windows CVE on print server. All CVSS < 4.0, all auto-resolve as low.",
     "findings": [
-      {"hostname": "PRD-STUDENT-DB01.education.wa.edu.au", "cve_id": "CVE-2022-0333", "cvss_v3_score": 3.8},
-      {"hostname": "PRD-STUDENT-DB01.education.wa.edu.au", "cve_id": "CVE-2019-10134", "cvss_v3_score": 3.7},
-      {"hostname": "PRD-STUDENT-DB01.education.wa.edu.au", "cve_id": "CVE-2024-43427", "cvss_v3_score": 3.7},
-      {"hostname": "PRD-PRINT-SVR05.education.wa.edu.au", "cve_id": "CVE-2024-21409", "cvss_v3_score": 3.3},
-      {"hostname": "PRD-STUDENT-DB01.education.wa.edu.au", "cve_id": "CVE-2024-21409", "cvss_v3_score": 3.3}
+      {"hostname": "per-PRD-STUDENT-DB01.education.wa.edu.au", "cve_id": "CVE-2022-0333", "cvss_v3_score": 3.8},
+      {"hostname": "per-PRD-STUDENT-DB01.education.wa.edu.au", "cve_id": "CVE-2019-10134", "cvss_v3_score": 3.7},
+      {"hostname": "per-PRD-STUDENT-DB01.education.wa.edu.au", "cve_id": "CVE-2024-43427", "cvss_v3_score": 3.7},
+      {"hostname": "per-PRD-PRINT-SVR05.education.wa.edu.au", "cve_id": "CVE-2024-21409", "cvss_v3_score": 3.3},
+      {"hostname": "per-PRD-STUDENT-DB01.education.wa.edu.au", "cve_id": "CVE-2024-21409", "cvss_v3_score": 3.3}
     ]
   }
 ]

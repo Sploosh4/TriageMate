@@ -68,9 +68,7 @@ def predict(features: dict) -> dict:
                 int(features.get("patch_applied", False)),
                 int(features.get("internet_facing", False)),
                 int(features.get("domain_joined", True)),
-                _encode_classification(
-                    features.get("data_classification", "Category 2")
-                ),
+                _encode_classification(features.get("data_classification", "OFFICIAL")),
                 _encode_mission(features.get("mission_prevalence", "Support")),
                 _encode_wellbeing(features.get("public_wellbeing_impact", "Minimal")),
                 features.get("lateral_reachability", 0),
@@ -135,7 +133,7 @@ def predict(features: dict) -> dict:
 
 
 def _encode_classification(klass: str) -> int:
-    mapping = {"Category 4": 4, "Category 3": 3, "Category 2": 2, "Category 1": 1}
+    mapping = {"OFFICIAL Sensitive": 4, "OFFICIAL": 2, "Category 1": 1}
     return mapping.get(klass, 2)
 
 

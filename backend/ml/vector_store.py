@@ -30,67 +30,67 @@ _write_lock = threading.Lock()
 
 _SEED_DOCUMENTS = [
     {
-        "hostname": "PRD-MOVEIT-WEB01.health.wa.gov.au",
+        "hostname": "per-PRD-MOVEIT-WEB01.health.wa.gov.au",
         "document_type": "cmdb_record",
         "source": "CMDB Export",
         "text": (
-            "Asset: PRD-MOVEIT-WEB01.health.wa.gov.au. "
+            "Asset: per-PRD-MOVEIT-WEB01.health.wa.gov.au. "
             "Software: Progress MOVEit Transfer 2023.0.0 build 15.0.0.185. "
             "Role: Managed File Transfer Server for inter-hospital HIE. "
             "Interface: Internet-facing HTTPS on TCP 443, no VPN required. "
             "No WAF detected. No MFA on admin interface. "
             "Patch: Available (2023.0.2+). Not applied. "
-            "Data Classification: Category 3. Network Zone: DMZ-Health-External. "
-            "Dependent assets: PRD-SQL-CLUSTER01, PRD-FILE-SAN01."
+            "Data Classification: OFFICIAL Sensitive. Network Zone: DMZ-Health-External. "
+            "Dependent assets: per-PRD-SQL-CLUSTER01, per-PRD-FILE-SAN01."
         ),
     },
     {
-        "hostname": "PRD-CITRIX-ADC01.transport.wa.gov.au",
+        "hostname": "per-PRD-CITRIX-ADC01.transport.wa.gov.au",
         "document_type": "cmdb_record",
         "source": "CMDB Export",
         "text": (
-            "Asset: PRD-CITRIX-ADC01.transport.wa.gov.au. "
+            "Asset: per-PRD-CITRIX-ADC01.transport.wa.gov.au. "
             "Software: Citrix NetScaler ADC VPX 13.1-49.13. "
             "Role: Perimeter remote access gateway for Dept of Transport. "
             "Interface: Internet-facing HTTPS on TCP 443 (VIP). "
             "Build 49.13 is vulnerable. Fix in build 49.15+. "
             "20+ downstream application targets (TEMIS, DVS, Marine Safety). "
-            "Data Classification: Category 3. Network Zone: DMZ-Transport-External."
+            "Data Classification: OFFICIAL Sensitive. Network Zone: DMZ-Transport-External."
         ),
     },
     {
-        "hostname": "PRD-PRINT-SVR05.education.wa.edu.au",
+        "hostname": "per-PRD-PRINT-SVR05.education.wa.edu.au",
         "document_type": "cmdb_record",
         "source": "CMDB Export",
         "text": (
-            "Asset: PRD-PRINT-SVR05.education.wa.edu.au. "
+            "Asset: per-PRD-PRINT-SVR05.education.wa.edu.au. "
             "Software: PaperCut MF 22.0.6. "
             "Service Account: DOMAIN_EDU\\svc-papercut-prd (local administrator). "
             "Interface: Internal only (TCP 9191, 9192, 9164). "
             "28 downstream endpoints across 14 school campuses. "
-            "Flat education network architecture. Data Classification: Category 2."
+            "Flat education network architecture. Data Classification: OFFICIAL."
         ),
     },
     {
-        "hostname": "PRD-RMM-GW01.sharedservices.wa.gov.au",
+        "hostname": "per-PRD-RMM-GW01.sharedservices.wa.gov.au",
         "document_type": "cmdb_record",
         "source": "CMDB Export",
         "text": (
-            "Asset: PRD-RMM-GW01.sharedservices.wa.gov.au. "
+            "Asset: per-PRD-RMM-GW01.sharedservices.wa.gov.au. "
             "Software: ConnectWise ScreenConnect 23.9.7.8804. "
             "Role: RMM gateway for Shared Services Centre. "
             "Interface: Isolated management VLAN 48 (TCP 8040, 8041). "
             "14 downstream endpoints across 5 network zones "
             "(DLGSC, DWER, DPLH, Finance, DBCA). "
-            "Data Classification: Category 3. Inbound access restricted."
+            "Data Classification: OFFICIAL Sensitive. Inbound access restricted."
         ),
     },
     {
-        "hostname": "PRD-FILE-STORE02.communities.wa.gov.au",
+        "hostname": "per-PRD-FILE-STORE02.communities.wa.gov.au",
         "document_type": "gpo_report",
         "source": "Group Policy Management Console",
         "text": (
-            "Host: PRD-FILE-STORE02.communities.wa.gov.au. "
+            "Host: per-PRD-FILE-STORE02.communities.wa.gov.au. "
             "Microsoft Defender ASR Rule: GUID D4F940AB-401B-4EFC-AADC-AD5F3C50688A "
             "(Block Office applications from creating child processes). "
             "GPO: Communities-Endpoint-ASR-v2. Applied: September 2023. "
@@ -101,28 +101,28 @@ _SEED_DOCUMENTS = [
         ),
     },
     {
-        "hostname": "PRD-WIKI-CORE01.wapol.internal.wa.gov.au",
+        "hostname": "per-PRD-WIKI-CORE01.wapol.internal.wa.gov.au",
         "document_type": "change_record",
         "source": "Change Management System",
         "text": (
             "Change ID: CM-2023-10287. Date: 19-Oct-2023. "
             "Description: Emergency upgrade of Confluence Data Center "
             "from 8.5.1 to 8.5.2 to remediate CVE-2023-22515 on "
-            "PRD-WIKI-CORE01.wapol.internal.wa.gov.au. "
+            "per-PRD-WIKI-CORE01.wapol.internal.wa.gov.au. "
             "Status: COMPLETED. Implementer: J. Morrison. "
-            "TARGET HOST FIELD: PRD-WIKI-CORE02 (staging/DR instance). "
-            "DNS: PRD-WIKI-CORE01 = 10.185.42.9. "
-            "DNS: PRD-WIKI-CORE02 = 10.185.42.10. "
+            "TARGET HOST FIELD: per-PRD-WIKI-CORE02 (staging/DR instance). "
+            "DNS: per-PRD-WIKI-CORE01 = 10.185.42.9. "
+            "DNS: per-PRD-WIKI-CORE02 = 10.185.42.10. "
             "Scanner continues to fingerprint Confluence 8.5.1 on "
-            "PRD-WIKI-CORE01. Hostname alias ambiguity."
+            "per-PRD-WIKI-CORE01. Hostname alias ambiguity."
         ),
     },
     {
-        "hostname": "PRD-ITSM-TOOL01.finance.wa.gov.au",
+        "hostname": "per-PRD-ITSM-TOOL01.finance.wa.gov.au",
         "document_type": "application_config",
         "source": "application.properties export",
         "text": (
-            "Host: PRD-ITSM-TOOL01.finance.wa.gov.au. "
+            "Host: per-PRD-ITSM-TOOL01.finance.wa.gov.au. "
             "Software: ManageEngine ServiceDesk Plus 14.0 build 13000. "
             "SAML SSO Configuration: saml.sso.enabled=false. "
             "Authentication: LDAP only. "
