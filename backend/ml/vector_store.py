@@ -24,7 +24,9 @@ EMBEDDING_DIM = 384
 MAX_RAG_CHARS = 5000
 
 _embedder = None
+_embedder_lock = threading.Lock()
 _db = None
+_db_lock = threading.Lock()
 _write_lock = threading.Lock()
 
 
@@ -168,15 +170,19 @@ _SEED_DOCUMENTS = [
 def _get_embedder() -> SentenceTransformer:
     global _embedder
     if _embedder is None:
-        _embedder = SentenceTransformer("all-MiniLM-L6-v2", device="cpu")
+        with _embedder_lock:
+            if _embedder is None:
+                _embedder = SentenceTransformer("all-MiniLM-L6-v2", device="cpu")
     return _embedder
 
 
 def _get_db() -> lancedb.DBConnection:
     global _db
     if _db is None:
-        DB_PATH.mkdir(parents=True, exist_ok=True)
-        _db = lancedb.connect(str(DB_PATH))
+        with _db_lock:
+            if _db is None:
+                DB_PATH.mkdir(parents=True, exist_ok=True)
+                _db = lancedb.connect(str(DB_PATH))
     return _db
 
 

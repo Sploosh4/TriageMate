@@ -14,6 +14,8 @@ import urllib.error
 from datetime import datetime, timezone
 from pathlib import Path
 
+from integrations.osv import query_osv
+
 logger = logging.getLogger("triagemate.nvd")
 
 _CACHE: dict[str, tuple[float, dict]] = {}
@@ -40,7 +42,7 @@ def _load_demo_cache() -> dict:
         logger.info(
             "Loaded %d CVE entries from nvd_cache.json for demo mode", len(_DEMO_CACHE)
         )
-    except (FileNotFoundError, json.JSONDecodeError) as e:
+    except (FileNotFoundError, json.JSONDecodeError, OSError) as e:
         logger.warning("Demo cache not loaded: %s", e)
         _DEMO_CACHE = {}
     return _DEMO_CACHE
@@ -194,6 +196,30 @@ def _parse_cvss_scores(raw: dict) -> tuple[float, float]:
     return 0.0, 0.0
 
 
+def _enrich_with_osv(cve_id: str, result: dict) -> None:
+    """Enrich NVD result with OSV.dev precise fix version data.
+
+    If OSV reports a fixed version exists, override patch_available to True
+    and store OSV metadata. If OSV was queried but found nothing, leave
+    NVD's patch_available unchanged.
+    """
+    try:
+        osv_result = query_osv(cve_id)
+        if osv_result.get("queried", False):
+            result["osv_fixed_versions"] = osv_result.get("fixed_versions", [])
+            result["osv_package"] = osv_result.get("package_name", "")
+            result["osv_ecosystem"] = osv_result.get("package_ecosystem", "")
+            if osv_result.get("fixed_available", False):
+                result["patch_available"] = True
+    except Exception as e:
+        logger.warning(
+            "OSV enrichment failed for %s: %s",
+            cve_id,
+            e,
+            extra={"event": "osv_enrich", "cve_id": cve_id},
+        )
+
+
 def get_nvd_data(cve_id: str) -> dict:
     """Fetch NVD enrichment data for a CVE with 24h in-memory TTL cache.
 
@@ -265,6 +291,10 @@ def get_nvd_data(cve_id: str) -> dict:
         "patch_available": _has_patch_reference(refs),
         "references_raw": refs,
     }
+
+    # Enrich with OSV.dev precise fix version data
+    _enrich_with_osv(cve_id, result)
+
     _CACHE[cve_id] = (now, result)
     return dict(result)
 

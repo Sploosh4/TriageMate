@@ -11,21 +11,27 @@ var appState = {
 };
 
 function navigateToScreen(screen) {
-  var queueScreen = document.getElementById('screen-queue');
-  var caseScreen = document.getElementById('screen-case');
+  var screens = ['screen-queue', 'screen-case', 'screen-review', 'screen-drift'];
+  screens.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) {
+      el.classList.remove('active');
+      el.classList.add('hidden');
+    }
+  });
 
-  if (screen === 'queue') {
-    queueScreen.classList.remove('hidden');
-    queueScreen.classList.add('active');
-    caseScreen.classList.remove('active');
-    caseScreen.classList.add('hidden');
-    appState.screen = 'queue';
-  } else {
-    caseScreen.classList.remove('hidden');
-    caseScreen.classList.add('active');
-    queueScreen.classList.remove('active');
-    queueScreen.classList.add('hidden');
-    appState.screen = 'case';
+  var target = document.getElementById('screen-' + screen);
+  if (target) {
+    target.classList.remove('hidden');
+    target.classList.add('active');
+  }
+
+  appState.screen = screen;
+
+  if (screen === 'review' && typeof initReviewQueue === 'function') {
+    initReviewQueue();
+  } else if (screen === 'drift' && typeof initDriftDashboard === 'function') {
+    initDriftDashboard();
   }
 }
 
@@ -226,6 +232,38 @@ function wireEventListeners() {
       showQueue();
     }
   });
+
+  // Review tab
+  var reviewTab = document.getElementById('review-tab-btn');
+  if (reviewTab) {
+    reviewTab.addEventListener('click', function() {
+      navigateToScreen('review');
+    });
+  }
+
+  // Drift tab
+  var driftTab = document.getElementById('drift-tab-btn');
+  if (driftTab) {
+    driftTab.addEventListener('click', function() {
+      navigateToScreen('drift');
+    });
+  }
+
+  // Review back button
+  var reviewBack = document.getElementById('review-back-btn');
+  if (reviewBack) {
+    reviewBack.addEventListener('click', function() {
+      showQueue();
+    });
+  }
+
+  // Drift back button
+  var driftBack = document.getElementById('drift-back-btn');
+  if (driftBack) {
+    driftBack.addEventListener('click', function() {
+      showQueue();
+    });
+  }
 
   // Demo controls (guarded — only if demo toggle exists in DOM)
   if (document.getElementById('demo-toggle-btn')) {

@@ -6,7 +6,10 @@ The ingest router calls these functions — it never contains lookup tables
 or CMDB stubs itself.
 """
 
+import json
 import re
+from pathlib import Path
+
 from integrations.cmdb import get_asset_context as _cmdb_context
 from integrations.cmdb import lookup_data_classification as _cmdb_classification
 from integrations.cmdb import is_internet_facing as _cmdb_internet_facing
@@ -14,6 +17,7 @@ from integrations.nvd import get_nvd_data
 from integrations.exploitdb import has_poc as _has_exploitdb_poc
 from integrations.metasploit import has_payload as _has_metasploit_payload
 from integrations.otx import query_otx_pulses
+from integrations.osv import query_osv
 
 
 def lookup_data_classification(hostname: str) -> str:
@@ -147,9 +151,39 @@ _VENDOR_POPULARITY = {
 }
 
 
+_VENDOR_POPULARITY_JSON: dict[str, float] | None = None
+
+
+def _load_vendor_popularity_json() -> dict[str, float]:
+    """Lazy-load vendor_popularity.json into module memory."""
+    global _VENDOR_POPULARITY_JSON
+    if _VENDOR_POPULARITY_JSON is not None:
+        return _VENDOR_POPULARITY_JSON
+    path = Path(__file__).parent / "data" / "vendor_popularity.json"
+    if path.exists():
+        try:
+            with open(path) as f:
+                _VENDOR_POPULARITY_JSON = json.load(f)
+        except (json.JSONDecodeError, OSError):
+            _VENDOR_POPULARITY_JSON = {}
+    else:
+        _VENDOR_POPULARITY_JSON = {}
+    return _VENDOR_POPULARITY_JSON
+
+
 def _lookup_vendor_popularity(operating_system: str, hostname: str = "") -> float:
-    """Look up vendor popularity index from OS string or hostname."""
+    """Look up vendor popularity index from OS string or hostname.
+
+    Tries vendor_popularity.json first (built from NVD corpus), then
+    falls back to hardcoded _VENDOR_POPULARITY dict.
+    """
     text = f"{operating_system} {hostname}".lower()
+
+    vp_json = _load_vendor_popularity_json()
+    for vendor, score in vp_json.items():
+        if vendor in text:
+            return score
+
     for keyword, score in _VENDOR_POPULARITY.items():
         if keyword in text:
             return score
@@ -378,6 +412,7 @@ def build_feature_vector(payload, mission_tags: dict, tier_0_result: dict) -> di
         payload.cvss_score or 0.0,
     )
     otx_result = query_otx_pulses(payload.vulnerability_id)
+    query_osv(payload.vulnerability_id)
 
     return {
         "cvss_av": _cvss_av(cvss_vec.get("AV", "N")),
@@ -391,6 +426,9 @@ def build_feature_vector(payload, mission_tags: dict, tier_0_result: dict) -> di
         "cvss_score": payload.cvss_score,
         "epss_score": payload.epss_score,
         "patch_available": nvd.get("patch_available", True),
+        "osv_fixed_versions": nvd.get("osv_fixed_versions", []),
+        "osv_package": nvd.get("osv_package", ""),
+        "osv_ecosystem": nvd.get("osv_ecosystem", ""),
         "patch_applied": _synthetic_patch_applied(
             nvd.get("patch_available", False),
             payload.cvss_score,

@@ -1,15 +1,23 @@
 import os
-import logging
-from contextlib import asynccontextmanager
-from fastapi import FastAPI, Depends
-from fastapi.staticfiles import StaticFiles
-from fastapi.middleware.cors import CORSMiddleware
-from database import init_db
-from routers import auth, queue, cases, ingest
-from auth import get_current_user, AUTH_DISABLED
-import asyncio
+from pathlib import Path
+from dotenv import load_dotenv
 
-from logging_config import setup_logging
+# ─── Load .env BEFORE any module reads os.getenv() ─────────────────────
+_env_path = Path(__file__).resolve().parent / ".env"
+if _env_path.exists():
+    load_dotenv(dotenv_path=str(_env_path))
+
+import logging  # noqa: E402
+from contextlib import asynccontextmanager  # noqa: E402
+from fastapi import FastAPI, Depends  # noqa: E402
+from fastapi.staticfiles import StaticFiles  # noqa: E402
+from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
+from database import init_db  # noqa: E402
+from routers import auth, queue, cases, ingest  # noqa: E402
+from auth import get_current_user, AUTH_DISABLED  # noqa: E402
+import asyncio  # noqa: E402
+
+from logging_config import setup_logging  # noqa: E402
 
 logger = logging.getLogger("triagemate")
 
@@ -76,6 +84,9 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning(f"Vector store init skipped: {e}")
 
+    if AUTH_DISABLED:
+        logger.warning("AUTH IS DISABLED — set TRIAGEMATE_ADMIN_USER in .env to enable")
+
     # Warn if Tier 2 cloud LLM is not configured
     api_key = os.getenv("TRIAGEMATE_LLM_API_KEY", "")
     if not api_key:
@@ -100,7 +111,7 @@ app.state.cwe_available = False  # Will be updated on startup if CWE model loads
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )

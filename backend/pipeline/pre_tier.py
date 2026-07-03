@@ -3,13 +3,13 @@ Pre-Tier: Multi-label classifier for mission tags (Mission Prevalence and
 Public Well-Being Impact).
 
 Architecture:
+  Phase 0 (Fallback): Falls back to the KNOWN_TAGS dict for the 31 known demo
+                       hosts (all using WAICP OFFICIAL/OFFICIAL Sensitive
+                       classifications), or returns default values if the model
+                       is absent.
   Phase 1 (ML):  Uses a trained MultiOutputClassifier(RandomForestClassifier)
                  from backend/ml/pre_tier_model.pkl to predict tags for any
                  hostname based on hostname-derived features.
-   Phase 0 (Fallback): Falls back to the KNOWN_TAGS dict for the 31 known demo
-                        hosts (all using WAICP OFFICIAL/OFFICIAL Sensitive
-                        classifications), or returns default values if the model
-                        is absent.
 
 The return dict shape (API contract) NEVER changes:
   {
@@ -21,6 +21,7 @@ The return dict shape (API contract) NEVER changes:
 """
 
 import logging
+import threading
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
@@ -72,6 +73,7 @@ KNOWN_TAGS = {
 
 _model_data = None
 _model_attempted = False
+_lock = threading.Lock()
 
 DEFAULT_RESPONSE = {
     "mission_prevalence": "Support",
@@ -86,29 +88,32 @@ def _load_model():
     global _model_data, _model_attempted
     if _model_attempted:
         return
-    _model_attempted = True
+    with _lock:
+        if _model_attempted:
+            return
+        _model_attempted = True
 
-    model_path = Path(__file__).parent.parent / "ml" / "pre_tier_model.pkl"
-    if not model_path.exists():
-        logger.warning(
-            "Pre-Tier model not found at %s — using rule-based fallback", model_path
-        )
-        return
+        model_path = Path(__file__).parent.parent / "ml" / "pre_tier_model.pkl"
+        if not model_path.exists():
+            logger.warning(
+                "Pre-Tier model not found at %s — using rule-based fallback", model_path
+            )
+            return
 
-    try:
-        import joblib
+        try:
+            import joblib
 
-        _model_data = joblib.load(model_path)
-        logger.info(
-            "Loaded Pre-Tier model from %s (features=%d)",
-            model_path,
-            _model_data.get("n_features", "?"),
-        )
-    except Exception as e:
-        logger.warning(
-            "Failed to load Pre-Tier model: %s — using rule-based fallback", e
-        )
-        _model_data = None
+            _model_data = joblib.load(model_path)
+            logger.info(
+                "Loaded Pre-Tier model from %s (features=%d)",
+                model_path,
+                _model_data.get("n_features", "?"),
+            )
+        except Exception as e:
+            logger.warning(
+                "Failed to load Pre-Tier model: %s — using rule-based fallback", e
+            )
+            _model_data = None
 
 
 def _predict_with_model(hostname: str) -> dict | None:

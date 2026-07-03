@@ -1,7 +1,7 @@
 import json
 import logging
 import os as _os
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse
 from database import get_db
 from models import (
@@ -21,6 +21,7 @@ from ingest_helpers import (
     get_asset_context,
 )
 from ml.epss_substitutor import calculate_substitution
+from routers.cases import _band_colour
 from ingest_cwe import get_cwe
 from integrations.mitre_mapping import lookup_mitre
 from integrations.advisories import get_advisory
@@ -28,15 +29,6 @@ from integrations.tenable import parse_tenable_webhook, parse_tenable_batch
 
 logger = logging.getLogger("triagemate.ingest")
 router = APIRouter(tags=["Ingest"])
-
-
-def _band_colour(band: str) -> str:
-    return {
-        "Low": "#22C55E",
-        "Medium": "#F59E0B",
-        "Critical": "#F97316",
-        "Very Critical": "#EF4444",
-    }.get(band, "#64748B")
 
 
 def _compliance_category(data_classification: str) -> int:
@@ -103,6 +95,14 @@ async def ingest_vulnerability(payload: IngestRequest):
     data_classification = lookup_data_classification(payload.hostname)
     internet_facing = is_internet_facing(payload.hostname)
     asset_ctx = get_asset_context(payload.hostname)
+
+    # WA government hostname validation
+    from integrations.cmdb import validate_wa_gov_hostname
+
+    if not validate_wa_gov_hostname(payload.hostname):
+        logger.warning(
+            "Hostname %s does not match WA government convention", payload.hostname
+        )
 
     # 3. CWE classification (needed for EPSS substitution)
     cwe_result = get_cwe(payload.vulnerability_id, payload.raw_description or "")
@@ -276,6 +276,13 @@ async def ingest_vulnerability(payload: IngestRequest):
             "justification": "Based on patch availability and application status.",
             "is_substituted": False,
         },
+        {
+            "name": "ML Exploitation Probability Contribution",
+            "awarded": scoring["dimensions"]["ml_exploitation"],
+            "max": 10,
+            "justification": "Calculated from XGBoost model exploitation probability prediction.",
+            "is_substituted": False,
+        },
     ]
 
     # 10. Build investigation notes
@@ -308,7 +315,7 @@ async def ingest_vulnerability(payload: IngestRequest):
             tier_2_text_conflict, tier_2_conflict_note, tier_2_rag_result, tier_2_confidence, tier_2_resolution_summary,
             priority_score, risk_band,
             cvss_contribution, epss_contribution, asset_criticality_contribution, exposure_contribution,
-            patch_remediation_contribution,
+            patch_remediation_contribution, ml_exploitation_contribution,
             epss_substituted, epss_substituted_value, epss_substitution_confidence, epss_substitution_reason,
             data_classification, network_zone, interface_type, patch_cycle, last_patch_date, last_scan_date,
             operating_system, role, business_owner, technical_owner, registered_applications, dependent_assets,
@@ -323,6 +330,7 @@ async def ingest_vulnerability(payload: IngestRequest):
             ?, ?, ?, ?, ?,
             ?, ?,
             ?, ?, ?, ?,
+            ?,
             ?, ?, ?, ?,
             ?, ?, ?, ?, ?, ?,
             ?, ?, ?, ?, ?, ?,
@@ -359,6 +367,7 @@ async def ingest_vulnerability(payload: IngestRequest):
             scoring["dimensions"]["criticality"],
             scoring["dimensions"]["exposure"],
             scoring["dimensions"]["patch"],
+            scoring["dimensions"]["ml_exploitation"],
             epss_sub["substituted"],
             effective_epss if epss_sub["substituted"] else None,
             epss_sub["confidence"] if epss_sub["substituted"] else None,
@@ -377,7 +386,7 @@ async def ingest_vulnerability(payload: IngestRequest):
             asset_ctx.get("dependent_assets", ""),
             asset_ctx.get("service_account", ""),
             detection_tier,
-            payload.raw_description or f"{payload.vulnerability_id} ingested via API",
+            detection_reason,
             payload.scanner_output_raw or payload.raw_description or "",
             payload.weakness_template_raw or "",
             advisory_ref_id,
@@ -495,7 +504,10 @@ async def ingest_tenable(request: Request):
 
     Returns a single CaseResponse for one finding or list[CaseResponse] for batch.
     """
-    body = await request.json()
+    body_raw = await request.body()
+    if len(body_raw) > 10_000_000:
+        raise HTTPException(status_code=413, detail="Payload too large")
+    body = json.loads(body_raw)
 
     if isinstance(body, list):
         requests = parse_tenable_batch(body)
@@ -669,7 +681,7 @@ async def clear_all_findings():
                 priority_score, risk_band,
                 cvss_contribution, epss_contribution,
                 asset_criticality_contribution, exposure_contribution,
-                patch_remediation_contribution,
+                patch_remediation_contribution, ml_exploitation_contribution,
                 epss_substituted, epss_substituted_value,
                 epss_substitution_confidence, epss_substitution_reason,
                 data_classification, network_zone, interface_type,
@@ -696,7 +708,7 @@ async def clear_all_findings():
                    priority_score, risk_band,
                    cvss_contribution, epss_contribution,
                    asset_criticality_contribution, exposure_contribution,
-                   patch_remediation_contribution,
+                   patch_remediation_contribution, ml_exploitation_contribution,
                    epss_substituted, epss_substituted_value,
                    epss_substitution_confidence, epss_substitution_reason,
                    data_classification, network_zone, interface_type,

@@ -1,4 +1,6 @@
+import html
 import json
+from datetime import datetime, timezone
 from pydantic import BaseModel
 from fastapi import APIRouter, HTTPException
 from database import get_db
@@ -10,6 +12,9 @@ from models import (
     ScoringWeight,
     AssetRegistryEntry,
     SubstitutionBlock,
+    ReviewRequest,
+    ReviewQueueItem,
+    ReviewQueueResponse,
 )
 
 
@@ -85,8 +90,8 @@ def _row_to_case_view(r) -> CaseViewData:
         mitre_techniques=mitre_techniques,
         text_conflict=bool(r["tier_2_text_conflict"]),
         text_conflict_note=r["tier_2_conflict_note"] or "",
-        scanner_output=r["scanner_output_raw"] or "",
-        weakness_template=r["weakness_template_raw"] or "",
+        scanner_output=html.escape(r["scanner_output_raw"] or ""),
+        weakness_template=html.escape(r["weakness_template_raw"] or ""),
         advisory_ref_id=r["advisory_ref_id"] or "",
         advisory_quote=r["advisory_quote"] or "",
         investigation_notes=r["investigation_notes"] or "",
@@ -141,3 +146,145 @@ def update_notes(case_id: int, body: NotesUpdate):
     conn.commit()
     conn.close()
     return {"status": "ok"}
+
+
+@router.get("/api/review/queue", response_model=ReviewQueueResponse)
+def get_review_queue(flag_filter: str = "all"):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT id, vulnerability_id, hostname, priority_score, risk_band,
+               detection_tier, review_status, flagged_for_review,
+               tier_2_text_conflict, created_at
+        FROM vulnerabilities
+        WHERE (flagged_for_review = 1 OR tier_2_text_conflict = 1)
+          AND (review_status IS NULL OR review_status = '')
+        ORDER BY priority_score DESC, id ASC
+    """)
+    rows = []
+    for r in cursor.fetchall():
+        rows.append(
+            ReviewQueueItem(
+                id=r["id"],
+                vulnerability_id=r["vulnerability_id"],
+                hostname=r["hostname"],
+                priority_score=r["priority_score"],
+                risk_band=r["risk_band"],
+                detection_tier=r["detection_tier"],
+                review_status=r["review_status"],
+                flagged_for_review=bool(r["flagged_for_review"]),
+                tier_2_text_conflict=bool(r["tier_2_text_conflict"]),
+                created_at=r["created_at"] or "",
+            )
+        )
+    conn.close()
+    return ReviewQueueResponse(rows=rows, total=len(rows))
+
+
+@router.post("/api/review/flag/{case_id}")
+def flag_for_review(case_id: int):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute(
+        "UPDATE vulnerabilities SET flagged_for_review = 1 WHERE id = ?",
+        (case_id,),
+    )
+    if cursor.rowcount == 0:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Case not found")
+    conn.commit()
+    conn.close()
+    return {"status": "ok", "flagged": True}
+
+
+@router.post("/api/case/{case_id}/review")
+def submit_review(case_id: int, body: ReviewRequest):
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "SELECT vulnerability_id FROM vulnerabilities WHERE id = ?", (case_id,)
+    )
+    r = cursor.fetchone()
+    if r is None:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Case not found")
+    vuln_id = r["vulnerability_id"]
+
+    now = datetime.now(timezone.utc).isoformat()
+
+    cursor.execute(
+        """INSERT INTO reviews
+           (vulnerability_id, case_id, analyst_decision, override_score,
+            override_band, notes, analyst_name, created_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+        (
+            vuln_id,
+            case_id,
+            body.analyst_decision,
+            body.override_score,
+            body.override_band,
+            body.notes,
+            body.analyst_name,
+            now,
+        ),
+    )
+
+    override_score = (
+        body.override_score if body.analyst_decision == "override" else None
+    )
+    override_band = body.override_band if body.analyst_decision == "override" else None
+
+    cursor.execute(
+        """UPDATE vulnerabilities SET
+           review_status = 'reviewed',
+           review_decision = ?,
+           reviewed_by = ?,
+           reviewed_at = ?,
+           override_score = ?,
+           override_band = ?
+           WHERE id = ?""",
+        (
+            body.analyst_decision,
+            body.analyst_name,
+            now,
+            override_score,
+            override_band,
+            case_id,
+        ),
+    )
+
+    conn.commit()
+    conn.close()
+    return {"status": "ok"}
+
+
+@router.get("/api/case/{case_id}/history")
+def get_case_history(case_id: int):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute(
+        """SELECT id, vulnerability_id, case_id, analyst_decision,
+                  override_score, override_band, notes, analyst_name, created_at
+           FROM reviews
+           WHERE case_id = ?
+           ORDER BY created_at DESC""",
+        (case_id,),
+    )
+    rows = []
+    for r in cursor.fetchall():
+        rows.append(
+            {
+                "id": r["id"],
+                "vulnerability_id": r["vulnerability_id"],
+                "case_id": r["case_id"],
+                "analyst_decision": r["analyst_decision"],
+                "override_score": r["override_score"],
+                "override_band": r["override_band"],
+                "notes": r["notes"],
+                "analyst_name": r["analyst_name"],
+                "created_at": str(r["created_at"]) if r["created_at"] else "",
+            }
+        )
+    conn.close()
+    return rows

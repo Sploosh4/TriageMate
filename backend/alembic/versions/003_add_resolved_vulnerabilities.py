@@ -50,6 +50,7 @@ def upgrade():
         sa.Column("asset_criticality_contribution", sa.Integer(), nullable=True),
         sa.Column("exposure_contribution", sa.Integer(), nullable=True),
         sa.Column("patch_remediation_contribution", sa.Integer(), nullable=True),
+        sa.Column("ml_exploitation_contribution", sa.Integer(), nullable=True),
         sa.Column("epss_substituted", sa.Boolean(), default=False),
         sa.Column("epss_substituted_value", sa.Float(), nullable=True),
         sa.Column("epss_substitution_confidence", sa.Float(), nullable=True),

@@ -12,9 +12,12 @@ Swap the provider via TRIAGEMATE_CMDB_PROVIDER env var:
 import os
 import json
 import logging
+import re
 from pathlib import Path
 
 logger = logging.getLogger("triagemate.cmdb")
+
+WA_GOV_HOSTNAME_RE = re.compile(r"^[\w-]+\.\w+\.wa\.gov\.au$")
 
 _MOCK_CMDB_PATH = Path(__file__).parent.parent / "data" / "mock_cmdb.json"
 _FILE_CMDB: dict[str, dict] | None = None
@@ -31,7 +34,7 @@ def _load_file_cmdb() -> dict[str, dict]:
         _FILE_CMDB = {h["hostname"]: h for h in hosts}
         logger.info("Loaded %d hosts from mock_cmdb.json", len(_FILE_CMDB))
         return _FILE_CMDB
-    except (FileNotFoundError, json.JSONDecodeError) as e:
+    except (FileNotFoundError, json.JSONDecodeError, OSError) as e:
         logger.warning("mock_cmdb.json not loaded: %s", e)
         _FILE_CMDB = {}
         return _FILE_CMDB
@@ -151,6 +154,11 @@ KNOWN_HOSTS = {
         "service_account": "",
     },
 }
+
+
+def validate_wa_gov_hostname(hostname: str) -> bool:
+    """Validate hostname matches WA government naming convention."""
+    return bool(WA_GOV_HOSTNAME_RE.match(hostname))
 
 
 def _get_provider() -> str:

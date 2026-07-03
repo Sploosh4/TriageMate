@@ -146,3 +146,38 @@ class RefreshRequest(BaseModelConfig):
     """Refresh request payload: the refresh token."""
 
     refresh_token: str
+
+
+class ReviewRequest(BaseModelConfig):
+    analyst_decision: str
+    override_score: int | None = None
+    override_band: str | None = None
+    notes: str = ""
+    analyst_name: str
+
+
+class ReviewQueueItem(BaseModelConfig):
+    id: int
+    vulnerability_id: str
+    hostname: str
+    priority_score: int
+    risk_band: str
+    detection_tier: str
+    review_status: str | None = None
+    flagged_for_review: bool = False
+    tier_2_text_conflict: bool = False
+    created_at: str = ""
+
+
+class ReviewQueueResponse(BaseModelConfig):
+    rows: list[ReviewQueueItem]
+    total: int
+
+
+class DriftMetricsResponse(BaseModelConfig):
+    score_trend: list[dict]
+    tier_routing: dict
+    risk_band_distribution: dict
+    detection_tier_trend: list[dict]
+    feature_drift: dict
+    total_audited: int

@@ -17,13 +17,14 @@ All existing callers of get_db() work unchanged.
 """
 
 import os
+from pathlib import Path
 import sqlite3
 import logging
 
 logger = logging.getLogger("triagemate.database")
 
 # Default SQLite database path (can be overridden by tests)
-DB_PATH = "triagemate.db"
+DB_PATH = str(Path(__file__).resolve().parent / "triagemate.db")
 
 # ---- Singleton instance ----
 _instance = None
@@ -123,6 +124,10 @@ class _PGCursor:
             if keys is None:
                 keys = [d[0] for d in self._cursor.description]
             yield _PGCompatRow(keys, row)
+
+    @property
+    def lastrowid(self):
+        return self._cursor.lastrowid if self._cursor else None
 
 
 class _PGConnection:
@@ -307,6 +312,7 @@ class DatabaseManager:
                 asset_criticality_contribution INTEGER,
                 exposure_contribution INTEGER,
                 patch_remediation_contribution INTEGER,
+                ml_exploitation_contribution INTEGER DEFAULT 0,
 
                 -- Substitution tracking
                 epss_substituted BOOLEAN DEFAULT FALSE,
@@ -388,6 +394,7 @@ class DatabaseManager:
                 asset_criticality_contribution INTEGER,
                 exposure_contribution INTEGER,
                 patch_remediation_contribution INTEGER,
+                ml_exploitation_contribution INTEGER DEFAULT 0,
                 epss_substituted BOOLEAN DEFAULT FALSE,
                 epss_substituted_value REAL,
                 epss_substitution_confidence REAL,
@@ -426,17 +433,6 @@ class DatabaseManager:
                 resolution_reason TEXT DEFAULT 'demo_clear'
             )
         """)
-
-        conn.commit()
-
-        # Migration helpers for columns added after initial release
-        for col_def in [
-            ("vulnerabilities", "last_recheck_date", "TEXT"),
-            ("vulnerabilities", "audit_selected", "BOOLEAN DEFAULT FALSE"),
-            ("vulnerabilities", "audit_result", "TEXT"),
-            ("vulnerabilities", "audit_date", "TEXT"),
-        ]:
-            self._migrate_add_column_sqlite(conn, *col_def)
 
         conn.commit()
 
@@ -487,6 +483,7 @@ class DatabaseManager:
                 asset_criticality_contribution INTEGER,
                 exposure_contribution INTEGER,
                 patch_remediation_contribution INTEGER,
+                ml_exploitation_contribution INTEGER DEFAULT 0,
 
                 -- Substitution tracking
                 epss_substituted BOOLEAN DEFAULT FALSE,
@@ -568,6 +565,7 @@ class DatabaseManager:
                 asset_criticality_contribution INTEGER,
                 exposure_contribution INTEGER,
                 patch_remediation_contribution INTEGER,
+                ml_exploitation_contribution INTEGER DEFAULT 0,
                 epss_substituted BOOLEAN DEFAULT FALSE,
                 epss_substituted_value REAL,
                 epss_substitution_confidence REAL,
@@ -608,41 +606,6 @@ class DatabaseManager:
         """)
 
         conn.commit()
-
-        # Migration helpers for columns added after initial release
-        for col_def in [
-            ("vulnerabilities", "last_recheck_date", "TEXT"),
-            ("vulnerabilities", "audit_selected", "BOOLEAN DEFAULT FALSE"),
-            ("vulnerabilities", "audit_result", "TEXT"),
-            ("vulnerabilities", "audit_date", "TEXT"),
-        ]:
-            self._migrate_add_column_pg(conn, *col_def)
-
-        conn.commit()
-
-    # ------------------------------------------------------------------
-    #  Migration helpers
-    # ------------------------------------------------------------------
-
-    @staticmethod
-    def _migrate_add_column_sqlite(conn, table, column, col_type):
-        """Add a column if it doesn't already exist (SQLite)."""
-        try:
-            conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {col_type}")
-        except sqlite3.OperationalError:
-            pass
-
-    @staticmethod
-    def _migrate_add_column_pg(conn, table, column, col_type):
-        """Add a column if it doesn't already exist (PostgreSQL)."""
-        try:
-            # PostgreSQL 9.6+ supports IF NOT EXISTS for ADD COLUMN
-            conn.execute(
-                f"ALTER TABLE {table} ADD COLUMN IF NOT EXISTS {column} {col_type}"
-            )
-        except Exception:
-            # Fallback: ignore error (column already exists or syntax issue)
-            pass
 
 
 # ---------------------------------------------------------------------------

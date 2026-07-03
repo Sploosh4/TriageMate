@@ -5,6 +5,8 @@ Loads the trained XGBoost model and provides a predict() function
 for the 37 tabular features + CVE description text.
 """
 
+import threading
+
 import numpy as np
 import xgboost as xgb
 import joblib
@@ -13,21 +15,41 @@ from pathlib import Path
 from ml.encoder import encode_description
 
 MODEL_FILE = Path(__file__).parent / "xgboost_model.pkl"
-ESCALATION_STD_THRESHOLD = 0.15
+CALIBRATOR_FILE = Path(__file__).parent / "xgboost_calibrator.pkl"
+THRESHOLD_INFO_FILE = Path(__file__).parent / "threshold_info.json"
+
+# Probability + uncertainty zoning thresholds for routing decisions.
+LOW_PROB_THRESHOLD = 0.20
+MID_PROB_THRESHOLD = 0.40
+HIGH_PROB_THRESHOLD = 0.50
+UNCERTAINTY_THRESHOLD = 0.10
 
 _model = None
+_calibrator = None
+_lock = threading.Lock()
 
 
 def _get_model():
     global _model
     if _model is None:
-        if not MODEL_FILE.exists():
-            raise FileNotFoundError(
-                f"XGBoost model not found at {MODEL_FILE}. "
-                "Run the training pipeline first."
-            )
-        _model = joblib.load(MODEL_FILE)
+        with _lock:
+            if _model is None:
+                if not MODEL_FILE.exists():
+                    raise FileNotFoundError(
+                        f"XGBoost model not found at {MODEL_FILE}. "
+                        "Run the training pipeline first."
+                    )
+                _model = joblib.load(MODEL_FILE)
     return _model
+
+
+def _get_calibrator():
+    global _calibrator
+    if _calibrator is None and CALIBRATOR_FILE.exists():
+        with _lock:
+            if _calibrator is None and CALIBRATOR_FILE.exists():
+                _calibrator = joblib.load(CALIBRATOR_FILE)
+    return _calibrator
 
 
 def predict(features: dict) -> dict:
@@ -77,7 +99,6 @@ def predict(features: dict) -> dict:
                 features.get("patch_lag_days", 0),
                 int(features.get("exploitdb_has_poc", False)),
                 int(features.get("metasploit_has_payload", False)),
-                int(features.get("internet_scan_detected", False)),
                 features.get("threat_intel_pulses", 0),
                 features.get("nvd_reference_count", 0),
                 features.get("cve_desc_tokens", 0),
@@ -97,16 +118,18 @@ def predict(features: dict) -> dict:
     )
 
     if description:
-        try:
-            text_vec = encode_description(description).reshape(1, -1)
-        except FileNotFoundError:
-            text_vec = np.zeros((1, 32), dtype=np.float32)
+        text_vec = encode_description(description).reshape(1, -1)
     else:
-        text_vec = np.zeros((1, 32), dtype=np.float32)
+        text_vec = np.zeros((1, 384), dtype=np.float32)
 
     X = np.hstack([tabular, text_vec])
 
     prob = float(model.predict_proba(X)[0, 1])
+
+    # Calibrate probability if a Platt scaler exists
+    calibrator = _get_calibrator()
+    if calibrator is not None:
+        prob = float(calibrator.predict_proba([[prob]])[0, 1])
 
     n_trees = xgb_model.n_estimators
     booster = xgb_model.get_booster()
@@ -120,9 +143,17 @@ def predict(features: dict) -> dict:
         cumulative_probs.append(p)
 
     ensemble_std = float(np.std(cumulative_probs))
-    routing = (
-        "escalated" if ensemble_std > ESCALATION_STD_THRESHOLD else "auto_resolved"
-    )
+
+    # Combined probability + uncertainty zoning routing.
+    if prob >= MID_PROB_THRESHOLD:
+        routing = "escalated"
+    elif prob >= LOW_PROB_THRESHOLD:
+        if ensemble_std > UNCERTAINTY_THRESHOLD:
+            routing = "escalated"
+        else:
+            routing = "auto_resolved"
+    else:
+        routing = "auto_resolved"
 
     return {
         "exploitation_probability": round(prob, 3),

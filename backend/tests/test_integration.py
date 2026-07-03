@@ -116,7 +116,7 @@ async def test_full_pipeline_ingest():
         # ──────────────────────────────────────────────────────────────
         weights = cv.get("scoringWeights")
         assert isinstance(weights, list), f"scoringWeights not list: {type(weights)}"
-        assert len(weights) == 5, f"Expected 5 scoring weights, got {len(weights)}"
+        assert len(weights) == 6, f"Expected 6 scoring weights, got {len(weights)}"
         for w in weights:
             assert "name" in w, f"Weight missing 'name': {w}"
             assert "awarded" in w, f"Weight missing 'awarded': {w}"

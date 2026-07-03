@@ -12,6 +12,9 @@ Usage:
 """
 
 import argparse
+import csv
+import gzip
+import io
 import json
 import logging
 import os
@@ -21,6 +24,13 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
+
+from dotenv import load_dotenv
+
+# Bulletproof: find .env relative to this script, not CWD
+_env_path = Path(__file__).resolve().parent.parent / ".env"
+if _env_path.exists():
+    load_dotenv(dotenv_path=str(_env_path))
 
 logging.basicConfig(
     level=logging.INFO,
@@ -349,16 +359,15 @@ def refresh_nvd_cache(cve_ids: Optional[list[str]] = None, api_key: str = "") ->
 # ---------------------------------------------------------------------------
 
 
-def refresh_kev_cache() -> dict:
+def refresh_kev_cache(filter_by_nvd: bool = False) -> dict:
     """Fetch the CISA Known Exploited Vulnerabilities feed and write
-    ``kev_cache.json``, optionally filtered against the NVD cache.
+    ``kev_cache.json``.
 
-    If ``nvd_cache.json`` exists, only KEV entries whose CVE is present
-    in the NVD cache are kept (avoids bloating the file with irrelevant
-    CVEs).  When the NVD cache is missing all KEV entries are written.
+    When *filter_by_nvd* is True and ``nvd_corpus.json`` or ``nvd_cache.json``
+    exists, only KEV entries whose CVE is present in the NVD data are kept.
     """
     logger.info("Fetching CISA KEV feed from %s", KEV_URL)
-    raw = _fetch_json(KEV_URL, headers={"User-Agent": "TriageMate/0.2.0"}, timeout=30)
+    raw = _fetch_json(KEV_URL, headers={"User-Agent": "TriageMate/0.3.0"}, timeout=30)
     if raw is None:
         logger.error("Failed to fetch KEV feed — KEV cache not updated")
         return {}
@@ -366,44 +375,41 @@ def refresh_kev_cache() -> dict:
     vulnerabilities = raw.get("vulnerabilities", [])
     logger.info("Fetched %d KEV entries from CISA", len(vulnerabilities))
 
-    # Load nvd_cache.json if it exists (for optional filtering)
-    nvd_cache_path = DATA_DIR / "nvd_cache.json"
     nvd_cve_ids: set[str] = set()
-    if nvd_cache_path.exists():
-        try:
-            with open(nvd_cache_path, "r") as f:
-                nvd_cache = json.load(f)
-            nvd_cve_ids = set(nvd_cache.keys())
-            logger.info(
-                "Loaded %d CVE IDs from nvd_cache.json for filtering", len(nvd_cve_ids)
-            )
-        except (json.JSONDecodeError, OSError) as exc:
-            logger.warning(
-                "Could not read nvd_cache.json: %s — proceeding without filtering", exc
-            )
-    else:
-        logger.warning(
-            "nvd_cache.json not found at %s — writing all KEV CVEs without filtering",
-            nvd_cache_path,
-        )
+    if filter_by_nvd:
+        for path in [DATA_DIR / "nvd_corpus.json", DATA_DIR / "nvd_cache.json"]:
+            if path.exists():
+                try:
+                    with open(path) as f:
+                        nvd_cache = json.load(f)
+                    nvd_cve_ids = set(nvd_cache.keys())
+                    logger.info(
+                        "Loaded %d CVE IDs from %s for filtering",
+                        len(nvd_cve_ids),
+                        path.name,
+                    )
+                    break
+                except (json.JSONDecodeError, OSError) as exc:
+                    logger.warning(
+                        "Could not read %s: %s — proceeding without filtering",
+                        path,
+                        exc,
+                    )
 
-    # Build filtered cache
     kev_cache: dict = {}
     for vuln in vulnerabilities:
         cve_id = vuln.get("cveID")
         if not cve_id:
             continue
-        if nvd_cve_ids and cve_id not in nvd_cve_ids:
+        if filter_by_nvd and nvd_cve_ids and cve_id not in nvd_cve_ids:
             continue
         kev_cache[cve_id] = {
             "known_exploited": True,
             "date_added": vuln.get("dateAdded", ""),
-            "due_date": vuln.get("dueDate", ""),
             "action": vuln.get("requiredAction", ""),
             "note": vuln.get("notes", ""),
         }
 
-    # Write to disk
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     kev_cache_path = DATA_DIR / "kev_cache.json"
     try:
@@ -422,23 +428,61 @@ def refresh_kev_cache() -> dict:
 
 
 def refresh_epss_cache() -> dict:
-    """Refresh the EPSS score cache by delegating to
-    ``ml.fetch_epss_data.fetch_epss_data(force_update=True)``.
+    """Download EPSS scores CSV.gz, parse, and write epss_cache.json.
 
-    Returns the parsed EPSS dict ``{cve_id: {epss, percentile, date}}``.
+    Downloads from https://epss.cyentia.com/epss_scores-current.csv.gz,
+    decompresses in memory, parses (cve, epss, percentile) columns.
+
+    Returns {cve_id: {epss: float, percentile: float}, ...} (~344K entries).
     """
-    logger.info("Refreshing EPSS cache via ml.fetch_epss_data...")
-    try:
-        # Using a single-import approach to match the project's relative
-        # import style (run from backend/).
-        from ml.fetch_epss_data import fetch_epss_data  # type: ignore[import-untyped]
+    EPSS_URL = "https://epss.cyentia.com/epss_scores-current.csv.gz"
+    logger.info("Downloading EPSS scores from %s", EPSS_URL)
 
-        result = fetch_epss_data(force_update=True)
-        logger.info("EPSS cache refresh complete (%d records)", len(result))
-        return result
-    except ImportError as exc:
-        logger.error("Could not import ml.fetch_epss_data: %s", exc)
+    req = urllib.request.Request(EPSS_URL, headers={"User-Agent": "TriageMate/0.3.0"})
+    try:
+        with urllib.request.urlopen(req, timeout=120) as resp:
+            compressed = resp.read()
+    except (urllib.error.URLError, urllib.error.HTTPError, OSError) as e:
+        logger.error("Failed to download EPSS CSV: %s", e)
         return {}
+
+    logger.info("Decompressing EPSS CSV (%d bytes)...", len(compressed))
+    try:
+        with gzip.GzipFile(fileobj=io.BytesIO(compressed)) as gz:
+            text = gz.read().decode("utf-8")
+    except (OSError, IOError) as e:
+        logger.error("Failed to decompress EPSS CSV: %s", e)
+        return {}
+
+    reader = csv.reader(io.StringIO(text))
+    result: dict = {}
+    line_count = 0
+    for row in reader:
+        line_count += 1
+        if line_count == 1:
+            continue
+        if len(row) < 3:
+            continue
+        cve = row[0].strip()
+        try:
+            epss = float(row[1].strip())
+            percentile = float(row[2].strip())
+        except (ValueError, IndexError):
+            continue
+        if not cve.startswith("CVE-"):
+            continue
+        result[cve] = {"epss": epss, "percentile": percentile}
+
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    epss_path = DATA_DIR / "epss_cache.json"
+    try:
+        with open(epss_path, "w") as f:
+            json.dump(result, f)
+        logger.info("Wrote %d EPSS scores to %s", len(result), epss_path)
+    except OSError as exc:
+        logger.error("Failed to write %s: %s", epss_path, exc)
+
+    return result
 
 
 # ---------------------------------------------------------------------------

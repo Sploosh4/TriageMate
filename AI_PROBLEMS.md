@@ -60,12 +60,11 @@ Documentation of incorrect AI-generated code, mismatches between code and actual
 **Old code:** `datetime.utcnow()` — deprecated and computed age relative to training date.
 **Fix applied:** Replaced with `datetime.now(timezone.utc)`. Note: age is still computed relative to training runtime rather than a fixed reference date — feature drift at inference remains a concern.
 
-### 10. Train script: Patch features hardcoded to 1/0 for all training data
-**File:** `backend/ml/train_xgboost.py:376-377`
-**Code:** `X[i, 9] = 1  # patch_available`, `X[i, 10] = 0  # patch_applied` (post-cisa_kev-removal indices)
-**Impact:** Model learns patches are always available and never applied — doesn't match production inference where these vary. Could bias predictions
-**Fix:** Either gather real patch data for training or remove these features from the model
-**Status:** 🟡 UNFIXED — design limitation (no public dataset maps CVEs to patch status)
+### ~~10. Train script: Patch features hardcoded to 1/0 for all training data~~ ✅ FIXED
+**File:** `backend/ml/train_xgboost.py:376-377` (original); now superseded by `backend/scripts/build_training_corpus.py`
+**Old code:** `X[i, 9] = 1  # patch_available`, `X[i, 10] = 0  # patch_applied` — all 93K records had identical values
+**Impact:** 18 of 36 features had zero importance in the model because training data was homogeneous.
+**Fix applied (Sprint 9):** Created `build_training_corpus.py` which generates `training_data_v2.npz` with realistic distributions for ALL features across 186K CVEs. patch_available uses NVD reference data + OSV.dev enrichment. patch_applied uses score-weighted random sampling (CVSS ≥ 9.0 → 80% applied, CVSS ≥ 7.0 → 60%, else 30%). All other formerly-hardcoded features (exploitdb_has_poc, metasploit_has_payload, internet_scan_detected, etc.) now use real data from ExploitDB CSV, KEV cache, and EPSS cache.
 
 ---
 

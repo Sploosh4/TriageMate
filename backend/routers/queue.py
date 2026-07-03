@@ -1,7 +1,7 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter
 from database import get_db
-from models import QueueRow, QueueResponse, MetricsResponse
+from models import QueueRow, QueueResponse, MetricsResponse, DriftMetricsResponse
 
 router = APIRouter(tags=["Queue"])
 
@@ -83,4 +83,103 @@ def get_metrics():
         low_confidence=r["low_confidence"],
         exposed=r["exposed"],
         needs_human_validation=r["needs_human_validation"],
+    )
+
+
+@router.get("/api/drift", response_model=DriftMetricsResponse)
+def get_drift_metrics():
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT COUNT(*) AS cnt FROM resolved_vulnerabilities")
+    total_audited = cursor.fetchone()["cnt"]
+
+    if total_audited == 0:
+        conn.close()
+        return DriftMetricsResponse(
+            score_trend=[],
+            tier_routing={"auto": 0, "escalated": 0},
+            risk_band_distribution={},
+            detection_tier_trend=[],
+            feature_drift={},
+            total_audited=0,
+        )
+
+    thirty_days_ago = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
+
+    cursor.execute(
+        """
+        SELECT DATE(resolved_at) AS day, AVG(priority_score) AS avg_score
+        FROM resolved_vulnerabilities
+        WHERE resolved_at >= ?
+        GROUP BY DATE(resolved_at)
+        ORDER BY day ASC
+    """,
+        (thirty_days_ago,),
+    )
+    score_trend = [
+        {"date": r["day"], "avg_score": round(r["avg_score"], 1)}
+        for r in cursor.fetchall()
+    ]
+
+    cursor.execute("""
+        SELECT
+            COUNT(CASE WHEN detection_tier IN ('Deterministic', 'ML Tier') THEN 1 END) AS auto,
+            COUNT(CASE WHEN detection_tier = 'SLM Tier' THEN 1 END) AS escalated
+        FROM resolved_vulnerabilities
+    """)
+    r = cursor.fetchone()
+    tier_routing = {"auto": r["auto"], "escalated": r["escalated"]}
+
+    cursor.execute("""
+        SELECT risk_band, COUNT(*) AS cnt
+        FROM resolved_vulnerabilities
+        GROUP BY risk_band
+    """)
+    risk_band_distribution = {r["risk_band"]: r["cnt"] for r in cursor.fetchall()}
+
+    cursor.execute(
+        """
+        SELECT DATE(resolved_at) AS day,
+               COUNT(CASE WHEN detection_tier = 'Deterministic' THEN 1 END) AS det,
+               COUNT(CASE WHEN detection_tier = 'ML Tier' THEN 1 END) AS ml,
+               COUNT(CASE WHEN detection_tier = 'SLM Tier' THEN 1 END) AS slm
+        FROM resolved_vulnerabilities
+        WHERE resolved_at >= ?
+        GROUP BY DATE(resolved_at)
+        ORDER BY day ASC
+    """,
+        (thirty_days_ago,),
+    )
+    detection_tier_trend = [
+        {"date": r["day"], "deterministic": r["det"], "ml": r["ml"], "slm": r["slm"]}
+        for r in cursor.fetchall()
+    ]
+
+    cursor.execute(
+        """
+        SELECT
+            COALESCE(AVG(cvss_score), 0) AS avg_cvss,
+            COALESCE(AVG(epss_score), 0) AS avg_epss,
+            COALESCE(AVG(priority_score), 0) AS avg_priority
+        FROM resolved_vulnerabilities
+        WHERE resolved_at >= ?
+    """,
+        (thirty_days_ago,),
+    )
+    r = cursor.fetchone()
+    feature_drift = {
+        "avg_cvss": round(r["avg_cvss"], 2),
+        "avg_epss": round(r["avg_epss"], 2),
+        "avg_priority": round(r["avg_priority"], 1),
+    }
+
+    conn.close()
+    return DriftMetricsResponse(
+        score_trend=score_trend,
+        tier_routing=tier_routing,
+        risk_band_distribution=risk_band_distribution,
+        detection_tier_trend=detection_tier_trend,
+        feature_drift=feature_drift,
+        total_audited=total_audited,
     )

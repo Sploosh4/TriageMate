@@ -26,6 +26,8 @@
         <option value="ML Tier">ML Tier</option>
         <option value="SLM Tier">SLM Tier</option>
       </select>
+      <button id="review-tab-btn" class="top-bar-tab" title="Review Queue">Review Queue</button>
+      <button id="drift-tab-btn" class="top-bar-tab" title="Drift Dashboard">Drift</button>
       <button id="demo-toggle-btn" class="demo-toggle-btn" title="Toggle Demo Mode" aria-label="Toggle demo mode">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path>
@@ -144,6 +146,26 @@
     </div>
   </div>
 
+  <!-- SCREEN 3: REVIEW QUEUE -->
+  <div id="screen-review" class="screen hidden">
+    <div id="back-bar">
+      <button id="review-back-btn"><span aria-hidden="true">&larr;</span> Back to Queue</button>
+    </div>
+    <div id="review-scroll">
+      <div id="review-queue-container"></div>
+    </div>
+  </div>
+
+  <!-- SCREEN 4: DRIFT DASHBOARD -->
+  <div id="screen-drift" class="screen hidden">
+    <div id="back-bar">
+      <button id="drift-back-btn"><span aria-hidden="true">&larr;</span> Back to Queue</button>
+    </div>
+    <div id="drift-scroll">
+      <div id="drift-dashboard-container"></div>
+    </div>
+  </div>
+
   <!-- LOGIN MODAL (hidden by default, shown when auth is required) -->
   <div id="auth-overlay" class="auth-overlay hidden">
     <div class="auth-modal">
@@ -168,6 +190,8 @@
 <script src="js/components/metricBoxes.js"></script>
 <script src="js/components/demoControls.js"></script>
 <script src="js/components/auth.js"></script>
+<script src="js/components/reviewQueue.js"></script>
+<script src="js/components/driftDashboard.js"></script>
 <script src="js/app.js"></script>
 
 </body>

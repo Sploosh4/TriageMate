@@ -75,3 +75,34 @@ async function saveNotes(caseId, notes) {
   });
   return res.json();
 }
+
+async function fetchReviewQueue() {
+  var res = await _authFetch(API_BASE + '/review/queue');
+  return res.json();
+}
+
+async function flagForReview(caseId) {
+  var res = await _authFetch(API_BASE + '/review/flag/' + caseId, {
+    method: 'POST'
+  });
+  return res.json();
+}
+
+async function submitCaseReview(caseId, body) {
+  var res = await _authFetch(API_BASE + '/case/' + caseId + '/review', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  return res.json();
+}
+
+async function fetchCaseHistory(caseId) {
+  var res = await _authFetch(API_BASE + '/case/' + caseId + '/history');
+  return res.json();
+}
+
+async function fetchDriftMetrics() {
+  var res = await _authFetch(API_BASE + '/drift');
+  return res.json();
+}

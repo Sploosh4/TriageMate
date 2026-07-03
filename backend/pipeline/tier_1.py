@@ -35,7 +35,15 @@ def evaluate_tier_1(features: dict) -> dict:
             extra={"event": "tier_1_predict"},
         )
         return result
-    except (FileNotFoundError, ImportError, ModuleNotFoundError, ValueError):
+    except (
+        FileNotFoundError,
+        ImportError,
+        ModuleNotFoundError,
+        ValueError,
+        OSError,
+        RuntimeError,
+        TypeError,
+    ):
         result = _heuristic_evaluate(features)
         logger.info(
             "Tier 1 heuristic: prob=%.3f, conf=%.3f, routing=%s",
@@ -81,7 +89,12 @@ def _heuristic_evaluate(features: dict) -> dict:
     if cross_boundary > 10:
         confidence = 0.72
 
-    routing = "escalated" if 0.55 <= confidence <= 0.85 else "auto_resolved"
+    if exploitation_prob >= 0.50:
+        routing = "escalated"
+    elif exploitation_prob >= 0.30:
+        routing = "escalated" if confidence <= 0.80 else "auto_resolved"
+    else:
+        routing = "auto_resolved"
 
     return {
         "exploitation_probability": round(exploitation_prob, 3),

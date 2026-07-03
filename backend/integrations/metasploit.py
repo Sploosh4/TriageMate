@@ -1,12 +1,15 @@
 """
-Metasploit payload lookup — checks NVD references for Metasploit modules.
+Metasploit payload lookup — checks ExploitDB CSV and NVD references.
 
-Free, no auth required. Uses NVD data already fetched per ingest.
-Independently skippable — fails gracefully to False on any error.
+First checks ExploitDB CSV (if loaded) for entries with platform="metasploit",
+then falls back to NVD reference tag scraping for Metasploit URLs.
+
+Free, no auth required.
 """
 
 import logging
 from integrations.nvd import get_nvd_data
+from integrations.exploitdb import _lookup_edb
 
 logger = logging.getLogger("triagemate.metasploit")
 
@@ -14,11 +17,19 @@ logger = logging.getLogger("triagemate.metasploit")
 def has_payload(cve_id: str) -> bool:
     """Check if a CVE has a Metasploit module.
 
-    Checks NVD references for URLs containing 'metasploit' or 'rapid7.com'
-    or reference tags containing 'metasploit'.
+    First checks ExploitDB CSV for entries with platform='metasploit'
+    (the standard way ExploitDB categorises Metasploit modules).
+    Falls back to NVD references for URLs containing 'metasploit' or 'rapid7.com'.
 
     Returns False on any error or missing data.
     """
+    try:
+        exploits = _lookup_edb(cve_id)
+        if any(e.get("platform", "").lower() == "metasploit" for e in exploits):
+            return True
+    except Exception as e:
+        logger.warning("Metasploit EDB CSV lookup failed for %s: %s", cve_id, e)
+
     try:
         nvd = get_nvd_data(cve_id)
         refs = nvd.get("references_raw", [])
@@ -30,5 +41,5 @@ def has_payload(cve_id: str) -> bool:
                 if "metasploit" in tag.lower():
                     return True
     except Exception as e:
-        logger.warning("Metasploit lookup failed for %s: %s", cve_id, e)
+        logger.warning("Metasploit NVD fallback lookup failed for %s: %s", cve_id, e)
     return False

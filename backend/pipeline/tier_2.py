@@ -16,9 +16,13 @@ import os
 import json
 import logging
 import asyncio
+import threading
+from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv()
+_env_path = Path(__file__).resolve().parent.parent / ".env"
+if _env_path.exists():
+    load_dotenv(dotenv_path=str(_env_path))
 
 logger = logging.getLogger("triagemate.tier_2")
 
@@ -99,6 +103,7 @@ KNOWN_CONFLICTS = {
 }
 
 # Cost tracking — module-level accumulators
+_cost_lock = threading.Lock()
 _cost_tracking = {
     "total_calls": 0,
     "total_input_tokens": 0,
@@ -594,11 +599,12 @@ def _record_api_call(provider: str, model: str, usage: dict):
         completion_tokens / 1_000_000
     ) * rates["output"]
 
-    _cost_tracking["total_calls"] += 1
-    _cost_tracking["total_input_tokens"] += prompt_tokens
-    _cost_tracking["total_output_tokens"] += completion_tokens
-    _cost_tracking["total_cached_tokens"] += cached_tokens
-    _cost_tracking["estimated_cost_usd"] += cost
+    with _cost_lock:
+        _cost_tracking["total_calls"] += 1
+        _cost_tracking["total_input_tokens"] += prompt_tokens
+        _cost_tracking["total_output_tokens"] += completion_tokens
+        _cost_tracking["total_cached_tokens"] += cached_tokens
+        _cost_tracking["estimated_cost_usd"] += cost
 
     logger.info(
         "LLM call %s/%s: %d in, %d out, $%.4f total",

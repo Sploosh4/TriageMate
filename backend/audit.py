@@ -13,7 +13,7 @@ AUDIT_SAMPLE_RATE = 0.075
 
 def should_audit(tier: str, routing: str) -> bool:
     """Determine if a case should enter the audit pool."""
-    if routing == "auto_resolved" and tier in ("Deterministic", "ML Tier"):
+    if routing == "auto_resolved" and tier in ("Deterministic", "ML Tier", "SLM Tier"):
         return random.random() < AUDIT_SAMPLE_RATE
     return False
 
