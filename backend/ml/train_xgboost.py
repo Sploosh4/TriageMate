@@ -1180,14 +1180,13 @@ def main():
             data.close()
             print(f"  Loaded {len(X)} records from {data_file.name}")
             if len(dates) > 0 and dates.dtype.kind in ("U", "S") and dates[0]:
-                try:
+                non_empty = dates[dates != ""]
+                if len(non_empty) > 0:
                     print(
-                        f"  Dates range: {dates.min()} to {dates.max()}  → using chronological split"
+                        f"  Dates range: {min(non_empty)} to {max(non_empty)}  → using chronological split"
                     )
-                except TypeError:
-                    print(
-                        "  Dates array contains empty strings — falling back to random split"
-                    )
+                else:
+                    print("  All dates are empty — falling back to random split")
                     dates = np.zeros(len(y))
         phase_train(X, y, dates)
 
