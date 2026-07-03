@@ -80,19 +80,23 @@ def _fetch_json(
 def _extract_cve_entry(vuln: dict) -> dict | None:
     cve = vuln.get("cve", {})
 
-    # CVSS v3.1 score (required)
-    cvss_v31 = None
+    # CVSS v3.1 score (required); fall back to v3.0
+    cvss_data = None
     for metric in (cve.get("metrics", {}) or {}).get("cvssMetricV31", []):
-        cvss_v31 = metric.get("cvssData")
+        cvss_data = metric.get("cvssData")
         break
-    if not cvss_v31:
+    if not cvss_data:
+        for metric in (cve.get("metrics", {}) or {}).get("cvssMetricV30", []):
+            cvss_data = metric.get("cvssData")
+            break
+    if not cvss_data:
         return None
 
-    cvss_score = cvss_v31.get("baseScore", 0)
+    cvss_score = cvss_data.get("baseScore", 0)
     if cvss_score <= 0:
         return None
 
-    cvss_vector = cvss_v31.get("vectorString", "")
+    cvss_vector = cvss_data.get("vectorString", "")
 
     cwe_class = ""
     for weakness in cve.get("weaknesses", []):
@@ -132,12 +136,12 @@ def _extract_cve_entry(vuln: dict) -> dict | None:
         for ref_tags in [r.get("tags", [])]
     )
 
-    # V31 metrics for sub-scores
+    # Metrics for sub-scores (prefer v3.1, fall back to v3.0)
     metrics = cve.get("metrics", {})
-    v31_entries = metrics.get("cvssMetricV31", [])
-    if v31_entries:
-        exploit_sub = v31_entries[0].get("exploitabilityScore") or 0.0
-        impact_sub = v31_entries[0].get("impactScore") or 0.0
+    cvss_entries = metrics.get("cvssMetricV31", []) or metrics.get("cvssMetricV30", [])
+    if cvss_entries:
+        exploit_sub = cvss_entries[0].get("exploitabilityScore") or 0.0
+        impact_sub = cvss_entries[0].get("impactScore") or 0.0
     else:
         exploit_sub = 0.0
         impact_sub = 0.0
@@ -175,6 +179,7 @@ def _extract_cve_entry(vuln: dict) -> dict | None:
         "cvss_impact_sub": float(impact_sub),
         "vendor": vendor,
         "product": product,
+        "osv_published": "",
     }
 
 
@@ -350,6 +355,7 @@ def fetch_from_feeds(
     start_date: str = "2019-01-01",
     end_date: str = "2025-12-31",
     limit: int = 0,
+    existing: dict | None = None,
 ) -> dict:
     """Fallback: download NVD 2.0 yearly gzipped JSON feeds.
 
@@ -359,7 +365,7 @@ def fetch_from_feeds(
     """
     start_year = int(start_date[:4])
     end_year = int(end_date[:4])
-    corpus: dict[str, dict] = {}
+    corpus: dict[str, dict] = existing if existing is not None else {}
     total_available = 0
 
     for year in range(start_year, end_year + 1):
@@ -419,6 +425,12 @@ def main():
         action="store_true",
         help="Use NVD yearly feeds instead of API (more reliable)",
     )
+    parser.add_argument(
+        "--kev-ids",
+        type=str,
+        default="",
+        help="Path to kev_cache.json — fetch any KEV CVEs still missing from corpus",
+    )
     args = parser.parse_args()
 
     logger.info("Starting NVD corpus fetch: %s to %s", args.start, args.end)
@@ -427,26 +439,87 @@ def main():
     if args.resume:
         logger.info("Resume mode: will skip completed chunks")
 
+    # When --kev-ids is the primary mode, skip date-range fetch and
+    # load existing corpus directly (unless explicit start/end given)
+    skip_fetch = (
+        args.kev_ids and args.start == "2019-01-01" and args.end == "2025-12-31"
+    )
+
     if args.use_feeds:
+        existing_corpus = {}
+        if OUTPUT_FILE.exists():
+            try:
+                with open(OUTPUT_FILE) as f:
+                    existing_corpus = json.load(f)
+                logger.info("Loaded existing corpus: %d CVEs", len(existing_corpus))
+            except (json.JSONDecodeError, OSError):
+                pass
         corpus = fetch_from_feeds(
             start_date=args.start,
             end_date=args.end,
             limit=args.limit,
+            existing=existing_corpus,
         )
-        DATA_DIR.mkdir(parents=True, exist_ok=True)
-        with open(OUTPUT_FILE, "w") as f:
-            json.dump(corpus, f, indent=2)
-        logger.info("Corpus saved with %d CVEs", len(corpus))
-        return
+    elif skip_fetch:
+        if OUTPUT_FILE.exists():
+            try:
+                with open(OUTPUT_FILE) as f:
+                    corpus = json.load(f)
+                logger.info("Loaded existing corpus: %d CVEs", len(corpus))
+            except (json.JSONDecodeError, OSError):
+                corpus = {}
+        else:
+            corpus = {}
+    else:
+        corpus = fetch_nvd_corpus(
+            start_date=args.start,
+            end_date=args.end,
+            limit=args.limit,
+            resume=args.resume,
+        )
 
-    corpus = fetch_nvd_corpus(
-        start_date=args.start,
-        end_date=args.end,
-        limit=args.limit,
-        resume=args.resume,
-    )
+    if args.kev_ids:
+        kev_path = Path(args.kev_ids)
+        if not kev_path.exists():
+            logger.error("KEV cache not found: %s", kev_path)
+        else:
+            with open(kev_path) as f:
+                kev_cache = json.load(f)
+            missing_ids = [cid for cid in kev_cache if cid not in corpus]
+            if missing_ids:
+                logger.info(
+                    "Missing %d KEV CVEs — fetching individually by CVE ID",
+                    len(missing_ids),
+                )
+                api_key = os.getenv("NVD_API_KEY", "")
+                sleep_time = SLEEP_WITH_KEY if api_key else SLEEP_WITHOUT_KEY
+                for idx, cve_id in enumerate(missing_ids):
+                    url = f"{NVD_API}?cveId={cve_id}"
+                    headers = {"User-Agent": "TriageMate/0.3.0"}
+                    if api_key:
+                        headers["apiKey"] = api_key
+                    resp = _fetch_json(url, headers=headers)
+                    if resp:
+                        vulns = resp.get("vulnerabilities", [])
+                        for vuln in vulns:
+                            entry = _extract_cve_entry(vuln)
+                            if entry is not None:
+                                cid = vuln.get("cve", {}).get("id", "")
+                                if cid:
+                                    corpus[cid] = entry
+                    if (idx + 1) % 10 == 0:
+                        logger.info("  KEV backfill: %d/%d", idx + 1, len(missing_ids))
+                    time.sleep(sleep_time)
+                logger.info(
+                    "KEV backfill complete: corpus now has %d CVEs", len(corpus)
+                )
+            else:
+                logger.info("All KEV CVEs already in corpus — nothing to backfill")
 
-    logger.info("Corpus saved to %s (%d CVEs)", OUTPUT_FILE, len(corpus))
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    with open(OUTPUT_FILE, "w") as f:
+        json.dump(corpus, f, indent=2)
+    logger.info("Corpus saved with %d CVEs", len(corpus))
 
 
 if __name__ == "__main__":

@@ -24,6 +24,19 @@ MID_PROB_THRESHOLD = 0.40
 HIGH_PROB_THRESHOLD = 0.50
 UNCERTAINTY_THRESHOLD = 0.10
 
+# Tier-0 EPSS thresholds by CWE — catch clear exploitation signals without model.
+CWE_EPSS_THRESHOLDS = {
+    "CWE-22": 0.085,  # Path Traversal
+    "CWE-78": 0.515,  # OS Command Injection
+    "CWE-787": 0.716,  # Out-of-bounds Write
+    "CWE-79": 0.600,  # XSS
+    "CWE-89": 0.500,  # SQL Injection
+    "CWE-416": 0.550,  # Use-After-Free
+    "CWE-20": 0.400,  # Input Validation
+    "CWE-843": 0.300,  # Type Confusion (10.9× KEV rate)
+}
+DEFAULT_EPSS_THRESHOLD = 0.84
+
 _model = None
 _calibrator = None
 _lock = threading.Lock()
@@ -52,6 +65,36 @@ def _get_calibrator():
     return _calibrator
 
 
+def _tier_zero_check(features: dict) -> dict | None:
+    """Pre-model check: if EPSS + CWE signal is strong enough, skip XGBoost."""
+    cwe = features.get("cwe_class", "")
+    epss = features.get("epss_score", 0.0)
+    kev = features.get("cisa_kev", False)
+
+    # KEV fast-path: CISA has already confirmed exploitation
+    if kev and epss >= 0.30:
+        return {
+            "exploitation_probability": 0.95,
+            "confidence": 0.90,
+            "routing": "escalated",
+            "ensemble_std": 0.0,
+            "tier": "tier_0_kev",
+        }
+
+    # CWE-stratified EPSS threshold
+    threshold = CWE_EPSS_THRESHOLDS.get(cwe, DEFAULT_EPSS_THRESHOLD)
+    if epss >= threshold:
+        return {
+            "exploitation_probability": round(min(0.99, epss + 0.10), 3),
+            "confidence": 0.70,
+            "routing": "escalated",
+            "ensemble_std": 0.0,
+            "tier": "tier_0_epss",
+        }
+
+    return None
+
+
 def predict(features: dict) -> dict:
     """
     Predict exploitation probability for a vulnerability + asset combination.
@@ -65,6 +108,11 @@ def predict(features: dict) -> dict:
         exploitation_probability (0-1), confidence (0-1),
         routing (auto_resolved|escalated), ensemble_std (float)
     """
+    # Tier-0: KEV + CWE-stratified EPSS before model inference
+    tier0 = _tier_zero_check(features)
+    if tier0 is not None:
+        return tier0
+
     model = _get_model()
 
     if hasattr(model, "calibrated_classifiers_"):
@@ -160,6 +208,7 @@ def predict(features: dict) -> dict:
         "confidence": round(1.0 - min(ensemble_std * 2, 1.0), 3),
         "routing": routing,
         "ensemble_std": round(ensemble_std, 4),
+        "tier": "tier_1_xgboost",
     }
 
 

@@ -1,0 +1,119 @@
+# TriageMate Book — Chapter 14: Operations and Deployment
+
+This chapter is about how TriageMate actually runs. We have spent thirteen chapters talking about architecture, pipelines, machine learning models, and database schemas. Now we get to the part where all of that theory meets reality — the server, the environment variables, the startup sequence, and the operational tooling that keeps everything going. If you are a developer who has to deploy this thing, or an operations person who has to keep it running, or just someone who wants to understand what happens when you type the command and hit Enter, this chapter is for you.
+
+Let us start with the simplest possible deployment, because that is the one you will use 90 per cent of the time during development. From the `backend/` directory, you run:
+
+```
+uvicorn main:app --reload --host 0.0.0.0
+```
+
+That is it. One command. Python 3.12 or later, a handful of pip dependencies, and you are up. There is no container required. There is no web server to configure separately. There is no build step. The frontend is served as static files directly from FastAPI, so the same uvicorn process handles both the API and the single-page application. You point your browser at `http://localhost:8000` and the dashboard is there.
+
+The database is SQLite by default — a file called `triagemate.db` that lives right in the `backend/` directory. That is fine for development, fine for a single-user evaluation, and honestly fine for a lot of real-world scenarios where the volume is modest. SQLite handles concurrent readers just fine, and TriageMate is a read-heavy workload once the ingestion is done. If you outgrow SQLite, the same codebase connects to PostgreSQL without any code changes — just set the `DATABASE_URL` environment variable and you are done. We will come back to that when we talk about Docker.
+
+Configuration lives in a `.env` file. This file is gitignored — you never want secrets in your repository. There is a `.env.example` in the repository that serves as a template. The system auto-loads the `.env` file at startup using a bulletproof mechanism: it resolves the path relative to the script location, not the current working directory, so it does not matter where you run the uvicorn command from. You can launch it from anywhere and it will find the `.env` next to `main.py`.
+
+Let me run through the key environment variables, because this is where a lot of the operational flexibility lives.
+
+`DATABASE_URL` is the big one. If it is unset, the system uses SQLite with the default `triagemate.db` path. If you set it to something like `postgresql://user:pass@localhost:5432/triagemate`, the system switches to PostgreSQL automatically. No code changes. No configuration file to edit. The ORM layer abstracts the difference.
+
+`TRIAGEMATE_JWT_SECRET` is the signing key for JSON Web Tokens. The default is `dev-secret-change-me`, which is fine for local development but should obviously be changed in any environment that matters. `TRIAGEMATE_ADMIN_USER` and `TRIAGEMATE_ADMIN_PASS` control authentication. If both are unset, authentication is disabled entirely — the system runs without login. If you set them, the backend requires JWT-based authentication for all endpoints. The admin password is hashed at startup using bcrypt, so the plaintext value from the environment variable is never stored.
+
+`TRIAGEMATE_LLM_PROVIDER`, `TRIAGEMATE_LLM_API_KEY`, and `TRIAGEMATE_LLM_MODEL` control the Tier 2 LLM integration. The provider defaults to `openai`, the model defaults to `gpt-4o-mini`, and if the API key is unset or empty, the Tier 2 pipeline stage simply logs a warning and skips LLM analysis. Maximum tokens defaults to 1024 and timeout defaults to 30 seconds, both configurable via `TRIAGEMATE_LLM_MAX_TOKENS` and `TRIAGEMATE_LLM_TIMEOUT`.
+
+`NVD_API_KEY` is optional but recommended if you are doing a lot of ingestion — it raises your NVD API rate limit. `TRIAGEMATE_OTX_API_KEY` is similarly optional for AlienVault OTX enrichment. `DEMO_MODE` set to `true` enables demo-specific API endpoints that serve synthetic data for presentations and walkthroughs. `TRIAGEMATE_LOG_FORMAT` controls the logging output format, and we will talk about that in detail in a moment.
+
+Now, let us talk about the startup sequence, because there is quite a bit going on between the moment uvicorn starts the application and the moment it starts accepting requests. The sequence runs as part of FastAPI's lifespan mechanism, which means it executes on the event loop at startup and cleanly tears down at shutdown.
+
+Step one is the dotenv auto-load. The system finds the `.env` file relative to the `main.py` script path and loads every variable into `os.environ`. This happens before anything else, so all subsequent startup steps can rely on environment variables being set.
+
+Step two is the admin password check. If `TRIAGEMATE_ADMIN_PASS` is set and the user table is empty, the system hashes the password and inserts the admin user. If the password changes in the environment, the system re-hashes and updates the stored hash. This means you can change the admin password by editing the `.env` file and restarting — no manual database operations required.
+
+Step three is logging configuration. The system calls into `logging_config.py` to set up structured logging. We will come back to this.
+
+Step four is database initialization. The system attempts to run Alembic migrations first — it looks for the `alembic` directory and tries to apply any pending migrations. If Alembic fails for any reason — missing directory, misconfigured `alembic.ini`, whatever — it falls back to inline DDL. The `database.py` module has a set of `CREATE TABLE IF NOT EXISTS` statements that bring the schema up to date. This double-path approach means the system will start even if the migration setup is incomplete or broken, which is important for a development environment where you might be iterating on the schema.
+
+Step five is the SBERT embedder preload. The system loads the sentence-transformer model into memory during startup. This is a deliberate performance optimisation: the first inference request would otherwise take several seconds as the model loads from disk. By preloading, we ensure that every subsequent request sees sub-second embedding times.
+
+Step six is LanceDB vector store initialisation. The system creates or connects to the LanceDB database, then seeds it with demo documents if the store is empty. This gives the RAG-based features something to work with immediately.
+
+Step seven is LLM API key validation. If an API key is configured, the system makes a lightweight validation call to the provider to check that the key is valid. If validation fails, it logs a warning but does not prevent startup. The Tier 2 pipeline stage will log a more specific error when it actually tries to call the LLM, but catching bad keys at startup is a nice early-warning system.
+
+Step eight — the final step — is simply making the health endpoint available. By this point, the application is fully initialised and ready to handle requests.
+
+The health endpoint lives at `GET /api/health` and returns a comprehensive JSON payload. Let me walk through what it includes. There is the application version string from the package metadata. There is database connectivity — a quick `SELECT 1` or equivalent to confirm the database is reachable. There is the ML model status: whether the XGBoost model is loaded into memory, whether the SBERT embedder is initialised, and whether the LanceDB vector store has been seeded with documents. There is LLM availability: whether an API key is configured and whether the validation check passed. There is cache freshness, which we will talk about in the planned section. There is system uptime computed from the application start timestamp. And there is a count of documents in the RAG store. This endpoint is the first thing you should check after deployment. If it returns a 200 with all green indicators, the system is ready to go.
+
+Now let us talk about logging, because this is one of the areas where TriageMate differs from a lot of small-scale Python applications. Instead of plain text log lines, the system uses structured JSON logging. Every log entry is a JSON object with a consistent set of keys. There is `timestamp` in ISO 8601 format. There is `level` — INFO, WARNING, ERROR, DEBUG. There is `logger` — the logical component name, like `triagemate.pipeline` or `triagemate.api`. There is `event` — a machine-readable event name like `ingest_complete` or `llm_call`. And then there are event-specific fields that vary by log call.
+
+The format is controlled by the `TRIAGEMATE_LOG_FORMAT` environment variable, which defaults to `json`. If you set it to `text`, you get human-readable plain text lines instead. The JSON format is the default because it is what log aggregation systems like Loki, Elasticsearch, and CloudWatch expect. If you are running locally and tailing logs in a terminal, the text format is more readable, but JSON is what you want in production.
+
+The key log events in the system are spread across the major subsystems. The pipeline logs at every stage transition: when ingestion starts, when it completes, and if it fails. Each pipeline log entry includes the CVE ID, the duration in milliseconds, and any error details. LLM calls log the provider name, the model name, the number of input tokens, the number of output tokens, the estimated cost, and the duration. Model prediction logs include the CVE ID, the predicted probability, the model version, and the feature vector hash for reproducibility. Audit selection logs record when a case is flagged for the review queue — the CVE ID, the tier that resolved it, the random seed used for sampling, and whether the flag was for Tier 0 or Tier 1. Rate limit hits log the client IP, the endpoint, and the current bucket state. Integration failures log the integration name, the error type, the retry count, and whether the failure was fatal or transient.
+
+A typical pipeline completion log looks like this:
+
+```json
+{"timestamp": "2026-07-03T12:34:56.789Z", "level": "INFO", "logger": "triagemate.pipeline", "event": "ingest_complete", "cve_id": "CVE-2024-3094", "duration_ms": 234, "tiers_run": ["pre_tier", "tier_0", "tier_1"], "final_score": 72.4, "risk_band": "critical"}
+```
+
+That is machine-parseable, queryable, and far more useful than a text line like "Ingestion of CVE-2024-3094 completed in 234ms" when you are trying to build dashboards or alerting rules.
+
+Let us talk about testing, because tests are not just developer tooling — they are operational infrastructure. When you make a change to the pipeline or the scoring engine, you need to know that you have not broken anything. The TriageMate test suite has 37 tests spread across 6 test files. The testing framework is pytest, and the tests use an in-memory SQLite database for full isolation — each test gets a clean database, runs its assertions, and throws the database away.
+
+The test files are organised by pipeline stage. There are tests for the Pre-Tier mission classification logic — does a hostname ending in `.health.wa.gov.au` get classified as HEALTH, does an unknown hostname fall through to UNKNOWN, are the dictionary lookups case-insensitive. There are tests for the Tier 0 deterministic rules — does the presence of a CISA KEV entry correctly boost the score, does a Metasploit module trigger the exploit availability flag, do the EPSS thresholds work as expected. There are tests for the Tier 1 XGBoost pipeline stage — does the feature vector have the expected number of columns, does the model return a probability between 0 and 1, does a missing feature gracefully default to zero. There are tests for the Tier 2 LLM stage — does the prompt construction include all the required fields, does a timeout get handled gracefully, does a malformed response trigger the retry logic. There are tests for the scoring engine — does the composite score stay within bounds, do the six dimensions sum correctly, does the risk band mapping work at boundary values. There are tests for the ingest flow — does a valid CVE get inserted, does a duplicate CVE get rejected, does a malformed payload return a 400. There are tests for authentication — does a missing token get rejected, does an expired token get rejected, does a valid token pass through. There are tests for rate limiting — does the token bucket refill correctly, does exceeding the limit return a 429, do different endpoints have their own buckets. And there are tests for the API endpoints — do all the expected routes exist, do they return the correct status codes, do they handle edge cases.
+
+You run the tests with a single command:
+
+```
+python -m pytest tests/ -v
+```
+
+The `-v` flag gives you verbose output with each test name and result. A full run completes in under 30 seconds on a modern machine. If you are setting up a CI pipeline — and you should be — this is the command to run on every pull request and every merge to main.
+
+Now let us talk about the background processes, because TriageMate does not just sit there waiting for you to feed it vulnerabilities. It has two background tasks that run continuously as long as the application is alive. These are implemented as asyncio tasks launched during the lifespan startup, which means they run in the same event loop as the web server. No separate worker processes, no cron jobs, no external schedulers.
+
+The first background process is the daily low-severity re-check. Every 86,400 seconds — which is exactly 24 hours — the system queries the database for vulnerabilities that meet three criteria. The `tier_0_resolution` must be `low`, meaning Tier 0 decided these were low priority. The `age` must be at least 7 days — the system does not re-check vulnerabilities it just ingested. And the `last_recheck_date` must be at least 7 days old, meaning the system does not re-check a vulnerability that was already re-checked recently. For each matching vulnerability, the system re-runs the Tier 0 evaluation with the current EPSS and KEV data. This is important because the threat landscape changes. A CVE that had a low EPSS score last week might have spiked this week because new exploit activity was detected. A CVE that was not in CISA KEV last month might have been added yesterday. The re-check captures these changes and updates the score accordingly. If the new score crosses a threshold, the vulnerability gets bumped to a higher priority and the analyst sees it in their queue.
+
+The second background process is the audit sampling. Every time Tier 0 auto-resolves a case — meaning the deterministic rules produced a clear enough result that the pipeline did not need to go to Tier 1 or Tier 2 — there is a 7.5 per cent chance that the case gets flagged for the review queue. This is implemented as a random draw: `random.random() < 0.075`. If the draw hits, the case is added to a special queue that the analyst can review. The purpose of this sampling is concept drift detection. Over time, if the analysts consistently disagree with the auto-resolved decisions — or if the distribution of scores in the sampled cases shifts — that is a signal that the deterministic rules or the ML model need to be recalibrated. The 7.5 per cent rate was chosen to give a statistically meaningful sample without overwhelming the analysts. For a deployment processing 1,000 vulnerabilities per week, that is about 75 review-queue items per week, which is manageable for a single analyst to review in an hour or two. This sampling currently applies only to Tier 0 auto-resolved cases. Extending it to cover Tier 1 auto-resolved cases is on the roadmap.
+
+Now let us talk about the Docker configuration, because while the single-command uvicorn approach is the default for MVP development, the project includes a full Docker setup for when you need containerised deployment.
+
+The Dockerfile is multi-stage. It starts from `python:3.12-slim`, which gives us a minimal Debian-based Python image. The build stage installs the Python dependencies, including PyTorch and sentence-transformers, which are the heaviest dependencies. During the build, the SBERT model is pre-cached — the Dockerfile includes a step that runs a small Python script to download and cache the model so that the container does not have to download it at startup. This is important because sentence-transformers models are typically several hundred megabytes, and downloading them at container start would add 30-60 seconds to every deployment. The final stage creates a non-root user for security, copies over only the application code and the cached model, and sets the entry point to uvicorn.
+
+The `docker-compose.yml` defines two services. The first is a PostgreSQL 16 service using the official Postgres image. It has a health check that runs `pg_isready` to confirm the database is accepting connections before the application starts. The second is the application service, which depends on the database service being healthy. This dependency ordering is critical — without it, the application would try to initialise its database tables before PostgreSQL was ready, and the startup would fail with a connection error. The application service also has its own health check that hits the `/api/health` endpoint. Docker Compose waits for both health checks to pass before considering the stack healthy.
+
+The environment variables for the Docker setup cover the same configuration surface as the `.env` file, but they are passed through Docker Compose or the container runtime. PostgreSQL connection details, API keys, JWT secret — all set as environment variables on the container. This is consistent with the twelve-factor app methodology and works naturally with container orchestration platforms that manage secrets through environment variables or mounted secret files.
+
+Docker support is available and tested, but it is not the default path for MVP development. The default path is the single uvicorn command with SQLite. Docker is there for when you need it — production deployment, integration testing, reproducible environments — but if you are just trying the system out, do not bother with Docker. The Python environment is simpler and faster.
+
+Now let us talk about what is planned but not yet implemented. These are the operational features that are queued for the next sprint or the sprint after.
+
+First up is a model rollback mechanism. When the training script produces a new XGBoost model, it saves it to `ml/models/` with a dated filename that includes the training run identifier, the ROC-AUC score, and the timestamp. Something like `xgboost_model_20260703_0.9821.pkl`. A training log is maintained as a human-readable text file that records the metrics for each run — training date, dataset size, feature count, ROC-AUC, precision, recall, and any configuration parameters. The idea is that you can always identify which model is the best one and roll back if a newer model performs worse. The train script will gain a `--rollback` flag that takes a model filename or run identifier and reverts to that model by copying it into the active model path.
+
+Second is cache freshness in the health endpoint. The current health endpoint reports database connectivity and model status, but it does not report how fresh the external data caches are. The plan is to add three timestamps to the health response: `kev_last_refresh` for the last time the CISA KEV data was fetched and cached, `epss_last_refresh` for the EPSS scores, and `nvd_last_success` for the last successful NVD API call. If any of these timestamps are more than 24 hours old, the health endpoint will return a warning status. This gives operators an immediate signal when the external data feeds have gone stale.
+
+Third is the test suite expansion for the new endpoints that were added in recent sprints. The review queue endpoints — `GET /api/review/queue`, `POST /api/review/flag/{id}`, `POST /api/case/{id}/review` — need dedicated tests. The case history endpoint `GET /api/case/{id}/history` needs tests. The drift dashboard endpoint `GET /api/drift` needs tests. These endpoints exist and work, but they do not have the same level of test coverage as the core pipeline stages, and that needs to be addressed before the next release.
+
+Fourth is a feature-parity guard test. The `build_tabular_features()` function in the feature engineering module produces a feature vector with exactly 35 columns. The XGBoost model in `xgboost_predictor.py` expects exactly 35 input features in a specific order. If someone adds a new feature or reorders the existing ones without updating the model, the pipeline will silently produce wrong results. The guard test will explicitly check that the output of `build_tabular_features()` has the same column count and the same column order as what the model expects, by index. This test will fail loudly if the two get out of sync, preventing a class of bugs that are otherwise very hard to catch.
+
+Fifth is the auto-resolved audit sampling extension. Currently, only Tier 0 auto-resolved cases are sampled for the review queue. The plan is to extend this to Tier 1. For Tier 1 auto-resolved cases — where the XGBoost model produced a confident prediction but it was not routed to Tier 2 — a 1 per cent sample will be flagged for review. The sampling rate is lower because Tier 1 is a more sophisticated model and we expect fewer surprises, but a 1 per cent sample still provides enough data points for concept drift detection without overloading the analyst.
+
+Let me close with some operational advice. If you are deploying TriageMate for real, here is the checklist.
+
+First, change the JWT secret. This is the most important security step. Do not use `dev-secret-change-me` in any environment that matters.
+
+Second, enable authentication. Set `TRIAGEMATE_ADMIN_USER` and `TRIAGEMATE_ADMIN_PASS` and make sure your team uses strong passwords.
+
+Third, switch to PostgreSQL. SQLite is fine for development, but PostgreSQL gives you better concurrency, better backup tooling, and better performance under load. The switch is a single environment variable change.
+
+Fourth, configure monitoring. Set up log aggregation to capture the JSON log output. Set up alerting on the health endpoint — if it returns non-200, or if the database or model indicators show unhealthy, you want to know immediately.
+
+Fifth, run the tests before every deployment. The 37-test suite takes under 30 seconds. There is no excuse for deploying without running it.
+
+Sixth, check the health endpoint after every deployment. It will tell you immediately if the database is connected, the models are loaded, and the system is ready to serve.
+
+And seventh — this is the most important one — do not overthink it. The default deployment is a single uvicorn command. You can go from zero to a running system in under five minutes. The Docker setup adds a couple of minutes. The full production-hardened configuration with PostgreSQL, monitoring, and authentication adds maybe an hour. TriageMate was designed to be easy to operate, because the goal is to free up analyst time, not create more operational overhead.
+
+That is the operations story. It is straightforward by design. The system does not need a dedicated operations team. It does not need a Kubernetes cluster. It does not need a database administrator. It needs a Python runtime, a SQLite or PostgreSQL database, and a configuration file. Everything else is polish.
+
+In the next chapter, we are going to step back and look at the big picture. We will talk about where TriageMate fits in the broader vulnerability management landscape, how it compares to commercial alternatives, and what the future roadmap looks like beyond Sprint Nine.

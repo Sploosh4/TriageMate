@@ -209,6 +209,7 @@ def _enrich_with_osv(cve_id: str, result: dict) -> None:
             result["osv_fixed_versions"] = osv_result.get("fixed_versions", [])
             result["osv_package"] = osv_result.get("package_name", "")
             result["osv_ecosystem"] = osv_result.get("package_ecosystem", "")
+            result["osv_published"] = osv_result.get("osv_published", "")
             if osv_result.get("fixed_available", False):
                 result["patch_available"] = True
     except Exception as e:

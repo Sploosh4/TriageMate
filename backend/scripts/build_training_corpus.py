@@ -39,6 +39,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger("triagemate.build_training_corpus")
 
+random.seed(42)
+
 DATA_DIR = Path(__file__).parent.parent / "data"
 ML_DIR = Path(__file__).parent.parent / "ml"
 
@@ -114,6 +116,7 @@ _FEATURE_NAMES = [
     "is_bypass_signature",
     "is_dos_signature",
     "is_traversal_signature",
+    "osv_lead_days",
 ]
 
 _VENDOR_POPULARITY_CACHE: dict[str, float] | None = None
@@ -176,7 +179,7 @@ def _cvss_s(v):
 
 
 def _cvss_cia(v):
-    return {"H": 2, "L": 1, "N": 0}.get(str(v), 2)
+    return {"H": 2, "L": 1, "N": 0}.get(str(v), 0)
 
 
 def _encode_classification(klass: str) -> int:
@@ -243,7 +246,7 @@ def load_sources(nvd_path: str):
 # ─── Phase 2: Build Feature Vectors ───────────────────────────────────────
 
 
-def _sample_asset_fields() -> list:
+def _sample_asset_fields(cvss_score: float = 0.0) -> list:
     internet_facing = random.random() < 0.15
     domain_joined = random.random() < 0.85
     cls_roll = random.random()
@@ -268,15 +271,37 @@ def _sample_asset_fields() -> list:
     else:
         public_wellbeing_impact = "Severe"
 
+    # Binary CVSS-based samplers matching train_xgboost.py pattern
+    if cvss_score >= 9.0:
+        lateral = int(random.random() < 0.25)
+    elif cvss_score >= 7.0:
+        lateral = int(random.random() < 0.12)
+    else:
+        lateral = int(random.random() < 0.04)
+
+    if cvss_score >= 9.0:
+        boundary = int(random.random() < 0.20)
+    elif cvss_score >= 7.0:
+        boundary = int(random.random() < 0.10)
+    else:
+        boundary = int(random.random() < 0.03)
+
+    if cvss_score >= 9.0:
+        downstream = int(random.random() < 0.35)
+    elif cvss_score >= 7.0:
+        downstream = int(random.random() < 0.20)
+    else:
+        downstream = int(random.random() < 0.05)
+
     return [
         internet_facing,
         domain_joined,
         _encode_classification(data_classification),
         _encode_mission(mission_prevalence),
         _encode_wellbeing(public_wellbeing_impact),
-        random.randint(1, 30),
-        int(random.random() < 0.20),
-        random.randint(0, 25),
+        lateral,
+        boundary,
+        downstream,
     ]
 
 
@@ -339,10 +364,11 @@ def build_feature_vectors(
         edb_exploits = edb_map.get(cve_id, [])
         exploitdb_has_poc = len(edb_exploits) > 0
         metasploit_has_payload = any(
-            "metasploit" in e.get("platform", "").lower() for e in edb_exploits
+            "metasploit" in e.get("author", "").lower() for e in edb_exploits
         )
 
         description = entry.get("description", "")
+        osv_published = entry.get("osv_published", "")
         age_days = entry.get("vulnerability_age_days", 0)
         vendor = entry.get("vendor", "")
         vendor_pop_idx = _lookup_vendor_popularity(vendor) if vendor else 0.1
@@ -357,12 +383,38 @@ def build_feature_vectors(
         cwe = entry.get("cwe_class", "")
         is_top25 = int(cwe in MITRE_TOP_25_CWES)
 
-        asset_fields = _sample_asset_fields()
+        asset_fields = _sample_asset_fields(cvss_score=float(cvss_score))
 
         if patch_available:
             patch_lag = random.randint(0, 365)
         else:
             patch_lag = random.randint(90, 730)
+
+        _lam = 0.1
+        if epss_score > 0.5:
+            _lam += 2.5
+        elif epss_score > 0.1:
+            _lam += 0.8
+        if cvss_score >= 9.0:
+            _lam += 1.0
+        elif cvss_score >= 7.0:
+            _lam += 0.3
+        threat_intel_pulses = max(0, int(np.random.poisson(_lam)))
+
+        osv_lead_days = 0
+        if osv_published:
+            nvd_pub_str = _derive_published_date(entry)
+            if nvd_pub_str:
+                try:
+                    nvd_dt = datetime.strptime(nvd_pub_str[:10], "%Y-%m-%d").replace(
+                        tzinfo=timezone.utc
+                    )
+                    osv_dt = datetime.strptime(osv_published[:10], "%Y-%m-%d").replace(
+                        tzinfo=timezone.utc
+                    )
+                    osv_lead_days = (nvd_dt - osv_dt).days
+                except (ValueError, TypeError):
+                    pass
 
         row = [
             float(_cvss_av(cvss_vec.get("AV", "N"))),
@@ -387,7 +439,7 @@ def build_feature_vectors(
             float(patch_lag),
             float(exploitdb_has_poc),
             float(metasploit_has_payload),
-            0.0,
+            float(threat_intel_pulses),
             float(entry.get("nvd_reference_count", 0)),
             float(len(description)),
             float(age_days),
@@ -400,6 +452,7 @@ def build_feature_vectors(
             float(is_bypass),
             float(is_dos),
             float(is_traversal),
+            float(osv_lead_days),
         ]
         rows.append(row)
         cve_ids.append(cve_id)
