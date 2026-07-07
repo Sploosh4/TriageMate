@@ -1,8 +1,8 @@
 """
-CWE classifier for the ingest pipeline.
+CWE identifier lookup for the ingest pipeline.
 
-Delegates to backend/integrations/nvd.py for NVD API lookup.
-Falls back to regex extraction from description if NVD returns nothing.
+Uses NVD API for CWE mapping, with regex fallback from description.
+This is NOT an ML classifier — it delegates to backend/integrations/nvd.py for NVD API lookup.
 
 See nvd.py for cache strategy and rate-limit handling.
 """

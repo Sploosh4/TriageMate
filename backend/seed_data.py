@@ -62,7 +62,7 @@ SEED_ROWS = [
         "weakness_template_raw": 'template_id: DET-2023-MOVEIT-SQLI-001\ntemplate_name: "MOVEit Transfer Pre-Auth SQL Injection — Silent Chaining Detection"\nlogic_chain:\n  - step: 1\n    condition: "software_product == \'Progress MOVEit Transfer\' AND version < 2023.0.2"\n    weight: 0.35\n  - step: 2\n    condition: "exposed_port == 443 AND internet_facing == TRUE"\n    weight: 0.25\n  - step: 3\n    condition: "data_classification IN [OFFICIAL_Sensitive]"\n    weight: 0.20\n  - step: 4\n    condition: "cisa_kev == TRUE AND exploit_maturity == \'High\'"\n    weight: 0.15\n  - step: 5\n    condition: "patch_lag_days > 7"\n    weight: 0.05',
         "advisory_ref_id": "ADV-CVE-2023-34362",
         "advisory_quote": "The Western Australian Security Operations Centre assesses with high confidence that Progress MOVEit Transfer instances operated by WA state government entities are being actively targeted by the Clop ransomware group. All agencies must immediately verify MOVEit Transfer version numbers and apply vendor patches within 24 hours. Agencies operating MOVEit Transfer as an internet-facing service must additionally implement network-level access restrictions pending patch application. The WASOC has confirmed that at least three Australian state government entities have been impacted as of 5 June 2023.",
-        "investigation_notes": "The following summary has been pre-filled for analyst review and editing.\n\nThe vulnerability CVE-2023-34362 on per-PRD-MOVEIT-WEB01.health.wa.gov.au has been automatically assigned a priority score of 94 and a risk band of Very Critical by the Deterministic Tier engine. All four scoring dimensions triggered at maximum severity. The asset is internet-facing on port 443, the MOVEit Transfer version 2023.0.0 is confirmed vulnerable, and the WASOC threat intelligence feed has verified active exploitation by the Clop ransomware group targeting Australian state government entities. The EPSS score of 0.974 indicates a 97.4 percent probability of exploitation within the next 30 days.\n\nThe multi-label classifier has tagged this asset with Mission Prevalence: Core and Public Well-Being Impact: Severe, reflecting its role as the central health data exchange infrastructure for the state.\n\nThe asset is registered as a OFFICIAL Sensitive data asset under the PRIS Act, hosting Health Information Exchange records containing protected health information for the WA Country Health Service and metropolitan health campuses. A compromise of this asset would constitute a notifiable data breach.\n\nImmediate recommended action: Apply the MOVEit Transfer security patch to version 2023.0.2 or later. Pending patch application, restrict access to the MOVEit Transfer web interface to internal IP ranges only via the upstream network access control list. Commence a forensic review of MOVEit Transfer IIS logs for indicators of compromise associated with CVE-2023-34362 exploitation.",
+        "investigation_notes": "The following summary has been pre-filled for analyst review and editing.\n\nThe vulnerability CVE-2023-34362 on per-PRD-MOVEIT-WEB01.health.wa.gov.au has been automatically assigned a priority score of 94 and a risk band of Very Critical by the Deterministic Tier engine. All six scoring dimensions triggered at maximum severity. The asset is internet-facing on port 443, the MOVEit Transfer version 2023.0.0 is confirmed vulnerable, and the WASOC threat intelligence feed has verified active exploitation by the Clop ransomware group targeting Australian state government entities. The EPSS score of 0.974 indicates a 97.4 percent probability of exploitation within the next 30 days.\n\nThe multi-label classifier has tagged this asset with Mission Prevalence: Core and Public Well-Being Impact: Severe, reflecting its role as the central health data exchange infrastructure for the state.\n\nThe asset is registered as a OFFICIAL Sensitive data asset under WAICP, hosting Health Information Exchange records containing protected health information for the WA Country Health Service and metropolitan health campuses. A compromise of this asset would constitute a notifiable data breach.\n\nImmediate recommended action: Apply the MOVEit Transfer security patch to version 2023.0.2 or later. Pending patch application, restrict access to the MOVEit Transfer web interface to internal IP ranges only via the upstream network access control list. Commence a forensic review of MOVEit Transfer IIS logs for indicators of compromise associated with CVE-2023-34362 exploitation.",
         "mitre_techniques_json": json.dumps(
             [
                 {
@@ -148,7 +148,7 @@ SEED_ROWS = [
                 },
                 {
                     "label": "Data Classification",
-                    "value": "OFFICIAL Sensitive — Sensitive (Health) — PRIS Act classification",
+                    "value": "OFFICIAL Sensitive — Sensitive (Health) — WAICP classification",
                 },
                 {
                     "label": "Mission Prevalence",
@@ -329,7 +329,7 @@ SEED_ROWS = [
                 },
                 {
                     "label": "Data Classification",
-                    "value": "OFFICIAL Sensitive — Sensitive (Protective Security) — PRIS Act classification",
+                    "value": "OFFICIAL Sensitive — Sensitive (Protective Security) — WAICP classification",
                 },
                 {
                     "label": "Mission Prevalence",
@@ -507,7 +507,7 @@ SEED_ROWS = [
                 },
                 {
                     "label": "Data Classification",
-                    "value": "OFFICIAL — Sensitive (Personal) — PRIS Act classification",
+                    "value": "OFFICIAL — Sensitive (Personal) — WAICP classification",
                 },
                 {
                     "label": "Mission Prevalence",
@@ -689,7 +689,7 @@ SEED_ROWS = [
                 },
                 {
                     "label": "Data Classification",
-                    "value": "OFFICIAL Sensitive — Sensitive (Protective Security) — PRIS Act classification",
+                    "value": "OFFICIAL Sensitive — Sensitive (Protective Security) — WAICP classification",
                 },
                 {
                     "label": "Mission Prevalence",
@@ -872,7 +872,7 @@ SEED_ROWS = [
                 },
                 {
                     "label": "Data Classification",
-                    "value": "OFFICIAL Sensitive — Sensitive (Health and Legal) — PRIS Act classification",
+                    "value": "OFFICIAL Sensitive — Sensitive (Health and Legal) — WAICP classification",
                 },
                 {
                     "label": "Mission Prevalence",
@@ -1055,7 +1055,7 @@ SEED_ROWS = [
                 },
                 {
                     "label": "Data Classification",
-                    "value": "OFFICIAL Sensitive — Highly Protected (Law Enforcement) — PRIS Act classification",
+                    "value": "OFFICIAL Sensitive — Highly Protected (Law Enforcement) — WAICP classification",
                 },
                 {
                     "label": "Mission Prevalence",
@@ -1237,7 +1237,7 @@ SEED_ROWS = [
                 },
                 {
                     "label": "Data Classification",
-                    "value": "OFFICIAL — Sensitive (Personal) — PRIS Act classification",
+                    "value": "OFFICIAL — Sensitive (Personal) — WAICP classification",
                 },
                 {
                     "label": "Mission Prevalence",

@@ -32,7 +32,7 @@ def evaluate_tier_0(
         cvss_score: CVSS v3.1 base score (0-10)
         cisa_kev: Whether the CVE is in the CISA Known Exploited Vulnerabilities catalog
         epss_score: EPSS exploitation probability score (0-1)
-        data_classification: PRIS Act data classification level
+        data_classification: WAICP data classification level
         internet_facing: Whether the asset is exposed to the public internet
 
     Returns:

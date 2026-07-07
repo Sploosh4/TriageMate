@@ -111,7 +111,7 @@ async def test_full_pipeline_ingest():
         )
 
         # ──────────────────────────────────────────────────────────────
-        # 4. Scoring weights — exactly 5 dimensions with correct shape
+        # 4. Scoring weights — 6 dimensions with correct shape
         # ──────────────────────────────────────────────────────────────
         weights = cv.get("scoringWeights")
         assert isinstance(weights, list), f"scoringWeights not list: {type(weights)}"

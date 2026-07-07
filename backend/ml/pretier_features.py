@@ -307,7 +307,7 @@ def extract_features(hostname: str) -> dict:
 
 
 def _derive_classification_code(agency: str, hostname_str: str) -> int:
-    """Derive a PRIS Act data classification from hostname keywords.
+    """Derive a WAICP data classification from hostname keywords.
 
     Returns ordinal: 4=Sensitive, 3=Protected, 2=Official, 1=Unclassified.
 

@@ -166,10 +166,10 @@ def _get_provider() -> str:
 
 
 def lookup_data_classification(hostname: str) -> str:
-    """Look up the PRIS Act data classification for an asset.
+    """Look up the WAICP data classification for an asset.
 
     Delegates to the current CMDB provider.
-    Defaults to Category 1 for unknown hosts.
+    Defaults to OFFICIAL for unknown hosts.
     """
     ctx = get_asset_context(hostname)
     return ctx.get("data_classification", "Category 1")

@@ -105,8 +105,8 @@ async def lifespan(app: FastAPI):
         pass
 
 
-app = FastAPI(title="TriageMate API", version="0.2.0", lifespan=lifespan)
-app.state.cwe_available = False  # CWE classifier deprecated — replaced by NVD API + ingest_cwe.py; no update path exists
+app = FastAPI(title="TriageMate API", version="2.5.0", lifespan=lifespan)
+app.state.cwe_available = False  # Standalone CWE ML classifier deprecated — ingest_cwe.py (NVD API + regex) is the active implementation
 
 app.add_middleware(
     CORSMiddleware,
@@ -205,7 +205,7 @@ async def health():
 
     return {
         "status": "ok",
-        "version": "0.2.0",
+        "version": "2.5.0",
         "tier_2_provider": provider if api_key else "none",
         "llm_available": bool(api_key),
         "rag_documents": doc_count,

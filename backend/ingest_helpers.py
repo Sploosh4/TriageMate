@@ -23,7 +23,7 @@ from integrations.osv import query_osv
 def lookup_data_classification(hostname: str) -> str:
     """Look up the WAICP data classification for an asset.
 
-    Delegates to the CMDB adapter. Defaults to Category 1 for unknowns.
+    Delegates to the CMDB adapter. Defaults to OFFICIAL for unknowns.
     """
     return _cmdb_classification(hostname)
 

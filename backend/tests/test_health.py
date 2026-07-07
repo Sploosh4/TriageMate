@@ -34,12 +34,12 @@ class TestHealthEndpoint:
         )
 
     async def test_health_status_and_version(self, client):
-        """Assert status == 'ok' and version == '0.2.0'."""
+        """Assert status == 'ok' and version == '2.5.0'."""
         response = await client.get("/api/health")
         data = response.json()
 
         assert data["status"] == "ok"
-        assert data["version"] == "0.2.0"
+        assert data["version"] == "2.5.0"
 
     async def test_health_llm_disabled_in_tests(self, client):
         """LLM should be unavailable since we disable the API key for tests."""

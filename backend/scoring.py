@@ -34,7 +34,7 @@ def calculate_final_score(
         epss_score: EPSS exploitation probability score (0-1)
         mission_prevalence: 'Core', 'Support', or 'Peripheral'
         public_wellbeing: 'Severe', 'Moderate', or 'Minimal'
-        data_classification: PRIS Act classification level
+        data_classification: WAICP classification level
         internet_facing: Whether the asset is exposed to the public internet
         patch_available: Whether a security patch is available
         patch_applied: Whether the patch has been applied
@@ -65,7 +65,7 @@ def calculate_final_score(
     # Asset criticality (max 20) — based on data classification and mission tags
     # POLICY NOTE: The 12/4/0 point spread for OFFICIAL Sensitive/OFFICIAL is an
     # operational policy choice calibrated against WA SOC risk appetite.
-    # It is NOT mandated by the PRIS Act itself.
+    # It is NOT mandated by WAICP itself.
     criticality = 0
     if data_classification == "OFFICIAL Sensitive":
         criticality += 12

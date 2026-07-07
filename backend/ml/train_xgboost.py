@@ -736,7 +736,7 @@ def _compute_data_classification(rng: np.random.Generator) -> int:
     elif r < 0.82:
         return 2  # OFFICIAL
     else:
-        return 1  # Category 1
+        return 1  # OFFICIAL
 
 
 def _compute_mission_prevalence(rng: np.random.Generator) -> int:
