@@ -139,7 +139,7 @@
 
 | Item | Status |
 |---|---|
-| XGBoost model (`xgboost_model.pkl`) | 🔧 Retraining — New: 144K records, ROC-AUC 0.9946, trained, calibrator pending (needs retrain run) |
+| XGBoost model (`xgboost_model.pkl`) | 🔧 Retrain pending — New training corpus: 144K records, 67 features (35 tabular + 384 SBERT). Current deployed model: 93K records, ROC-AUC 0.9677 (Sprint 3). ROC-AUC 0.9946 was pre-fix label-leakage era — not representative. Calibrator will be generated after retrain. |
 | SBERT encoder (`encoder.py`) | ✅ Done — all-MiniLM-L6-v2, 384-dim (PCA removed v2.5) |
 | Training pipeline (`train_xgboost.py`) | ✅ Done — two-phase, checkpoint/resume, calibration, temporal bias fixes |
 | Training data v2 (`training_data_v2.npz`) | 🔧 Retrain pending — 144K samples, 67 features (35 tabular + 384 SBERT), temporal + observation window filters applied |

@@ -62,7 +62,7 @@ Define exactly what the TriageMate Minimum Viable Product delivers, what it expl
 - **Reason:** Zero ML, zero training data, zero external dependencies. The rules embody the WA SOC's deterministic baseline logic. The only future work is threshold tuning.
 
 #### Tier 1: REAL (XGBoost model, retrained Sprint 3)
-- **IN scope:** XGBoost model (`xgboost_model.pkl`) trained on ~144K post-KEV CVEs with 419-dimension feature vector (35 tabular + 384 SBERT). ROC-AUC 0.9677 (post-fix; pre-fix value of 0.9946 had label leakage). Ensemble std routing (threshold 0.15) determines escalation to Tier 2. Heuristic fallback available when model is absent.
+- **IN scope:** XGBoost model (`xgboost_model.pkl`) — current model trained on 93,018 post-KEV CVEs (Sprint 3) with 419-dimension feature vector (35 tabular + 384 SBERT). ROC-AUC 0.9677 (post-fix; pre-fix value of 0.9946 was label-leakage era). New training corpus built in Sprint 9: 144,708 samples, 67 features — **retrain pending**. Ensemble std routing (threshold 0.15) determines escalation to Tier 2. Heuristic fallback available when model is absent.
 - **Reason:** Model was retrained in Sprint 3 to fix the 69→68 feature mismatch caused by the `cisa_kev` label-leakage removal. The model now produces real exploitation probabilities for all cases. All 7 demo rows validated with exact expected scores.
 
 #### Tier 2: REAL (multi-provider cloud LLM + Known Conflicts cache)
@@ -114,7 +114,7 @@ Define exactly what the TriageMate Minimum Viable Product delivers, what it expl
 | Deferred Item | Why Out of Scope for MVP |
 |---|---|
 | **Pre-Tier multi-label classifier** (RandomForest replacing hostname dict) | Requires 200–500 internally labeled WA government assets. No public dataset exists. The stub correctly handles the 7 demo rows and returns conservative defaults for unknowns. |
-| **Tier 1 XGBoost tuning** | **DONE (Sprint 3).** Retrained on 93,018 post-KEV CVEs. ROC-AUC 0.9677. Feature mismatch (69→68) fixed. Ensemble variance DMatrix bug fixed. Model running live. Note: v2.5 removed PCA — current pipeline stacks full 384-dim SBERT directly onto 35 tabular features for 419 total dimensions. |
+| **Tier 1 XGBoost tuning** | **DONE (Sprint 3).** Retrained on 93,018 post-KEV CVEs. ROC-AUC 0.9677. Feature mismatch (69→68) fixed. Ensemble variance DMatrix bug fixed. Model running live. Note: v2.5 removed PCA — current pipeline stacks full 384-dim SBERT directly onto 35 tabular features for 419 total dimensions. **Sprint 9:** New training corpus built (144,708 samples, 67 features) — **retrain pending**. |
 | **Tier 2 CWE encoder** (ModernBERT, replacing NVD API CWE lookup) | The NVD API + regex lookup (`ingest_cwe.py`) provides authoritative CWE without the 656MB SecureBERT model. The local encoder adds offline CWE pre-classification — valuable but not required now that NVD provides CWE at ingest time. |
 | **EPSS substitution model** (sector-adjusted EPSS scorer) | Only affects Row 5's display. The stub hardcodes the substitution value. A real model requires sector-weighted exploitation data which is not publicly available. |
 
