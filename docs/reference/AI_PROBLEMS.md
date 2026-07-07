@@ -35,6 +35,8 @@ Documentation of incorrect AI-generated code, mismatches between code and actual
 **Impact:** `cv="prefit"` was removed in sklearn 1.9 (`InvalidParameterError`), and 5-fold CV on temporal data leaks future information into calibration folds.
 **Fix applied:** Removed `CalibratedClassifierCV` entirely. XGBoost already outputs calibrated probabilities via its built-in `binary:logistic` loss function. Predictor now exports raw XGBoost model directly. Compatibility check (`hasattr(model, "calibrated_classifiers_")`) preserved for future use.
 
+**Post-investigation addendum (July 2026):** The XGBoost investigation report found that `scale_pos_weight=~214` (used to handle class imbalance) distorts `binary:logistic` probability outputs — they are calibrated for the weighted distribution, not the true distribution. Removal was the correct emergency fix for the sklearn 1.9 `cv="prefit"` breakage, but post-hoc Platt scaling will be re-added during the next retrain cycle. See `xgboost-investigation-report.md` §Finding 5.
+
 ### ~~6. Train script: EPSS API only fetches first page~~ ✅ FIXED
 **File:** `backend/ml/train_xgboost.py`
 **Old code:** `resp = requests.get(EPSS_API, timeout=60)` — no pagination, first page only.
@@ -46,6 +48,8 @@ Documentation of incorrect AI-generated code, mismatches between code and actual
 **Old code:** `CalibratedClassifierCV(cv=5)` — random 5-fold on temporal data.
 **Impact:** Future exploitation info leaked into calibration folds.
 **Fix applied:** Calibration removed entirely (see #5). No cross-validation in current training pipeline.
+
+**Post-investigation addendum (July 2026):** See #5 addendum — calibration will be re-added during next retrain (Platt scaling with temporal validation split to avoid the original leakage issue).
 
 ### ~~8. Train script: Early stopping shrinks actual tree count~~ ✅ FIXED
 **File:** `backend/ml/train_xgboost.py`
@@ -117,6 +121,8 @@ Documentation of incorrect AI-generated code, mismatches between code and actual
 **File:** `backend/ml/train_xgboost.py`
 **Problem:** sklearn 1.9 removed `cv="prefit"` string support, causing `InvalidParameterError` during Phase 2.
 **Fix applied:** Removed Platt calibration entirely. XGBoost's `binary:logistic` objective already produces well-calibrated probabilities.
+
+**Post-investigation addendum (July 2026):** See #5 addendum — `scale_pos_weight` distorts these probabilities; Platt scaling to be re-added during next retrain with proper temporal validation split.
 
 ### I. 30-day observation window for label quality ✅ FIXED
 **File:** `backend/ml/train_xgboost.py`

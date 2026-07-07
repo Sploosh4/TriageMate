@@ -137,7 +137,7 @@ Cross-checks by independent verifier found two corrections to the raw research:
 
 1. **NVD Reference Count ≥21 lift is 8.6×, not 12.0×** — baseline KEV rate is 0.60%, 21+ bin is 5.15% = 8.6×. Still the strongest zero-cost signal.
 
-2. **Q1's 856 positives has 21 unexplained gap** — kev_cache shows 835 KEV entries in NVD corpus with `dateAdded ≤ 2024-12-31`, not 856. The Q1 analysis likely had a string comparison quirk (`"" <= "2024-12-31"` evaluates True in Python for empty date strings).
+2. **KEV count corrected (856 → 835):** kev_cache shows 835 KEV entries in NVD corpus with `dateAdded ≤ 2024-12-31`, not 856. The 856 figure was an earlier calculation error caused by a string comparison quirk (`"" <= "2024-12-31"` evaluates True in Python for empty date strings). The correct count is 835.
 
 All 5 code-level claims verified PASS (published_date missing, CIA default mismatch, lateral_reachability type mismatch, no seed, threat_intel_pulses=0.0).
 

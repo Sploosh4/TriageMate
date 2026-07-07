@@ -10,6 +10,8 @@
 
 ## Current State Map
 
+> **Note:** This state map reflects the pre-consolidation state of the project. Files marked SUPERSEDED (e.g., SPRINT_NEXT_PLAN.md) have since been archived under `docs/archive/`.
+
 ### Inventory of All Active (Non-Archived) `.md` Files
 
 | # | File | Lines | Est. Words | Category | Freshness | Overlap Score | Notes |

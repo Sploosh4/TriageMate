@@ -99,6 +99,8 @@
 |---|---|---|
 | #10 | Patch features hardcoded in training | FIXED — real distributions across 186K CVEs |
 
+> **Note on retrain timeline:** The XGBoost retrain from this new corpus (`training_data_v2.npz`) is the "retrain pending" referenced in `xgboost-investigation-report.md`. The Sprint 3 retrain (93K records, ROC-AUC 0.9677) was a prior cycle with old corpus and fewer fixes. The corpus built here (253K records, 420 columns) is the input for the next full retrain cycle.
+
 ---
 
 ## Application Scaffolding (Sprint 1)
@@ -135,7 +137,7 @@
 |---|---|---|
 | Pre-Tier | ✅ Done | Hostname dictionary + pre-tier model (60-dim RF) |
 | Tier 0 | ✅ Done | Deterministic rules: KEV + CVSS + EPSS |
-| Tier 1 | ✅ Done | XGBoost (35 tabular + 384 SBERT = 419 total features, ROC-AUC 0.9677 post-fix; pre-fix was 0.9946 with label leakage) + calibration + probability-zoned routing |
+| Tier 1 | ✅ Done | XGBoost (35 tabular + 384 SBERT = 419 total features, ROC-AUC 0.9677 post-fix; pre-fix was 0.9946 with label leakage) + probability-zoned routing (calibration pending retrain — see ML Artifacts) |
 | Tier 2 | ✅ Done | Multi-provider cloud LLM (OpenAI/Anthropic/Together) |
 | KNOWN_CONFLICTS | ✅ Done | Pre-resolved for demo CVEs |
 | RAG context injection | ✅ Done | LanceDB vector store |
@@ -151,7 +153,7 @@
 | Pre-tier model (`pre_tier_model.pkl`) | ✅ Done — 60-dim MultiOutputClassifier |
 | Calibrator (`xgboost_calibrator.pkl`) | 🔧 Will generate after retrain — Platt scaling on val set |
 | Drift dashboard (`GET /api/drift`) | ✅ Done — CSS-only charts, 30-day trend, tier routing, risk bands |
-| Review queue (4 endpoints) | ✅ Done — flag, review, history, queue listing |
+| Review queue (4 endpoints) | ✅ Done (implemented, tests pending — see Sprint NEXT+ Wave 1) — flag, review, history, queue listing |
 | Alembic migrations (001–005) | ✅ Done — versioned schema, no ad-hoc helpers |
 | LanceDB vector store | ✅ Done — 9 demo docs, FTS index |
 | CWE classifier | 🐛 Deprecated — replaced by NVD API + regex |

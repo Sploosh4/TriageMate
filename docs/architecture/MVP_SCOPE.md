@@ -105,7 +105,7 @@ Define exactly what the TriageMate Minimum Viable Product delivers, what it expl
 ### 2.8 Seed Data
 | Component | Reason |
 |---|---|
-| `seed_data.py` populates the 7 demo rows into SQLite | Required to reproduce the demo on first launch. Each row maps exactly from `QUEUE_DATA` to the 52-column schema. |
+| `seed_data.py` populates the 7 demo rows into SQLite | Required to reproduce the demo on first launch. Each row maps exactly from `QUEUE_DATA` to the 52-column schema (now 63 columns — 5 Alembic migrations added since Sprint 1). |
 
 ---
 
@@ -209,7 +209,7 @@ Define exactly what the TriageMate Minimum Viable Product delivers, what it expl
 | **~~No auth~~** | ~~Anyone with localhost access can call /api/ingest or view all data~~ | ✅ **IMPLEMENTED.** JWT auth with bcrypt, optional via `TRIAGEMATE_ADMIN_USER` env var. Disabled by default for backward compat. |
 | **~~Tier 1 heuristic stub~~** | ~~May not generalise to unknown CVEs; all new cases may escalate to Tier 2~~ | ✅ **RESOLVED.** XGBoost model is trained and running live. Heuristic remains as fallback only. Routing logic has auto-resolve branches, no longer always escalates. |
 | **Tier 2 cloud LLM dependency** | API key management, internet requirement, vendor API changes | `KNOWN_CONFLICTS` fallback works without internet. Cloud LLM is additive, not required. |
-| **Single SQLite table** | JSON columns cannot be queried efficiently; schema rigidity | Acceptable for 7–1,000 rows. Column count (52) is manageable. JSON fields are parsed at the API layer, not queried. |
+| **Single SQLite table** | JSON columns cannot be queried efficiently; schema rigidity | Acceptable for 7–1,000 rows. Column count (52 → now 63 after 5 migrations) is manageable. JSON fields are parsed at the API layer, not queried. |
 | **~~LanceDB in /tmp/~~** (Sprint 1 risk — ✅ mitigated) | ~~(Former) Data lost on reboot~~ | ✅ **RESOLVED.** Sprint 2 moved to persistent `backend/data/lancedb` with TTL cache and write lock. No longer a risk. |
 
 ---

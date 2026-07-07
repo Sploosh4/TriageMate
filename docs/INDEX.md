@@ -42,6 +42,7 @@
 | `reference/xgboost-investigation-report.md` | CURRENT | Root cause analysis of XGBoost false-negative rate. 8 fixes identified, 5 require retrain (pending). |
 | `reference/ml-implementation-plan.md` | OUTDATED | Original ML design from early sprints. Historical only. |
 | `reference/hostname-standards.md` | CURRENT | WA government hostname conventions, data classification, department naming. |
+| `backend/ml/README.md` | CURRENT | ML artifact index — lists active and pending ML components, lives with code. |
 
 ## Research
 
