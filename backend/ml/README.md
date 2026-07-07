@@ -3,15 +3,15 @@
 Model artifacts are stored here.
 Tier 2 uses cloud API — see `backend/pipeline/tier_2.py`.
 
-## Future Files (placeholder)
+## Active ML Components
 
-| File | Purpose | Research Priority |
+| File | Purpose | Status |
 |---|---|---|
-| `encoder.py` | SBERT embedding + PCA reduction for text-based features | Priority 3 |
-| `cwe_classifier.py` | CWE classification model (SecureBERT2.0) | Priority 4 |
-| `xgboost_predictor.py` | XGBoost exploitation probability model | Priority 5 |
-| `vector_store.py` | LanceDB RAG document store for internal docs | Priority 2 |
-| `epss_substitutor.py` | Sector-adjusted EPSS prediction model | Priority 7 |
+| `encoder.py` | SBERT embedding for CVE description text features | Active — called by `xgboost_predictor.py` |
+| `xgboost_predictor.py` | XGBoost exploitation probability model | Active — core of Tier 1 pipeline |
+| `vector_store.py` | LanceDB RAG document store for internal docs | Active — called by Tier 2 pipeline |
+| `epss_substitutor.py` | Sector-adjusted EPSS prediction model (v3/v2/v1 + rule fallback) | Active — called on every ingest |
+| `cwe_classifier.py` | CWE classification (SecureBERT2.0) — **deprecated** | Replaced by NVD API + `ingest_cwe.py` |
 
 ## Architecture Rule
 

@@ -147,11 +147,10 @@ async def ingest_vulnerability(payload: IngestRequest):
         if cwe_result:
             rag_result = query_rag(
                 payload.hostname,
-                payload.vulnerability_id,
                 cwe_class=cwe_result.get("cwe_class", ""),
             )
         else:
-            rag_result = query_rag(payload.hostname, payload.vulnerability_id)
+            rag_result = query_rag(payload.hostname)
         rag_context = rag_result.get("rag_context", "")
 
         # 7b. If still ambiguous, run Tier 2
@@ -265,7 +264,7 @@ async def ingest_vulnerability(payload: IngestRequest):
         {
             "name": "Exposure and Network Position",
             "awarded": scoring["dimensions"]["exposure"],
-            "max": 15,
+            "max": 12,
             "justification": "Based on network position and exposure analysis.",
             "is_substituted": False,
         },

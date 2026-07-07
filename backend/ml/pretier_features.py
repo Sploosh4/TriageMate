@@ -5,18 +5,18 @@ Parses WA Government hostnames (e.g., PRD-PATIENT-EMR01.health.wa.gov.au)
 into a consistent numeric feature vector used by both the training pipeline
 (train_pre_tier.py) and the inference endpoint (pipeline/pre_tier.py).
 
-Feature vector (55 dimensions):
+Feature vector (60 dimensions):
   Index   0: env_code (ordinal: PRD=1, STG=2, DEV=3, TST=4, other=0)
   Index  1-14: one-hot agency (14 WA Government departments)
-  Index 15-33: binary role keyword indicators (19 roles)
-  Index    34: data_classification_code (ordinal 1-4)
-  Index    35: internet_facing (binary 0/1)
-  Index 36-39: network zone one-hot (dmz, restricted, protected, mgmt)
-  Index    40: has_dc_indicator (binary 0/1 — pdc1/pdc2/bdc1 in subdomain)
-  Index 41-44: extended lifecycle (eol, sun, mig, act — binary)
-  Index 45-47: OS platform (win, lnx, sol — binary)
-  Index 48-53: role suffix detected (ap, db, web, fe, be, rpt — binary)
-  Index    54: has_known_system (binary — detected real WA Gov system name)
+  Index 15-38: binary role keyword indicators (24 roles)
+  Index    39: data_classification_code (ordinal 1-4)
+  Index    40: internet_facing (binary 0/1)
+  Index 41-44: network zone one-hot (dmz, restricted, protected, mgmt)
+  Index    45: has_dc_indicator (binary 0/1 — pdc1/pdc2/bdc1 in subdomain)
+  Index 46-49: extended lifecycle (eol, sun, mig, act — binary)
+  Index 50-52: OS platform (win, lnx, sol — binary)
+  Index 53-58: role suffix detected (ap, db, web, fe, be, rpt — binary)
+  Index    59: has_known_system (binary — detected real WA Gov system name)
 
 Must be kept in sync between training and inference.
 """

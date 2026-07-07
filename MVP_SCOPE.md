@@ -1,5 +1,7 @@
 # TriageMate MVP — Scope Document
 
+> **CAUTION:** This document was written during Sprint 1 and has not been fully updated. Many items marked as "deferred" or "out of scope" have since been implemented (Docker ✓, JWT auth ✓, Alembic migrations ✓, T3 review queue ✓, drift dashboard ✓, Pre-Tier RF model ✓). See ROADMAP.md for accurate current status.
+
 > **Course Correction complete:** 11/11 items implemented and audited. Pipeline hardened from MVP to production-capable. See `ROADMAP.md` §7b for per-item status and `COURSE_CORRECTION.md` for the full plan. **Next:** `PRE_DEMO_PLAN.md` — pre-demo hardening (9 items).
 
 ## Purpose
@@ -24,7 +26,7 @@ Define exactly what the TriageMate Minimum Viable Product delivers, what it expl
 | **FastAPI backend** serving REST API on localhost:8000 | Python-native ML ecosystem; async support for Tier 2 LLM calls; auto-generated OpenAPI docs |
 | **SQLite database** (single `vulnerabilities` table) | Zero-config, file-based, sufficient for MVP scale. Schema designed to migrate to PostgreSQL by changing connection string only |
 | **Static HTML/JS frontend** served by FastAPI | Minimal changes from demo; no build step; no frontend framework dependency |
-| **Single developer machine deployment** (no containerization) | Simplest possible deploy; Docker adds complexity with no MVP benefit |
+| **Single developer machine deployment** (Docker recommended) | `Dockerfile` + `docker-compose.yml` provided; also supports bare-metal via `uvicorn main:app` |
 
 ### 2.2 Frontend (Complete — carried forward from demo)
 | Feature | Reason |
@@ -47,10 +49,9 @@ Define exactly what the TriageMate Minimum Viable Product delivers, what it expl
 
 ### 2.4 Pipeline Stages
 
-#### Pre-Tier: STUB (hostname dictionary lookup)
-- **IN scope:** Dictionary of 7 known WA government hosts with hardcoded mission tags
-- **Reason:** Requires 200–500 internally labeled assets to train a real classifier. No public dataset maps hostnames to mission criticality for WA government. Stub is sufficient for MVP demo and ingestion of the 7 known rows. Unknown hosts receive conservative defaults (`Support` / `Minimal`, confidence 0.60).
-- **ML model replacement is POST-MVP** (see §3)
+#### Pre-Tier: HYBRID (dictionary + ML model)
+- **IN scope:** Dictionary of 31 known WA government hosts with hardcoded mission tags, backed by a trained `MultiOutputClassifier(RandomForestClassifier)` with 200 trees at `backend/ml/pre_tier_model.pkl`
+- **Reason:** Dictionary handles 31 known demo hosts. ML model runs for unknown hosts using 55-dimensional hostname feature vector. Default fallback (`Support` / `Minimal`, confidence 0.60) for model failures. Three-layer resolution: KNOWN_TAGS → ML model → default.
 
 #### Tier 0: REAL (deterministic rules — production-ready)
 - **IN scope:** Three rule sets with configurable threshold constants:
@@ -61,7 +62,7 @@ Define exactly what the TriageMate Minimum Viable Product delivers, what it expl
 - **Reason:** Zero ML, zero training data, zero external dependencies. The rules embody the WA SOC's deterministic baseline logic. The only future work is threshold tuning.
 
 #### Tier 1: REAL (XGBoost model, retrained Sprint 3)
-- **IN scope:** XGBoost model (`xgboost_model.pkl`) trained on 93,018 post-KEV CVEs with 68-feature hybrid vector (36 tabular + 32 PCA text). ROC-AUC 0.9677. Ensemble std routing (threshold 0.15) determines escalation to Tier 2. Heuristic fallback available when model is absent.
+- **IN scope:** XGBoost model (`xgboost_model.pkl`) trained on ~144K post-KEV CVEs with 419-dimension feature vector (35 tabular + 384 SBERT). ROC-AUC 0.9946. Ensemble std routing (threshold 0.15) determines escalation to Tier 2. Heuristic fallback available when model is absent.
 - **Reason:** Model was retrained in Sprint 3 to fix the 69→68 feature mismatch caused by the `cisa_kev` label-leakage removal. The model now produces real exploitation probabilities for all cases. All 7 demo rows validated with exact expected scores.
 
 #### Tier 2: REAL (multi-provider cloud LLM + Known Conflicts cache)
@@ -78,7 +79,7 @@ Define exactly what the TriageMate Minimum Viable Product delivers, what it expl
 ### 2.5 Scoring Engine
 | Component | Reason |
 |---|---|
-| Five weighted dimensions: CVSS (max 40), EPSS (max 20), Asset Criticality (max 20), Exposure (max 15), Patch (max 5) | Matches demo scoring weights exactly |
+| Six weighted dimensions: CVSS (max 40), EPSS (max 20), Asset Criticality (max 20), Exposure (max 15), Patch (max 5), ML Exploitation Probability (max 10) | Matches demo scoring weights exactly. ML Exploitation dimension added post-MVP scope document via migration 005 |
 | Band mapping: 0–25 → Low, 26–50 → Medium, 51–75 → Critical, 76–100 → Very Critical | Matches demo band mapping |
 | Tier 2 score adjustment applied after dimension sum | Required for SLM cases (Rows 5, 6, 7 with negative adjustments) |
 
@@ -113,7 +114,7 @@ Define exactly what the TriageMate Minimum Viable Product delivers, what it expl
 | Deferred Item | Why Out of Scope for MVP |
 |---|---|
 | **Pre-Tier multi-label classifier** (RandomForest replacing hostname dict) | Requires 200–500 internally labeled WA government assets. No public dataset exists. The stub correctly handles the 7 demo rows and returns conservative defaults for unknowns. |
-| **Tier 1 XGBoost tuning** | **DONE (Sprint 3).** Retrained on 93,018 post-KEV CVEs. 68 features. ROC-AUC 0.9677. Feature mismatch (69→68) fixed. Ensemble variance DMatrix bug fixed. Model running live. |
+| **Tier 1 XGBoost tuning** | **DONE (Sprint 3).** Retrained on 93,018 post-KEV CVEs. 68 features (35 tabular + 33 PCA text). ROC-AUC 0.9677. Feature mismatch (69→68) fixed. Ensemble variance DMatrix bug fixed. Model running live. Note: v2.5 removed PCA — current pipeline stacks full 384-dim SBERT directly onto 35 tabular features for 419 total dimensions. |
 | **Tier 2 CWE encoder** (ModernBERT, replacing NVD API CWE lookup) | The NVD API + regex lookup (`ingest_cwe.py`) provides authoritative CWE without the 656MB SecureBERT model. The local encoder adds offline CWE pre-classification — valuable but not required now that NVD provides CWE at ingest time. |
 | **EPSS substitution model** (sector-adjusted EPSS scorer) | Only affects Row 5's display. The stub hardcodes the substitution value. A real model requires sector-weighted exploitation data which is not publicly available. |
 
@@ -123,17 +124,17 @@ Define exactly what the TriageMate Minimum Viable Product delivers, what it expl
 
 | Deferred Item | Why Out of Scope |
 |---|---|
-| User login / session management | MVP runs on localhost only. Adding auth before the product is validated would slow iteration with no benefit at this stage. |
+| ~~User login / session management~~ | **✅ IMPLEMENTED.** Full JWT auth with bcrypt password hashing, login/refresh endpoints, and Bearer token middleware (see `backend/auth.py`). Disabled when `TRIAGEMATE_ADMIN_USER` is unset. |
 | Role-based access control (analyst vs. admin vs. viewer) | No multi-user scenario exists in the MVP. RBAC design requires understanding who uses the tool, which is unknown pre-validation. |
-| API key protection for `/api/ingest` | The ingest endpoint is unprotected. In production it would need a webhook secret. For MVP, curl from localhost is the only consumer. |
+| API key protection for `/api/ingest` | The ingest endpoint is protected by JWT auth when enabled. Future: webhook secret for Tenable integration. |
 
 ### 3.3 Deployment & Infrastructure
 
 | Deferred Item | Why Out of Scope |
 |---|---|
-| Docker containerization | Adds a `Dockerfile` + `docker-compose.yml` that wraps a single-process Python app. Beneficial for deployment but not for development iteration. |
+| ~~Docker containerization~~ | **✅ IMPLEMENTED.** `Dockerfile` + `docker-compose.yml` are the primary deployment method. |
 | CI/CD pipeline | No team, no deployment target, no need for automated builds. |
-| Database migrations (Alembic) | Single-table SQLite with no production schema changes expected. `_migrate_add_column` handles ad-hoc column additions. |
+| ~~Database migrations (Alembic)~~ | **✅ IMPLEMENTED.** 5 Alembic migrations in `backend/alembic/versions/`. `run_migrations()` runs on every startup. |
 | PostgreSQL migration | SQLite is sufficient for single-user MVP. Migration is a connection-string change when scale demands it. |
 | HTTPS / TLS | Localhost only. No network exposure. |
 
@@ -184,17 +185,17 @@ Define exactly what the TriageMate Minimum Viable Product delivers, what it expl
 |---|---|---|
 | **Frontend** | Queue view, case view, metric boxes, filter, accordion, substitution block, text-conflict highlighting | Dark mode, notifications, T3 review UI, dashboards |
 | **API** | GET /queue, GET /case/{id}, GET /metrics, POST /ingest | Rate limiting, API keys, multi-versioning |
-| **Pipeline Pre-Tier** | Hostname dictionary stub | Multi-label RandomForest classifier |
+| **Pipeline Pre-Tier** | Hostname dictionary (31 hosts) + trained RandomForest model (200 trees) | Real WA Government asset validation data |
 | **Pipeline Tier 0** | Deterministic rules (production-ready) | Threshold tuning (future refinement) |
 | **Pipeline Tier 1** | XGBoost model (68 features, ROC-AUC 0.9677) | WA-specific tuning (post-MVP) |
 | **Pipeline Tier 2** | Cloud LLM + KNOWN_CONFLICTS cache | Local CWE encoder (ModernBERT) |
-| **Scoring** | 5-dimension weighted score + band mapping | Dynamic weight learning |
-| **Database** | SQLite, single table | PostgreSQL, migrations, multi-table normalisation |
+| **Scoring** | 6-dimension weighted score + band mapping (CVSS/EPSS/Criticality/Exposure/Patch/ML Exploitation) | Dynamic weight learning |
+| **Database** | SQLite + PostgreSQL support, 5 Alembic migrations, 3 tables (vulnerabilities, resolved_vulnerabilities, reviews) | Full multi-table normalisation |
 | **RAG** | LanceDB with 7 demo documents, TTL cache, write lock, ingestion CLI | Full index of Confluence/SharePoint |
 | **Scheduler** | Daily low re-check, 7.5% audit sampling | Dashboard, alerting |
-| **Ops** | `uvicorn main:app` on localhost | Docker, CI/CD, HTTPS, auth, backups |
+| **Ops** | `docker-compose up` or `uvicorn main:app` | CI/CD, HTTPS, backups |
 | **ML Ops** | None | Model versioning, experiment tracking, A/B testing |
-| **Security** | CORS wide-open, no auth | RBAC, API keys, audit logging, IDS/IPS |
+| **Security** | CORS wide-open, JWT auth (optional, disabled by default) | RBAC, API keys, audit logging, IDS/IPS |
 | **Maintenance** | `AI_PROBLEMS.md` tracks known issues | Fixing non-blocking issues pre-validation |
 
 ---
@@ -203,11 +204,11 @@ Define exactly what the TriageMate Minimum Viable Product delivers, what it expl
 
 | Scope Decision | Risk | Mitigation |
 |---|---|---|
-| **No auth** | Anyone with localhost access can call /api/ingest or view all data | MVP runs on developer's machine only; not exposed to network |
-| **Tier 1 heuristic stub** | May not generalise to unknown CVEs; all new cases may escalate to Tier 2 | Confirmed acceptable: the heuristic exists only until the XGBoost model is trained. All demo rows score correctly. |
+| **~~No auth~~** | ~~Anyone with localhost access can call /api/ingest or view all data~~ | ✅ **IMPLEMENTED.** JWT auth with bcrypt, optional via `TRIAGEMATE_ADMIN_USER` env var. Disabled by default for backward compat. |
+| **~~Tier 1 heuristic stub~~** | ~~May not generalise to unknown CVEs; all new cases may escalate to Tier 2~~ | ✅ **RESOLVED.** XGBoost model is trained and running live. Heuristic remains as fallback only. Routing logic has auto-resolve branches, no longer always escalates. |
 | **Tier 2 cloud LLM dependency** | API key management, internet requirement, vendor API changes | `KNOWN_CONFLICTS` fallback works without internet. Cloud LLM is additive, not required. |
 | **Single SQLite table** | JSON columns cannot be queried efficiently; schema rigidity | Acceptable for 7–1,000 rows. Column count (52) is manageable. JSON fields are parsed at the API layer, not queried. |
-| **LanceDB in /tmp/** (Sprint 1 risk — ✅ mitigated) | (Former) Data lost on reboot | Sprint 2 moved to persistent `backend/data/lancedb` with TTL cache and write lock. No longer a risk. |
+| **~~LanceDB in /tmp/~~** (Sprint 1 risk — ✅ mitigated) | ~~(Former) Data lost on reboot~~ | ✅ **RESOLVED.** Sprint 2 moved to persistent `backend/data/lancedb` with TTL cache and write lock. No longer a risk. |
 
 ---
 

@@ -106,7 +106,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="TriageMate API", version="0.2.0", lifespan=lifespan)
-app.state.cwe_available = False  # Will be updated on startup if CWE model loads
+app.state.cwe_available = False  # CWE classifier deprecated — replaced by NVD API + ingest_cwe.py; no update path exists
 
 app.add_middleware(
     CORSMiddleware,

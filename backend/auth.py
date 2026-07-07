@@ -8,7 +8,7 @@ Environment variables:
   TRIAGEMATE_JWT_SECRET   — secret key for JWT signing (default: dev-secret-change-me)
   TRIAGEMATE_ADMIN_USER   — admin username. If unset, authentication is DISABLED
                             and get_current_user returns "anonymous" (backward compat).
-  TRIAGEMATE_ADMIN_PASS   — admin password (plain-text comparison for now).
+   TRIAGEMATE_ADMIN_PASS   — admin password (hashed with bcrypt on startup).
 """
 
 import os

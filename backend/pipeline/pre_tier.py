@@ -3,13 +3,15 @@ Pre-Tier: Multi-label classifier for mission tags (Mission Prevalence and
 Public Well-Being Impact).
 
 Architecture:
-  Phase 0 (Fallback): Falls back to the KNOWN_TAGS dict for the 31 known demo
-                       hosts (all using WAICP OFFICIAL/OFFICIAL Sensitive
-                       classifications), or returns default values if the model
-                       is absent.
-  Phase 1 (ML):  Uses a trained MultiOutputClassifier(RandomForestClassifier)
+  Phase 1 (KNOWN_TAGS — primary): Checks the KNOWN_TAGS dict first for the
+                       31 known demo hosts (all using WAICP OFFICIAL/OFFICIAL
+                       Sensitive classifications). This is the fastest path
+                       and covers all demo hosts.
+  Phase 2 (ML — fallback): Uses a trained MultiOutputClassifier(RandomForestClassifier)
                  from backend/ml/pre_tier_model.pkl to predict tags for any
-                 hostname based on hostname-derived features.
+                 hostname based on hostname-derived features (unknown hosts).
+  Phase 3 (Default — last resort): Returns Support/Minimal with 0.60 confidence
+                 when neither KNOWN_TAGS nor ML model can produce a result.
 
 The return dict shape (API contract) NEVER changes:
   {
@@ -32,8 +34,8 @@ KNOWN_TAGS = {
     # Original 7 (1 renamed)
     "per-PRD-MOVEIT-WEB01.health.wa.gov.au": ("Core", 0.94, "Severe", 0.96),
     "per-PRD-CITRIX-ADC01.transport.wa.gov.au": ("Core", 0.91, "Moderate", 0.88),
-    "per-PRD-PRINT-SVR05.education.wa.edu.au": ("Support", 0.85, "Minimal", 0.86),
-    "per-PRD-RMM-GW01.sharedservices.wa.gov.au": ("Support", 0.87, "Moderate", 0.88),
+    "per-PRD-PRINT-SVR05.education.wa.edu.au": ("Support", 0.85, "Minimal", 0.82),
+    "per-PRD-RMM-GW01.sharedservices.wa.gov.au": ("Support", 0.87, "Moderate", 0.84),
     "per-PRD-FILE-STORE02.communities.wa.gov.au": ("Core", 0.92, "Severe", 0.95),
     "per-PRD-WIKI-CORE01.police.wa.gov.au": ("Core", 0.93, "Moderate", 0.86),
     "per-PRD-ITSM-TOOL01.finance.wa.gov.au": ("Support", 0.89, "Minimal", 0.91),

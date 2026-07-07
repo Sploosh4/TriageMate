@@ -1,12 +1,13 @@
 """
-EPSS substitution — hybrid ML + rule engine (v2 with fallback).
+EPSS substitution — hybrid ML + rule engine (v3 with fallback chain).
 
 Adjusts raw FIRST.org EPSS scores based on sector-specific threat intelligence.
 EPSS is a global exploitation probability — it is not sector-aware. This module:
 
-  1. Attempts to use an XGBoost model v2 (backend/ml/epss_model_v2.pkl) for prediction.
-  2. Falls back to v1 model (backend/ml/epss_model.pkl) if v2 absent.
-  3. Falls back to the heuristic rule engine if no model is available.
+  1. Attempts to use an XGBoost model v3 (backend/ml/epss_model_v3.pkl) for prediction.
+  2. Falls back to v2 model (backend/ml/epss_model_v2.pkl) if v3 absent.
+  3. Falls back to v1 model (backend/ml/epss_model.pkl) if v2 absent.
+  4. Falls back to the heuristic rule engine if no model is available.
 
 The rule engine applies multipliers for CVEs that target specific sectors
 (government, healthcare, education, etc.) more than the global average.
@@ -587,7 +588,7 @@ def _ml_predict(
 
 def calculate_substitution(
     cve_id: str,
-    raw_epss: float,
+    raw_epss: float | None,
     hostname: str,
     cisa_kev: bool = False,
     cvss_score: float = 5.0,
@@ -599,8 +600,8 @@ def calculate_substitution(
     """
     Calculate a sector-adjusted EPSS score for a given CVE and asset.
 
-    Uses the ML model (v2 preferred, v1 fallback) when available and
-    confident; falls back to the heuristic rule engine otherwise.
+    Uses the ML model (v3 preferred, v2 fallback, v1 last resort) when
+    available and confident; falls back to the heuristic rule engine otherwise.
 
     Args:
         cve_id: The CVE identifier (e.g., CVE-2023-36884)

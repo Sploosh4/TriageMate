@@ -1,8 +1,13 @@
 """
 Background scheduler for TriageMate operational cadence.
 
-Handles: daily EPSS refresh, daily KEV poll, low-severity re-checks,
-quarterly retraining triggers.
+Currently implements:
+  - Low-severity re-checks (daily): re-runs Tier 0 on stale low rows
+
+Future (not yet implemented):
+  - Daily EPSS refresh
+  - Daily KEV poll
+  - Quarterly retraining triggers
 """
 
 

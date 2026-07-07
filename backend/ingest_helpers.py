@@ -374,7 +374,7 @@ def _threat_pulses_status(otx_result: dict) -> str:
 
 
 def build_feature_vector(payload, mission_tags: dict, tier_0_result: dict) -> dict:
-    """Build the full 37-feature dict + description for the Tier 1 XGBoost model.
+    """Build the full 42-key feature dict (35 tabular + description) for the Tier 1 XGBoost model.
 
     Matches feature order in ml/xgboost_predictor.predict() and
     ml/train_xgboost.build_tabular_features().
@@ -478,7 +478,7 @@ def build_feature_vector(payload, mission_tags: dict, tier_0_result: dict) -> di
     }
 
 
-def query_rag(hostname: str, cve_id: str, cwe_class: str = "") -> dict:
+def query_rag(hostname: str, cwe_class: str = "") -> dict:
     """Query internal documentation repositories for asset configuration.
 
     Calls the LanceDB vector store via backend/ml/vector_store.py.
@@ -486,7 +486,6 @@ def query_rag(hostname: str, cve_id: str, cwe_class: str = "") -> dict:
 
     Args:
         hostname: The fully qualified hostname of the asset
-        cve_id: The CVE identifier string
         cwe_class: Optional CWE class string to narrow RAG results
 
     Returns:

@@ -2,7 +2,7 @@
 Tier 1 XGBoost exploitation probability predictor.
 
 Loads the trained XGBoost model and provides a predict() function
-for the 37 tabular features + CVE description text.
+for the 35 tabular features + CVE description text.
 """
 
 import threading
@@ -24,7 +24,7 @@ MID_PROB_THRESHOLD = 0.40
 HIGH_PROB_THRESHOLD = 0.50
 UNCERTAINTY_THRESHOLD = 0.10
 
-# Tier-0 EPSS thresholds by CWE — catch clear exploitation signals without model.
+# Pre-model EPSS thresholds by CWE — fast-path bypass before XGBoost inference.
 CWE_EPSS_THRESHOLDS = {
     "CWE-22": 0.085,  # Path Traversal
     "CWE-78": 0.515,  # OS Command Injection
@@ -100,9 +100,11 @@ def predict(features: dict) -> dict:
     Predict exploitation probability for a vulnerability + asset combination.
 
     Required features:
-        cvss_score, epss_score, mission_prevalence, public_wellbeing_impact,
+        epss_score, mission_prevalence, public_wellbeing_impact,
         internet_facing, description (CVE text, optional)
-    All other 37 features default to neutral values when missing.
+    All other 35 features default to neutral values when missing.
+    Note: cvss_score is NOT consumed by this function — it is used directly
+    by the scoring engine (scoring.py), not by the XGBoost model.
 
     Returns:
         exploitation_probability (0-1), confidence (0-1),

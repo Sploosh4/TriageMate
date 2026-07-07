@@ -141,7 +141,7 @@ def _cvss_s(v):
 
 
 def _cvss_cia(v):
-    return {"H": 2, "L": 1, "N": 0}.get(str(v), 0)
+    return {"H": 2, "L": 1, "N": 0}.get(str(v), 2)
 
 
 # ─── Encoders (training-side — build_training_corpus.py versions) ────────────

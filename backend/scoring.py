@@ -25,7 +25,7 @@ def calculate_final_score(
     substituted_epss=None,
 ) -> dict:
     """
-    Calculate the 0-100 priority score from six weighted dimensions.
+    Calculate the 0-100 priority score from six weighted dimensions plus optional Tier 2 score adjustment.
 
     Returns a dict with per-dimension breakdown for the scoring weights display.
 
@@ -81,7 +81,7 @@ def calculate_final_score(
         criticality += 1
     dimensions["criticality"] = min(20, criticality)
 
-    # Exposure (max 15)
+    # Exposure (max 12 — actual code only produces 3 for internal or 12 for internet-facing)
     exposure = 0
     if internet_facing:
         exposure += 12

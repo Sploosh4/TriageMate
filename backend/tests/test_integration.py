@@ -18,13 +18,12 @@ async def test_full_pipeline_ingest():
         payload = {
             "vulnerability_id": "CVE-TEST-FULLPIPE-001",
             "hostname": "per-PRD-MOVEIT-WEB01.health.wa.gov.au",
-            "ip_address": "10.1.1.100",
+            "target_ip": "10.1.1.100",
             "cvss_score": 9.8,
             "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
             "epss_score": 0.95,
             "cisa_kev": True,
-            "description": "Integration test: critical RCE in file transfer",
-            "cve_id": "CVE-TEST-FULLPIPE-001",
+            "raw_description": "Integration test: critical RCE in file transfer",
         }
 
         resp = await client.post("/api/ingest", json=payload)

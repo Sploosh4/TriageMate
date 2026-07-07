@@ -2,7 +2,7 @@
 Smoke test: /api/health endpoint.
 
 Verifies the application reports its status correctly, including
-version, LLM configuration, RAG store status, and CWE classifier availability.
+version, LLM configuration, and RAG store status.
 """
 
 import pytest
@@ -28,7 +28,6 @@ class TestHealthEndpoint:
             "llm_available",
             "rag_documents",
             "rag_store_path",
-            "cwe_available",
         }
         assert expected_keys.issubset(data.keys()), (
             f"Missing keys in health response. Got: {set(data.keys())}"
@@ -58,10 +57,3 @@ class TestHealthEndpoint:
         assert isinstance(data["rag_documents"], int), (
             f"rag_documents should be int, got {type(data['rag_documents'])}"
         )
-
-    async def test_health_cwe_available_is_boolean(self, client):
-        """cwe_available should be a bool (may be False if model not loaded)."""
-        response = await client.get("/api/health")
-        data = response.json()
-
-        assert isinstance(data["cwe_available"], bool)

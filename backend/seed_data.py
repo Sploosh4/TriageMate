@@ -105,7 +105,7 @@ SEED_ROWS = [
                 {
                     "name": "Exposure and Network Position",
                     "awarded": 14,
-                    "max": 15,
+                    "max": 12,
                     "justification": "The asset is internet-facing on port 443 with no web application firewall detected and no multi-factor authentication on the administrative interface.",
                 },
                 {
@@ -283,7 +283,7 @@ SEED_ROWS = [
                 {
                     "name": "Exposure and Network Position",
                     "awarded": 12,
-                    "max": 15,
+                    "max": 12,
                     "justification": "The device is an internet-facing perimeter appliance. The management IP is partially restricted but the VPN virtual server is publicly accessible.",
                 },
                 {
@@ -464,7 +464,7 @@ SEED_ROWS = [
                 {
                     "name": "Exposure and Network Position",
                     "awarded": 6,
-                    "max": 15,
+                    "max": 12,
                     "justification": "The asset is internal network only, but flat architecture in education environments increases effective exposure. The 28 reachable endpoints amplify lateral movement risk.",
                 },
                 {
@@ -645,8 +645,8 @@ SEED_ROWS = [
                 },
                 {
                     "name": "Exposure and Network Position",
-                    "awarded": 1,
-                    "max": 15,
+                    "awarded": 3,
+                    "max": 12,
                     "justification": "The asset resides in an isolated management network with restricted inbound access.",
                 },
                 {
@@ -829,7 +829,7 @@ SEED_ROWS = [
                 {
                     "name": "Exposure and Network Position",
                     "awarded": 6,
-                    "max": 15,
+                    "max": 12,
                     "justification": "Internal file server. User interaction required, but users routinely open external documents.",
                 },
                 {
@@ -1015,7 +1015,7 @@ SEED_ROWS = [
                 {
                     "name": "Exposure and Network Position",
                     "awarded": -4,
-                    "max": 15,
+                    "max": 12,
                     "justification": "Internal management network only. However, vulnerability may have remained unpatched for over two years.",
                 },
                 {
@@ -1197,7 +1197,7 @@ SEED_ROWS = [
                 {
                     "name": "Exposure and Network Position",
                     "awarded": 3,
-                    "max": 15,
+                    "max": 12,
                     "justification": "Asset sits behind reverse proxy with IP allow-listing. SAML attack surface is not present.",
                 },
                 {

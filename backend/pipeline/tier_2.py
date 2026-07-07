@@ -167,7 +167,7 @@ _SCHEMA_DESCRIPTION = """{
   "rag_result": "UNCERTAIN if ambiguous, CONFIRMED if verified, NOT_NEEDED if no conflict.",
   "resolution": "Resolution recommendation (max 500 chars).",
   "confidence": float 0.0-1.0,
-  "score_adjustment": integer -70 to +10
+  "score_adjustment": integer -20 to +20
 }"""
 
 

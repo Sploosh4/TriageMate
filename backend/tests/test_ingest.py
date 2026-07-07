@@ -15,12 +15,11 @@ pytestmark = pytest.mark.asyncio
 INGEST_PAYLOAD = {
     "vulnerability_id": "CVE-TEST-0001",
     "hostname": "per-PRD-PATIENT-EMR01.health.wa.gov.au",
-    "ip_address": "10.1.1.100",
+    "target_ip": "10.1.1.100",
     "cvss_score": 9.8,
     "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
     "epss_score": 0.95,
-    "description": "Test vulnerability for smoke test",
-    "cve_id": "CVE-TEST-0001",
+    "raw_description": "Test vulnerability for smoke test",
 }
 
 TEST_VULN_ID = "CVE-TEST-0001"
