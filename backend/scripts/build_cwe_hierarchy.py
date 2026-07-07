@@ -36,7 +36,7 @@ def download_zip() -> bytes:
 
     logger.info("Downloading CWE hierarchy from %s", CWE_ZIP_URL)
     req = urllib.request.Request(
-        CWE_ZIP_URL, headers={"User-Agent": "TriageMate/0.3.0"}
+        CWE_ZIP_URL, headers={"User-Agent": "TriageMate/2.5.0"}
     )
     try:
         with urllib.request.urlopen(req, timeout=120) as resp:

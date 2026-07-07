@@ -330,7 +330,7 @@ def refresh_nvd_cache(cve_ids: Optional[list[str]] = None, api_key: str = "") ->
 
     for i, cve_id in enumerate(cve_ids):
         url = f"https://services.nvd.nist.gov/rest/json/cves/2.0?cveId={cve_id}"
-        headers = {"User-Agent": "TriageMate/0.2.0"}
+        headers = {"User-Agent": "TriageMate/2.5.0"}
         if api_key:
             headers["apiKey"] = api_key
         # Note: sleep before the request so the first request doesn't wait
@@ -367,7 +367,7 @@ def refresh_kev_cache(filter_by_nvd: bool = False) -> dict:
     exists, only KEV entries whose CVE is present in the NVD data are kept.
     """
     logger.info("Fetching CISA KEV feed from %s", KEV_URL)
-    raw = _fetch_json(KEV_URL, headers={"User-Agent": "TriageMate/0.3.0"}, timeout=30)
+    raw = _fetch_json(KEV_URL, headers={"User-Agent": "TriageMate/2.5.0"}, timeout=30)
     if raw is None:
         logger.error("Failed to fetch KEV feed — KEV cache not updated")
         return {}
@@ -438,7 +438,7 @@ def refresh_epss_cache() -> dict:
     EPSS_URL = "https://epss.cyentia.com/epss_scores-current.csv.gz"
     logger.info("Downloading EPSS scores from %s", EPSS_URL)
 
-    req = urllib.request.Request(EPSS_URL, headers={"User-Agent": "TriageMate/0.3.0"})
+    req = urllib.request.Request(EPSS_URL, headers={"User-Agent": "TriageMate/2.5.0"})
     try:
         with urllib.request.urlopen(req, timeout=120) as resp:
             compressed = resp.read()
@@ -557,7 +557,7 @@ def _resolve_cve_list() -> list[str]:
         )
         try:
             raw = _fetch_json(
-                url, headers={"User-Agent": "TriageMate/0.2.0"}, timeout=30
+                url, headers={"User-Agent": "TriageMate/2.5.0"}, timeout=30
             )
             if raw is None:
                 logger.warning(

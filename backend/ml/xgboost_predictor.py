@@ -215,7 +215,11 @@ def predict(features: dict) -> dict:
 
 
 def _encode_classification(klass: str) -> int:
-    mapping = {"OFFICIAL Sensitive": 4, "OFFICIAL": 2, "Category 1": 1}
+    mapping = {
+        "OFFICIAL Sensitive": 4,
+        "OFFICIAL": 2,
+        "Category 1": 1,
+    }  # WAICP: OFFICIAL (was PRIS Act Category 1)
     return mapping.get(klass, 2)
 
 

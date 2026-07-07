@@ -283,7 +283,7 @@ def fetch_nvd_corpus(
                 f"&resultsPerPage={RESULTS_PER_PAGE}"
             )
             url = f"{NVD_API}?{params}"
-            headers = {"User-Agent": "TriageMate/0.3.0"}
+            headers = {"User-Agent": "TriageMate/2.5.0"}
             if api_key:
                 headers["apiKey"] = api_key
 
@@ -373,7 +373,7 @@ def fetch_from_feeds(
         logger.info("Downloading feed: %d", year)
         try:
             req = urllib.request.Request(
-                url, headers={"User-Agent": "TriageMate/0.3.0"}
+                url, headers={"User-Agent": "TriageMate/2.5.0"}
             )
             with urllib.request.urlopen(req, timeout=300) as resp:
                 data = json.loads(gzip.decompress(resp.read()))
@@ -495,7 +495,7 @@ def main():
                 sleep_time = SLEEP_WITH_KEY if api_key else SLEEP_WITHOUT_KEY
                 for idx, cve_id in enumerate(missing_ids):
                     url = f"{NVD_API}?cveId={cve_id}"
-                    headers = {"User-Agent": "TriageMate/0.3.0"}
+                    headers = {"User-Agent": "TriageMate/2.5.0"}
                     if api_key:
                         headers["apiKey"] = api_key
                     resp = _fetch_json(url, headers=headers)

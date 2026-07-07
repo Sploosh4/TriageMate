@@ -41,7 +41,9 @@ def get_queue():
     """)
     rows = []
     for r in cursor.fetchall():
-        compliance_str = r["data_classification"] or "Category 1"
+        compliance_str = (
+            r["data_classification"] or "Category 1"
+        )  # WAICP: OFFICIAL (was PRIS Act Category 1)
         cat = int(compliance_str.split()[-1]) if "Category" in compliance_str else 1
         rows.append(
             QueueRow(

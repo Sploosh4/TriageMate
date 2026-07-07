@@ -98,7 +98,7 @@ def _fetch_cve_data(cve_id: str) -> dict:
     start = time.time()
     api_key = os.getenv("NVD_API_KEY", "")
     url = f"https://services.nvd.nist.gov/rest/json/cves/2.0?cveId={cve_id}"
-    headers = {"User-Agent": "TriageMate/0.2.0"}
+    headers = {"User-Agent": "TriageMate/2.5.0"}
     if api_key:
         headers["apiKey"] = api_key
 

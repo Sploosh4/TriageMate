@@ -43,7 +43,7 @@ def fetch_epss_data(force_update: bool = False) -> dict:
     import io
 
     logger.info("Downloading EPSS data from %s ...", EPSS_URL)
-    req = urllib.request.Request(EPSS_URL, headers={"User-Agent": "TriageMate/0.2.0"})
+    req = urllib.request.Request(EPSS_URL, headers={"User-Agent": "TriageMate/2.5.0"})
     with urllib.request.urlopen(req, timeout=120) as resp:
         raw = io.BytesIO(resp.read())
         with gzip.GzipFile(fileobj=raw) as gz:

@@ -148,7 +148,9 @@ def _cvss_cia(v):
 
 
 def _train_encode_classification(klass: str) -> int:
-    return {"OFFICIAL Sensitive": 4, "OFFICIAL": 2, "Category 1": 1}.get(klass, 1)
+    return {"OFFICIAL Sensitive": 4, "OFFICIAL": 2, "Category 1": 1}.get(
+        klass, 1
+    )  # WAICP: OFFICIAL (was PRIS Act Category 1)
 
 
 def _train_encode_mission(mission: str) -> int:
@@ -163,7 +165,9 @@ def _train_encode_wellbeing(wellbeing: str) -> int:
 
 
 def _infer_encode_classification(klass: str) -> int:
-    return {"OFFICIAL Sensitive": 4, "OFFICIAL": 2, "Category 1": 1}.get(klass, 2)
+    return {"OFFICIAL Sensitive": 4, "OFFICIAL": 2, "Category 1": 1}.get(
+        klass, 2
+    )  # WAICP: OFFICIAL (was PRIS Act Category 1)
 
 
 def _infer_encode_mission(mission: str) -> int:
@@ -212,7 +216,7 @@ def _sample_asset_fields(cvss_score: float = 0.0) -> list:
     elif cls_roll < 0.90:
         data_classification = "OFFICIAL Sensitive"
     else:
-        data_classification = "Category 1"
+        data_classification = "Category 1"  # WAICP: OFFICIAL (was PRIS Act Category 1)
     miss_roll = random.random()
     if miss_roll < 0.40:
         mission_prevalence = "Support"

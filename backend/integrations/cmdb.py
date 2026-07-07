@@ -169,10 +169,12 @@ def lookup_data_classification(hostname: str) -> str:
     """Look up the WAICP data classification for an asset.
 
     Delegates to the current CMDB provider.
-    Defaults to OFFICIAL for unknown hosts.
+    Defaults to "Category 1" (PRIS Act legacy) for unknown hosts.
     """
     ctx = get_asset_context(hostname)
-    return ctx.get("data_classification", "Category 1")
+    return ctx.get(
+        "data_classification", "Category 1"
+    )  # WAICP: OFFICIAL (was PRIS Act Category 1)
 
 
 def is_internet_facing(hostname: str) -> bool:
@@ -216,7 +218,7 @@ def _stub_lookup(hostname: str) -> dict:
     if hostname in KNOWN_HOSTS:
         return dict(KNOWN_HOSTS[hostname])
     return {
-        "data_classification": "Category 1",
+        "data_classification": "Category 1",  # WAICP: OFFICIAL (was PRIS Act Category 1)
         "internet_facing": False,
         "network_zone": "Unknown",
         "operating_system": "Unknown",

@@ -26,7 +26,9 @@ router = APIRouter(tags=["Cases"])
 
 
 def _row_to_queue_row(r) -> QueueRow:
-    compliance_str = r["data_classification"] or "Category 1"
+    compliance_str = (
+        r["data_classification"] or "Category 1"
+    )  # WAICP: OFFICIAL (was PRIS Act Category 1)
     cat = int(compliance_str.split()[-1]) if "Category" in compliance_str else 1
     return QueueRow(
         id=r["id"],

@@ -71,7 +71,11 @@ def _cvss_cia(v):
 
 
 def _encode_classification(klass: str) -> int:
-    mapping = {"OFFICIAL Sensitive": 4, "OFFICIAL": 2, "Category 1": 1}
+    mapping = {
+        "OFFICIAL Sensitive": 4,
+        "OFFICIAL": 2,
+        "Category 1": 1,
+    }  # WAICP: OFFICIAL (was PRIS Act Category 1)
     try:
         return mapping.get(klass, 1)
     except Exception:
@@ -374,7 +378,7 @@ def _threat_pulses_status(otx_result: dict) -> str:
 
 
 def build_feature_vector(payload, mission_tags: dict, tier_0_result: dict) -> dict:
-    """Build the full 42-key feature dict (35 tabular + description) for the Tier 1 XGBoost model.
+    """Build the full 42-key feature dict (41 tabular + description) for the Tier 1 XGBoost model.
 
     Matches feature order in ml/xgboost_predictor.predict() and
     ml/train_xgboost.build_tabular_features().
