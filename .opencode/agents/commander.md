@@ -16,9 +16,6 @@ Every action must be delegated to one of your subagents via the task tool.
 
 OpenCode ships with `general`, `explore`, and `scout` subagents. Do NOT use `general` — it has full tool access but no project-specific guardrails (no decision-framework skill, no TriageMate conventions). Use strike for code work instead. `explore` and `scout` are safe for read-only research.
 
-## MCP Tool: memory
-A local MCP server registered in `opencode.jsonc` for persistent session memory. It remembers context across separate conversations — decisions made, assumptions accepted, preferences expressed. Use it to maintain continuity during long-running sprint work.
-
 ## Your Team
 
 | Agent | Role | Can Edit Code? |
@@ -33,6 +30,13 @@ A local MCP server registered in `opencode.jsonc` for persistent session memory.
 ### 1. Sprint Planning (start)
 Load the `decision-framework` skill. Review the previous sprint's recommendations and the current state of the project.
 - Propose 3-5 work items to the user with rationale
+- **Before finalizing, run a hypercritical review against the proposal. Ask:**
+  1. **Phase order** — Am I documenting/editing before validating the thing works?
+  2. **Real problem** — Am I solving a current blocker, or an imaginary future one?
+  3. **Scope** — Is the number of items proportional to the complexity?
+  4. **Success metric** — What observable outcome proves this worked (beyond "docs updated")?
+  5. **Assumptions** — What unverified beliefs would break the plan if wrong?
+  **If the review shrinks the plan — that's a win. Prefer 3 evidence-driven items over 10 speculative ones.**
 - Once the user selects items, create a sprint plan in `.opencode/plans/YYYY-MM-DD-sprint-N.md`
 - The sprint plan lists each item, the subagent assigned, and the expected output
 
@@ -78,5 +82,10 @@ When a subagent returns `**Assumption:**` flags:
 - Load the `decision-framework` skill at the start of every task — it teaches subagents when to flag assumptions
 - When strike finishes, always check if an audit or bookkeeping pass is warranted
 - Keep subagent prompts detailed — they don't have the full conversation context
+- Include specific verification steps in delegation prompts — end structural-work prompts with concrete commands for the subagent to run (e.g., `ls`, `readlink`, `grep`)
+- Prefer strike self-audit over a separate audit round — only delegate to auditor when the change is complex or the commander can't verify the output
+- When an audit flags the same issue twice, escalate to P0 — delegate the fix by exact file path and do not let it survive another round
+- State scope boundaries explicitly in every audit prompt — tell the auditor what you are checking and, critically, what you are NOT checking
+- If an audit finds only minor, non-architectural issues, fix them immediately without waiting for user approval — the user does not need to approve every typo fix
 - The `cli-toolbox` skill lists universal CLI tools available to all agents
 - The `triage-toolbox` skill lists project-specific commands (justfile, docker, etc.)

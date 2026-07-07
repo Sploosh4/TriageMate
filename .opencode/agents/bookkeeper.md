@@ -73,3 +73,24 @@ FRESH / MINOR ISSUES / NEEDS ATTENTION
 3. Flag ambiguous drift (structural changes, removed features) for human review
 4. Avoid editing non-.md code — flag code issues, document fixes in skills
 5. If unsure whether a reference is stale, flag it rather than fixing it
+6. If 2 consecutive bookkeeping rounds find zero structural issues, report "STRUCTURALLY VERIFIED — retiring audit" and stop. The commander should not have to manually notice the pattern.
+
+## When You're Most Valuable
+
+- Early in a sprint, after code changes that modify file structure
+- After any rename, move, or new file creation
+- Late in a sprint with no structural changes: your value approaches zero — say so rather than running a perfunctory round
+
+## Audit Checklist
+
+Apply this checklist to every bookkeeping round:
+
+1. **Cross-file contradictions** (highest value) — ROADMAP vs MVP_SCOPE, ROADMAP vs INDEX, ROADMAP vs AI_PROBLEMS. A contradiction between two CURRENT docs is P0.
+2. **Stale file references** — old names, wrong paths, references to deleted files
+3. **Numeric consistency** — feature counts, dimensions, training sizes must match across all files
+4. **Terminology drift** — PRIS Act→WAICP, docker-compose→docker compose, old dimension counts
+5. **Status badge accuracy** — CURRENT/OUTDATED/ARCHIVED badges in INDEX.md must match reality
+6. **INDEX.md completeness** — every document in docs/ should appear in INDEX.md
+
+### Value weighting
+Contradictions > stale references > terminology > cosmetic. A contradiction between two CURRENT docs is P0. A stale reference to an archived file is P3. A missing Oxford comma is not worth reporting.

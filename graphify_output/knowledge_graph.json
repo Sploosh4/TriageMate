@@ -1,0 +1,485 @@
+{
+  "meta": {
+    "generated": "2026-07-07T23:53:35.190508",
+    "node_count": 44,
+    "edge_count": 14,
+    "source_db": "/home/jpc/Documents/Cybersecurity (Temp)/TriageMate/TriageMate MVP/triagemate.db",
+    "sources": {
+      "sqlite_vulnerabilities": false,
+      "known_tags": true,
+      "nvd_cache": false,
+      "synthetic_demo_cves": true
+    },
+    "schema_version": 1
+  },
+  "nodes": [
+    {
+      "id": "per-PRD-MOVEIT-WEB01.health.wa.gov.au",
+      "type": "hostname",
+      "properties": {
+        "mission_prevalence": "Core",
+        "public_wellbeing_impact": "Severe",
+        "department": "health"
+      }
+    },
+    {
+      "id": "per-PRD-CITRIX-ADC01.transport.wa.gov.au",
+      "type": "hostname",
+      "properties": {
+        "mission_prevalence": "Core",
+        "public_wellbeing_impact": "Moderate",
+        "department": "transport"
+      }
+    },
+    {
+      "id": "per-PRD-PRINT-SVR05.education.wa.edu.au",
+      "type": "hostname",
+      "properties": {
+        "mission_prevalence": "Support",
+        "public_wellbeing_impact": "Minimal",
+        "department": "education"
+      }
+    },
+    {
+      "id": "per-PRD-RMM-GW01.sharedservices.wa.gov.au",
+      "type": "hostname",
+      "properties": {
+        "mission_prevalence": "Support",
+        "public_wellbeing_impact": "Moderate",
+        "department": "sharedservices"
+      }
+    },
+    {
+      "id": "per-PRD-FILE-STORE02.communities.wa.gov.au",
+      "type": "hostname",
+      "properties": {
+        "mission_prevalence": "Core",
+        "public_wellbeing_impact": "Severe",
+        "department": "communities"
+      }
+    },
+    {
+      "id": "per-PRD-WIKI-CORE01.police.wa.gov.au",
+      "type": "hostname",
+      "properties": {
+        "mission_prevalence": "Core",
+        "public_wellbeing_impact": "Moderate",
+        "department": "police"
+      }
+    },
+    {
+      "id": "per-PRD-ITSM-TOOL01.finance.wa.gov.au",
+      "type": "hostname",
+      "properties": {
+        "mission_prevalence": "Support",
+        "public_wellbeing_impact": "Minimal",
+        "department": "finance"
+      }
+    },
+    {
+      "id": "per-PRD-EHR-APP01.health.wa.gov.au",
+      "type": "hostname",
+      "properties": {
+        "mission_prevalence": "Core",
+        "public_wellbeing_impact": "Severe",
+        "department": "health"
+      }
+    },
+    {
+      "id": "per-PRD-SQL-CLUSTER01.health.wa.gov.au",
+      "type": "hostname",
+      "properties": {
+        "mission_prevalence": "Core",
+        "public_wellbeing_impact": "Severe",
+        "department": "health"
+      }
+    },
+    {
+      "id": "per-PRD-FILE-SAN01.health.wa.gov.au",
+      "type": "hostname",
+      "properties": {
+        "mission_prevalence": "Core",
+        "public_wellbeing_impact": "Severe",
+        "department": "health"
+      }
+    },
+    {
+      "id": "per-PRD-MARINE-DOC01.transport.wa.gov.au",
+      "type": "hostname",
+      "properties": {
+        "mission_prevalence": "Core",
+        "public_wellbeing_impact": "Moderate",
+        "department": "transport"
+      }
+    },
+    {
+      "id": "per-PRD-TEMIS-APP01.transport.wa.gov.au",
+      "type": "hostname",
+      "properties": {
+        "mission_prevalence": "Core",
+        "public_wellbeing_impact": "Moderate",
+        "department": "transport"
+      }
+    },
+    {
+      "id": "per-PRD-STUDENT-DB01.education.wa.edu.au",
+      "type": "hostname",
+      "properties": {
+        "mission_prevalence": "Core",
+        "public_wellbeing_impact": "Moderate",
+        "department": "education"
+      }
+    },
+    {
+      "id": "per-PRD-EDU-IDM01.education.wa.edu.au",
+      "type": "hostname",
+      "properties": {
+        "mission_prevalence": "Support",
+        "public_wellbeing_impact": "Moderate",
+        "department": "education"
+      }
+    },
+    {
+      "id": "per-PRD-CASEMGT-APP01.communities.wa.gov.au",
+      "type": "hostname",
+      "properties": {
+        "mission_prevalence": "Core",
+        "public_wellbeing_impact": "Severe",
+        "department": "communities"
+      }
+    },
+    {
+      "id": "per-PRD-CAD-DISPATCH01.police.wa.gov.au",
+      "type": "hostname",
+      "properties": {
+        "mission_prevalence": "Core",
+        "public_wellbeing_impact": "Severe",
+        "department": "police"
+      }
+    },
+    {
+      "id": "per-PRD-BUDGET-DB01.finance.wa.gov.au",
+      "type": "hostname",
+      "properties": {
+        "mission_prevalence": "Support",
+        "public_wellbeing_impact": "Minimal",
+        "department": "finance"
+      }
+    },
+    {
+      "id": "per-PRD-COURT-FILE01.justice.wa.gov.au",
+      "type": "hostname",
+      "properties": {
+        "mission_prevalence": "Core",
+        "public_wellbeing_impact": "Severe",
+        "department": "justice"
+      }
+    },
+    {
+      "id": "per-PRD-JURY-DB01.justice.wa.gov.au",
+      "type": "hostname",
+      "properties": {
+        "mission_prevalence": "Core",
+        "public_wellbeing_impact": "Moderate",
+        "department": "justice"
+      }
+    },
+    {
+      "id": "per-PRD-WTR-SCADA01.watercorporation.com.au",
+      "type": "hostname",
+      "properties": {
+        "mission_prevalence": "Core",
+        "public_wellbeing_impact": "Severe",
+        "department": "watercorporation"
+      }
+    },
+    {
+      "id": "per-PRD-FIRE-COMMS01.dfes.wa.gov.au",
+      "type": "hostname",
+      "properties": {
+        "mission_prevalence": "Core",
+        "public_wellbeing_impact": "Severe",
+        "department": "dfes"
+      }
+    },
+    {
+      "id": "per-PRD-ES-DISPATCH01.dfes.wa.gov.au",
+      "type": "hostname",
+      "properties": {
+        "mission_prevalence": "Core",
+        "public_wellbeing_impact": "Severe",
+        "department": "dfes"
+      }
+    },
+    {
+      "id": "per-PRD-SSC-PROXY01.sharedservices.wa.gov.au",
+      "type": "hostname",
+      "properties": {
+        "mission_prevalence": "Support",
+        "public_wellbeing_impact": "Minimal",
+        "department": "sharedservices"
+      }
+    },
+    {
+      "id": "per-PRD-EXCHANGE-CAS01.health.wa.gov.au",
+      "type": "hostname",
+      "properties": {
+        "mission_prevalence": "Core",
+        "public_wellbeing_impact": "Severe",
+        "department": "health"
+      }
+    },
+    {
+      "id": "per-PRD-FLEET-MGMT01.transport.wa.gov.au",
+      "type": "hostname",
+      "properties": {
+        "mission_prevalence": "Support",
+        "public_wellbeing_impact": "Moderate",
+        "department": "transport"
+      }
+    },
+    {
+      "id": "per-PRD-STAFFPORTAL01.education.wa.edu.au",
+      "type": "hostname",
+      "properties": {
+        "mission_prevalence": "Support",
+        "public_wellbeing_impact": "Minimal",
+        "department": "education"
+      }
+    },
+    {
+      "id": "per-PRD-SAP-FIN01.finance.wa.gov.au",
+      "type": "hostname",
+      "properties": {
+        "mission_prevalence": "Core",
+        "public_wellbeing_impact": "Moderate",
+        "department": "finance"
+      }
+    },
+    {
+      "id": "per-PRD-LEGAL-DB01.justice.wa.gov.au",
+      "type": "hostname",
+      "properties": {
+        "mission_prevalence": "Core",
+        "public_wellbeing_impact": "Moderate",
+        "department": "justice"
+      }
+    },
+    {
+      "id": "per-PRD-EMS-OPS01.dfes.wa.gov.au",
+      "type": "hostname",
+      "properties": {
+        "mission_prevalence": "Core",
+        "public_wellbeing_impact": "Severe",
+        "department": "dfes"
+      }
+    },
+    {
+      "id": "per-PRD-AQIS-DB01.dpird.wa.gov.au",
+      "type": "hostname",
+      "properties": {
+        "mission_prevalence": "Support",
+        "public_wellbeing_impact": "Moderate",
+        "department": "dpird"
+      }
+    },
+    {
+      "id": "CVE-2023-34362",
+      "type": "vulnerability",
+      "properties": {
+        "cvss_score": 9.8,
+        "epss_score": 0.97,
+        "cisa_kev": true,
+        "name": "MOVEit SQL Injection"
+      }
+    },
+    {
+      "id": "CWE-89",
+      "type": "cwe",
+      "properties": {
+        "name": "",
+        "is_top_25": false
+      }
+    },
+    {
+      "id": "CVE-2023-35081",
+      "type": "vulnerability",
+      "properties": {
+        "cvss_score": 9.1,
+        "epss_score": 0.85,
+        "cisa_kev": true,
+        "name": "Citrix ADC Path Traversal"
+      }
+    },
+    {
+      "id": "CWE-22",
+      "type": "cwe",
+      "properties": {
+        "name": "",
+        "is_top_25": false
+      }
+    },
+    {
+      "id": "CVE-2023-27997",
+      "type": "vulnerability",
+      "properties": {
+        "cvss_score": 8.3,
+        "epss_score": 0.72,
+        "cisa_kev": false,
+        "name": "Fortigate Heap Overflow"
+      }
+    },
+    {
+      "id": "CWE-120",
+      "type": "cwe",
+      "properties": {
+        "name": "",
+        "is_top_25": false
+      }
+    },
+    {
+      "id": "CVE-2024-0001",
+      "type": "vulnerability",
+      "properties": {
+        "cvss_score": 7.5,
+        "epss_score": 0.45,
+        "cisa_kev": false,
+        "name": "SMBv3 OOB Write"
+      }
+    },
+    {
+      "id": "CWE-787",
+      "type": "cwe",
+      "properties": {
+        "name": "",
+        "is_top_25": false
+      }
+    },
+    {
+      "id": "CVE-2023-0001",
+      "type": "vulnerability",
+      "properties": {
+        "cvss_score": 6.1,
+        "epss_score": 0.3,
+        "cisa_kev": false,
+        "name": "XSS via Device Config"
+      }
+    },
+    {
+      "id": "CWE-79",
+      "type": "cwe",
+      "properties": {
+        "name": "",
+        "is_top_25": false
+      }
+    },
+    {
+      "id": "CVE-2023-0002",
+      "type": "vulnerability",
+      "properties": {
+        "cvss_score": 4.5,
+        "epss_score": 0.15,
+        "cisa_kev": false,
+        "name": "Missing Auth on Wiki API"
+      }
+    },
+    {
+      "id": "CWE-862",
+      "type": "cwe",
+      "properties": {
+        "name": "",
+        "is_top_25": false
+      }
+    },
+    {
+      "id": "CVE-2023-0003",
+      "type": "vulnerability",
+      "properties": {
+        "cvss_score": 3.2,
+        "epss_score": 0.08,
+        "cisa_kev": false,
+        "name": "Info Disclosure in ITSM Logs"
+      }
+    },
+    {
+      "id": "CWE-200",
+      "type": "cwe",
+      "properties": {
+        "name": "",
+        "is_top_25": false
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "CVE-2023-34362",
+      "to": "per-PRD-MOVEIT-WEB01.health.wa.gov.au",
+      "type": "affects"
+    },
+    {
+      "from": "CVE-2023-34362",
+      "to": "CWE-89",
+      "type": "has_weakness"
+    },
+    {
+      "from": "CVE-2023-35081",
+      "to": "per-PRD-CITRIX-ADC01.transport.wa.gov.au",
+      "type": "affects"
+    },
+    {
+      "from": "CVE-2023-35081",
+      "to": "CWE-22",
+      "type": "has_weakness"
+    },
+    {
+      "from": "CVE-2023-27997",
+      "to": "per-PRD-PRINT-SVR05.education.wa.edu.au",
+      "type": "affects"
+    },
+    {
+      "from": "CVE-2023-27997",
+      "to": "CWE-120",
+      "type": "has_weakness"
+    },
+    {
+      "from": "CVE-2024-0001",
+      "to": "per-PRD-FILE-STORE02.communities.wa.gov.au",
+      "type": "affects"
+    },
+    {
+      "from": "CVE-2024-0001",
+      "to": "CWE-787",
+      "type": "has_weakness"
+    },
+    {
+      "from": "CVE-2023-0001",
+      "to": "per-PRD-RMM-GW01.sharedservices.wa.gov.au",
+      "type": "affects"
+    },
+    {
+      "from": "CVE-2023-0001",
+      "to": "CWE-79",
+      "type": "has_weakness"
+    },
+    {
+      "from": "CVE-2023-0002",
+      "to": "per-PRD-WIKI-CORE01.police.wa.gov.au",
+      "type": "affects"
+    },
+    {
+      "from": "CVE-2023-0002",
+      "to": "CWE-862",
+      "type": "has_weakness"
+    },
+    {
+      "from": "CVE-2023-0003",
+      "to": "per-PRD-ITSM-TOOL01.finance.wa.gov.au",
+      "type": "affects"
+    },
+    {
+      "from": "CVE-2023-0003",
+      "to": "CWE-200",
+      "type": "has_weakness"
+    }
+  ]
+}

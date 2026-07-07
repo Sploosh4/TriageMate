@@ -49,3 +49,7 @@ These are registered in `opencode.jsonc` and available as tools alongside the bu
 12. New Python deps must be added to `backend/requirements.txt`
 13. Load the `decision-framework` skill at the start of every task — flag assumptions with `**Assumption:**` prefix
 14. Report results first, assumptions second — never ask open-ended questions
+15. When given a structural task (moves, renames, directory creation), prefer numbered checklists — "1. mv X to Y. 2. ln -s..." — not paragraph descriptions
+16. After any file rename or move, immediately grep the entire project for old references and fix them in the same task — don't defer to the next audit round
+17. Self-verify: after every task, run the verification commands the commander included in your prompt. If none were included, run `git diff --stat` and report what you changed.
+18. When claiming data dimensions (file sizes, record counts, feature dimensions), read the actual file — don't trust documentation or docstrings

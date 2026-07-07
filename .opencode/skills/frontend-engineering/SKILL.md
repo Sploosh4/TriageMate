@@ -40,4 +40,4 @@ description: HTML, CSS, JavaScript, DOM manipulation, Fetch API, vanilla JS SPA,
 
 ## Related Skills
 - `ux-designing` — visual design, color palette, component library, accessibility, user-facing copy. Load this when making any UI, layout, or styling changes.
-- `triagemate-toolbox` — dev server, Docker commands, testing, linting.
+- `triage-toolbox` — dev server, Docker commands, testing, linting.

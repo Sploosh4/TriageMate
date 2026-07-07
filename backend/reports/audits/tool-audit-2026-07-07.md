@@ -251,7 +251,7 @@ Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF
 | `devops-engineering` | `requirements-dev.txt` | ✅ Exists | Dev deps |
 | `ml-engineering` | `backend/ml/train_epss_v2.py` | ✅ Exists | 18 KB |
 | `ml-engineering` | `backend/ml/train_epss_v3.py` | ✅ Exists | 12.5 KB |
-| `ml-engineering` | `backend/pipeline/ingest_helpers.py` | ✅ Exists | (verified via `build_feature_vector` import check) |
+| `ml-engineering` | `backend/pipeline/ingest_helpers.py` | ✅ Exists | (verified via `build_feature_vector` import check) **[Note: path has since been flattened to `backend/ingest_helpers.py`]** |
 | `backend-engineering` | `backend/routers/` | ✅ All 4 exist | auth, cases, ingest, queue |
 | `backend-engineering` | `backend/pipeline/*.py` | ✅ All 4 exist | pre_tier, tier_0, tier_1, tier_2 |
 

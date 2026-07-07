@@ -71,6 +71,10 @@ def _cvss_cia(v):
 
 
 def _encode_classification(klass: str) -> int:
+    # NOTE: "Category 1" is a backward-compatible mapping key, not a display label.
+    # It exists so training corpus data and CMDB stubs containing old PRIS Act
+    # terminology still encode correctly. The WAICP equivalent is "OFFICIAL" → 2.
+    # Do not rename or remove — it's a data contract, not user-facing text.
     mapping = {
         "OFFICIAL Sensitive": 4,
         "OFFICIAL": 2,
@@ -378,7 +382,11 @@ def _threat_pulses_status(otx_result: dict) -> str:
 
 
 def build_feature_vector(payload, mission_tags: dict, tier_0_result: dict) -> dict:
-    """Build the full 42-key feature dict (41 tabular + description) for the Tier 1 XGBoost model.
+    """Build the full 42-key feature dict for the Tier 1 XGBoost model.
+    35 keys feed the tabular model input, 6 are metadata/enrichment fields
+    (`cvss_score`, `osv_fixed_versions`, `osv_package`, `osv_ecosystem`,
+    `threat_intel_status`, `osv_lead_days`), and 1 (`description`) provides text
+    for the 384-dim SBERT embedding. Combined model input: 419 dims (35 tabular + 384 SBERT).
 
     Matches feature order in ml/xgboost_predictor.predict() and
     ml/train_xgboost.build_tabular_features().

@@ -6,12 +6,12 @@ description: ML model development, XGBoost tuning, feature vector design, traini
 # TriageMate ML Engineering
 
 ## Model Inventory
-- **Tier 1:** XGBoost (68 features, ROC-AUC 0.9677) — `backend/ml/xgboost_model.pkl`
+- **Tier 1:** XGBoost (419 features: 35 tabular + 384 SBERT, ROC-AUC 0.9677) — `backend/ml/xgboost_model.pkl`
 - **Pre-Tier:** RandomForest multi-label classifier — `backend/ml/pre_tier_model.pkl`
 - **EPSS Substitution:** XGBoost regressor (v1/v2/v3) — `backend/ml/epss_model.pkl`
 
 ## Feature Vector Contract
-68 features = 35 tabular + 33 signature/derived features
+419 features = 35 tabular + 384 SBERT embedding. The 42-key feature dict from `build_feature_vector()` contains 35 tabular model inputs, 6 metadata/enrichment keys (`cvss_score`, `osv_fixed_versions`, `osv_package`, `osv_ecosystem`, `threat_intel_status`, `osv_lead_days`), and 1 text key (`description`) for the 384-dim SentenceTransformer embedding.
 `build_feature_vector()` in `backend/ingest_helpers.py`
 
 ### Contract
@@ -44,7 +44,7 @@ python -c "from ingest_helpers import build_feature_vector; print('ok')"
 ```
 
 ## Key Files
-- `backend/pipeline/ingest_helpers.py` — `build_feature_vector()`, CWE lookups
+- `backend/ingest_helpers.py` — `build_feature_vector()`, CWE lookups
 - `backend/pipeline/pre_tier.py` — `KNOWN_TAGS` dict, mission/impact tag assignment
 - `backend/ml/train_xgboost.py` — XGBoost training pipeline
 - `backend/ml/train_pre_tier.py` — Pre-tier classifier training
@@ -63,7 +63,7 @@ All 7 demo rows must score within ±3 of: 94, 87, 71, 55, 63, 41, 22
 
 ## Training Rules
 - Training data MUST exclude the 7 demo CVEs (data leakage prevention)
-- Feature count must stay at 68 — any addition/removal requires full retraining + score re-validation
+- Feature count must stay at 419 (35 tabular + 384 SBERT) — any tabular addition/removal or SBERT dimension change requires full retraining + score re-validation
 - After retraining, always report ROC-AUC, per-class accuracy, and 7-row score verification
 
 ## Data Pipeline

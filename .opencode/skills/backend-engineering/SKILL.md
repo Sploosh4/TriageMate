@@ -15,9 +15,9 @@ description: Python, FastAPI, SQLite, database schema, pipeline logic, API endpo
 ```
 Pre-Tier: hostname dictionary → mission/public-wellbeing tags
 Tier 0:   deterministic rules → auto-resolve or escalate
-Tier 1:   XGBoost (68 features, ROC-AUC 0.9677)
+Tier 1:   XGBoost (419 total features: 35 tabular + 384 SBERT, ROC-AUC 0.9677)
 Tier 2:   Cloud LLM (force-reflection prompt, multi-provider failover)
-Scoring:  5-dimension weighted formula (CVSS, EPSS, Asset, Exposure, Patch) → 0-100
+Scoring:  6-dimension weighted formula (CVSS, EPSS, Asset Criticality, Exposure, Patch, ML Exploitation) → 0-100
 ```
 
 ## Key Files

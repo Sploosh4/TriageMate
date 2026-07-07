@@ -13,11 +13,6 @@
       "command": ["npx", "-y", "@mokei/mcp-sqlite", "--db", "triagemate.db"],
       "description": "Query the TriageMate SQLite database"
     },
-    "memory": {
-      "type": "local",
-      "command": ["npx", "-y", "@modelcontextprotocol/server-memory"],
-      "description": "Persistent memory across sessions"
-    },
     "filesystem": {
       "type": "local",
       "command": ["npx", "-y", "@modelcontextprotocol/server-filesystem", "."],

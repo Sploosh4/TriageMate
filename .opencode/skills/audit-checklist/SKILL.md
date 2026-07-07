@@ -62,4 +62,4 @@ Track the 7 demo row scores over time. If any score shifts by more than ±3 from
 Test each integration module with a known CVE. Verify graceful degradation — failed integrations must not crash the pipeline. Check that all integrations return safe defaults on error.
 
 ### 12. DDL Compliance Audit
-Verify that any recent `database.py` change has entries in both `_init_db_sqlite()` and `_init_db_pg()`. Cross-reference with the `dual-database-ddl` skill checklist.
+Verify that any recent `database.py` change has entries in both `_init_db_sqlite()` and `_init_db_pg()`. Cross-reference with the `backend-engineering` skill (dual-DDL pattern was consolidated there after `dual-database-ddl` was archived).

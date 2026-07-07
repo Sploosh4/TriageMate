@@ -1,11 +1,11 @@
 # Agent & Skill Descriptions — Design Rationale
 
-## Agents (4)
+## Agents (5)
 
 ---
 
 ### commander
-> Primary coordinator for TriageMate. Delegates ALL work to subagents (strike, intel, auditor). Never writes code or runs commands directly. Use for multi-step tasks, sprint planning, orchestration, and coordinating complex changes across the codebase.
+> Primary coordinator for TriageMate. Delegates ALL work to subagents (strike, intel, auditor, bookkeeper). Never writes code or runs commands directly. Use for multi-step tasks, sprint planning, orchestration, and coordinating complex changes across the codebase.
 
 **Why this description:**
 - "Coordinates" / "delegates" / "orchestration" are the keywords — the AI should think of commander as a dispatcher, not a doer.
@@ -46,6 +46,17 @@
 - Specific audit types listed: ML calibration, schema parity, feature vector contracts. These keywords match when the user says "check the calibration" or "validate the schema."
 - "Pre-deployment checks, sprint quality gates" covers the auditor's role in the workflow — post-strike verification.
 - "Produces .md audit reports" makes the output format explicit, matching the report directory convention.
+
+---
+
+### bookkeeper
+> Documentation bookkeeper for TriageMate. Verifies .md freshness, checks for orphaned references, consolidates stale docs, and produces freshness reports. Run after every audit, sprint completion, or when asked "are the docs up to date?".
+
+**Why this description:**
+- Added after sprint experience showed documentation drift between agent descriptions, skill files, and code was the #1 source of rework loops.
+- "Freshness" / "orphans" / "consolidates" — the keywords signal this agent maintains structural integrity of the project's documentation, not its content.
+- "After every audit, sprint completion" encodes the trigger pattern so the commander knows when to invoke it.
+- Produces .md reports like auditor and intel — consistent output convention across all subagents.
 
 ---
 
@@ -141,18 +152,20 @@
 
 ---
 
-## Skills — Legacy (3, kept unchanged)
+## Skills — Legacy (1 active, 2 archived)
+
+> **Note:** `dual-database-ddl` and `feature-vector-spec` were archived on 2026-07-07 and their content consolidated into `backend-engineering`. Their design rationale is preserved below for historical reference.
 
 ---
 
-### dual-database-ddl
+### dual-database-ddl [ARCHIVED 2026-07-07]
 > Enforce SQLite + PostgreSQL dual DDL pattern for every schema change in database.py
 
 **Why (existing, unchanged):** Simple, direct. "database.py" as the trigger file. "DDL pattern" is unique vocabulary that only appears in schema change contexts.
 
 ---
 
-### feature-vector-spec
+### feature-vector-spec [ARCHIVED 2026-07-07]
 > Exact feature list and contract for build_feature_vector() — never remove or rename keys, only append
 
 **Why (existing, unchanged):** Function-name trigger. "Never remove or rename keys, only append" is a behavioral constraint encoded in the description itself.

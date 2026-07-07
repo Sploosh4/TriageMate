@@ -140,6 +140,15 @@ audit-schema:
 audit-all: audit-calibration audit-epss audit-features audit-schema
     @echo "All audits complete."
 
+# --- Graphify (sibling project) ---
+
+# Regenerate graphify knowledge artifacts (writes to graphify_output/)
+graphify:
+    cd ../../graphify && python3 generators/file_tree.py && \
+    python3 generators/api_deps.py && \
+    python3 generators/knowledge_graph.py && \
+    python3 generators/ml_inventory.py
+
 # --- Database ---
 
 # Open SQLite shell on the project database

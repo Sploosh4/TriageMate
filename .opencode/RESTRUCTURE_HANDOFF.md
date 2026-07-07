@@ -59,9 +59,11 @@ This enables the sprint review workflow: "What did you do that was hard/undocume
 
 ### Skills — Legacy (3 kept unchanged)
 
-- `dual-database-ddl/SKILL.md` — SQLite + PostgreSQL dual DDL pattern
-- `feature-vector-spec/SKILL.md` — feature vector key contract (42 keys)
+- `dual-database-ddl/SKILL.md` — SQLite + PostgreSQL dual DDL pattern **[ARCHIVED 2026-07-07]**
+- `feature-vector-spec/SKILL.md` — feature vector key contract (42 keys) **[ARCHIVED 2026-07-07]**
 - `new-integration-pattern/SKILL.md` — boilerplate for adding integrations
+
+> **Update (2026-07-07):** `dual-database-ddl` and `feature-vector-spec` were subsequently archived and their content consolidated into `backend-engineering`. `new-integration-pattern` remains active.
 
 ### Global Skill (1 new, in `~/.config/opencode/skills/`)
 

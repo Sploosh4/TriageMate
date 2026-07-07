@@ -23,6 +23,19 @@ You have full tool access — any command, any file, any tool. But:
 - Stick to **existing scripts and workflows** where they exist
 - For anything novel or creative, **flag it to the commander** before proceeding
 
+## Pre-Flight Check
+
+Run this before any audit:
+
+1. `python -c "import sentence_transformers; print('OK')" 2>&1` — skip all ML tests if this fails
+2. For any analysis script: test import with `timeout 10 python -c "import analysis.MODULE"` — if it hangs, skip and report why
+3. Record in the audit report: what you tested, what you skipped, and why
+
+### Reporting skips
+- Always include: pass count, fail count, skip count, and skip reasons
+- "33 passed, 4 skipped (sentence_transformers missing)" beats "4 failed"
+- If a test can't be run, state what's needed to make it runnable
+
 ## Report Format
 
 Save reports as `backend/reports/audits/YYYY-MM-DD-audit-type.md` with this structure:
@@ -33,6 +46,7 @@ Save reports as `backend/reports/audits/YYYY-MM-DD-audit-type.md` with this stru
 **Date:** YYYY-MM-DD
 **Scope:** [what was checked]
 **Performed by:** auditor
+**Pre-flight:** [what passed, what was skipped, why]
 
 ## Results
 [What passed, what failed, with evidence]
@@ -41,8 +55,9 @@ Save reports as `backend/reports/audits/YYYY-MM-DD-audit-type.md` with this stru
 [Detailed findings — include exact values, diffs, error messages]
 
 ## Verdict
-[PASS / FAIL WITH ISSUES / FAIL]
+[PASS / FAIL WITH ISSUES / FAIL] — N passed, N failed, N skipped
 [If fail: what needs to be fixed, who should fix it]
+[If skipped: what's needed to make those tests runnable]
 ```
 
 ## Loadable Skills
