@@ -16,14 +16,14 @@
 |---|------|-------|-----------|----------|-----------|---------------|-------|
 | 1 | `docs/architecture/MVP_SCOPE.md` | 230 | ~3,800 | Architecture | 🔴 STALE — self-declared outdated | Heavy overlap with ROADMAP.md (§Sprint Status) | Banner says "written Sprint 1, not updated" |
 | 2 | `docs/planning/ROADMAP.md` | 388 | ~6,500 | Planning | 🟢 CURRENT | Contains content from SPRINT_NEXT_PLAN (items 2,3,6,8), MVP_SCOPE (status), AI_PROBLEMS (bug table) | Best single source of truth |
-| 3 | `docs/planning/SPRINT_NEXT_PLAN.md` | 320 | ~5,300 | Planning | 🟡 SUPERSEDED | 90% duplicated in ROADMAP.md (§Sprint NEXT) | Only Item 1 (XGBoost retrain) remains pending; rest is already in ROADMAP |
+| 3 | `docs/archive/SPRINT_NEXT_PLAN.md` | 322 | ~5,300 | Planning | 🟡 SUPERSEDED | 90% duplicated in ROADMAP.md (§Sprint NEXT) | Only Item 1 (XGBoost retrain) remains pending; rest is already in ROADMAP |
 | 4 | `docs/reference/AI_PROBLEMS.md` | 165 | ~2,700 | Reference | 🟡 MOSTLY STALE | Overlaps with XGBOOST_INVESTIGATION (both document bugs) | Only 1 unfixed item (#14, won't-fix). Rest is historical record |
 | 5 | `docs/reference/XGBOOST_INVESTIGATION_REPORT.md` | 214 | ~3,500 | Reference | 🟡 MIXED | Overlaps with AI_PROBLEMS (bugs), RESEARCH_FINDINGS (ML), ML Plan (architecture) | Deep dive report with 8 fixes. Fixes applied, retrain pending |
 | 6 | `docs/reference/TriageMate ML Implementation Plan — Final.md` | 882 | ~15,000 | Reference | 🔴 STALE — self-declared outdated | Major overlap with RESEARCH_FINDINGS, XGBOOST_INVESTIGATION, MVP_SCOPE | Banner says "OUTDATED — preserved for historical reference" |
 | 7 | `docs/reference/Hostname and Data Classification Standards.md` | 175 | ~5,000* | Reference | 🟢 EXTERNAL REFERENCE | Low overlap — unique content | Long external citations, research-heavy |
 | 8 | `docs/research/RESEARCH_FINDINGS.md` | 192 | ~3,200 | Research | 🟡 MIXED | Overlaps with XGBOOST_INVESTIGATION (ML fixes), ML Plan (strategy) | Some findings acted on in Sprint NEXT; has note saying "written before Sprint NEXT" |
 | 9 | `docs/guides/WINDOWS_SETUP.md` | 118 | ~1,900 | Guides | 🟢 CURRENT | Low overlap | Focused, single-purpose |
-| 10 | `AGENTS.md` (root) | 25 | ~400 | Config | 🟡 PARTIALLY WRONG | Describes symlink structure that's partially broken | Lists DEMO_SCRIPT.md and TRIAGEMATE_BOOK_PROMPT.md as existing in docs/guides/ — they don't |
+| 10 | `AGENTS.md` (root) | 36 | ~400 | Config | 🟡 PARTIALLY WRONG | Describes symlink structure that's partially broken | Lists DEMO_SCRIPT.md and TRIAGEMATE_BOOK_PROMPT.md as existing in docs/guides/ — they don't |
 | 11 | `backend/ml/README.md` | 26 | ~400 | ML Artifacts | 🟢 CURRENT | Low overlap | Small, focused, lives with code |
 
 ### Broken Symlinks

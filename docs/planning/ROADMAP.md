@@ -72,6 +72,8 @@
 | 36 | is_dos_signature | Regex on description |
 | 37 | is_traversal_signature | Regex on description |
 
+> **Note:** 37 fields are collected; 35 are used as tabular features by XGBoost. `cisa_kev` was removed (label leakage fix — it IS the target variable), and `description` feeds the SBERT encoder. The model input totals 419 dimensions: 35 tabular + 384 SBERT.
+
 ### New Integrations
 
 | Integration | File | Purpose |
@@ -184,7 +186,7 @@ These items were planned after Sprint 9. Items 2, 3, 6, 8 are ✅ Done; Item 1 (
 
 | # | Item | Status | Notes |
 |---|---|---|---|
-| 1 | XGBoost retrain on `training_data_v2.npz` | 🔧 Retraining | **Corpus built:** 144,708 samples, 67 features (35 tabular + 384 SBERT = 419 total), 19.6 MB. 8 fixes applied. **Training not yet run.** Command: `python -m ml.train_xgboost --train --data-file ml/training_data_v2.npz` |
+| 1 | XGBoost retrain on `training_data_v2.npz` | 🔧 Retraining | **Corpus built:** 144,708 samples, 19.6 MB. The training data v2 npz stores 67 columns (35 tabular features + 32 auxiliary/metadata columns). The XGBoost model operates on 419 input dimensions: 35 tabular features + 384 SBERT embedding. 8 fixes applied. **Training not yet run.** Command: `python -m ml.train_xgboost --train --data-file ml/training_data_v2.npz` |
 | 2 | Pre-Tier RandomForest classifier | ✅ Already existed | 60-dim MultiOutputClassifier with KNOWN_TAGS fallback. No changes needed. |
 | 3 | Model drift monitoring dashboard | ✅ Done | `GET /api/drift`, CSS-only charts, 4 panels |
 | 4 | Rate limiting + CI/CD | 📋 Todo | Token bucket on ingest + GitHub Actions |
@@ -275,12 +277,9 @@ TriageMate MVP/
 ├── MVP_SCOPE.md → docs/architecture/MVP_SCOPE.md
 ├── ROADMAP.md → docs/planning/ROADMAP.md
 ├── AI_PROBLEMS.md → docs/reference/AI_PROBLEMS.md
-├── DEMO_SCRIPT.md → docs/guides/DEMO_SCRIPT.md
 ├── WINDOWS_SETUP.md → docs/guides/WINDOWS_SETUP.md
-├── SPRINT_NEXT_PLAN.md → docs/planning/SPRINT_NEXT_PLAN.md
 ├── RESEARCH_FINDINGS.md → docs/research/RESEARCH_FINDINGS.md
-├── XGBOOST_INVESTIGATION_REPORT.md → docs/reference/XGBOOST_INVESTIGATION_REPORT.md
-├── TRIAGEMATE_BOOK_PROMPT.md → docs/guides/TRIAGEMATE_BOOK_PROMPT.md
+├── XGBOOST_INVESTIGATION_REPORT.md → docs/reference/xgboost-investigation-report.md
 ├── index.html                            # Original demo (preserved)
 ├── demo-reference.html                   # Visual reference
 │
@@ -288,24 +287,22 @@ TriageMate MVP/
 │   ├── architecture/
 │   │   └── MVP_SCOPE.md                  # Scope authority
 │   ├── guides/
-│   │   ├── DEMO_SCRIPT.md                # Demo walkthrough
-│   │   ├── WINDOWS_SETUP.md              # Windows hosting instructions
-│   │   └── TRIAGEMATE_BOOK_PROMPT.md     # Book generation prompt
+│   │   └── WINDOWS_SETUP.md              # Windows hosting instructions
 │   ├── planning/
 │   │   ├── ROADMAP.md                    # Master status (this file)
-│   │   └── SPRINT_NEXT_PLAN.md           # Active retrain plan
+│   │   └── SPRINT_NEXT_PLAN.md (archived) → docs/archive/SPRINT_NEXT_PLAN.md
 │   ├── reference/
 │   │   ├── AI_PROBLEMS.md                # Bug tracker
-│   │   ├── XGBOOST_INVESTIGATION_REPORT.md
-│   │   ├── TriageMate ML Implementation Plan — Final.md
-│   │   └── Hostname and Data Classification Standards.md
+│   │   ├── xgboost-investigation-report.md
+│   │   ├── ml-implementation-plan.md
+│   │   └── hostname-standards.md
 │   ├── research/
 │   │   └── RESEARCH_FINDINGS.md
 │   └── archive/
 │       ├── handoffs/
 │       │   └── SPRINT_9_HANDOFF.md
 │       └── sprints-1-6/
-│           ├── SPRINT_1_HANDOFF.md … SPRINT_8_HANDOFF.md
+│           ├── SPRINT_1_HANDOFF.md, SPRINT_2_HANDOFF.md, SPRINT_3_HANDOFF.md, SPRINT_7_HANDOFF.md, SPRINT_8_HANDOFF.md
 │           ├── PRE_DEMO_PLAN.md, COURSE_CORRECTION.md
 │           └── SPRINT_9_BRIEFING_PLAN.md, TEAM_BRIEFING.md
 │

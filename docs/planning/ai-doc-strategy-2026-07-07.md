@@ -15,7 +15,7 @@
 | Location | Count | Types |
 |---|---|---|
 | Root (real) | 1 | `AGENTS.md` |
-| Root (symlinks to `docs/`) | 8 | `MVP_SCOPE.md`, `ROADMAP.md`, `AI_PROBLEMS.md`, `RESEARCH_FINDINGS.md`, `XGBOOST_INVESTIGATION_REPORT.md`, `SPRINT_NEXT_PLAN.md`, `WINDOWS_SETUP.md`, (2 broken: `DEMO_SCRIPT.md`, `TRIAGEMATE_BOOK_PROMPT.md`) |
+| Root (symlinks to `docs/`) | 6 | `MVP_SCOPE.md`, `ROADMAP.md`, `AI_PROBLEMS.md`, `RESEARCH_FINDINGS.md`, `XGBOOST_INVESTIGATION_REPORT.md`, `WINDOWS_SETUP.md` — (2 broken removed: `DEMO_SCRIPT.md`, `TRIAGEMATE_BOOK_PROMPT.md`) |
 | `docs/architecture/` | 1 | `MVP_SCOPE.md` |
 | `docs/guides/` | 1 | `WINDOWS_SETUP.md` (DEMO_SCRIPT and TRIAGEMATE_BOOK_PROMPT targets missing — broken symlinks) |
 | `docs/planning/` | 2 | `ROADMAP.md`, `SPRINT_NEXT_PLAN.md` |
@@ -431,9 +431,9 @@ Ordered steps for strike to execute:
 | # | Path | Status | Audience | Purpose | Words | Last Updated |
 |---|------|--------|----------|---------|-------|-------------|
 | 1 | `AGENTS.md` | CURRENT | AI | AI operational instructions, project rules, doc structure map | ~400 | 2026-07-02 |
-| 2 | `docs/architecture/MVP_SCOPE.md` | CURRENT (with caveats) | Both | MVP scope, in/out-of-scope decisions, risk register, verification criteria | ~3,500 | 2026-06-30 |
+| 2 | `docs/architecture/MVP_SCOPE.md` | OUTDATED | Both | MVP scope, in/out-of-scope decisions, risk register, verification criteria | ~3,500 | 2026-06-30 |
 | 3 | `docs/planning/ROADMAP.md` | CURRENT | Both | Master status tracker, sprint completion, config, known bugs, file map | ~4,500 | 2026-07-02 |
-| 4 | `docs/planning/SPRINT_NEXT_PLAN.md` | CURRENT (partially superseded) | AI | Sprint NEXT implementation details (Items 1-8) — overlaps with ROADMAP | ~3,000 | 2026-07-02 |
+| 4 | `docs/archive/SPRINT_NEXT_PLAN.md` | CURRENT (partially superseded) | AI | Sprint NEXT implementation details (Items 1-8) — overlaps with ROADMAP | ~3,000 | 2026-07-02 |
 | 5 | `docs/reference/AI_PROBLEMS.md` | CURRENT | AI | Bug tracker for AI-generated code issues, fixes, and workarounds | ~2,800 | 2026-07-02 |
 | 6 | `docs/reference/XGBOOST_INVESTIGATION_REPORT.md` | CURRENT | AI | Root cause analysis of 8 model issues, fixes applied, pre/post metrics | ~4,000 | 2026-07-02 |
 | 7 | `docs/research/RESEARCH_FINDINGS.md` | CURRENT | AI | Research on label strategy, early indicators, missing KEV, EPSS baseline, pipeline drifts | ~5,000 | 2026-07-03 |
@@ -443,8 +443,7 @@ Ordered steps for strike to execute:
 | 11 | `docs/archive/handoffs/SPRINT_9_HANDOFF.md` | ARCHIVE | Both | Historical sprint handoff — data corpus build, feature fill | ~1,900 | 2026-07-02 |
 | 12 | `docs/archive/sprints-1-6/*.md` (11 files) | ARCHIVE | Both | Historical sprint handoffs, plans, briefings — preserved for provenance | varies | 2026-06 to 2026-07 |
 | 13 | `docs/archive/*.md` (6 files) | ARCHIVE | Both | Source research documents fed into ML Implementation Plan | varies | 2026-06 |
-| 14 | `DEMO_SCRIPT.md` (broken) | BROKEN | Both | Target missing — symlink points to non-existent file | N/A | N/A |
-| 15 | `TRIAGEMATE_BOOK_PROMPT.md` (broken) | BROKEN | AI | Target missing — symlink points to non-existent file | N/A | N/A |
+
 
 ---
 
