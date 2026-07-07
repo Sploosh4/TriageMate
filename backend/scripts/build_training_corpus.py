@@ -4,7 +4,7 @@ a training-ready dataset with REAL distributions for ALL features.
 
 Replaces the Phase 1 of train_xgboost.py.
 
-Output: backend/ml/training_data_v2.npz (419 features: 35 tabular + 384 text SBERT)
+Output: backend/ml/training_data_v2.npz (420 features: 36 tabular + 384 text SBERT; model uses 419 — osv_lead_days is metadata)
 
 Usage:
     cd backend

@@ -1,8 +1,8 @@
 # TriageMate — Master Roadmap & Status
 
-> **Status: CURRENT** (2 July 2026)
+> **Status: CURRENT** (7 July 2026)
 
-> Last updated: 2 July 2026
+> Last updated: 7 July 2026
 > Status key: ✅ Done · 🟡 Needs config · 🔧 In progress · 📋 Todo · ⏭️ Post-MVP · 🐛 Known bug
 
 ---
@@ -35,7 +35,7 @@
 | `epss_cache.json` | 344,852 scores | FIRST.org |
 | `files_exploits.csv` | 47,089 exploits, 25,037 CVE mappings | ExploitDB |
 | `vendor_popularity.json` | 17,100 vendors | NVD corpus |
-| `training_data_v2.npz` | 186K raw CVEs → 144K filtered training set, 67 columns (+ 1 label = 68 total) | Unified corpus builder with temporal filters |
+| `training_data_v2.npz` | 186K raw CVEs → 253K filtered training set, 420 columns (36 tabular + 384 SBERT), 341 MB | Unified corpus builder with temporal filters |
 
 ### Feature Field Status — ALL 37 FIELDS FILLED
 
@@ -71,8 +71,9 @@
 | 35 | is_bypass_signature | Regex on description |
 | 36 | is_dos_signature | Regex on description |
 | 37 | is_traversal_signature | Regex on description |
+| 38 | osv_lead_days | OSV.dev earliest disclosure → NVD publish lag (metadata, not a model input) |
 
-> **Note:** 37 fields are collected; 35 are used as tabular features by XGBoost. `cisa_kev` was removed (label leakage fix — it IS the target variable), and `description` feeds the SBERT encoder. The model input totals 419 dimensions: 35 tabular + 384 SBERT.
+> **Note:** 37 fields are collected; 35 are used as tabular features by XGBoost. The 2 excluded: `cisa_kev` (label leakage — removed from training features; it IS the target variable) and `description` (feeds SBERT encoder, not tabular). The npz stores 420 columns (36 tabular + 384 SBERT); the extra 36th tabular field `osv_lead_days` is a metadata column (OSV publish lead time) that is not a model input, so the model uses 419 input dims (35 tabular + 384 SBERT).
 
 ### New Integrations
 
@@ -143,10 +144,10 @@
 
 | Item | Status |
 |---|---|
-| XGBoost model (`xgboost_model.pkl`) | 🔧 Retrain pending — New training corpus: 144K records, 67 columns in npz (35 tabular + 32 auxiliary); model uses 419 input dims (35 tabular + 384 SBERT). Current deployed model: 93K records, ROC-AUC 0.9677 (Sprint 3). ROC-AUC 0.9946 was pre-fix label-leakage era — not representative. Calibrator will be generated after retrain. |
+| XGBoost model (`xgboost_model.pkl`) | 🔧 Retrain pending — New training corpus: 253K records, 420 columns in npz (36 tabular + 384 SBERT); model uses 419 input dims (35 tabular + 384 SBERT). Current deployed model: 93K records, ROC-AUC 0.9677 (Sprint 3). ROC-AUC 0.9946 was pre-fix label-leakage era — not representative. Calibrator will be generated after retrain. |
 | SBERT encoder (`encoder.py`) | ✅ Done — all-MiniLM-L6-v2, 384-dim (PCA removed v2.5) |
 | Training pipeline (`train_xgboost.py`) | ✅ Done — two-phase, checkpoint/resume, calibration, temporal bias fixes |
-| Training data v2 (`training_data_v2.npz`) | 🔧 Retrain pending — 144K samples, 67 columns in npz (35 tabular + 32 auxiliary); model uses 419 input dims (35 tabular + 384 SBERT), temporal + observation window filters applied |
+| Training data v2 (`training_data_v2.npz`) | 🔧 Retrain pending — 253K samples, 420 columns in npz (36 tabular + 384 SBERT); `osv_lead_days` is metadata not used by model (419 input dims: 35 tabular + 384 SBERT), temporal + observation window filters applied |
 | Pre-tier model (`pre_tier_model.pkl`) | ✅ Done — 60-dim MultiOutputClassifier |
 | Calibrator (`xgboost_calibrator.pkl`) | 🔧 Will generate after retrain — Platt scaling on val set |
 | Drift dashboard (`GET /api/drift`) | ✅ Done — CSS-only charts, 30-day trend, tier routing, risk bands |
@@ -186,7 +187,7 @@ These items were planned after Sprint 9. Items 2, 3, 6, 8 are ✅ Done; Item 1 (
 
 | # | Item | Status | Notes |
 |---|---|---|---|
-| 1 | XGBoost retrain on `training_data_v2.npz` | 🔧 In progress — corpus built; training not yet run | **Corpus built:** 144,708 samples, 19.6 MB. The training data v2 npz stores 67 columns (35 tabular features + 32 auxiliary/metadata columns). The XGBoost model operates on 419 input dimensions: 35 tabular features + 384 SBERT embedding. 8 fixes applied. **Training not yet run.** Command: `python -m ml.train_xgboost --train --data-file ml/training_data_v2.npz` |
+| 1 | XGBoost retrain on `training_data_v2.npz` | 🔧 In progress — corpus built; training not yet run | **Corpus built:** 253,568 samples, 341 MB. The training data v2 npz stores 420 columns (36 tabular features + 384 SBERT). The XGBoost model operates on 419 input dimensions (35 tabular + 384 SBERT; `osv_lead_days` is stored as metadata, not a model input). 8 fixes applied. **Training not yet run.** Command: `python -m ml.train_xgboost --train --data-file ml/training_data_v2.npz` |
 | 2 | Pre-Tier RandomForest classifier | ✅ Already existed | 60-dim MultiOutputClassifier with KNOWN_TAGS fallback. No changes needed. |
 | 3 | Model drift monitoring dashboard | ✅ Done | `GET /api/drift`, CSS-only charts, 4 panels |
 | 4 | Rate limiting + CI/CD | 📋 Todo | Token bucket on ingest + GitHub Actions |
@@ -306,6 +307,7 @@ TriageMate MVP/
 │       └── sprints-1-6/
 │           ├── SPRINT_1_HANDOFF.md, SPRINT_2_HANDOFF.md, SPRINT_3_HANDOFF.md, SPRINT_7_HANDOFF.md, SPRINT_8_HANDOFF.md
 │           ├── PRE_DEMO_PLAN.md, COURSE_CORRECTION.md
+│           ├── DEMO_DATA_GENERATOR_PLAN.md, DEMO_DATA_GENERATOR_SCOPE.md
 │           └── SPRINT_9_BRIEFING_PLAN.md, TEAM_BRIEFING.md
 │
 ├── backend/
@@ -356,7 +358,7 @@ TriageMate MVP/
 │   │   ├── xgboost_predictor.py          # Inference + ensemble variance
 │   │   ├── xgboost_model.pkl             # Trained model (needs retrain)
 │   │   ├── training_data.npz             # Original training data
-│   │   ├── training_data_v2.npz          # 144K real-distribution dataset
+│   │   ├── training_data_v2.npz          # 253K×420 (36 tabular + 384 SBERT) dataset
 │   │   ├── pre_tier_model.pkl            # Pre-tier classifier
 │   │   ├── train_xgboost.py              # Two-phase training pipeline
 │   │   ├── vector_store.py               # LanceDB RAG store

@@ -182,7 +182,7 @@ All 5 code-level claims verified PASS (published_date missing, CIA default misma
 | Metric | Value |
 |---|---|
 | NVD corpus entries | 186,102 |
-| EPSS cache entries | 140,487 (subset) |
+| EPSS cache entries | 344,852 total (140,487 overlap with NVD corpus) |
 | KEV total | 1,631 |
 | KEV in NVD corpus | 1,115 (68.4%) |
 | KEV missing from NVD corpus | 516 (31.6%) |
