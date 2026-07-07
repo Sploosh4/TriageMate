@@ -35,7 +35,7 @@
 | `epss_cache.json` | 344,852 scores | FIRST.org |
 | `files_exploits.csv` | 47,089 exploits, 25,037 CVE mappings | ExploitDB |
 | `vendor_popularity.json` | 17,100 vendors | NVD corpus |
-| `training_data_v2.npz` | 186K raw CVEs → 144K filtered training set, 67 features (+ 1 label = 68 columns) | Unified corpus builder with temporal filters |
+| `training_data_v2.npz` | 186K raw CVEs → 144K filtered training set, 67 columns (+ 1 label = 68 total) | Unified corpus builder with temporal filters |
 
 ### Feature Field Status — ALL 37 FIELDS FILLED
 
@@ -182,11 +182,11 @@ See `AI_PROBLEMS.md` for the authoritative tracker.
 
 ## Sprint NEXT — Items Complete (Retrain Pending)
 
-These items were planned after Sprint 9. Items 2, 3, 6, 8 are ✅ Done; Item 1 (XGBoost retrain) is 🔧 Retraining (code fixes applied, model not yet retrained). Items 4, 5, 7 are deferred per the table below.
+These items were planned after Sprint 9. Items 2, 3, 6, 8 are ✅ Done; Item 1 (XGBoost retrain) is 🔧 In progress — corpus built; training not yet run (code fixes applied, model not yet retrained). Items 4, 5, 7 are deferred per the table below.
 
 | # | Item | Status | Notes |
 |---|---|---|---|
-| 1 | XGBoost retrain on `training_data_v2.npz` | 🔧 Retraining | **Corpus built:** 144,708 samples, 19.6 MB. The training data v2 npz stores 67 columns (35 tabular features + 32 auxiliary/metadata columns). The XGBoost model operates on 419 input dimensions: 35 tabular features + 384 SBERT embedding. 8 fixes applied. **Training not yet run.** Command: `python -m ml.train_xgboost --train --data-file ml/training_data_v2.npz` |
+| 1 | XGBoost retrain on `training_data_v2.npz` | 🔧 In progress — corpus built; training not yet run | **Corpus built:** 144,708 samples, 19.6 MB. The training data v2 npz stores 67 columns (35 tabular features + 32 auxiliary/metadata columns). The XGBoost model operates on 419 input dimensions: 35 tabular features + 384 SBERT embedding. 8 fixes applied. **Training not yet run.** Command: `python -m ml.train_xgboost --train --data-file ml/training_data_v2.npz` |
 | 2 | Pre-Tier RandomForest classifier | ✅ Already existed | 60-dim MultiOutputClassifier with KNOWN_TAGS fallback. No changes needed. |
 | 3 | Model drift monitoring dashboard | ✅ Done | `GET /api/drift`, CSS-only charts, 4 panels |
 | 4 | Rate limiting + CI/CD | 📋 Todo | Token bucket on ingest + GitHub Actions |
@@ -290,6 +290,8 @@ TriageMate MVP/
 │   │   └── WINDOWS_SETUP.md              # Windows hosting instructions
 │   ├── planning/
 │   │   ├── ROADMAP.md                    # Master status (this file)
+│   │   ├── ai-doc-strategy-2026-07-07.md # AI doc consolidation proposal
+│   │   ├── file-consolidation-plan-2026-07-07.md # File consolidation tracking
 │   │   └── SPRINT_NEXT_PLAN.md (archived) → docs/archive/SPRINT_NEXT_PLAN.md
 │   ├── reference/
 │   │   ├── AI_PROBLEMS.md                # Bug tracker

@@ -189,6 +189,6 @@ All 5 code-level claims verified PASS (published_date missing, CIA default misma
 | Usable KEV positives (point-in-time, ≤2024-12-31, in corpus) | 835 |
 | Exploit-DB CVEs mapped | 25,037 |
 | Exploit-DB verified | 20,097 |
-| Vendor popularity entries | 17,102 |
+| Vendor popularity entries | 17,100 |
 | Pipeline config drifts identified | 14 |
 | Critical drifts | 5 |

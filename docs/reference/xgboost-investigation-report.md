@@ -12,7 +12,7 @@
 
 ## Executive Summary
 
-The trained XGBoost model reports ROC-AUC 0.9946 but misses 21% of exploited CVEs (recall=0.79, precision=0.46). A multi-agent investigation identified **8 distinct root causes**, all of which now have fixes applied to the working tree. Five of eight require model retraining (currently running). Three are logic-only changes effective immediately.
+The trained XGBoost model reports ROC-AUC 0.9946 but misses 21% of exploited CVEs (recall=0.79, precision=0.46). A multi-agent investigation identified **8 distinct root causes**, all of which now have fixes applied to the working tree. Five of eight require model retraining (not yet run). Three are logic-only changes effective immediately.
 
 **Most critical finding:** The ML model's `exploitation_probability` was **never used in the final priority score** that determines queue ordering. The 0.9946 AUC was effectively decorative.
 

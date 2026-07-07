@@ -9,8 +9,8 @@ Documentation of incorrect AI-generated code, mismatches between code and actual
 ## ~~HIGH (Breaks functionality)~~ — RESOLVED
 
 ### ~~1. CWE Classifier: Head naming mismatch with SecureBERT2.0~~ ✅ BYPASSED
-**File:** `backend/ml/cwe_classifier_deprecated.py` (renamed, no longer in hot path)
-**Status:** The local SecureBERT2.0 classifier has been deprecated. Replaced by `backend/ingest_cwe.py` which uses NVD API 2.0 lookup + regex fallback. The deprecated file is preserved as `backend/ml/cwe_classifier_deprecated.py` for reference.
+**File:** `backend/ml/cwe_classifier_deprecated.py` (removed, no longer in hot path)
+**Status:** The local SecureBERT2.0 classifier has been deprecated. Replaced by `backend/ingest_cwe.py` which uses NVD API 2.0 lookup + regex fallback. The deprecated file was `backend/ml/cwe_classifier_deprecated.py` but has since been removed from disk.
 
 ### ~~2. CWE Classifier: ModernBERT has no pooler_output~~ ✅ BYPASSED
 **Status:** Same as #1 — deprecated in favour of NVD API + regex path.

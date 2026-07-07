@@ -53,8 +53,8 @@ It documents sprint status, config, known bugs, and the project file tree. Howev
 - `MVP_SCOPE.md` §3 (Out of Scope) repeatedly says items are "implemented" or "deferred" — but this is a scope document, not a status tracker
 - `SPRINT_9_HANDOFF.md` §§1-3 repeat data found in `ROADMAP.md`
 
-**Finding 5: Broken symlinks exist.**
-`DEMO_SCRIPT.md` (deleted) and `TRIAGEMATE_BOOK_PROMPT.md` (deleted) appear in root-level listings and `AGENTS.md`'s file map, but their targets (`docs/guides/DEMO_SCRIPT.md`, `docs/guides/TRIAGEMATE_BOOK_PROMPT.md`) do not exist on disk. An AI attempting to read them will get ENOENT.
+**Finding 5: Broken symlinks existed — now resolved.**
+`DEMO_SCRIPT.md` (deleted) and `TRIAGEMATE_BOOK_PROMPT.md` (deleted) previously appeared in root-level listings and `AGENTS.md`'s file map, but their targets did not exist on disk. Both symlinks have since been removed from root. See §7 Phase 1 (✅ Done).
 
 **Finding 6: Some files have unclear audience and purpose.**
 - `TRIAGEMATE_BOOK_PROMPT.md` (deleted) (broken) was described as a "book generation prompt" — a prompt template, not project documentation
@@ -315,13 +315,13 @@ Add after the Quick Start:
 
 ### 6.3 Update the Documentation Structure Table
 
-Current table (in AGENTS.md):
+Current table (in AGENTS.md) — this was the pre-cleanup state; the two deleted entries have since been removed:
 
 ```markdown
 | Category | Directory | Contents |
 |---|---|---|
 | Architecture | `docs/architecture/` | `MVP_SCOPE.md` — scope authority |
-| Guides | `docs/guides/` | `DEMO_SCRIPT.md` (deleted), `TRIAGEMATE_BOOK_PROMPT.md` (deleted), `WINDOWS_SETUP.md` |
+| Guides | `docs/guides/` | ~~`DEMO_SCRIPT.md` (deleted)~~, ~~`TRIAGEMATE_BOOK_PROMPT.md` (deleted)~~, `WINDOWS_SETUP.md` |
 | Planning | `docs/planning/` | `ROADMAP.md`, `SPRINT_NEXT_PLAN.md` |
 | Reference | `docs/reference/` | `AI_PROBLEMS.md`, `xgboost-investigation-report.md`, hostname standards, ML implementation plan |
 | Research | `docs/research/` | `RESEARCH_FINDINGS.md` |
@@ -343,7 +343,7 @@ Proposed replacement:
 | Guides | `docs/guides/` | `guide-setup-windows.md` — Windows setup | CURRENT |
 | Archive | `docs/archive/` | Sprint handoffs, superseded plans, research sources | ARCHIVE |
 
-> **Broken symlinks (to be removed):** `DEMO_SCRIPT.md` (deleted), `TRIAGEMATE_BOOK_PROMPT.md` (deleted) — their targets don't exist on disk.
+> **Broken symlinks (resolved — both removed from root):** `DEMO_SCRIPT.md` (deleted), `TRIAGEMATE_BOOK_PROMPT.md` (deleted) — symlinks removed per §7.1.
 ```
 
 ### 6.4 Add a "File Freshness" Section
