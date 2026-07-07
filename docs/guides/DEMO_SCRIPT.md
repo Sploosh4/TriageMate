@@ -10,7 +10,7 @@
 
 **Docker:**
 ```bash
-docker-compose up --build
+docker compose up --build
 ```
 Wait for `Application startup complete` in the logs (~60s first time).
 
@@ -36,7 +36,7 @@ Open **http://localhost:8000** in a browser.
 - **Priority Score** — 0-100, scored by the ML pipeline
 - **Risk Band** — Low / Medium / Critical / Very Critical
 - **Detection Tier** — how the pipeline reached the score (Deterministic / ML / SLM)
-- **Compliance** — PRIS Act data classification (Category 1-4)
+- **Compliance** — WAICP data classification (OFFICIAL / OFFICIAL Sensitive)
 - **Time** — when it was ingested
 
 **Highlight:** The MOVEit Transfer row (score 94, Very Critical) — *"This CVE has active exploitation confirmed by WASOC threat intel. TriageMate auto-escalated it to the top without human review."*
@@ -63,7 +63,7 @@ Also expand **Scanner Output** and **Weakness Logic Template**.
 **🎯 Say:** *"The investigation notes are auto-populated with a full pipeline trace — which tiers fired, what scores were calculated, any EPSS substitution that occurred. The score gauge gives a quick visual of severity."*
 
 ### Panel 4 — Scoring Breakdown + Asset Registry
-**🎯 Say:** *"The scoring weights break down how the 0-100 score was calculated: CVSS contribution, EPSS probability, asset criticality (based on PRIS Act classification), exposure, and patch availability."*
+**🎯 Say:** *"The scoring weights break down how the 0-100 score was calculated: CVSS contribution, EPSS probability, asset criticality (based on WAICP classification), exposure, patch availability, and ML exploitation probability."*
 
 **Highlight the Enrichment Stale badge** (only if NVD data is stale — skip this step if badge is not visible).
 
@@ -107,7 +107,7 @@ Refresh the Queue page at **http://localhost:8000**.
 Click the new row and point out:
 
 - **Panel 1** — narrative mentions the hostname `web-gateway.health.wa.gov.au`
-- **Panel 4** — asset registry shows the IP, data classification (Category 1 because hostname was unknown to CMDB — explain this honestly)
+- **Panel 4** — asset registry shows the IP, data classification (OFFICIAL because hostname was unknown to CMDB — explain this honestly)
 - **Scoring weights** — show how CVSS 8.1 maps through the pipeline
 
 **🎯 Say:** *"Compare this to the seed rows — the same pipeline ran for both. The Tenable webhook produces the same quality of case enrichment as a hand-crafted ingest."*
@@ -131,7 +131,7 @@ Point to the **Metrics boxes** above the queue:
 **🎯 Say:** *"TriageMate runs entirely in Docker. The ML model is pre-cached in the image — no internet calls on startup. You can deploy it on your own infrastructure with one command:*
 
 ```bash
-docker-compose up
+docker compose up
 ```
 
 *"All data persists in a volume-mounted database. The NVD enrichment, MITRE mapping, EPSS substitution, and RAG vector store all run locally. With the optional LLM API key for Tier 2 SLM analysis, CVE descriptions and RAG context are sent to the configured provider (OpenAI/Anthropic/Together AI). The built-in KNOWN_CONFLICTS fallback resolver avoids any external calls for the demo CVEs.*
@@ -144,9 +144,9 @@ docker-compose up
 
 | Feature | What to emphasise |
 |---|---|
-| One-command deploy | `docker-compose up` — no dependencies beyond Docker |
+| One-command deploy | `docker compose up` — no dependencies beyond Docker |
 | Tenable webhook | Accepts raw Tenable.io JSON — no transformation needed |
-| PRIS Act compliance | Data classification, Category 1-4, mission tags |
+| WAICP compliance | Data classification, OFFICIAL / OFFICIAL Sensitive, mission tags |
 | Offline-capable | SBERT model pre-cached, NVD has 24h TTL cache |
 | Scoring transparency | Every score has a weight breakdown with justification |
 | ML pipeline | XGBoost exploitation probability + ensemble variance routing |

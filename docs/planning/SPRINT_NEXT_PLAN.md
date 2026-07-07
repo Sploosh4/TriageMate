@@ -16,7 +16,7 @@
 
 ## Item 1: XGBoost Retrain on `training_data_v2.npz`
 
-**Goal:** Retrain the XGBoost exploitation probability model on 186K records with real feature distributions, replacing the old model that had 15 hardcoded features.
+**Goal:** Retrain the XGBoost exploitation probability model on the filtered training corpus (144K samples, 67 features) with real feature distributions, replacing the old model that had 15 hardcoded features.
 
 **Why now:** The old model (93K records) had 18 of 36 tabular features with zero importance because training data hardcoded them to constants. The new dataset has realistic variance across ALL features. Retraining is a one-command operation and the single highest-impact accuracy improvement possible.
 
@@ -27,7 +27,7 @@ cd backend && source venv/bin/activate
 python -m ml.train_xgboost --train --data-file ml/training_data_v2.npz
 ```
 
-This loads `training_data_v2.npz` (186K x 68), splits train/val/test chronologically, trains XGBoost (binary:logistic, 800 trees, scale_pos_weight for KEV imbalance), evaluates ROC-AUC, and saves to `backend/ml/xgboost_model.pkl`.
+This loads `training_data_v2.npz` (144K samples x 67 features + label), splits train/val/test chronologically, trains XGBoost (binary:logistic, 800 trees, scale_pos_weight for KEV imbalance), evaluates ROC-AUC, and saves to `backend/ml/xgboost_model.pkl`.
 
 ### Verification
 
@@ -317,4 +317,4 @@ Verification:
   All 37 tests pass. All endpoints verified: /api/queue, /api/review/queue, /api/drift, /api/case/{id}/review, /api/case/{id}/history
 ```
 
-> **Sprint NEXT complete as of 2 July 2026 20:34 AWST.** Only remaining action: run `python -m ml.train_xgboost --train --data-file ml/training_data_v2.npz` to retrain the XGBoost model on the new 144K-sample corpus.
+> **Sprint NEXT items 2, 3, 6, 8 complete as of 2 July 2026 20:34 AWST.** Item 1 retrain is still pending. Run `python -m ml.train_xgboost --train --data-file ml/training_data_v2.npz` to retrain the XGBoost model on the new 144K-sample corpus.

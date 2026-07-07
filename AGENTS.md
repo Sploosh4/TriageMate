@@ -10,13 +10,16 @@ All subagents load the `decision-framework` skill at the start of every task. It
 The commander plans sprints, executes them via subagent delegation, and triggers bookkeeper at sprint end. Sprint plans live in `.opencode/plans/`.
 
 ## Documentation Structure
-All project documentation lives under `docs/` in subdirectories by category. Root-level `.md` files (except `AGENTS.md`) are symlinks into `docs/` for backward compatibility. See `docs/` for the full index.
 
-| Category | Directory |
-|---|---|
-| Architecture | `docs/architecture/` |
-| Guides | `docs/guides/` |
-| Planning | `docs/planning/` |
-| Reference | `docs/reference/` |
-| Research | `docs/research/` |
-| Archive | `docs/archive/` |
+All project documentation lives under `docs/` in subdirectories by category. Root-level `.md` files (except `AGENTS.md`) are symlinks into `docs/` for backward compatibility.
+
+| Category | Directory | Contents |
+|---|---|---|
+| Architecture | `docs/architecture/` | `MVP_SCOPE.md` — scope authority |
+| Guides | `docs/guides/` | `DEMO_SCRIPT.md`, `TRIAGEMATE_BOOK_PROMPT.md`, `WINDOWS_SETUP.md` |
+| Planning | `docs/planning/` | `ROADMAP.md`, `SPRINT_NEXT_PLAN.md` |
+| Reference | `docs/reference/` | `AI_PROBLEMS.md`, `XGBOOST_INVESTIGATION_REPORT.md`, hostname standards, ML implementation plan |
+| Research | `docs/research/` | `RESEARCH_FINDINGS.md` |
+| Archive | `docs/archive/` | Superseded plans, handoffs, sprint archives |
+
+> **Note:** `AGENTS.md` is the only real `.md` file at the project root. All other root `.md` files are symlinks into `docs/`. Opening `ROADMAP.md` at root opens `docs/planning/ROADMAP.md` transparently.

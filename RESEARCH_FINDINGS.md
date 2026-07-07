@@ -1,1 +1,1 @@
-docs/RESEARCH_FINDINGS.md
+docs/research/RESEARCH_FINDINGS.md

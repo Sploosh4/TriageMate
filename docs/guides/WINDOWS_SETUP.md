@@ -67,7 +67,7 @@ copy .env.example .env
 
 Edit `.env` with a text editor if you want to configure:
 - `TRIAGEMATE_LLM_API_KEY` — for Tier 2 LLM analysis (optional — fallback used if unset)
-- `TRIAGEMATE_API_KEY` — API auth key (optional — leave unset for localhost)
+- `TRIAGEMATE_ADMIN_USER` / `TRIAGEMATE_ADMIN_PASS` — JWT auth credentials (optional — leave unset for localhost)
 - `NVD_API_KEY` — NVD API key for rate limiting (optional)
 
 ### 6. Seed the database
@@ -112,7 +112,7 @@ Open your browser to **http://localhost:8000**
 If you have Docker Desktop installed:
 
 ```batch
-docker-compose up --build
+docker compose up --build
 ```
 
 This builds the container (pre-caches the ML model) and starts the app on port 8000.

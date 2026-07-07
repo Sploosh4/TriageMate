@@ -1,1 +1,1 @@
-docs/archive/handoffs/SPRINT_NEXT_PLAN.md
+docs/planning/SPRINT_NEXT_PLAN.md

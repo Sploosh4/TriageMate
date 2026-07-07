@@ -25,13 +25,13 @@ Spawn separate subagents to each read a slice of the codebase:
 | **SA-DB** | Read `backend/database.py`, `backend/models.py`, the Alembic migrations in `backend/alembic/versions/`, and inspect `backend/triagemate.db` (SQLite). Return: full table schemas, all columns with types, relationships between tables, any triggers or indices, migration history. |
 | **SA-BACKEND** | Read `backend/main.py`, `backend/pipeline/*.py`, `backend/scoring.py`, `backend/ingest_helpers.py`, `backend/routers/*.py`. Return: the request flow from ingest → pipeline → scoring → response, router endpoint signatures, middleware, config loading, scheduler. |
 | **SA-FRONTEND** | Read `frontend/index.html`, `frontend/js/app.js`, `frontend/js/components/*.js`, `frontend/css/triagemate.css`. Return: page architecture, component hierarchy, state management, API integration pattern, auth flow, event wiring. |
-| **SA-ML** | Read `backend/ml/xgboost_predictor.py`, `backend/ml/encoder.py`, `backend/ml/vector_store.py`, `backend/ml/epss_substitutor.py`, `backend/pipeline/tier_2.py`, `backend/integrations/*.py`. Return: model architecture, feature vector (list all 42 keys), LLM provider chain, RAG flow, all external integrations with their auth/cache/fallback behaviour. |
+| **SA-ML** | Read `backend/ml/xgboost_predictor.py`, `backend/ml/encoder.py`, `backend/ml/vector_store.py`, `backend/ml/epss_substitutor.py`, `backend/pipeline/tier_2.py`, `backend/integrations/*.py`. Return: model architecture, feature vector (35 tabular + 384 SBERT = 419 total), LLM provider chain, RAG flow, all external integrations with their auth/cache/fallback behaviour. |
 
 ### Phase 2 — Document Review (2 subagents in parallel)
 | Subagent | Task |
 |----------|------|
 | **SA-DOCS** | Read `ROADMAP.md`, `MVP_SCOPE.md`, `SPRINT_NEXT_PLAN.md`, `AI_PROBLEMS.md`, `DEMO_SCRIPT.md`. Return: what's done vs planned, sprint history, known bugs, verification criteria, acceptance tests. |
-| **SA-SKILLS** | Read `.opencode/skills/*/SKILL.md`, `Additional Instructions/Hostname and Data Classification Standards.md`, `Additional Instructions/TriageMate ML Implementation Plan - Final.md`. Return: architectural rules, data classification standards, ML implementation plan details, integration patterns. |
+| **SA-SKILLS** | Read `.opencode/skills/*/SKILL.md`, `docs/reference/Hostname and Data Classification Standards.md`, `docs/reference/TriageMate ML Implementation Plan - Final.md`. Return: architectural rules, data classification standards, ML implementation plan details, integration patterns. |
 
 ### Phase 3 — Chapter Writing (one subagent per chapter, ALL in parallel)
 After exploration completes and you have all the information, spawn one subagent per chapter. Each writes its own `.md` file. They do NOT need to coordinate — the chapter boundaries are predefined.
@@ -70,7 +70,7 @@ Tier 0: the deterministic rule engine. Explain each rule with pseudocode:
 Discuss the SSVC alignment, configurable threshold constants, the "ambiguous" routing concept, and why this tier is "production-ready, zero ML, zero training data." Planned MVP work: threshold tuning, adding more rule patterns based on SOC feedback.
 
 ### Chapter 6 — `06-pipeline-tier-1-xgboost.md`
-Tier 1: the XGBoost exploitation probability model. Full narrative: 37 tabular features + 384-dim SBERT embedding, training data strategy (KEV as positive class, ~15:1 imbalance, scale_pos_weight), model architecture (800 trees, max_depth=4, Platt calibration), ROC-AUC 0.9677-0.9946. Explain ensemble variance routing (std of 800 tree predictions > 0.15 → escalate to Tier 2). Explain the 93K → 144K → 186K training data evolution across sprints. Cover the fallback heuristic path. Planned MVP work: the Sprint NEXT retrain on `training_data_v2.npz` (186K records, 67 features, real distributions, temporal bias fixes, label leakage removal).
+Tier 1: the XGBoost exploitation probability model. Full narrative: 35 tabular features + 384-dim SBERT embedding, training data strategy (KEV as positive class, ~15:1 imbalance, scale_pos_weight), model architecture (800 trees, max_depth=4, Platt calibration), ROC-AUC 0.9677-0.9946. Explain ensemble variance routing (std of 800 tree predictions > 0.15 → escalate to Tier 2). Explain the 93K → 144K training data evolution across sprints (186K raw NVD CVEs filtered to 144K after temporal/observation window filters). Cover the fallback heuristic path. Planned MVP work: the Sprint NEXT retrain on `training_data_v2.npz` (144K samples, 67 features, real distributions, temporal bias fixes, label leakage removal).
 
 ### Chapter 7 — `07-pipeline-tier-2-cloud-llm.md`
 Tier 2: the cloud LLM layer. Explain the force-reflection prompt template (Step A → B → C → structured JSON), provider chain (OpenAI gpt-4o-mini primary → Anthropic backup → Together AI tertiary → KNOWN_CONFLICTS fallback → neutral default), exponential backoff retry (3 attempts, 2^N seconds), prompt caching economics (50-90% discount on cached prefixes). Explain the RAG context injection: deterministic pre-query against LanceDB, max 2000 tokens injected into prompt, TTL cache by hostname. Explain the score adjustment range [-70, +10] and why. Cover the demo row conflict examples (Office RCE -15, Confluence -37, ManageEngine -66). Planned MVP work: none — this tier is complete. Local model replacement is explicitly post-MVP.
@@ -86,7 +86,7 @@ The full ML model inventory. Tabular:
 
 | Model | Purpose | Algorithm | Training Data | Status |
 |-------|---------|-----------|--------------|--------|
-| XGBoost | Exploitation probability | XGBoost classifier, 800 trees | 186K CVEs (68 features) | Trained |
+| XGBoost | Exploitation probability | XGBoost classifier, 800 trees | 144K samples (67 features + label = 68 columns) | Needs retrain |
 | Pre-Tier RF | Mission + wellbeing classification | MultiOutput RF, 150 trees | 31 mock CMDB hosts | Trained |
 | EPSS v3 | Sector-adjusted EPSS | Regularised regression | 344K EPSS scores | Trained (best) |
 | EPSS v2 | Sector-adjusted EPSS | Regularised regression | 344K EPSS scores | Trained (fallback) |
@@ -94,7 +94,7 @@ The full ML model inventory. Tabular:
 | SBERT | Text embedding | all-MiniLM-L6-v2 | Pretrained | Cached |
 | LanceDB | Vector store | In-process Arrow | 9 seed docs | Seeded |
 
-Explain the training data pipeline: `fetch_nvd_corpus.py` → `build_training_corpus.py` → `train_xgboost.py`. Explain the PCA reduction (384→32 dims, preserves >85% variance). Explain the feature vector contract (42 keys, never rename/remove, only append). Discuss the lazy-loading singleton pattern for all models.
+Explain the training data pipeline: `fetch_nvd_corpus.py` → `build_training_corpus.py` → `train_xgboost.py`. PCA was removed in v2.5 — full 384-dim SBERT embeddings are used directly (no reduction). Explain the feature vector contract (35 tabular + 384 SBERT = 419 total features, never rename/remove existing features, only append). Discuss the lazy-loading singleton pattern for all models.
 
 ### Chapter 11 — `11-external-integrations.md`
 All external data sources. Tabular:
@@ -124,7 +124,7 @@ Security architecture. Auth: JWT-based, optional (disabled when env vars unset),
 How TriageMate runs. Current: `uvicorn main:app --reload` on localhost, SQLite backend, `.env` configuration, no containerization. Docker config: multi-stage Dockerfile (Python 3.12-slim, non-root user, SBERT pre-cache), docker-compose.yml (PostgreSQL 16 + app with health checks). Testing: 37 tests in 6 files (pytest, SQLite in-memory for test isolation). Background processes: daily low-severity re-check (7-day window), 7.5% audit sampling. Logging: structured JSON logs, configurable format. Planned MVP work: the Sprint NEXT hardening items (model rollback mechanism, cache freshness in health endpoint, tests for new review/drift endpoints, feature-parity guard test).
 
 ### Chapter 15 — `15-data-corpus-and-training.md`
-The training data that powers the ML models. NVD corpus: 186,102 CVEs, 145MB, built via `fetch_nvd_corpus.py` (API 2.0 + feed fallback). KEV cache: 1,631 entries from CISA. EPSS cache: 344,852 scores from FIRST.org. ExploitDB: 47,089 exploits, 25,037 CVE mappings. Vendor index: 17,100 vendors from NVD corpus. Training data v2: 186K feature vectors, 68 columns. Explain the temporal bias fixes: chronological train/val/test split, observation window filters, no look-ahead on EPSS/KEV. Explain the feature engineering pipeline: `build_training_corpus.py` unifies all sources. The 5 corpus scripts and their roles. The NVD checkpoint/resume mechanism for incremental updates.
+The training data that powers the ML models. NVD corpus: 186,102 CVEs, 145MB, built via `fetch_nvd_corpus.py` (API 2.0 + feed fallback). KEV cache: 1,631 entries from CISA. EPSS cache: 344,852 scores from FIRST.org. ExploitDB: 47,089 exploits, 25,037 CVE mappings. Vendor index: 17,100 vendors from NVD corpus. Training data v2: 144K samples, 67 features (+ label column = 68 columns total). Raw NVD corpus was 186K CVEs before temporal filtering. Explain the temporal bias fixes: chronological train/val/test split, observation window filters, no look-ahead on EPSS/KEV. Explain the feature engineering pipeline: `build_training_corpus.py` unifies all sources. The 5 corpus scripts and their roles. The NVD checkpoint/resume mechanism for incremental updates.
 
 ### Chapter 16 — `16-mvp-roadmap-and-future.md`
 The capstone chapter. Summarise what's done (all 9 sprints, all pipeline stages, full data corpus, drift dashboard, review queue, PostgreSQL support, Docker, Alembic, 37 tests) and what's coming in the immediate MVP window: XGBoost retrain (the single highest-impact improvement), Pre-Tier RF model activation (replacing the hostname dict), EPSS substitution retrain (344K real scores), rate limiting configuration, hardened tests and operational guards. Map each item to its sprint/plan document. End with a vision paragraph: what TriageMate looks like as a production SOC tool for the WA Government — the pipeline, the dashboards, the analyst workflow.

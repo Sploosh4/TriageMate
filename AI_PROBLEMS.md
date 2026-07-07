@@ -1,1 +1,1 @@
-docs/AI_PROBLEMS.md
+docs/reference/AI_PROBLEMS.md

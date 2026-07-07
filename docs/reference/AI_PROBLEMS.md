@@ -128,7 +128,7 @@ Documentation of incorrect AI-generated code, mismatches between code and actual
 
 ---
 
-### ~~J. XGBoost model trained with wrong feature count (69→68)~~ ✅ FIXED (Sprint 3)
+### ~~K. XGBoost model trained with wrong feature count (69→68)~~ ✅ FIXED (Sprint 3)
 **Root cause:** `cisa_kev` was removed as a training feature (label leakage fix, Item A), reducing features from 37→36 tabular (69→68 total). The training data migration (`load_training_data`) correctly strips column 9 from legacy data, and `build_tabular_features()` allocates 36 columns. But the `xgboost_model.pkl` was **never retrained** — the old 69-feature model was still deployed. At runtime, the predictor built 68 features, handed them to a model expecting 69, and raised `ValueError: Feature shape mismatch`.
 **Fix applied:** Ran `python -m ml.train_xgboost --train` to retrain the model from the existing 68-column `training_data.npz` (93,018 records). Model now expects 68 features. ROC-AUC: 0.9677.
 

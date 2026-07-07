@@ -33,7 +33,7 @@
 | `epss_cache.json` | 344,852 scores | FIRST.org |
 | `files_exploits.csv` | 47,089 exploits, 25,037 CVE mappings | ExploitDB |
 | `vendor_popularity.json` | 17,100 vendors | NVD corpus |
-| `training_data_v2.npz` | 186K feature vectors, 68 columns | Unified corpus builder |
+| `training_data_v2.npz` | 186K raw CVEs → 144K filtered training set, 67 features (+ 1 label = 68 columns) | Unified corpus builder with temporal filters |
 
 ### Feature Field Status — ALL 37 FIELDS FILLED
 
@@ -105,7 +105,7 @@
 | FastAPI entry point (`main.py`) | ✅ Done | CORS, static mounts, startup lifecycle, .env auto-loading |
 | SQLite database + schema (`database.py`) | ✅ Done | 63-column `vulnerabilities` table, DatabaseManager (SQLite + PostgreSQL) |
 | Pydantic models (`models.py`) | ✅ Done | 10 models, camelCase aliasing |
-| Scoring engine (`scoring.py`) | ✅ Done | 5 dimensions → 0–100 score → band mapping |
+| Scoring engine (`scoring.py`) | ✅ Done | 6 dimensions → 0–100 score → band mapping |
 | Background scheduler (`scheduler.py`) | ✅ Done | Daily low-severity re-check |
 | Background audit (`audit.py`) | ✅ Done | 7.5% random sample of auto-resolved cases |
 
@@ -130,7 +130,7 @@
 |---|---|---|
 | Pre-Tier | ✅ Done | Hostname dictionary + pre-tier model (60-dim RF) |
 | Tier 0 | ✅ Done | Deterministic rules: KEV + CVSS + EPSS |
-| Tier 1 | ✅ Done | XGBoost (35 tabular + 384 SBERT = 419 total features, ROC-AUC 0.9946) + calibration + probability-zoned routing |
+| Tier 1 | ✅ Done | XGBoost (35 tabular + 384 SBERT = 419 total features, ROC-AUC 0.9677 post-fix; pre-fix was 0.9946 with label leakage) + calibration + probability-zoned routing |
 | Tier 2 | ✅ Done | Multi-provider cloud LLM (OpenAI/Anthropic/Together) |
 | KNOWN_CONFLICTS | ✅ Done | Pre-resolved for demo CVEs |
 | RAG context injection | ✅ Done | LanceDB vector store |
@@ -142,7 +142,7 @@
 | XGBoost model (`xgboost_model.pkl`) | 🔧 Retraining — New: 144K records, ROC-AUC 0.9946, trained, calibrator pending (needs retrain run) |
 | SBERT encoder (`encoder.py`) | ✅ Done — all-MiniLM-L6-v2, 384-dim (PCA removed v2.5) |
 | Training pipeline (`train_xgboost.py`) | ✅ Done — two-phase, checkpoint/resume, calibration, temporal bias fixes |
-| Training data v2 (`training_data_v2.npz`) | 🔧 Rebuilding — Was 186K records, now ~144K with temporal + observation window filters |
+| Training data v2 (`training_data_v2.npz`) | 🔧 Retrain pending — 144K samples, 67 features (35 tabular + 384 SBERT), temporal + observation window filters applied |
 | Pre-tier model (`pre_tier_model.pkl`) | ✅ Done — 60-dim MultiOutputClassifier |
 | Calibrator (`xgboost_calibrator.pkl`) | 🔧 Will generate after retrain — Platt scaling on val set |
 | Drift dashboard (`GET /api/drift`) | ✅ Done — CSS-only charts, 30-day trend, tier routing, risk bands |
@@ -176,9 +176,9 @@ See `AI_PROBLEMS.md` for the authoritative tracker.
 
 ---
 
-## Sprint NEXT — Completed 2 July 2026
+## Sprint NEXT — Items Complete (Retrain Pending)
 
-These items were planned after Sprint 9. All five priority items are now complete.
+These items were planned after Sprint 9. Items 2, 3, 6, 8 are ✅ Done; Item 1 (XGBoost retrain) is 🔧 Retraining (code fixes applied, model not yet retrained). Items 4, 5, 7 are deferred per the table below.
 
 | # | Item | Status | Notes |
 |---|---|---|---|
@@ -267,31 +267,50 @@ curl -s http://localhost:8000/api/health | python3 -m json.tool
 
 ```
 TriageMate MVP/
-├── ROADMAP.md                            # This file — master status
-├── MVP_SCOPE.md                          # Scope authority
-├── AI_PROBLEMS.md                        # Bug tracker
-├── DEMO_SCRIPT.md                        # Demo walkthrough
-├── WINDOWS_SETUP.md                      # Windows hosting instructions
-├── SPRINT_7_HANDOFF.md                   # S7 handoff — ops foundation
-├── SPRINT_8_HANDOFF.md                   # S8 handoff — feature enrichment
-├── SPRINT_9_HANDOFF.md                   # S9 handoff — data supremacy
+├── AGENTS.md                             # Agent instructions (real file at root)
+├── MVP_SCOPE.md → docs/architecture/MVP_SCOPE.md
+├── ROADMAP.md → docs/planning/ROADMAP.md
+├── AI_PROBLEMS.md → docs/reference/AI_PROBLEMS.md
+├── DEMO_SCRIPT.md → docs/guides/DEMO_SCRIPT.md
+├── WINDOWS_SETUP.md → docs/guides/WINDOWS_SETUP.md
+├── SPRINT_NEXT_PLAN.md → docs/planning/SPRINT_NEXT_PLAN.md
+├── RESEARCH_FINDINGS.md → docs/research/RESEARCH_FINDINGS.md
+├── XGBOOST_INVESTIGATION_REPORT.md → docs/reference/XGBOOST_INVESTIGATION_REPORT.md
+├── TRIAGEMATE_BOOK_PROMPT.md → docs/guides/TRIAGEMATE_BOOK_PROMPT.md
 ├── index.html                            # Original demo (preserved)
 ├── demo-reference.html                   # Visual reference
 │
-├── Additional Instructions/
-│   ├── TriageMate ML Implementation Plan — Final.md
-│   ├── Hostname and Data Classification Standards.md
-│   └── ARCHIVED/                         # Superseded docs
-│
-├── ARCHIVED/
-│   └── Sprints_1-6/                      # Pre-demo plans + old handoffs
+├── docs/
+│   ├── architecture/
+│   │   └── MVP_SCOPE.md                  # Scope authority
+│   ├── guides/
+│   │   ├── DEMO_SCRIPT.md                # Demo walkthrough
+│   │   ├── WINDOWS_SETUP.md              # Windows hosting instructions
+│   │   └── TRIAGEMATE_BOOK_PROMPT.md     # Book generation prompt
+│   ├── planning/
+│   │   ├── ROADMAP.md                    # Master status (this file)
+│   │   └── SPRINT_NEXT_PLAN.md           # Active retrain plan
+│   ├── reference/
+│   │   ├── AI_PROBLEMS.md                # Bug tracker
+│   │   ├── XGBOOST_INVESTIGATION_REPORT.md
+│   │   ├── TriageMate ML Implementation Plan — Final.md
+│   │   └── Hostname and Data Classification Standards.md
+│   ├── research/
+│   │   └── RESEARCH_FINDINGS.md
+│   └── archive/
+│       ├── handoffs/
+│       │   └── SPRINT_9_HANDOFF.md
+│       └── sprints-1-6/
+│           ├── SPRINT_1_HANDOFF.md … SPRINT_8_HANDOFF.md
+│           ├── PRE_DEMO_PLAN.md, COURSE_CORRECTION.md
+│           └── SPRINT_9_BRIEFING_PLAN.md, TEAM_BRIEFING.md
 │
 ├── backend/
 │   ├── main.py                           # FastAPI entry point + .env loading
 │   ├── database.py                       # DatabaseManager (SQLite + PostgreSQL)
 │   ├── models.py                         # Pydantic models
-│   ├── scoring.py                        # Priority score engine
-│   ├── ingest_helpers.py                 # 37-feature vector builder
+│   ├── scoring.py                        # Priority score engine (6 dims)
+│   ├── ingest_helpers.py                 # 35-feature vector builder
 │   ├── auth.py                           # JWT auth
 │   ├── logging_config.py                 # Structured JSON logging
 │   ├── .env                              # API keys (gitignored)
@@ -330,12 +349,11 @@ TriageMate MVP/
 │   │   └── build_cwe_hierarchy.py        # CWE hierarchy parser
 │   │
 │   ├── ml/
-│   │   ├── encoder.py                    # SBERT + PCA
+│   │   ├── encoder.py                    # SBERT (PCA removed v2.5)
 │   │   ├── xgboost_predictor.py          # Inference + ensemble variance
-│   │   ├── xgboost_model.pkl             # Trained model (93K CVEs)
+│   │   ├── xgboost_model.pkl             # Trained model (needs retrain)
 │   │   ├── training_data.npz             # Original training data
-│   │   ├── training_data_v2.npz          # NEW: 186K real-distribution dataset
-│   │   ├── pca_reducer.pkl               # PCA transformation
+│   │   ├── training_data_v2.npz          # 144K real-distribution dataset
 │   │   ├── pre_tier_model.pkl            # Pre-tier classifier
 │   │   ├── train_xgboost.py              # Two-phase training pipeline
 │   │   ├── vector_store.py               # LanceDB RAG store

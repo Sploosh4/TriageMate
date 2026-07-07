@@ -66,8 +66,8 @@ python -m ml.ingest_docs
 |---|---|
 | XGBoost model | `backend/ml/xgboost_model.pkl` |
 | Pre-Tier model | `backend/ml/pre_tier_model.pkl` |
-| EPSS models | `backend/ml/epss_model.pkl`, `v2.pkl`, `v3.pkl` |
-| Training data | `backend/ml/training_data.npz`, `v2.npz` |
+| EPSS models | `backend/ml/epss_model.pkl`, `backend/ml/epss_model_v2.pkl`, `backend/ml/epss_model_v3.pkl` |
+| Training data | `backend/ml/training_data.npz`, `backend/ml/training_data_v2.npz` |
 | NVD corpus | `backend/data/nvd_corpus.json` |
 | NVD cache | `backend/data/nvd_cache.json` |
 | EPSS cache | `backend/data/epss_cache.json` |

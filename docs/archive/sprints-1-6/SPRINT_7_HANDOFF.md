@@ -237,7 +237,7 @@ curl -s http://localhost:8000/api/queue | python3 -c "import sys,json;d=json.loa
 curl -s http://localhost:8000/api/queue | python3 -c "
 import sys,json
 rows=json.load(sys.stdin)['rows'][:7]
-expected=[94,87,71,55,63,41,22]
+expected=[94,87,71,63,55,41,22]
 for r,e in zip(rows,expected):
     ok='OK' if abs(r['priorityScore']-e)<=3 else 'MISMATCH'
     print(f'{r[\"vulnerabilityId\"]}: {r[\"priorityScore\"]} (expected {e}) {ok}')

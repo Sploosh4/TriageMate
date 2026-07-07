@@ -45,7 +45,7 @@ Three priorities set by the outgoing Commander:
 | EPSS scores | 344,852 entries | `backend/data/epss_cache.json` |
 | ExploitDB | 47,089 exploits, 25,037 CVE mappings | `backend/data/files_exploits.csv` |
 | Vendor index | 17,100 vendors | `backend/data/vendor_popularity.json` |
-| Training data v2 | 186K feature vectors × 68 columns | `backend/ml/training_data_v2.npz` |
+| Training data v2 | 144K samples × 67 features (+ label = 68 columns). Raw NVD corpus was 186K CVEs before temporal filtering. | `backend/ml/training_data_v2.npz` |
 
 All data files are in `backend/data/` and gitignored. They exist on this machine only.
 
@@ -139,10 +139,10 @@ The current corpus was built from feeds (API was returning 503). Feeds are gzipp
 ### Training Corpus
 
 `build_training_corpus.py` replaces Phase 1 of `train_xgboost.py`. It generates `training_data_v2.npz` with:
-- 68 columns: 36 tabular + 32 text PCA
+- 35 tabular + 384 SBERT = 419 total features (PCA was removed in v2.5)
 - Real distributions for ALL features
 - KEV labels with quality filters (pre-2021 and last-30-days excluded)
-- SBERT encoding via `ml/encoder.py`
+- SBERT encoding via `ml/encoder.py` (full 384-dim, no PCA reduction)
 
 The original `training_data.npz` (93K records) is preserved — `v2` is a separate file.
 

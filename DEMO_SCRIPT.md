@@ -1,1 +1,1 @@
-docs/DEMO_SCRIPT.md
+docs/guides/DEMO_SCRIPT.md

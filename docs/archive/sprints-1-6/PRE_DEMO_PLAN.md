@@ -143,7 +143,7 @@ If encoding mismatch is confirmed, either: (a) backfill training data with the p
 4. Live ingest via Tenable webhook — show it appear in queue
 5. Show case view for new row — compare richness vs seed row
 6. Show filter + metrics boxes
-7. Close: "you can deploy this on your own infra with one docker-compose command"
+7. Close: "you can deploy this on your own infra with one docker compose command"
 
 **Why:** A live demo without a script risks the stakeholder asking "what am I looking at?" before we've shown the value. The script ensures the walkthrough hits every feature in a deliberate order.
 
@@ -154,13 +154,13 @@ If encoding mismatch is confirmed, either: (a) backfill training data with the p
 
 **Effort:** ~1 hr
 
-### 3.2 Docker + docker-compose `[STRIKE]`
+### 3.2 Docker + docker compose `[STRIKE]`
 
 **Strike builds:**
-**Files:** `Dockerfile` (exists, may need updates), `docker-compose.yml` (exists, may need updates)
+**Files:** `Dockerfile` (exists, may need updates), `docker compose.yml` (exists, may need updates)
 
 **What:** Verify and harden the existing Docker setup:
-- `docker-compose up` starts the app in one command
+- `docker compose up` starts the app in one command
 - `.env` passed through correctly (API keys, CMDB provider, auth key)
 - SBERT model pre-cached in the Docker image (no HuggingFace calls on startup)
 - `HF_HUB_OFFLINE=1` set in the container
@@ -169,7 +169,7 @@ If encoding mismatch is confirmed, either: (a) backfill training data with the p
 **Why:** "Run this on your own infra" is a stronger close than "I can run it on my laptop." One-command deploy removes friction.
 
 **Audit checks:**
-- `docker-compose up` on a clean machine starts the app
+- `docker compose up` on a clean machine starts the app
 - `GET /api/health` returns 200
 - No HuggingFace HTTP calls in container logs (model pre-cached)
 - `backend/data/` volume persists across container restarts

@@ -141,6 +141,8 @@ All 5 code-level claims verified PASS (published_date missing, CIA default misma
 
 ---
 
+> **NOTE:** Some recommendations below (CWE-stratified thresholds, random seed fix) were implemented in Sprint NEXT. This roadmap section was written before Sprint NEXT and may not reflect current completion status. See ROADMAP.md §Sprint NEXT for authoritative status.
+
 ## Consolidated Implementation Roadmap
 
 ### Sprint NEXT+2 (immediate — <2 hours code)

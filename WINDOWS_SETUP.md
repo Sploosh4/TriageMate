@@ -1,1 +1,1 @@
-docs/WINDOWS_SETUP.md
+docs/guides/WINDOWS_SETUP.md

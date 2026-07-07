@@ -1,5 +1,7 @@
 # TriageMate ML Implementation Plan — Final
 
+> **⚠️ OUTDATED:** This document describes the original ML implementation plan from early sprints. The pipeline has since changed significantly: PCA was removed (v2.5), SecureBERT2.0 CWE classifier was deprecated, the feature vector is now 35 tabular + 384 SBERT, and scoring uses 6 dimensions (not 5). See ROADMAP.md for current state. This document is preserved for historical reference only.
+
 ## Document Provenance
 
 This document merges two input sources and applies four corrections and four gap-fills from a handoff prompt. The sources are:
@@ -77,9 +79,10 @@ Background: [Statistical Audit — 5-10% sample of auto-resolved cases]
    → High LLM confidence? Apply adjustment → final score.
    → Low LLM confidence? → Tier 3.
 
-10. FINAL SCORING — Five weighted dimensions (0–100):
+10. FINAL SCORING — Six weighted dimensions (0–100):
     CVSS (max 40) + EPSS (max 20) + Asset Criticality (max 20)
     + Exposure (max 15) + Patch/Remediation (max 5)
+    + ML Exploitation Probability (max 10)
     + Tier 2 score_adjustment [-70, +10]
     → Band: Low (0–25), Medium (26–50), Critical (51–75), Very Critical (76–100).
 
