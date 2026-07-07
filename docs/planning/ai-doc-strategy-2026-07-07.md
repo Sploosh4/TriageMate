@@ -15,16 +15,16 @@
 | Location | Count | Types |
 |---|---|---|
 | Root (real) | 1 | `AGENTS.md` |
-| Root (symlinks to `docs/`) | 6 | `MVP_SCOPE.md`, `ROADMAP.md`, `AI_PROBLEMS.md`, `RESEARCH_FINDINGS.md`, `xgboost-investigation-report.md`, `WINDOWS_SETUP.md` — (2 broken removed: `DEMO_SCRIPT.md` (deleted), `TRIAGEMATE_BOOK_PROMPT.md` (deleted)) |
+| Root (symlinks to `docs/`) | 6 | `MVP_SCOPE.md`, `ROADMAP.md`, `AI_PROBLEMS.md`, `RESEARCH_FINDINGS.md`, `XGBOOST_INVESTIGATION_REPORT.md`, `WINDOWS_SETUP.md` — (2 broken removed: `DEMO_SCRIPT.md` (deleted), `TRIAGEMATE_BOOK_PROMPT.md` (deleted)) |
 | `docs/architecture/` | 1 | `MVP_SCOPE.md` |
-| `docs/guides/` | 1 | `WINDOWS_SETUP.md` (DEMO_SCRIPT and TRIAGEMATE_BOOK_PROMPT targets missing — broken symlinks, both deleted) |
-| `docs/planning/` | 2 | `ROADMAP.md`, `SPRINT_NEXT_PLAN.md` |
+| `docs/guides/` | 1 | `WINDOWS_SETUP.md` |
+| `docs/planning/` | 3 | `ROADMAP.md`, `ai-doc-strategy-2026-07-07.md`, `file-consolidation-plan-2026-07-07.md` |
 | `docs/reference/` | 4 | `AI_PROBLEMS.md`, `xgboost-investigation-report.md`, `ml-implementation-plan.md`, `hostname-standards.md` |
 | `docs/research/` | 1 | `RESEARCH_FINDINGS.md` |
 | `docs/archive/` | 6 | Various research prompts and early docs |
 | `docs/archive/handoffs/` | 1 | `SPRINT_9_HANDOFF.md` |
 | `docs/archive/sprints-1-6/` | 11 | Handoffs, plans, briefings from Sprints 1–9 |
-| **Total** | **~36** (2 broken symlinks) | |
+| **Total** | **~36** (0 broken symlinks) | |
 
 ### 1.2 Key Findings
 
@@ -136,7 +136,7 @@ The index should contain:
 |--------|-------|-----------|
 | **MERGE into ROADMAP.md** | `SPRINT_NEXT_PLAN.md` implementation details (as collapsible) | Eliminates 1 file, reduces confusion about which is authoritative |
 | **KEEP separate** | `RESEARCH_FINDINGS.md` vs `xgboost-investigation-report.md` | Different temporal/contextual focus. Add cross-refs. |
-| **REMOVE (broken symlink)** | `DEMO_SCRIPT.md` (deleted), `TRIAGEMATE_BOOK_PROMPT.md` (deleted) | Already broken. Clean up the reference in AGENTS.md |
+| **REMOVE (broken symlink)** | `DEMO_SCRIPT.md` (deleted), `TRIAGEMATE_BOOK_PROMPT.md` (deleted) | Already broken. Clean up the reference in AGENTS.md | ✅ Done — both symlinks removed from root |
 | **ARCHIVE** | `ml-implementation-plan.md` if ROADMAP absorbs its current-state info | Already marked outdated. Could be moved to `docs/archive/` |
 | **KEEP standalone** | `WINDOWS_SETUP.md` | Specific enough to merit its own file. Rename for convention. |
 
@@ -186,8 +186,8 @@ The index should contain:
 | `RESEARCH_FINDINGS.md` | `research-model-findings.md` | |
 | `xgboost-investigation-report.md` | `research-xgboost-investigation.md` | |
 | `WINDOWS_SETUP.md` | `guide-setup-windows.md` | |
-| `DEMO_SCRIPT.md` (deleted) | (remove — broken symlink) | |
-| `TRIAGEMATE_BOOK_PROMPT.md` (deleted) | `prompt-triagemate-book.md` (or remove) | If restored, move to `prompts/` not `docs/` |
+| `DEMO_SCRIPT.md` (deleted) | (remove — broken symlink) | ✅ Already deleted — no action needed |
+| `TRIAGEMATE_BOOK_PROMPT.md` (deleted) | `prompt-triagemate-book.md` (or remove) | ✅ Already deleted — symlink removed; if restored, move to `prompts/` not `docs/` |
 | `ml-implementation-plan.md` | `archive-ml-implementation-plan.md` | Move to archive |
 | `hostname-standards.md` | `ref-hostname-standards.md` | |
 | `SPRINT_9_HANDOFF.md` | `archive-sprint-9-handoff.md` | |
@@ -370,9 +370,9 @@ Ordered steps for strike to execute:
 
 | Step | Action | Details |
 |------|--------|---------|
-| 1.1 | Remove broken symlinks | Delete `DEMO_SCRIPT.md` (deleted) and `TRIAGEMATE_BOOK_PROMPT.md` (deleted) from root. Confirm they have no real targets. |
+| 1.1 | Remove broken symlinks | Delete `DEMO_SCRIPT.md` (deleted) and `TRIAGEMATE_BOOK_PROMPT.md` (deleted) from root. Confirm they have no real targets. | ✅ Done |
 | 1.2 | Verify remaining symlinks | Check that all 8 remaining root-level symlinks resolve to real files in `docs/`. |
-| 1.3 | Fix guides directory | The former DEMO_SCRIPT.md (deleted) content referenced in handoff notes is no longer available — document as removed. |
+| 1.3 | Fix guides directory | The former DEMO_SCRIPT.md (deleted) content referenced in handoff notes is no longer available — document as removed. | ✅ Done |
 
 ### Phase 2: Create INDEX.md (1 hr)
 
@@ -386,8 +386,8 @@ Ordered steps for strike to execute:
 
 | Step | Action | Details |
 |------|--------|---------|
-| 3.1 | Move detailed commands | From `SPRINT_NEXT_PLAN.md` into `ROADMAP.md` as collapsible `<details>` blocks under the Sprint NEXT section |
-| 3.2 | Archive SPRINT_NEXT_PLAN.md | Move to `docs/archive/` once merge is complete. Update INDEX.md. |
+| 3.1 | Move detailed commands | From `SPRINT_NEXT_PLAN.md` into `ROADMAP.md` as collapsible `<details>` blocks under the Sprint NEXT section | ⏸️ Deferred |
+| 3.2 | Archive SPRINT_NEXT_PLAN.md | Move to `docs/archive/` once merge is complete. Update INDEX.md. | ✅ Done — already at `docs/archive/SPRINT_NEXT_PLAN.md` |
 | 3.3 | Deduplicate | Check for duplicate text between the two files and remove from the source |
 
 ### Phase 4: Rename Files (30 min with symlink updates)

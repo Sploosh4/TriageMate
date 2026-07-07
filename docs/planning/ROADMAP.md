@@ -143,10 +143,10 @@
 
 | Item | Status |
 |---|---|
-| XGBoost model (`xgboost_model.pkl`) | 🔧 Retrain pending — New training corpus: 144K records, 67 features (35 tabular + 384 SBERT). Current deployed model: 93K records, ROC-AUC 0.9677 (Sprint 3). ROC-AUC 0.9946 was pre-fix label-leakage era — not representative. Calibrator will be generated after retrain. |
+| XGBoost model (`xgboost_model.pkl`) | 🔧 Retrain pending — New training corpus: 144K records, 67 columns in npz (35 tabular + 32 auxiliary); model uses 419 input dims (35 tabular + 384 SBERT). Current deployed model: 93K records, ROC-AUC 0.9677 (Sprint 3). ROC-AUC 0.9946 was pre-fix label-leakage era — not representative. Calibrator will be generated after retrain. |
 | SBERT encoder (`encoder.py`) | ✅ Done — all-MiniLM-L6-v2, 384-dim (PCA removed v2.5) |
 | Training pipeline (`train_xgboost.py`) | ✅ Done — two-phase, checkpoint/resume, calibration, temporal bias fixes |
-| Training data v2 (`training_data_v2.npz`) | 🔧 Retrain pending — 144K samples, 67 features (35 tabular + 384 SBERT), temporal + observation window filters applied |
+| Training data v2 (`training_data_v2.npz`) | 🔧 Retrain pending — 144K samples, 67 columns in npz (35 tabular + 32 auxiliary); model uses 419 input dims (35 tabular + 384 SBERT), temporal + observation window filters applied |
 | Pre-tier model (`pre_tier_model.pkl`) | ✅ Done — 60-dim MultiOutputClassifier |
 | Calibrator (`xgboost_calibrator.pkl`) | 🔧 Will generate after retrain — Platt scaling on val set |
 | Drift dashboard (`GET /api/drift`) | ✅ Done — CSS-only charts, 30-day trend, tier routing, risk bands |
@@ -279,7 +279,7 @@ TriageMate MVP/
 ├── AI_PROBLEMS.md → docs/reference/AI_PROBLEMS.md
 ├── WINDOWS_SETUP.md → docs/guides/WINDOWS_SETUP.md
 ├── RESEARCH_FINDINGS.md → docs/research/RESEARCH_FINDINGS.md
-├── xgboost-investigation-report.md → docs/reference/xgboost-investigation-report.md
+├── XGBOOST_INVESTIGATION_REPORT.md → docs/reference/xgboost-investigation-report.md
 ├── index.html                            # Original demo (preserved)
 ├── demo-reference.html                   # Visual reference
 │

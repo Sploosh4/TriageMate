@@ -23,15 +23,15 @@
 | 7 | `docs/reference/hostname-standards.md` | 175 | ~5,000* | Reference | 🟢 EXTERNAL REFERENCE | Low overlap — unique content | Long external citations, research-heavy |
 | 8 | `docs/research/RESEARCH_FINDINGS.md` | 192 | ~3,200 | Research | 🟡 MIXED | Overlaps with xgboost-investigation-report (ML fixes), ML Plan (strategy) | Some findings acted on in Sprint NEXT; has note saying "written before Sprint NEXT" |
 | 9 | `docs/guides/WINDOWS_SETUP.md` | 118 | ~1,900 | Guides | 🟢 CURRENT | Low overlap | Focused, single-purpose |
-| 10 | `AGENTS.md` (root) | 36 | ~400 | Config | 🟡 PARTIALLY WRONG | Describes symlink structure that's partially broken | Lists DEMO_SCRIPT.md and TRIAGEMATE_BOOK_PROMPT.md as existing in docs/guides/ — both deleted |
+| 10 | `AGENTS.md` (root) | 36 | ~400 | Config | 🟡 PARTIALLY WRONG | Describes symlink structure that's partially broken | AGENTS.md no longer lists deleted files — clean. Both symlinks already removed from root. |
 | 11 | `backend/ml/README.md` | 26 | ~400 | ML Artifacts | 🟢 CURRENT | Low overlap | Small, focused, lives with code |
 
 ### Broken Symlinks
 
 | Root File | Claims to Symlink To | Status |
 |-----------|---------------------|--------|
-| `DEMO_SCRIPT.md` (deleted) | `docs/guides/DEMO_SCRIPT.md` | 🔴 BROKEN — symlink removed |
-| `TRIAGEMATE_BOOK_PROMPT.md` (deleted) | `docs/guides/TRIAGEMATE_BOOK_PROMPT.md` | 🔴 BROKEN — symlink removed |
+| `DEMO_SCRIPT.md` (deleted) | `docs/guides/DEMO_SCRIPT.md` | 🔴 BROKEN — symlink removed ✅ Now removed from root |
+| `TRIAGEMATE_BOOK_PROMPT.md` (deleted) | `docs/guides/TRIAGEMATE_BOOK_PROMPT.md` | 🔴 BROKEN — symlink removed ✅ Now removed from root |
 
 **Total word count estimate for active docs:** ~47,700 words across 11 files.  
 **Total unique content (deduplicated estimate):** ~32,000 words. ~33% redundancy.
@@ -196,8 +196,8 @@ After consolidation, the active documentation set would be:
 **Deleted / rebuilt symlinks:**
 - `AI_PROBLEMS.md` (root) → broken symlink, remove or redirect to ROADMAP.md
 - `SPRINT_NEXT_PLAN.md` (root) → broken symlink, remove or redirect to ROADMAP.md
-- `DEMO_SCRIPT.md` (root) → broken symlink, removed (file never existed)
-- `TRIAGEMATE_BOOK_PROMPT.md` (root) → broken symlink, removed (file never existed)
+- `DEMO_SCRIPT.md` (root) → broken symlink, removed (file never existed) ✅ Done
+- `TRIAGEMATE_BOOK_PROMPT.md` (root) → broken symlink, removed (file never existed) ✅ Done
 - `MVP_SCOPE.md` (root) → redirect to ARCHITECTURE.md
 - `xgboost-investigation-report.md` (root) → redirect to ML_GUIDE.md
 - `RESEARCH_FINDINGS.md` (root) → redirect to ML_GUIDE.md
@@ -231,8 +231,8 @@ After consolidation, the active documentation set would be:
 
 | Step | Action |
 |------|--------|
-| 3.1 | Removed broken `DEMO_SCRIPT.md` symlink at root |
-| 3.2 | Removed broken `TRIAGEMATE_BOOK_PROMPT.md` symlink at root |
+| 3.1 | Removed broken `DEMO_SCRIPT.md` symlink at root | ✅ Done |
+| 3.2 | Removed broken `TRIAGEMATE_BOOK_PROMPT.md` symlink at root | ✅ Done |
 | 3.3 | Remove or redirect `AI_PROBLEMS.md` → `docs/planning/ROADMAP.md` |
 | 3.4 | Remove or redirect `SPRINT_NEXT_PLAN.md` → `docs/planning/ROADMAP.md` |
 | 3.5 | Create/update `MVP_SCOPE.md` → `docs/architecture/ARCHITECTURE.md` |
@@ -291,7 +291,7 @@ For current ML understanding, see `ML_GUIDE.md`.
 | Active docs count | 11 files | 8 files (6 canonical + 2 retained) | -27% |
 | Total word count | ~47,700 | ~32,000 (est.) | -33% |
 | Redundancy | ~33% duplication | ~5% duplication | Significant reduction |
-| Broken symlinks | 4 (DEMO, TRIAGE_BOOK, AI_PROBLEMS, SPRINT_NEXT) | 0 | Clean root |
+| Broken symlinks | 2 (DEMO, TRIAGE_BOOK) → resolved to 0 | 0 | Clean root |
 | AI onboarding cost | Read 6+ files to understand project | Read 3 files (ARCHITECTURE + ROADMAP + ML_GUIDE) | 50% reduction |
 
 **Recommendation:** Proceed with this consolidation. The main effort is creating `ARCHITECTURE.md` and `ML_GUIDE.md` (approx. 90 min of writing). The rest is file moves and symlink updates (~30 min).
