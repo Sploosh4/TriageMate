@@ -1,1 +1,1 @@
-../docs/reference/Hostname and Data Classification Standards.md
+../docs/reference/hostname-standards.md

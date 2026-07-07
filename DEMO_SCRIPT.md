@@ -1,1 +1,0 @@
-docs/guides/DEMO_SCRIPT.md

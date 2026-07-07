@@ -1,1 +1,1 @@
-docs/reference/XGBOOST_INVESTIGATION_REPORT.md
+docs/reference/xgboost-investigation-report.md

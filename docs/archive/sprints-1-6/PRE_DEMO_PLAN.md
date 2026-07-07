@@ -1,5 +1,7 @@
 # TriageMate — Pre-Demo Hardening Plan
 
+> **Status: ARCHIVED** — Pre-demo hardening historical record
+
 > Created: 1 July 2026
 > Prerequisite: COURSE_CORRECTION.md complete (11/11 items). All phases 1-4 done.
 > See: ROADMAP.md for master status, AI_PROBLEMS.md for bugs

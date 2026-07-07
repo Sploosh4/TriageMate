@@ -1,5 +1,7 @@
 # TriageMate — Team Briefing (Sprint 5: Demo Data Generator)
 
+> **Status: ARCHIVED** — Sprint 5 historical record
+
 > Commander: reads `DEMO_DATA_GENERATOR_PLAN.md` and `ROADMAP.md` to track overall progress.
 > Preceding phase: PRE-DEMO HARDENING — COMPLETE (9/9 items). All pipeline stages demo-ready.
 > Audited: External Auditor reviewed PLAN v1, found 2 BLOCKERs + 2 HIGH + 15 MEDIUM/LOW. PLAN v2 (Revision 1) addresses all.

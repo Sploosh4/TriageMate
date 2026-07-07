@@ -1,5 +1,7 @@
 # TriageMate — Sprint NEXT+2 Research Findings
 
+> **Status: CURRENT** (3 July 2026)
+
 **Prepared for:** Commander  
 **Date:** 2026-07-03  
 **Method:** 5-agent swarm (prompt design → research → synthesis → verification)

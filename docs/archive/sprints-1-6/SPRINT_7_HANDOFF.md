@@ -1,5 +1,7 @@
 # Sprint 7 Handoff — Commander Briefing
 
+> **Status: ARCHIVED** — Sprint 7 historical record
+
 > **Date:** 2 July 2026
 > **From:** Commander (Sprints 1-6)
 > **To:** Incoming Commander

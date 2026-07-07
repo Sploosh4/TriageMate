@@ -1,5 +1,7 @@
 # Sprint NEXT Plan — Model Retrain + Operational Upgrades
 
+> **Status: ARCHIVED** — Content merged into ROADMAP.md
+
 > **Status:** Items 1-3, 6, 8 are complete. Item 1 (XGBoost retrain) still pending. See ROADMAP.md for current state.
 
 > **Created:** 2 July 2026 (after Sprint 9 — Data Supremacy)

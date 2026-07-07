@@ -1,5 +1,7 @@
 # TriageMate — Course Correction Plan
 
+> **Status: ARCHIVED** — Course Correction historical record
+
 > **STATUS: COMPLETE** — All 11/11 items implemented and audited. See ROADMAP.md §7b for per-item status.
 > **Commits:** `11dd427` (Phases 1-4), `5ce731e` (post-audit fixes, test isolation, fixable-now enrichments).
 > Created: 30 June 2026 · Completed: 1 July 2026

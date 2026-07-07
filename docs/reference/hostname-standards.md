@@ -1,5 +1,7 @@
 # **Technical Reference Architecture for Hostname Nomenclature and Information Governance Classifications**
 
+> **Status: CURRENT**
+
 ## **Hostname Nomenclature and Structural Standards**
 
 Standardizing host and network device nomenclature is a foundational control for managing large-scale IT infrastructure, ensuring systems are easily identifiable across administrative boundaries, automated monitoring dashboards, and security telemetry logs1. A globally unique hostname structure prevents suffix collision issues when domain search paths are dropped, or when systems are integrated into hybrid directories3.  

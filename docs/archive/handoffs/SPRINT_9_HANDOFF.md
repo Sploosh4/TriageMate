@@ -1,3 +1,5 @@
+> **Status: ARCHIVED** — Sprint 9 historical record
+
 > **Note:** Historical handoff from Sprint 9 (2 July 2026). The project has moved beyond this sprint. See ROADMAP.md for current status.
 
 # Sprint 9 Handoff — Commander Briefing

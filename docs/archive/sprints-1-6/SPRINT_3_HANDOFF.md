@@ -1,5 +1,7 @@
 # Sprint 3 Handoff — TriageMate MVP
 
+> **Status: ARCHIVED** — Sprint 3 historical record
+
 **Date:** 30 June 2026
 **Status:** Tier 1 XGBoost model retrained, all pipeline stages running with real ML. Feature mismatch bug fixed, DMatrix compatibility fixed, all 7 demo rows validated with exact expected scores.
 

@@ -1,5 +1,7 @@
 # Sprint 8 Handoff — Commander Briefing
 
+> **Status: ARCHIVED** — Sprint 8 historical record
+
 > **Date:** 2 July 2026
 > **From:** Commander (Sprints 7-8)
 > **To:** Incoming Commander

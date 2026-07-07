@@ -1,5 +1,7 @@
 # AI Problems — Discrepancies Found During Development
 
+> **Status: CURRENT** — 1 unfixed issue remaining
+
 Documentation of incorrect AI-generated code, mismatches between code and actual models/dependencies. Items marked **FIXED** have been resolved; unfixed items remain open.
 
 ---

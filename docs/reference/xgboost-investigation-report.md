@@ -1,5 +1,7 @@
 # XGBoost Exploitation Model — Investigation Report
 
+> **Status: CURRENT** — 5 fixes pending retrain
+
 > **⚠️ STATUS NOTE:** All 8 code fixes identified in this report have been applied to the working tree, but 5 of them require model retraining which has **NOT yet been run**. The `xgboost_calibrator.pkl` and `threshold_info.json` artifacts described in this report do **not yet exist on disk**. See ROADMAP.md §Sprint NEXT for current retrain status.
 
 **Date:** 2 July 2026

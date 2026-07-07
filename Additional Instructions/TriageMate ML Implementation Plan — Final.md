@@ -1,1 +1,1 @@
-../docs/reference/TriageMate ML Implementation Plan — Final.md
+../docs/reference/ml-implementation-plan.md

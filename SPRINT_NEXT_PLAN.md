@@ -1,1 +1,0 @@
-docs/planning/SPRINT_NEXT_PLAN.md

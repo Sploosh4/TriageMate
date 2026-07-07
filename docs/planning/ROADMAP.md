@@ -1,5 +1,7 @@
 # TriageMate — Master Roadmap & Status
 
+> **Status: CURRENT** (2 July 2026)
+
 > Last updated: 2 July 2026
 > Status key: ✅ Done · 🟡 Needs config · 🔧 In progress · 📋 Todo · ⏭️ Post-MVP · 🐛 Known bug
 
@@ -182,7 +184,7 @@ These items were planned after Sprint 9. Items 2, 3, 6, 8 are ✅ Done; Item 1 (
 
 | # | Item | Status | Notes |
 |---|---|---|---|
-| 1 | XGBoost retrain on `training_data_v2.npz` | 🔧 Retraining | 144K records, 35 tabular features (419 total with SBERT), 8 fixes applied (KEV starvation, hardcoded features, calibration, routing, PCA leakage, temporal bias, label leakage, scoring disconnect) |
+| 1 | XGBoost retrain on `training_data_v2.npz` | 🔧 Retraining | **Corpus built:** 144,708 samples, 67 features (35 tabular + 384 SBERT = 419 total), 19.6 MB. 8 fixes applied. **Training not yet run.** Command: `python -m ml.train_xgboost --train --data-file ml/training_data_v2.npz` |
 | 2 | Pre-Tier RandomForest classifier | ✅ Already existed | 60-dim MultiOutputClassifier with KNOWN_TAGS fallback. No changes needed. |
 | 3 | Model drift monitoring dashboard | ✅ Done | `GET /api/drift`, CSS-only charts, 4 panels |
 | 4 | Rate limiting + CI/CD | 📋 Todo | Token bucket on ingest + GitHub Actions |
@@ -199,6 +201,8 @@ These items were planned after Sprint 9. Items 2, 3, 6, 8 are ✅ Done; Item 1 (
 | Tier 2 CWE encoder (ModernBERT) | Blocked on SecureBERT bug fixes |
 | Email / Slack notifications | Low immediate priority — no webhook config exists |
 | Cloud deploy + HTTPS | Out of MVP scope — needs Docker, reverse proxy, DNS |
+
+> **Note:** The detailed SPRINT_NEXT_PLAN.md has been merged into this file and archived. Only Item 1 (XGBoost retrain) remains pending.
 
 ---
 

@@ -1,5 +1,7 @@
 # Demo Data Generator — Scope Document
 
+> **Status: ARCHIVED** — Sprint 5 historical record
+
 > **Author:** Intel Team  
 > **Status:** Draft for Commander review  
 > **Prerequisite reading:** `PRE_DEMO_PLAN.md`, `ROADMAP.md`, `MVP_SCOPE.md`  

@@ -1,5 +1,7 @@
 # Demo Data Generator — Implementation Plan (Revision 1)
 
+> **Status: ARCHIVED** — Sprint 5 historical record
+
 > **Based on:** `DEMO_DATA_GENERATOR_SCOPE.md` (Intel Team, 1 July 2026)
 > **External Audit:** 2 BLOCKERs, 2 HIGH findings, 15 MEDIUM/LOW concerns identified. All addressed in this revision.
 > **Revised estimate:** ~21 hrs (was 13; +8 hrs for BLOCKER fixes, parser robustness, gating, tests)

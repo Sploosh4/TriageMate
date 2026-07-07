@@ -1,5 +1,7 @@
 # TriageMate MVP — Scope Document
 
+> **Status: OUTDATED** — Sprint 1 era. See ROADMAP.md for current state.
+
 > **CAUTION:** This document was written during Sprint 1 and has not been fully updated. Many items marked as "deferred" or "out of scope" have since been implemented (Docker ✓, JWT auth ✓, Alembic migrations ✓, T3 review queue ✓, drift dashboard ✓, Pre-Tier RF model ✓, PostgreSQL support ✓). See ROADMAP.md for accurate current status.
 
 > **Course Correction complete:** 11/11 items implemented and audited. Pipeline hardened from MVP to production-capable. See `ROADMAP.md` for current status and `docs/archive/sprints-1-6/COURSE_CORRECTION.md` for the full plan. **See also:** `docs/archive/sprints-1-6/PRE_DEMO_PLAN.md` — pre-demo hardening (9 items).

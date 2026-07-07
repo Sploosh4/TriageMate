@@ -1,1 +1,0 @@
-docs/guides/TRIAGEMATE_BOOK_PROMPT.md

@@ -1,5 +1,7 @@
 # TriageMate — Windows Setup Guide
 
+> **Status: CURRENT**
+
 > **Target:** Windows 10/11 (x64)
 > **Python:** 3.10–3.12
 > **Time:** ~15 minutes

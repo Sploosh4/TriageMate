@@ -1,5 +1,7 @@
 # Sprint 9 Briefing — Data Supremacy
 
+> **Status: ARCHIVED** — Sprint 9 historical record
+
 > **Date:** 2 July 2026
 > **Commander:** Sprint 9
 > **Goal:** Fill every ML feature field with real data, research retraining needs, build a massive vulnerability corpus surpassing all requirements.

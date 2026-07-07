@@ -1,5 +1,7 @@
 # Sprint 2 Handoff — TriageMate MVP
 
+> **Status: ARCHIVED** — Sprint 2 historical record
+
 > **Sprint 3 complete:** XGBoost model retrained and running. See `SPRINT_3_HANDOFF.md` for details.
 
 **Date:** 30 June 2026

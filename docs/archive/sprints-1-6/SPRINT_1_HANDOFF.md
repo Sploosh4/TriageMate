@@ -1,5 +1,7 @@
 # Sprint 1 Handoff — TriageMate MVP
 
+> **Status: ARCHIVED** — Sprint 1 historical record
+
 > **Sprint 3 status:** XGBoost model retrained and running (68 features, ROC-AUC 0.9677). See `SPRINT_3_HANDOFF.md` for details.
 > **Sprint 2 status:** Cloud LLM Tier 2 enabled and RAG vector store built. See `SPRINT_2_HANDOFF.md` for details.
 > This document remains the definitive reference for API contracts (§8), demo rows (§6), and design decisions (§5).

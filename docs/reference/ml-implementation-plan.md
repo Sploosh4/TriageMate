@@ -1,5 +1,7 @@
 # TriageMate ML Implementation Plan — Final
 
+> **Status: OUTDATED** — Historical only. See ROADMAP.md for current state.
+
 > **⚠️ OUTDATED:** This document describes the original ML implementation plan from early sprints. The pipeline has since changed significantly: PCA was removed (v2.5), SecureBERT2.0 CWE classifier was deprecated, the feature vector is now 35 tabular + 384 SBERT, and scoring uses 6 dimensions (not 5). See ROADMAP.md for current state. This document is preserved for historical reference only.
 
 ## Document Provenance
