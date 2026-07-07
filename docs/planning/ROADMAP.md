@@ -279,7 +279,7 @@ TriageMate MVP/
 ├── AI_PROBLEMS.md → docs/reference/AI_PROBLEMS.md
 ├── WINDOWS_SETUP.md → docs/guides/WINDOWS_SETUP.md
 ├── RESEARCH_FINDINGS.md → docs/research/RESEARCH_FINDINGS.md
-├── XGBOOST_INVESTIGATION_REPORT.md → docs/reference/xgboost-investigation-report.md
+├── xgboost-investigation-report.md → docs/reference/xgboost-investigation-report.md
 ├── index.html                            # Original demo (preserved)
 ├── demo-reference.html                   # Visual reference
 │

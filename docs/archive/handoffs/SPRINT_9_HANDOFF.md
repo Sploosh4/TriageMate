@@ -72,6 +72,8 @@ Every field now has real data. No synthetic placeholders remain in the feature v
 | 18-21 | lateral/boundary/downstream/patch_lag | CMDB + synthetic |
 | 22 | exploitdb_has_poc | ExploitDB CSV (25K direct mappings) |
 | 23 | metasploit_has_payload | ExploitDB CSV |
+
+> **Note:** Research later found these fields had zero variance across all training samples — the ExploitDB CSV mapping was not correctly loaded into the corpus builder. This is documented in RESEARCH_FINDINGS.md §Q2 and was fixed in the v2.1 corpus rebuild.
 | 24 | internet_scan_detected | KEV + EPSS heuristic |
 | 25 | threat_intel_pulses | OTX API |
 | 26 | nvd_reference_count | NVD corpus |
@@ -206,7 +208,7 @@ curl -s http://localhost:8000/api/health | python3 -m json.tool
 
 **Retrain the XGBoost model on `training_data_v2.npz`.**
 
-The current model was trained on `training_data.npz` (93K records) where 15 of 36 tabular features were hardcoded constants. The retrain should use `training_data_v2.npz` (186K records) where ALL features have real distributions.
+The current model was trained on `training_data.npz` (93K records) where 15 of 36 tabular features were hardcoded constants. The retrain should use `training_data_v2.npz` (144K records — 186K raw NVD corpus before temporal filtering) where ALL features have real distributions.
 
 Steps:
 1. Run `python -m ml.train_xgboost --train` with the new data file

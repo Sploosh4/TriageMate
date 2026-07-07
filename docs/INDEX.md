@@ -72,7 +72,7 @@
 | What's the current state of the project? | `planning/ROADMAP.md` |
 | What's broken? | `reference/AI_PROBLEMS.md` |
 | What ML models exist and how do they work? | `planning/ROADMAP.md` §ML Artifacts, then `reference/xgboost-investigation-report.md` |
-| How do I train the model? | `planning/ROADMAP.md` §Quick Start |
+| How do I train the model? | `planning/ROADMAP.md` §Sprint NEXT |
 | How do I set up on Windows? | `guides/WINDOWS_SETUP.md` |
 | What WA gov conventions apply? | `reference/hostname-standards.md` |
 | What data does the corpus contain? | `planning/ROADMAP.md` §Data Corpus |

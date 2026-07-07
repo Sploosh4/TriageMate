@@ -17,21 +17,21 @@
 | 1 | `docs/architecture/MVP_SCOPE.md` | 230 | ~3,800 | Architecture | 🔴 STALE — self-declared outdated | Heavy overlap with ROADMAP.md (§Sprint Status) | Banner says "written Sprint 1, not updated" |
 | 2 | `docs/planning/ROADMAP.md` | 388 | ~6,500 | Planning | 🟢 CURRENT | Contains content from SPRINT_NEXT_PLAN (items 2,3,6,8), MVP_SCOPE (status), AI_PROBLEMS (bug table) | Best single source of truth |
 | 3 | `docs/archive/SPRINT_NEXT_PLAN.md` | 322 | ~5,300 | Planning | 🟡 SUPERSEDED | 90% duplicated in ROADMAP.md (§Sprint NEXT) | Only Item 1 (XGBoost retrain) remains pending; rest is already in ROADMAP |
-| 4 | `docs/reference/AI_PROBLEMS.md` | 165 | ~2,700 | Reference | 🟡 MOSTLY STALE | Overlaps with XGBOOST_INVESTIGATION (both document bugs) | Only 1 unfixed item (#14, won't-fix). Rest is historical record |
-| 5 | `docs/reference/XGBOOST_INVESTIGATION_REPORT.md` | 214 | ~3,500 | Reference | 🟡 MIXED | Overlaps with AI_PROBLEMS (bugs), RESEARCH_FINDINGS (ML), ML Plan (architecture) | Deep dive report with 8 fixes. Fixes applied, retrain pending |
-| 6 | `docs/reference/TriageMate ML Implementation Plan — Final.md` | 882 | ~15,000 | Reference | 🔴 STALE — self-declared outdated | Major overlap with RESEARCH_FINDINGS, XGBOOST_INVESTIGATION, MVP_SCOPE | Banner says "OUTDATED — preserved for historical reference" |
-| 7 | `docs/reference/Hostname and Data Classification Standards.md` | 175 | ~5,000* | Reference | 🟢 EXTERNAL REFERENCE | Low overlap — unique content | Long external citations, research-heavy |
-| 8 | `docs/research/RESEARCH_FINDINGS.md` | 192 | ~3,200 | Research | 🟡 MIXED | Overlaps with XGBOOST_INVESTIGATION (ML fixes), ML Plan (strategy) | Some findings acted on in Sprint NEXT; has note saying "written before Sprint NEXT" |
+| 4 | `docs/reference/AI_PROBLEMS.md` | 165 | ~2,700 | Reference | 🟡 MOSTLY STALE | Overlaps with xgboost-investigation-report (both document bugs) | Only 1 unfixed item (#14, won't-fix). Rest is historical record |
+| 5 | `docs/reference/xgboost-investigation-report.md` | 214 | ~3,500 | Reference | 🟡 MIXED | Overlaps with AI_PROBLEMS (bugs), RESEARCH_FINDINGS (ML), ML Plan (architecture) | Deep dive report with 8 fixes. Fixes applied, retrain pending |
+| 6 | `docs/reference/ml-implementation-plan.md` | 882 | ~15,000 | Reference | 🔴 STALE — self-declared outdated | Major overlap with RESEARCH_FINDINGS, xgboost-investigation-report, MVP_SCOPE | Banner says "OUTDATED — preserved for historical reference" |
+| 7 | `docs/reference/hostname-standards.md` | 175 | ~5,000* | Reference | 🟢 EXTERNAL REFERENCE | Low overlap — unique content | Long external citations, research-heavy |
+| 8 | `docs/research/RESEARCH_FINDINGS.md` | 192 | ~3,200 | Research | 🟡 MIXED | Overlaps with xgboost-investigation-report (ML fixes), ML Plan (strategy) | Some findings acted on in Sprint NEXT; has note saying "written before Sprint NEXT" |
 | 9 | `docs/guides/WINDOWS_SETUP.md` | 118 | ~1,900 | Guides | 🟢 CURRENT | Low overlap | Focused, single-purpose |
-| 10 | `AGENTS.md` (root) | 36 | ~400 | Config | 🟡 PARTIALLY WRONG | Describes symlink structure that's partially broken | Lists DEMO_SCRIPT.md and TRIAGEMATE_BOOK_PROMPT.md as existing in docs/guides/ — they don't |
+| 10 | `AGENTS.md` (root) | 36 | ~400 | Config | 🟡 PARTIALLY WRONG | Describes symlink structure that's partially broken | Lists DEMO_SCRIPT.md and TRIAGEMATE_BOOK_PROMPT.md as existing in docs/guides/ — both deleted |
 | 11 | `backend/ml/README.md` | 26 | ~400 | ML Artifacts | 🟢 CURRENT | Low overlap | Small, focused, lives with code |
 
 ### Broken Symlinks
 
 | Root File | Claims to Symlink To | Status |
 |-----------|---------------------|--------|
-| `DEMO_SCRIPT.md` | `docs/guides/DEMO_SCRIPT.md` | 🔴 BROKEN — target does not exist |
-| `TRIAGEMATE_BOOK_PROMPT.md` | `docs/guides/TRIAGEMATE_BOOK_PROMPT.md` | 🔴 BROKEN — target does not exist |
+| `DEMO_SCRIPT.md` (deleted) | `docs/guides/DEMO_SCRIPT.md` | 🔴 BROKEN — symlink removed |
+| `TRIAGEMATE_BOOK_PROMPT.md` (deleted) | `docs/guides/TRIAGEMATE_BOOK_PROMPT.md` | 🔴 BROKEN — symlink removed |
 
 **Total word count estimate for active docs:** ~47,700 words across 11 files.  
 **Total unique content (deduplicated estimate):** ~32,000 words. ~33% redundancy.
@@ -95,13 +95,13 @@
 
 ### Merge Group 3: ML Ecosystem Guide
 
-**Merge XGBOOST_INVESTIGATION_REPORT.md + RESEARCH_FINDINGS.md + ML Implementation Plan → docs/reference/ML_GUIDE.md**
+**Merge xgboost-investigation-report.md + RESEARCH_FINDINGS.md + ML Implementation Plan → docs/reference/ML_GUIDE.md**
 
 | Source File | Role in New Doc | Preserved | Dropped |
 |-------------|----------------|-----------|---------|
-| `XGBOOST_INVESTIGATION_REPORT.md` | Root cause analysis + fixes | 8 findings, fix descriptions, verification steps, file-change table | Duplicate bug listings that overlap with AI_PROBLEMS |
+| `xgboost-investigation-report.md` | Root cause analysis + fixes | 8 findings, fix descriptions, verification steps, file-change table | Duplicate bug listings that overlap with AI_PROBLEMS |
 | `RESEARCH_FINDINGS.md` | Future research findings | Q1-Q5 findings, feature importance analysis, KEV missing analysis, EPSS baseline | Roadmap sections now superseded by Sprint NEXT+ actions |
-| `ML Implementation Plan — Final.md` | Architecture decisions + training strategy | Feature list (§2.1), training data blueprint (§4), operational cadence (§6), RAG plan (§5), source divergence log (Appendix A) | Outdated content: PCA references, SecureBERT2.0 CWE encoder details, pre-Sprint-9 feature counts, incorrect model parameters |
+| `ml-implementation-plan.md` | Architecture decisions + training strategy | Feature list (§2.1), training data blueprint (§4), operational cadence (§6), RAG plan (§5), source divergence log (Appendix A) | Outdated content: PCA references, SecureBERT2.0 CWE encoder details, pre-Sprint-9 feature counts, incorrect model parameters |
 
 **Proposed new file:** `docs/reference/ML_GUIDE.md` (~600 lines)  
 **Contents by section:**
@@ -156,7 +156,7 @@ Keep `WINDOWS_SETUP.md` as the Windows deep-dive, referenced from SETUP.md.
 
 ### Merge Group 5: Reference Standards
 
-**Rename and retain `Hostname and Data Classification Standards.md`**
+**Rename and retain `hostname-standards.md`**
 
 This file is a long, well-researched external reference. It doesn't overlap with other docs. It should be:
 1. Renamed to `docs/reference/HOSTNAME_STANDARDS.md` (remove spaces, shorter)
@@ -178,8 +178,8 @@ After consolidation, the active documentation set would be:
 | 2 | `docs/architecture/ARCHITECTURE.md` | What the system is, how it's built, pipeline stages | 250 | MVP_SCOPE.md (distilled) + ROADMAP.md (status) |
 | 3 | `docs/planning/ROADMAP.md` | Master status — what's done, what's next, known bugs | 440 | Current ROADMAP.md + SPRINT_NEXT_PLAN (item 1) + AI_PROBLEMS (#14) |
 | 4 | `docs/guides/SETUP.md` | Quick start — all platforms, Docker, config, verification | 80 | WINDOWS_SETUP.md (extract) + ROADMAP.md (Quick Start) |
-| 5 | `docs/reference/ML_GUIDE.md` | ML ecosystem — features, training, research, future work | 600 | XGBOOST_INVESTIGATION + RESEARCH_FINDINGS + ML Plan (distilled) |
-| 6 | `docs/reference/HOSTNAME_STANDARDS.md` | WA gov hostname + data classification reference | 175 | Hostname and Data Classification Standards.md (renamed) |
+| 5 | `docs/reference/ML_GUIDE.md` | ML ecosystem — features, training, research, future work | 600 | xgboost-investigation-report + RESEARCH_FINDINGS + ML Plan (distilled) |
+| 6 | `docs/reference/hostname-standards.md` | WA gov hostname + data classification reference | 175 | Retained as-is |
 
 **Plus retained as-is:**
 - `docs/guides/WINDOWS_SETUP.md` — Windows deep-dive
@@ -189,17 +189,17 @@ After consolidation, the active documentation set would be:
 - `docs/architecture/MVP_SCOPE.md` → superseded by ARCHITECTURE.md
 - `docs/planning/SPRINT_NEXT_PLAN.md` → superseded by ROADMAP.md
 - `docs/reference/AI_PROBLEMS.md` → superseded by ROADMAP.md §Known Bugs
-- `docs/reference/XGBOOST_INVESTIGATION_REPORT.md` → merged into ML_GUIDE.md
-- `docs/reference/TriageMate ML Implementation Plan — Final.md` → merged into ML_GUIDE.md
+- `docs/reference/xgboost-investigation-report.md` → merged into ML_GUIDE.md
+- `docs/reference/ml-implementation-plan.md` → merged into ML_GUIDE.md
 - `docs/research/RESEARCH_FINDINGS.md` → merged into ML_GUIDE.md
 
 **Deleted / rebuilt symlinks:**
 - `AI_PROBLEMS.md` (root) → broken symlink, remove or redirect to ROADMAP.md
 - `SPRINT_NEXT_PLAN.md` (root) → broken symlink, remove or redirect to ROADMAP.md
-- `DEMO_SCRIPT.md` (root) → broken symlink, remove (file never existed)
-- `TRIAGEMATE_BOOK_PROMPT.md` (root) → broken symlink, remove (file never existed)
+- `DEMO_SCRIPT.md` (root) → broken symlink, removed (file never existed)
+- `TRIAGEMATE_BOOK_PROMPT.md` (root) → broken symlink, removed (file never existed)
 - `MVP_SCOPE.md` (root) → redirect to ARCHITECTURE.md
-- `XGBOOST_INVESTIGATION_REPORT.md` (root) → redirect to ML_GUIDE.md
+- `xgboost-investigation-report.md` (root) → redirect to ML_GUIDE.md
 - `RESEARCH_FINDINGS.md` (root) → redirect to ML_GUIDE.md
 
 ---
@@ -214,7 +214,7 @@ After consolidation, the active documentation set would be:
 | 1.2 | Update `docs/planning/ROADMAP.md`: add Item 1 from SPRINT_NEXT_PLAN, add #14 from AI_PROBLEMS, remove duplicate Sprint NEXT items already listed | 10 min |
 | 1.3 | Create `docs/guides/SETUP.md` with cross-platform quick start | 15 min |
 | 1.4 | Create `docs/reference/ML_GUIDE.md` by merging 3 source files, stripping outdated PCA/SecureBERT references | 60 min |
-| 1.5 | Rename `Hostname and Data Classification Standards.md` → `HOSTNAME_STANDARDS.md` | 2 min |
+| 1.5 | Rename to `hostname-standards.md` (done) | 2 min |
 
 ### Phase 2 — Archive Superceded Files (10 min)
 
@@ -223,20 +223,20 @@ After consolidation, the active documentation set would be:
 | 2.1 | Move `MVP_SCOPE.md` to `docs/archive/architecture/MVP_SCOPE.md` |
 | 2.2 | Move `SPRINT_NEXT_PLAN.md` to `docs/archive/planning/SPRINT_NEXT_PLAN.md` |
 | 2.3 | Move `AI_PROBLEMS.md` to `docs/archive/reference/AI_PROBLEMS.md` |
-| 2.4 | Move `XGBOOST_INVESTIGATION_REPORT.md` to `docs/archive/reference/` |
-| 2.5 | Move `ML Implementation Plan — Final.md` to `docs/archive/reference/` |
+| 2.4 | Move `xgboost-investigation-report.md` to `docs/archive/reference/` |
+| 2.5 | Move `ml-implementation-plan.md` to `docs/archive/reference/` |
 | 2.6 | Move `RESEARCH_FINDINGS.md` to `docs/archive/research/RESEARCH_FINDINGS.md` |
 
 ### Phase 3 — Fix Symlinks (10 min)
 
 | Step | Action |
 |------|--------|
-| 3.1 | Remove broken `DEMO_SCRIPT.md` symlink at root |
-| 3.2 | Remove broken `TRIAGEMATE_BOOK_PROMPT.md` symlink at root |
+| 3.1 | Removed broken `DEMO_SCRIPT.md` symlink at root |
+| 3.2 | Removed broken `TRIAGEMATE_BOOK_PROMPT.md` symlink at root |
 | 3.3 | Remove or redirect `AI_PROBLEMS.md` → `docs/planning/ROADMAP.md` |
 | 3.4 | Remove or redirect `SPRINT_NEXT_PLAN.md` → `docs/planning/ROADMAP.md` |
 | 3.5 | Create/update `MVP_SCOPE.md` → `docs/architecture/ARCHITECTURE.md` |
-| 3.6 | Create/update `XGBOOST_INVESTIGATION_REPORT.md` → `docs/reference/ML_GUIDE.md` |
+| 3.6 | Create/update `xgboost-investigation-report.md` → `docs/reference/ML_GUIDE.md` |
 | 3.7 | Create/update `RESEARCH_FINDINGS.md` → `docs/reference/ML_GUIDE.md` |
 
 ### Phase 4 — Update AGENTS.md (5 min)
