@@ -1,8 +1,8 @@
 # AI Problems — Discrepancies Found During Development
 
-> **Status: CURRENT** — All issues resolved ✅
+> **Status: CURRENT** — All historical issues resolved ✅, 2 pipeline drifts remain (MEDIUM)
 
-Documentation of incorrect AI-generated code, mismatches between code and actual models/dependencies. Items marked **FIXED** have been resolved; unfixed items remain open.
+Documentation of incorrect AI-generated code, mismatches between code and actual models/dependencies. Items marked **FIXED** have been resolved; **OPEN** items remain unresolved.
 
 ---
 
@@ -171,3 +171,21 @@ Documentation of incorrect AI-generated code, mismatches between code and actual
 **Fix applied (XGBoost Investigation §Finding 4):** Replaced with probability-based routing: `prob >= 0.50 → escalate`, `prob >= 0.30 → escalate if conf <= 0.80`, `else → auto_resolve`. See `xgboost-investigation-report.md` §Finding 4.
 **Note:** This is the heuristic fallback path—only triggered when XGBoost model is unavailable.
 **Status:** ✅ FIXED — part of XGBoost investigation findings (2026-07-08)
+
+---
+
+## OPEN — Pipeline Drifts (from RESEARCH_FINDINGS.md)
+
+### 15. `_cvss_cia` default mismatch (training=0, inference=2) 🔴 MEDIUM
+**Files:** `backend/ml/train_xgboost.py` vs `backend/ingest_helpers.py`
+**Problem:** During training, missing CIA values default to `0`. During inference, `ingest_helpers.py` defaults them to `2` (e.g., `cvss_cia_score = cvss_components.get("C", 2)`). The same CVE gets different CVSS feature values between training and inference.
+**Impact:** Feature drift — model learns a decision boundary based on CIA default `0` but receives `2` at inference time.
+**Fix needed:** Unify default — both sides should use the same fallback. Recommended: change inference default from `2` to `0` to match training.
+**Status:** 🔴 OPEN — identified in RESEARCH_FINDINGS.md §Q5
+
+### 16. `lateral_reachability` type mismatch (training=binary, inference=count) 🔴 MEDIUM
+**Files:** `backend/ml/train_xgboost.py` vs `backend/ingest_helpers.py`
+**Problem:** Training pipeline binarizes lateral reachability to `0`/`1`. Inference pipeline passes the raw count (e.g., `3`). The model expects a binary feature but receives a count.
+**Impact:** Type mismatch — model learned binary decision boundary but receives ordinal counts at inference.
+**Fix needed:** Unify type — either binarize at inference (match training) or make training use real counts.
+**Status:** 🔴 OPEN — identified in RESEARCH_FINDINGS.md §Q5

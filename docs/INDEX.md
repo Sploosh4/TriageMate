@@ -17,7 +17,7 @@
 |---|---|---|---|
 | 1 | `planning/ROADMAP.md` | CURRENT | **Master status.** What exists, what's broken, what's next. Start here. |
 | 2 | `architecture/MVP_SCOPE.md` | OUTDATED | Sprint 1 scope boundaries. Many deferred items are now done. See caution banner. |
-| 3 | `reference/AI_PROBLEMS.md` | CURRENT | Bug tracker. All issues resolved ✅. |
+| 3 | `reference/AI_PROBLEMS.md` | CURRENT | Bug tracker. 2 open items (pipeline drifts). |
 | 4 | `archive/ml-implementation-plan.md` | ARCHIVED | → Replaced by `graphify_output/ml_inventory.md` (auto-generated, run `just graphify`) |
 
 ## Architecture
@@ -39,7 +39,7 @@
 
 | File | Status | Description |
 |---|---|---|
-| `reference/AI_PROBLEMS.md` | CURRENT | Bug tracker — all issues resolved ✅. |
+| `reference/AI_PROBLEMS.md` | CURRENT | Bug tracker — 2 open items (pipeline drifts). |
 | `reference/xgboost-investigation-report.md` | CURRENT | Root cause analysis of XGBoost false-negative rate. ✅ All 8 fixes applied, model retrained 2026-07-08. |
 | `archive/ml-implementation-plan.md` | ARCHIVED | → Replaced by `graphify_output/ml_inventory.md` (auto-generated, run `just graphify`) |
 | `reference/hostname-standards.md` | CURRENT | WA government hostname conventions, data classification, department naming. |
@@ -73,7 +73,7 @@
 | Question | Read |
 |---|---|---|
 | What's the current state of the project? | `planning/ROADMAP.md` |
-| What's broken? | `reference/AI_PROBLEMS.md` (all issues resolved ✅) |
+| What's broken? | `reference/AI_PROBLEMS.md` (2 open pipeline drifts) |
 | What ML models exist and how do they work? | `graphify_output/ml_inventory.md` (auto-generated) |
 | How do I train the model? | `planning/ROADMAP.md` §Sprint NEXT |
 | How do I retrain all ML models from scratch? | Use `just retrain-all` — see ROADMAP.md §Sprint 14 |

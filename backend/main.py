@@ -2,6 +2,10 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
+# ─── Resolve project root from this file's location ────────────────────
+_BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+_PROJECT_ROOT = os.path.abspath(os.path.join(_BASE_DIR, ".."))
+
 # ─── Load .env BEFORE any module reads os.getenv() ─────────────────────
 _env_path = Path(__file__).resolve().parent / ".env"
 if _env_path.exists():
@@ -161,8 +165,16 @@ async def rate_limit_middleware(request, call_next):
     return await call_next(request)
 
 
-app.mount("/css", StaticFiles(directory="../frontend/css"), name="css")
-app.mount("/js", StaticFiles(directory="../frontend/js"), name="js")
+app.mount(
+    "/css",
+    StaticFiles(directory=os.path.join(_PROJECT_ROOT, "frontend", "css")),
+    name="css",
+)
+app.mount(
+    "/js",
+    StaticFiles(directory=os.path.join(_PROJECT_ROOT, "frontend", "js")),
+    name="js",
+)
 
 app.include_router(auth.router)
 app.include_router(queue.router, dependencies=[Depends(get_current_user)])
@@ -175,7 +187,7 @@ app.include_router(models_router.router, dependencies=[Depends(get_current_user)
 async def root():
     from fastapi.responses import FileResponse
 
-    return FileResponse("../frontend/index.html")
+    return FileResponse(os.path.join(_PROJECT_ROOT, "frontend", "index.html"))
 
 
 @app.get("/api/health")

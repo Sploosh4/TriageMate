@@ -9,17 +9,21 @@ This skill grows over time as audit patterns emerge. Add new sections when an ag
 
 ---
 
-## 1. ML Calibration Audit
+## 1. ML Calibration Audit 🔴 HUMAN ONLY (~5 min)
 
-**Command:** `python -m analysis.calibration_audit`
+**Do NOT run automatically.** Loads 260K CVEs + model inference — takes 5+ minutes.
+
+**Command:** `python -m analysis.calibration_audit --max-samples 5000` (use `--max-samples` to cap time)
 **What it checks:** XGBoost probability calibration (predicted vs. actual exploitation rates)
-**When:** After any model retraining or feature change
+**When:** Manually after any model retraining or feature change
 
-## 2. EPSS Evaluation
+## 2. EPSS Evaluation 🔴 HUMAN ONLY (~5 min)
 
-**Command:** `python -m analysis.epss_eval`
+**Do NOT run automatically.** Same heavyweight corpus load as calibration audit.
+
+**Command:** `python -m analysis.epss_eval --max-samples 5000` (use `--max-samples` to cap time)
 **What it checks:** EPSS substitution model accuracy vs. real EPSS scores
-**When:** After EPSS model retraining or cache refresh
+**When:** Manually after EPSS model retraining or cache refresh
 
 ## 3. Feature Parity Check
 
