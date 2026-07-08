@@ -2,7 +2,7 @@
 
 > Canonical reference — read this before touching any ML code.
 
-> Generated: 2026-07-08 12:58:09
+> Generated: 2026-07-08 16:09:23
 
 ---
 
@@ -22,6 +22,7 @@
 | training_data_v2 | `backend/ml/training_data_v2.npz` | 341 MB | numpy training data |
 | training_data_v2_pre_clean | `backend/ml/training_data_v2_pre_clean.npz` | 341 MB | numpy training data |
 | enriched_cves | `backend/ml/enriched_cves.json` | 179 MB | JSON data |
+| model_registry | `backend/ml/model_registry.json` | 1 KB | JSON data |
 | nvd_checkpoint | `backend/ml/nvd_checkpoint.json` | 72 B | JSON data |
 | nvd_cves_cached | `backend/ml/nvd_cves_cached.json` | 80 MB | JSON data |
 | pretier_supplemental | `backend/ml/pretier_supplemental.json` | 206 KB | JSON data |
@@ -45,6 +46,7 @@
 | train_xgboost | `backend/ml/train_xgboost.py` | Offline XGBoost training pipeline — two-phase design. |
 | vector_store | `backend/ml/vector_store.py` | LanceDB embedded vector store for RAG document retrieval. |
 | xgboost_predictor | `backend/ml/xgboost_predictor.py` | Tier 1 XGBoost exploitation probability predictor. |
+| aggregate_tenable_sectors | `backend/scripts/aggregate_tenable_sectors.py` | Aggregate Tenable vulnerability scan findings by (CVE, sector) for EPSS |
 | build_cwe_hierarchy | `backend/scripts/build_cwe_hierarchy.py` | Build CWE hierarchy JSON from MITRE CWE XML. |
 | build_training_corpus | `backend/scripts/build_training_corpus.py` | Unified training corpus builder — combines all data sources into |
 | build_vendor_index | `backend/scripts/build_vendor_index.py` | Build vendor_popularity.json from NVD corpus vendor frequency. |
@@ -54,7 +56,7 @@
 | epss_eval | `backend/analysis/epss_eval.py` | EPSS as Standalone Predictor — Baseline Analysis |
 | feature_parity_check | `backend/analysis/feature_parity_check.py` | Feature parity checker — verifies that build_training_corpus.py and |
 | validate_conversion | `backend/analysis/validate_conversion.py` | Validate enriched_cves.json against build_tabular_features expectations. |
-| rate_limit | `backend/middleware/rate_limit.py` | import time |
+| rate_limit | `backend/middleware/rate_limit.py` | import os |
 
 ## ML Directory (`backend/ml/`)
 
@@ -68,6 +70,7 @@
 - `fetch_epss_data.py`  (4 KB)
 - `generate_supplemental_hostnames.py`  (14 KB)
 - `ingest_docs.py`  (7 KB)
+- `model_registry.json`  (1 KB)
 - `nvd_checkpoint.json`  (72 B)
 - `nvd_cves_cached.json`  (80 MB)
 - `pre_tier_model.pkl`  (5 MB)
@@ -88,7 +91,7 @@
 - `xgboost_model.pkl`  (1 MB)
 - `xgboost_model_old.pkl`  (1 MB)
 - `xgboost_model_pre_retrain.pkl`  (1 MB)
-- `xgboost_predictor.py`  (9 KB)
+- `xgboost_predictor.py`  (13 KB)
 
 ## Data Directory (`backend/data/`)
 
@@ -174,9 +177,10 @@
 - **Training data:** `backend/ml/training_data_v2.npz` (253,568 samples, 341 MB)
 - **Training script:** `backend/ml/train_xgboost.py` (two-phase: gather + train)
 - **Calibrator:** `backend/ml/xgboost_calibrator.pkl` (LogisticRegression, EXISTS)
-- **Lines of code (predictor):** 301
+- **Lines of code (predictor):** 410
 - **Lines of code (training):** 1195
 - **Status:** ✅ Retrained 2026-07-08 on 253,568 samples (v2 data)
+  ⚠️ Dimension mismatch: model trained with 420 features, predictor sends 419
 
 ## EPSS Substitution Models
 
@@ -215,7 +219,7 @@ NVD API 2.0 feeds
   -> fetch_nvd_corpus.py
     -> nvd_corpus.json (186K CVEs, 145 MB)
       -> build_training_corpus.py (+ EPSS, KEV, vendor index, ExploitDB)
-        -> training_data_v2.npz (253K samples, 419 cols, 341 MB)
+        -> training_data_v2.npz (253K samples, 420 cols, 341 MB)
           -> train_xgboost.py
             -> xgboost_model.pkl
             -> xgboost_calibrator.pkl

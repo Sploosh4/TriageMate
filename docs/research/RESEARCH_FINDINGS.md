@@ -1,6 +1,6 @@
 # TriageMate — Sprint NEXT+2 Research Findings
 
-> **Status: CURRENT** (3 July 2026)
+> **Status: OUTDATED** — Research from 3 July 2026. Several findings (threat_intel_pulses variance, missing random seed, CIA default mismatch, CWE-stratified EPSS thresholds) have been resolved in Sprint NEXT. See ROADMAP.md §Sprint NEXT for current status. Historical analysis preserved for context.
 
 **Prepared for:** Commander  
 **Date:** 2026-07-03  

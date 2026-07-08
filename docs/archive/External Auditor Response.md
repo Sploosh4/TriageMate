@@ -1,6 +1,4 @@
-I now have enough evidence to write the full audit report. Let me deliver it.
-
----
+> **Status: ARCHIVED** — Historical external audit report for Demo Data Generator. Preserved for provenance.
 
 # External Audit Report — Demo Data Generator
 

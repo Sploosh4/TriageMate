@@ -17,14 +17,14 @@
 |---|---|---|---|
 | 1 | `planning/ROADMAP.md` | CURRENT | **Master status.** What exists, what's broken, what's next. Start here. |
 | 2 | `architecture/MVP_SCOPE.md` | OUTDATED | Sprint 1 scope boundaries. Many deferred items are now done. See caution banner. |
-| 3 | `reference/AI_PROBLEMS.md` | CURRENT | Bug tracker. 1 unfixed issue (#14, won't-fix). |
+| 3 | `reference/AI_PROBLEMS.md` | CURRENT | Bug tracker. All issues resolved ✅. |
 | 4 | `archive/ml-implementation-plan.md` | ARCHIVED | → Replaced by `graphify_output/ml_inventory.md` (auto-generated, run `just graphify`) |
 
 ## Architecture
 
 | File | Status | Description |
 |---|---|---|
-| `architecture/MVP_SCOPE.md` | OUTDATED | Scope authority from Sprint 1. Many deferred items now implemented (Docker, JWT, Alembic, T3 queue, drift dashboard, Pre-Tier RF). |
+| `architecture/MVP_SCOPE.md` | OUTDATED | Scope authority from Sprint 1. Many deferred items now implemented. ROC-AUC figure updated to 0.9459. |
 
 ## Planning
 
@@ -38,7 +38,7 @@
 
 | File | Status | Description |
 |---|---|---|
-| `reference/AI_PROBLEMS.md` | CURRENT | Known bugs and discrepancies found during development. |
+| `reference/AI_PROBLEMS.md` | CURRENT | Bug tracker — all issues resolved ✅. |
 | `reference/xgboost-investigation-report.md` | CURRENT | Root cause analysis of XGBoost false-negative rate. ✅ All 8 fixes applied, model retrained 2026-07-08. |
 | `archive/ml-implementation-plan.md` | ARCHIVED | → Replaced by `graphify_output/ml_inventory.md` (auto-generated, run `just graphify`) |
 | `reference/hostname-standards.md` | CURRENT | WA government hostname conventions, data classification, department naming. |
@@ -48,7 +48,7 @@
 
 | File | Status | Description |
 |---|---|---|
-| `research/RESEARCH_FINDINGS.md` | CURRENT | Strategic gap analysis — KEV coverage, EPSS baseline, pipeline drift. Sprint NEXT+2. |
+| `research/RESEARCH_FINDINGS.md` | OUTDATED | Strategic gap analysis from July 3. Some findings superseded by Sprint NEXT. See ROADMAP.md for current status. |
 
 ## Guides
 
@@ -71,7 +71,7 @@
 | Question | Read |
 |---|---|
 | What's the current state of the project? | `planning/ROADMAP.md` |
-| What's broken? | `reference/AI_PROBLEMS.md` |
+| What's broken? | `reference/AI_PROBLEMS.md` (all issues resolved ✅) |
 | What ML models exist and how do they work? | `graphify_output/ml_inventory.md` (auto-generated) |
 | How do I train the model? | `planning/ROADMAP.md` §Sprint NEXT |
 | How do I set up on Windows? | `guides/WINDOWS_SETUP.md` |

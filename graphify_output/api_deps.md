@@ -79,6 +79,16 @@
 
 - `logging`  (import)
 
+## backend/integrations/cache_health.py
+
+**Stdlib**
+
+- `datetime`  (from(datetime), from(timezone))
+- `json`  (import)
+- `logging`  (import)
+- `os`  (import)
+- `pathlib`  (from(Path))
+
 ## backend/integrations/cmdb.py
 
 **Stdlib**
@@ -219,11 +229,12 @@
 
 - `auth`  (from(AUTH_DISABLED), from(get_current_user))
 - `database`  (from(init_db))
+- `integrations.cache_health`  (from(get_epss_health), from(get_kev_health))
 - `integrations.nvd`  (from(get_nvd_health))
 - `logging_config`  (from(setup_logging))
 - `middleware.rate_limit`  (from(clear_bucket), from(demo_bucket), from(ingest_bucket))
 - `ml.vector_store`  (from(DB_PATH), from(TABLE_NAME), from(_get_embedder), from(init_vector_store), from(seed_demo_documents))
-- `routers`  (from(auth), from(cases), from(ingest), from(queue))
+- `routers`  (from(auth), from(cases), from(ingest), from(models), from(queue))
 - `scheduler`  (from(recheck_low_severity))
 
 **External**
@@ -438,6 +449,7 @@
 
 **Stdlib**
 
+- `json`  (import)
 - `pathlib`  (from(Path))
 - `threading`  (import)
 
@@ -571,6 +583,23 @@
 - `os`  (import)
 - `time`  (import)
 
+## backend/routers/models.py
+
+**Project**
+
+- `ml.xgboost_predictor`  (from(set_active_version))
+
+**External**
+
+- `fastapi`  (from(APIRouter), from(HTTPException))
+- `pydantic`  (from(BaseModel))
+
+**Stdlib**
+
+- `json`  (import)
+- `os`  (import)
+- `pathlib`  (from(Path))
+
 ## backend/routers/queue.py
 
 **Project**
@@ -610,5 +639,6 @@
 - `routers/auth.py`  (include_router)
 - `routers/cases.py`  (include_router)
 - `routers/ingest.py`  (include_router)
+- `routers/models_router.py`  (include_router)
 - `routers/queue.py`  (include_router)
 

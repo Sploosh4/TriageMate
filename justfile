@@ -63,78 +63,78 @@ install:
 
 # Seed demo data into the database
 seed-db:
-    cd {{BACKEND}} && python seed_data.py
+    cd {{BACKEND}} && python3 seed_data.py
 
 # --- Data Pipeline ---
 
 # Refresh threat intel caches (default: all)
 # e.g., just refresh-caches nvd
 refresh-caches source="":
-    cd {{BACKEND}} && python -m scripts.refresh_caches {{if source != "" {"--source " + source} else {""}}}
+    cd {{BACKEND}} && python3 -m scripts.refresh_caches {{if source != "" {"--source " + source} else {""}}}
 
 # Bulk fetch NVD corpus (200K+ CVEs)
 fetch-corpus:
-    cd {{BACKEND}} && python -m scripts.fetch_nvd_corpus
+    cd {{BACKEND}} && python3 -m scripts.fetch_nvd_corpus
 
 # Resume NVD corpus fetch from checkpoint
 fetch-corpus-resume:
-    cd {{BACKEND}} && python -m scripts.fetch_nvd_corpus --resume
+    cd {{BACKEND}} && python3 -m scripts.fetch_nvd_corpus --resume
 
 # Build unified training NPZ from NVD corpus
 build-corpus +args="":
-    cd {{BACKEND}} && python -m scripts.build_training_corpus {{args}}
+    cd {{BACKEND}} && python3 -m scripts.build_training_corpus {{args}}
 
 # Build CWE hierarchy JSON (downloads MITRE XML first)
 build-cwe:
-    cd {{BACKEND}} && python -m scripts.build_cwe_hierarchy --download
+    cd {{BACKEND}} && python3 -m scripts.build_cwe_hierarchy --download
 
 # Build vendor popularity index
 build-vendor-index:
-    cd {{BACKEND}} && python -m scripts.build_vendor_index
+    cd {{BACKEND}} && python3 -m scripts.build_vendor_index
 
 # --- ML Training ---
 
 # Full XGBoost training pipeline (gather + train)
 train-xgboost +args="":
-    cd {{BACKEND}} && python -m ml.train_xgboost {{args}}
+    cd {{BACKEND}} && python3 -m ml.train_xgboost {{args}}
 
 # Train Pre-Tier RandomForest classifier
 train-pretier:
-    cd {{BACKEND}} && python -m ml.train_pre_tier
+    cd {{BACKEND}} && python3 -m ml.train_pre_tier
 
 # Train EPSS substitution model v3
 train-epss:
-    cd {{BACKEND}} && python -m ml.train_epss_v3
+    cd {{BACKEND}} && python3 -m ml.train_epss_v3
 
 # Fetch EPSS training data
 fetch-epss-data:
-    cd {{BACKEND}} && python -m ml.fetch_epss_data
+    cd {{BACKEND}} && python3 -m ml.fetch_epss_data
 
 # Generate supplemental hostnames for Pre-Tier training
 generate-hostnames:
-    cd {{BACKEND}} && python -m ml.generate_supplemental_hostnames
+    cd {{BACKEND}} && python3 -m ml.generate_supplemental_hostnames
 
 # Ingest documents into LanceDB vector store
 ingest-docs:
-    cd {{BACKEND}} && python -m ml.ingest_docs
+    cd {{BACKEND}} && python3 -m ml.ingest_docs
 
 # --- Analysis ---
 
 # ML calibration audit
 audit-calibration:
-    cd {{BACKEND}} && python -m analysis.calibration_audit
+    cd {{BACKEND}} && python3 -m analysis.calibration_audit
 
 # EPSS substitution accuracy evaluation
 audit-epss:
-    cd {{BACKEND}} && python -m analysis.epss_eval
+    cd {{BACKEND}} && python3 -m analysis.epss_eval
 
 # Feature vector contract compliance check
 audit-features:
-    cd {{BACKEND}} && python -m analysis.feature_parity_check
+    cd {{BACKEND}} && python3 -m analysis.feature_parity_check
 
 # Data schema conversion validation
 audit-schema:
-    cd {{BACKEND}} && python -m analysis.validate_conversion
+    cd {{BACKEND}} && python3 -m analysis.validate_conversion
 
 # Run all audits sequentially
 audit-all: audit-calibration audit-epss audit-features audit-schema

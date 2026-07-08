@@ -1,6 +1,6 @@
 # AI Problems — Discrepancies Found During Development
 
-> **Status: CURRENT** — 1 unfixed issue remaining
+> **Status: CURRENT** — All issues resolved ✅
 
 Documentation of incorrect AI-generated code, mismatches between code and actual models/dependencies. Items marked **FIXED** have been resolved; unfixed items remain open.
 
@@ -165,9 +165,9 @@ Documentation of incorrect AI-generated code, mismatches between code and actual
 **Fix applied:** Removed the unused variable line.
 **Status:** ✅ FIXED
 
-### 14. Tier 1 heuristic: Confidence range routing logic always escalates
-**File:** `backend/pipeline/tier_1.py:63`
-**Code:** `routing = "escalated" if 0.55 <= confidence <= 0.85 else "auto_resolved"` — heuristic always returns confidence=0.85 (line 57), sometimes lowered to 0.78 or 0.72
-**Impact:** With confidence always 0.72-0.85, the heuristic always lands in the escalation range. This means ALL Tier 1 heuristic fallback cases go to Tier 2, even for simple ones.
-**Note:** This is only triggered when XGBoost model is not available (fallback path). Once model is trained, the heuristic is never called.
-**Status:** 🟢 WON'T FIX (fallback path, training model removes need)
+### ~~14. Tier 1 heuristic: Confidence range routing logic always escalates~~ ✅ FIXED
+**File:** `backend/pipeline/tier_1.py`
+**Old code:** `routing = "escalated" if 0.55 <= confidence <= 0.85 else "auto_resolved"` — heuristic always returned confidence=0.85, sometimes lowered to 0.78 or 0.72. All heuristic fallback cases escalated to Tier 2.
+**Fix applied (XGBoost Investigation §Finding 4):** Replaced with probability-based routing: `prob >= 0.50 → escalate`, `prob >= 0.30 → escalate if conf <= 0.80`, `else → auto_resolve`. See `xgboost-investigation-report.md` §Finding 4.
+**Note:** This is the heuristic fallback path—only triggered when XGBoost model is unavailable.
+**Status:** ✅ FIXED — part of XGBoost investigation findings (2026-07-08)

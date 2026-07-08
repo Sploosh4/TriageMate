@@ -64,7 +64,7 @@ Define exactly what the TriageMate Minimum Viable Product delivers, what it expl
 - **Reason:** Zero ML, zero training data, zero external dependencies. The rules embody the WA SOC's deterministic baseline logic. The only future work is threshold tuning.
 
 #### Tier 1: REAL (XGBoost model, retrained Sprint 3)
-- **IN scope:** XGBoost model (`xgboost_model.pkl`) — retrained 2026-07-08 on 253K CVEs from `training_data_v2.npz` with 420-dimension feature vector (36 tabular + 384 SBERT). ROC-AUC 0.9409 (honest evaluation — point-in-time labels, chronological split, no label leakage). Previous Sprint 3 model (93K records) achieved ROC-AUC 0.9677. Pre-fix label-leakage era was 0.9946. Combined probability + uncertainty zoning determines escalation to Tier 2. Calibrator and threshold_info exported. Heuristic fallback available when model is absent.
+- **IN scope:** XGBoost model (`xgboost_model.pkl`) — retrained 2026-07-08 on 253K CVEs from `training_data_v2.npz` with 419-dimension feature vector (35 tabular + 384 SBERT). ROC-AUC 0.9459 (honest evaluation — point-in-time labels, chronological split, no label leakage). Previous Sprint 3 model (93K records) achieved ROC-AUC 0.9677. Pre-fix label-leakage era was 0.9946. Combined probability + uncertainty zoning determines escalation to Tier 2. Calibrator and threshold_info exported. Heuristic fallback available when model is absent.
 - **Reason:** Model was retrained in Sprint 3 to fix the 69→68 feature mismatch caused by the `cisa_kev` label-leakage removal. The model now produces real exploitation probabilities for all cases. All 7 demo rows validated with exact expected scores.
 
 #### Tier 2: REAL (multi-provider cloud LLM + Known Conflicts cache)
@@ -116,7 +116,7 @@ Define exactly what the TriageMate Minimum Viable Product delivers, what it expl
 | Deferred Item | Why Out of Scope for MVP |
 |---|---|
 | **Pre-Tier multi-label classifier** (RandomForest replacing hostname dict) | Requires 200–500 internally labeled WA government assets. No public dataset exists. The stub correctly handles the 7 demo rows and returns conservative defaults for unknowns. |
-| **Tier 1 XGBoost tuning** | **DONE (Sprint 3 + Retrain 2026-07-08).** Retrained on 93,018 post-KEV CVEs (Sprint 3, ROC-AUC 0.9677). Feature mismatch (69→68) fixed. Ensemble variance DMatrix bug fixed. **Retrained 2026-07-08** on `training_data_v2.npz` (253K samples, 420 columns, ROC-AUC 0.9409). Pipeline stacks full 384-dim SBERT onto 35 tabular features. Calibrator and threshold_info exported. |
+| **Tier 1 XGBoost tuning** | **DONE (Sprint 3 + Retrain 2026-07-08).** Retrained on 93,018 post-KEV CVEs (Sprint 3, ROC-AUC 0.9677). Feature mismatch (69→68) fixed. Ensemble variance DMatrix bug fixed. **Retrained 2026-07-08** on `training_data_v2.npz` (253K samples, 419 columns, ROC-AUC 0.9459). Pipeline stacks full 384-dim SBERT onto 35 tabular features. Calibrator and threshold_info exported. |
 | **Tier 2 CWE encoder** (ModernBERT, replacing NVD API CWE lookup) | The NVD API + regex lookup (`ingest_cwe.py`) provides authoritative CWE without the 656MB SecureBERT model. The local encoder adds offline CWE pre-classification — valuable but not required now that NVD provides CWE at ingest time. |
 | **EPSS substitution model** (sector-adjusted EPSS scorer) | Only affects Row 5's display. The stub hardcodes the substitution value. A real model requires sector-weighted exploitation data which is not publicly available. |
 
@@ -189,7 +189,7 @@ Define exactly what the TriageMate Minimum Viable Product delivers, what it expl
 | **API** | GET /queue, GET /case/{id}, GET /metrics, POST /ingest | Rate limiting, API keys, multi-versioning |
 | **Pipeline Pre-Tier** | Hostname dictionary (31 hosts) + trained RandomForest model (200 trees) | Real WA Government asset validation data |
 | **Pipeline Tier 0** | Deterministic rules (production-ready) | Threshold tuning (future refinement) |
-| **Pipeline Tier 1** | XGBoost model (retrained 2026-07-08 on 253K CVEs, ROC-AUC 0.9409) | WA-specific tuning (post-MVP) |
+| **Pipeline Tier 1** | XGBoost model (retrained 2026-07-08 on 253K CVEs, ROC-AUC 0.9459) | WA-specific tuning (post-MVP) |
 | **Pipeline Tier 2** | Cloud LLM + KNOWN_CONFLICTS cache | Local CWE encoder (ModernBERT) |
 | **Scoring** | 6-dimension weighted score + band mapping (CVSS/EPSS/Criticality/Exposure/Patch/ML Exploitation) | Dynamic weight learning |
 | **Database** | SQLite + PostgreSQL support, 5 Alembic migrations, 3 tables (vulnerabilities, resolved_vulnerabilities, reviews) | Full multi-table normalisation |

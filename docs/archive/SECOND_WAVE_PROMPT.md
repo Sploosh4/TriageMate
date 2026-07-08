@@ -1,5 +1,7 @@
 # Wave 2 Audit Prompt — LOGIC & SEMANTIC CORRECTNESS
 
+> **Status: ARCHIVED** — Historical audit prompt. Preserved for provenance.
+
 ## Focus: Logical errors, dead code, contradictory conditions, semantic drift between comments and implementation, data inconsistencies, and schema drift.
 
 ---

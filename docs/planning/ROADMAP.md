@@ -94,7 +94,7 @@
 |---|---|---|
 | FastAPI entry point (`main.py`) | ✅ Done | CORS, static mounts, startup lifecycle, .env auto-loading |
 | SQLite database + schema (`database.py`) | ✅ Done | 63-column `vulnerabilities` table, DatabaseManager (SQLite + PostgreSQL) |
-| Pydantic models (`models.py`) | ✅ Done | 10 models, camelCase aliasing |
+| Pydantic models (`models.py`) | ✅ Done | 19 models (BaseModel subclasses), camelCase aliasing |
 | Scoring engine (`scoring.py`) | ✅ Done | 6 dimensions → 0–100 score → band mapping |
 | Background scheduler (`scheduler.py`) | ✅ Done | Daily low-severity re-check |
 | Background audit (`audit.py`) | ✅ Done | 7.5% random sample of auto-resolved cases |
@@ -113,6 +113,10 @@
 | `GET /api/model/versions` | ✅ Done — Sprint 11 |
 | `POST /api/model/activate` | ✅ Done — Sprint 11 |
 | `GET /api/model/status` | ✅ Done — Sprint 11 |
+| `GET /api/review/queue` | ✅ Done — Sprint 11 | Review queue listing with filter flag
+| `POST /api/review/flag/{case_id}` | ✅ Done — Sprint 11 | Flag case for human review
+| `POST /api/case/{case_id}/review` | ✅ Done — Sprint 11 | Submit analyst review decision
+| `GET /api/case/{case_id}/history` | ✅ Done — Sprint 11 | Review history for a case
 | `POST /api/auth/login` | ✅ Done (JWT) |
 | `POST /api/auth/refresh` | ✅ Done |
 | Swagger UI at `/docs` | ✅ Done |
@@ -166,8 +170,7 @@
 
 See `AI_PROBLEMS.md` for the authoritative tracker.
 
-**Still Unfixed:**
-- #14 TRIVIAL: Tier 1 heuristic always escalates (fallback path — never reached)
+**All previously unfixed issues resolved.** See `AI_PROBLEMS.md` for full tracker.
 
 ---
 

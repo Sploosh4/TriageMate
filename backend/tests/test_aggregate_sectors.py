@@ -4,8 +4,6 @@ Pure-function tests for scripts.aggregate_tenable_sectors.
 No async, no database, no client fixture.
 """
 
-import json
-import pytest
 from scripts.aggregate_tenable_sectors import aggregate_findings
 
 

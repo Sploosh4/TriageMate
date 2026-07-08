@@ -30,7 +30,12 @@ TriageMate MVP/
 │   ├── plans/
 │   │   ├── 2026-07-07-doc-cleanup-sprint.md  Sprint: Documentation Cleanup & Tool Audit
 │   │   ├── 2026-07-07-skill-system-consolidation.md  Plan: Skill System Consolidation
-│   │   └── 2026-07-08-clean-corpus-sprint.md  Sprint: Clean Corpus
+│   │   ├── 2026-07-08-clean-corpus-sprint.md  Sprint: Clean Corpus
+│   │   ├── 2026-07-08-sprint-11.md  Sprint 11: Model Governance + Ops Hardening
+│   │   ├── 2026-07-08-sprint-12.md  Sprint 12: Gap Hardening — Docs, Research, Bookkeeping
+│   │   ├── 2026-07-08-sprint-13.md  Sprint 13: EPSS Data Pipeline + Documentation
+│   │   ├── 2026-07-08-sprint-operational-readiness.md  Sprint: Operational Readiness
+│   │   └── 2026-07-08-sprint-parallel-polish.md  Sprint: Parallel Polish
 │   ├── skills/
 │   │   ├── audit-checklist/
 │   │   │   └── SKILL.md  Audit Checklist
@@ -96,6 +101,7 @@ TriageMate MVP/
 │   ├── integrations/
 │   │   ├── __init__.py
 │   │   ├── advisories.py
+│   │   ├── cache_health.py  Return KEV cache freshness info for the health endpoint.
 │   │   ├── cmdb.py  Load the mock CMDB from JSON file, keyed by hostname.
 │   │   ├── demo_generator.py  ─── Caches (lazy-loaded, module-level) ───────────────────────────────
 │   │   ├── exploitdb.py  Parse files_exploits.csv into an in-memory CVE-to-exploit lookup.
@@ -118,6 +124,7 @@ TriageMate MVP/
 │   │   ├── fetch_epss_data.py  Download and parse the current EPSS data from FIRST.org.
 │   │   ├── generate_supplemental_hostnames.py  ─── AGENCIES AND THEIR DOMAINS ──────────────────────────────────────────────
 │   │   ├── ingest_docs.py  Size limits
+│   │   ├── model_registry.json  1.5 KB
 │   │   ├── nvd_checkpoint.json  72.0 B
 │   │   ├── nvd_cves_cached.json  79.6 MB
 │   │   ├── pretier_features.py  ─── AGENCY DEFINITIONS ─────────────────────────────────────────────────────
@@ -131,7 +138,7 @@ TriageMate MVP/
 │   │   ├── train_pre_tier.py  ─── PATHS ──────────────────────────────────────────────────────────────────
 │   │   ├── train_xgboost.py
 │   │   ├── vector_store.py
-│   │   └── xgboost_predictor.py  Probability + uncertainty zoning thresholds for routing decisions.
+│   │   └── xgboost_predictor.py  Default paths (fallbacks when registry is unavailable)
 │   ├── pipeline/
 │   │   ├── __init__.py
 │   │   ├── pre_tier.py  ─── PHASE 0: KNOWN HOSTS (Demo / Fallback) ────────────────────────────────
@@ -143,9 +150,11 @@ TriageMate MVP/
 │   │   ├── auth.py  Authenticate with admin credentials.
 │   │   ├── cases.py
 │   │   ├── ingest.py  Map WAICP classification to numeric compliance category.
+│   │   ├── models.py  Read the model registry JSON file.
 │   │   └── queue.py  )
 │   ├── scripts/
 │   │   ├── __init__.py
+│   │   ├── aggregate_tenable_sectors.py  ═════════════════════════════════════════════════════════════════════════════
 │   │   ├── build_cwe_hierarchy.py  Download cwec_latest.xml.zip and return contents as bytes.
 │   │   ├── build_training_corpus.py  Bulletproof: find .env relative to this script, not CWD
 │   │   ├── build_vendor_index.py
@@ -154,15 +163,22 @@ TriageMate MVP/
 │   ├── tests/
 │   │   ├── __init__.py
 │   │   ├── conftest.py  Disable LLM API key before any app imports to prevent real API calls
+│   │   ├── test_aggregate_sectors.py  Test suite for aggregate_findings().
+│   │   ├── test_audit.py  Direct tests of the should_audit() function with controlled randomness.
 │   │   ├── test_demo_generator.py  Structural Tests (6)
+│   │   ├── test_drift.py  GET /api/drift smoke tests.
 │   │   ├── test_feature_parity.py  ── Tabular feature keys in the EXACT order xgboost_predictor.predict() builds th
 │   │   ├── test_fuzzed_ingest.py  ── Mock responses for network-dependent pipeline functions ─────────────
 │   │   ├── test_health.py  Health endpoint smoke tests.
 │   │   ├── test_ingest.py  Remove any previously created test records before each ingest test.
 │   │   ├── test_integration.py  Test the full ingest pipeline end-to-end.
-│   │   └── test_queue.py  Expected priority scores in descending order (matching the seed data)
+│   │   ├── test_model_versions.py  ── Session-scoped save/restore to isolate tests ──────────────────────
+│   │   ├── test_queue.py  Expected priority scores in descending order (matching the seed data)
+│   │   ├── test_rate_limit.py  Delete CVE-TEST-RL-* records from the database.
+│   │   ├── test_review.py  Required keys for a review queue item (camelCase via ReviewQueueItem model)
+│   │   └── test_scoring.py  Core Sanity Tests
 │   ├── .env  1009.0 B
-│   ├── .env.example  1.7 KB
+│   ├── .env.example  1.8 KB
 │   ├── __init__.py
 │   ├── alembic.ini
 │   ├── audit.py  Determine if a case should enter the audit pool.
@@ -237,7 +253,7 @@ TriageMate MVP/
 │   │   │   └── reviewQueue.js  // reviewQueue.js — Tier 3 Human Review Queue
 │   │   ├── api.js  // api.js — Single responsibility: talk to the backend
 │   │   └── app.js  // app.js — Application state and initialization
-│   └── index.html  9.7 KB
+│   └── index.html  10.7 KB
 ├── graphify_output/
 │   ├── api_deps.md  TriageMate — API Dependency Map
 │   ├── feature_parity.md  TriageMate — Feature Parity Report
@@ -245,9 +261,10 @@ TriageMate MVP/
 │   ├── knowledge_graph.json  11.4 KB
 │   └── ml_inventory.md  TriageMate — ML Model Inventory
 ├── .dockerignore  328.0 B
-├── .env.example  1.7 KB
+├── .env.example  1.8 KB
 ├── .gitignore  524.0 B
 ├── .pre-commit-config.yaml  413.0 B
+├── =1.13.0  1.0 KB
 ├── AGENTS.md  TriageMate Project Rules
 ├── AI_PROBLEMS.md  AI Problems — Discrepancies Found During Development
 ├── demo-reference.html  <!--
