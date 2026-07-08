@@ -3,8 +3,7 @@ Tests for model version management (read-write: list + activate).
 
 Covers:
 - GET  /api/model/versions  — listing with correct active version
-- POST /api/model/activate — switching versions, error cases
-- Activation + predict integration (model loads from new path)
+- POST /api/model/activate — error cases (only v3 remains after hygiene cleanup)
 """
 
 import json
@@ -62,7 +61,11 @@ class TestModelVersions:
     """Model version listing and activation."""
 
     async def test_list_versions(self, client):
-        """GET /api/model/versions returns 3 versions, active is v3."""
+        """GET /api/model/versions returns 1 version (v3), active is v3.
+
+        v1 and v2 model files were removed during hygiene cleanup,
+        so only v3 remains in the registry.
+        """
         response = await client.get("/api/model/versions")
         assert response.status_code == 200
         data = response.json()
@@ -70,42 +73,15 @@ class TestModelVersions:
         assert data["active_version"] == "v3", (
             f"Expected active_version v3, got {data['active_version']}"
         )
-        assert len(data["versions"]) == 3, (
-            f"Expected 3 versions, got {len(data['versions'])}"
+        assert len(data["versions"]) == 1, (
+            f"Expected 1 version, got {len(data['versions'])}"
         )
 
         version_ids = [v["version"] for v in data["versions"]]
-        assert version_ids == ["v1", "v2", "v3"], (
-            f"Unexpected version order: {version_ids}"
-        )
+        assert version_ids == ["v3"], f"Unexpected version order: {version_ids}"
 
         for v in data["versions"]:
-            if v["version"] == "v3":
-                assert v["is_active"] is True, "v3 should be marked active"
-            else:
-                assert v["is_active"] is False, f"{v['version']} should not be active"
-
-    async def test_activate_valid_version(self, client):
-        """Activate v2, confirm via GET, reset to v3."""
-        # Ensure starting from v3
-        await client.post("/api/model/activate", json={"version": "v3"})
-
-        # Activate v2
-        response = await client.post("/api/model/activate", json={"version": "v2"})
-        assert response.status_code == 200
-        data = response.json()
-        assert data["active_version"] == "v2", (
-            f"Expected active v2, got {data['active_version']}"
-        )
-
-        # Confirm via GET
-        response = await client.get("/api/model/versions")
-        assert response.json()["active_version"] == "v2"
-
-        # Reset to v3 for subsequent tests
-        response = await client.post("/api/model/activate", json={"version": "v3"})
-        assert response.status_code == 200
-        assert response.json()["active_version"] == "v3"
+            assert v["is_active"] is True, "v3 should be marked active"
 
     async def test_activate_invalid_version(self, client):
         """Activating a nonexistent version returns 404."""
@@ -119,44 +95,6 @@ class TestModelVersions:
 
         response = await client.post("/api/model/activate", json={"version": "v3"})
         assert response.status_code == 400
-
-    async def test_activate_then_predict(self, client):
-        """Activate v1, call predict(), verify it works with the old model."""
-        features = {
-            "epss_score": 0.05,
-            "cwe_class": "CWE-79",
-            "cisa_kev": False,
-            "description": "Cross-site scripting vulnerability test",
-            "mission_prevalence": "Support",
-            "public_wellbeing_impact": "Minimal",
-            "internet_facing": True,
-            "patch_available": True,
-            "domain_joined": True,
-        }
-
-        # Activate v1 (Sprint 3 model)
-        response = await client.post("/api/model/activate", json={"version": "v1"})
-        assert response.status_code == 200
-        assert response.json()["active_version"] == "v1"
-
-        # Predict with the old model
-        from ml.xgboost_predictor import predict
-
-        result = predict(features)
-
-        assert "exploitation_probability" in result, (
-            "Missing exploitation_probability in predict response"
-        )
-        assert "confidence" in result, "Missing confidence in predict response"
-        assert "routing" in result, "Missing routing in predict response"
-        assert isinstance(result["exploitation_probability"], float), (
-            f"Expected float probability, got {type(result['exploitation_probability'])}"
-        )
-
-        # Reset to v3 for other tests
-        reset_resp = await client.post("/api/model/activate", json={"version": "v3"})
-        assert reset_resp.status_code == 200
-        assert reset_resp.json()["active_version"] == "v3"
 
 
 class TestModelStatus:
@@ -185,8 +123,8 @@ class TestModelStatus:
         assert isinstance(data["available_versions"], list), (
             "available_versions should be a list"
         )
-        assert len(data["available_versions"]) == 3, (
-            f"Expected 3 versions, got {len(data['available_versions'])}"
+        assert len(data["available_versions"]) == 1, (
+            f"Expected 1 version, got {len(data['available_versions'])}"
         )
 
         # score_comparison should have baseline_scores and versions
@@ -219,12 +157,12 @@ class TestModelStatus:
                 break
 
     async def test_model_status_score_comparison_has_all_versions(self, client):
-        """Score comparison contains entries for v1, v2, and v3."""
+        """Score comparison contains v3 entry only (v1/v2 removed in hygiene)."""
         response = await client.get("/api/model/status")
         data = response.json()
         versions = data["score_comparison"]["versions"]
 
-        for expected_version in ["v1", "v2", "v3"]:
+        for expected_version in ["v3"]:
             assert expected_version in versions, (
                 f"Missing {expected_version} in score_comparison.versions"
             )
