@@ -16,6 +16,7 @@
   <div id="screen-queue" class="screen active">
     <div id="top-bar">
       <span class="app-name">TriageMate</span>
+      <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle dark mode" title="Toggle dark mode">☀</button>
       <span class="spacer"></span>
       <label for="queue-search" class="visually-hidden">Search vulnerabilities</label>
       <input type="text" id="queue-search" class="search-input" placeholder="Search CVE, hostname...">
@@ -185,15 +186,33 @@
 
 </div>
 
-<script src="js/api.js"></script>
-<script src="js/components/queue.js"></script>
-<script src="js/components/caseView.js"></script>
-<script src="js/components/metricBoxes.js"></script>
-<script src="js/components/demoControls.js"></script>
-<script src="js/components/auth.js"></script>
-<script src="js/components/reviewQueue.js"></script>
-<script src="js/components/driftDashboard.js"></script>
-<script src="js/app.js"></script>
+<script src="js/api.js" defer></script>
+<script src="js/components/queue.js" defer></script>
+<script src="js/components/caseView.js" defer></script>
+<script src="js/components/metricBoxes.js" defer></script>
+<script src="js/components/demoControls.js" defer></script>
+<script src="js/components/auth.js" defer></script>
+<script src="js/components/reviewQueue.js" defer></script>
+<script src="js/components/driftDashboard.js" defer></script>
+<script src="js/app.js" defer></script>
+
+<script>
+(function() {
+  const toggle = document.getElementById('theme-toggle');
+  const stored = localStorage.getItem('triagemate-theme');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const theme = stored || (prefersDark ? 'dark' : 'light');
+  document.documentElement.setAttribute('data-theme', theme);
+  if (toggle) toggle.textContent = theme === 'dark' ? '\u263E' : '\u2600';
+  if (toggle) toggle.addEventListener('click', function() {
+    const current = document.documentElement.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    this.textContent = next === 'dark' ? '\u263E' : '\u2600';
+    localStorage.setItem('triagemate-theme', next);
+  });
+})();
+</script>
 
 </body>
 </html>

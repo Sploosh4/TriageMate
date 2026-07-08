@@ -4,12 +4,12 @@ async function initDriftDashboard() {
   loadModelStatusPanel();
 
   try {
-    var res = await _authFetch('/api/drift');
-    var data = await res.json();
+    const res = await _authFetch('/api/drift');
+    const data = await res.json();
     renderDriftDashboard(data);
   } catch (err) {
     console.error('Failed to load drift data:', err);
-    var container = document.getElementById('drift-dashboard-container');
+    const container = document.getElementById('drift-dashboard-container');
     if (container) container.innerHTML = '<div class="review-empty">Failed to load drift metrics.</div>';
   }
 }
@@ -44,7 +44,7 @@ function loadModelStatusPanel() {
 }
 
 function renderDriftDashboard(data) {
-  var container = document.getElementById('drift-dashboard-container');
+  const container = document.getElementById('drift-dashboard-container');
   if (!container) return;
 
   if (!data.totalAudited || data.totalAudited === 0) {
@@ -52,18 +52,18 @@ function renderDriftDashboard(data) {
     return;
   }
 
-  var html = '<div class="drift-grid">';
+  let html = '<div class="drift-grid">';
 
   // Panel 1: Score Trend Sparkline
   html += '<div class="drift-panel">';
   html += '<div class="drift-panel-title">Score Trend (30-day avg)</div>';
   html += '<div class="drift-sparkline">';
   if (data.scoreTrend && data.scoreTrend.length > 0) {
-    var maxScore = 100;
+    const maxScore = 100;
     data.scoreTrend.forEach(function(point) {
-      var pct = (point.avgScore / maxScore) * 100;
-      var colour = pct > 75 ? '#EF4444' : pct > 50 ? '#F97316' : pct > 25 ? '#F59E0B' : '#22C55E';
-      var label = point.date ? point.date.slice(-5) : '';
+      const pct = (point.avgScore / maxScore) * 100;
+      const colour = pct > 75 ? '#EF4444' : pct > 50 ? '#F97316' : pct > 25 ? '#F59E0B' : '#22C55E';
+      const label = point.date ? point.date.slice(-5) : '';
       html += '<div class="drift-bar-wrapper" title="' + label + ': ' + point.avgScore + '">';
       html += '<div class="drift-bar" style="height:' + pct + '%;background:' + colour + '"></div>';
       html += '</div>';
@@ -77,10 +77,10 @@ function renderDriftDashboard(data) {
   html += '<div class="drift-panel">';
   html += '<div class="drift-panel-title">Tier Routing</div>';
   html += '<div class="drift-semicircle">';
-  var total = data.tierRouting.auto + data.tierRouting.escalated;
-  var autoPct = total > 0 ? (data.tierRouting.auto / total) * 100 : 0;
-  var escPct = total > 0 ? (data.tierRouting.escalated / total) * 100 : 0;
-  var escStart = 180 - (escPct * 1.8);
+  const total = data.tierRouting.auto + data.tierRouting.escalated;
+  const autoPct = total > 0 ? (data.tierRouting.auto / total) * 100 : 0;
+  const escPct = total > 0 ? (data.tierRouting.escalated / total) * 100 : 0;
+  const escStart = 180 - (escPct * 1.8);
   html += '<div class="semicircle-bar">';
   html += '<div class="semicircle-fill semicircle-auto" style="width:' + autoPct + '%"></div>';
   html += '<div class="semicircle-fill semicircle-esc" style="width:' + escPct + '%"></div>';
@@ -94,16 +94,16 @@ function renderDriftDashboard(data) {
   html += '<div class="drift-panel">';
   html += '<div class="drift-panel-title">Risk Band Distribution</div>';
   html += '<div class="drift-risk-bands">';
-  var bands = ['Very Critical', 'Critical', 'Medium', 'Low'];
-  var bandColours = { 'Very Critical': '#EF4444', 'Critical': '#F97316', 'Medium': '#F59E0B', 'Low': '#22C55E' };
-  var maxCount = 1;
+  const bands = ['Very Critical', 'Critical', 'Medium', 'Low'];
+  const bandColours = { 'Very Critical': '#EF4444', 'Critical': '#F97316', 'Medium': '#F59E0B', 'Low': '#22C55E' };
+  let maxCount = 1;
   bands.forEach(function(b) {
-    var c = data.riskBandDistribution[b] || 0;
+    const c = data.riskBandDistribution[b] || 0;
     if (c > maxCount) maxCount = c;
   });
   bands.forEach(function(b) {
-    var count = data.riskBandDistribution[b] || 0;
-    var pct = maxCount > 0 ? (count / maxCount) * 100 : 0;
+    const count = data.riskBandDistribution[b] || 0;
+    const pct = maxCount > 0 ? (count / maxCount) * 100 : 0;
     html += '<div class="risk-band-row">';
     html += '<span class="risk-band-label" style="color:' + (bandColours[b] || '#64748B') + '">' + b + '</span>';
     html += '<div class="risk-band-bar-bg"><div class="risk-band-bar-fill" style="width:' + pct + '%;background:' + (bandColours[b] || '#64748B') + '"></div></div>';

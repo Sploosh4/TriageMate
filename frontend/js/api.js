@@ -1,7 +1,7 @@
 // api.js — Single responsibility: talk to the backend
 // Supports Bearer token auth via auth.js global functions.
 
-var API_BASE = '/api';
+const API_BASE = '/api';
 
 // ---------------------------------------------------------------------------
 // Helper: fetch with automatic Bearer token + 401 refresh + retry
@@ -13,23 +13,23 @@ async function _authFetch(url, options) {
 
   // Attach token if available
   if (typeof getAccessToken === 'function') {
-    var token = getAccessToken();
+    const token = getAccessToken();
     if (token) {
       options.headers['Authorization'] = 'Bearer ' + token;
     }
   }
 
-  var res = await fetch(url, options);
+  const res = await fetch(url, options);
 
   // On 401, attempt token refresh and retry once
   if (res.status === 401 && typeof refreshToken === 'function') {
     try {
       await refreshToken();
-      var newToken = getAccessToken();
+      const newToken = getAccessToken();
       if (newToken) {
         options.headers['Authorization'] = 'Bearer ' + newToken;
       }
-      var retryRes = await fetch(url, options);
+      const retryRes = await fetch(url, options);
       if (!retryRes.ok) {
         throw new Error('Request failed: ' + retryRes.status);
       }
@@ -53,22 +53,22 @@ async function _authFetch(url, options) {
 // ---------------------------------------------------------------------------
 
 async function fetchQueue() {
-  var res = await _authFetch(API_BASE + '/queue');
+  const res = await _authFetch(API_BASE + '/queue');
   return res.json();
 }
 
 async function fetchCase(rowId) {
-  var res = await _authFetch(API_BASE + '/case/' + rowId);
+  const res = await _authFetch(API_BASE + '/case/' + rowId);
   return res.json();
 }
 
 async function fetchMetrics() {
-  var res = await _authFetch(API_BASE + '/metrics');
+  const res = await _authFetch(API_BASE + '/metrics');
   return res.json();
 }
 
 async function saveNotes(caseId, notes) {
-  var res = await _authFetch(API_BASE + '/case/' + caseId + '/notes', {
+  const res = await _authFetch(API_BASE + '/case/' + caseId + '/notes', {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ notes: notes })
@@ -77,19 +77,19 @@ async function saveNotes(caseId, notes) {
 }
 
 async function fetchReviewQueue() {
-  var res = await _authFetch(API_BASE + '/review/queue');
+  const res = await _authFetch(API_BASE + '/review/queue');
   return res.json();
 }
 
 async function flagForReview(caseId) {
-  var res = await _authFetch(API_BASE + '/review/flag/' + caseId, {
+  const res = await _authFetch(API_BASE + '/review/flag/' + caseId, {
     method: 'POST'
   });
   return res.json();
 }
 
 async function submitCaseReview(caseId, body) {
-  var res = await _authFetch(API_BASE + '/case/' + caseId + '/review', {
+  const res = await _authFetch(API_BASE + '/case/' + caseId + '/review', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body)
@@ -98,11 +98,11 @@ async function submitCaseReview(caseId, body) {
 }
 
 async function fetchCaseHistory(caseId) {
-  var res = await _authFetch(API_BASE + '/case/' + caseId + '/history');
+  const res = await _authFetch(API_BASE + '/case/' + caseId + '/history');
   return res.json();
 }
 
 async function fetchDriftMetrics() {
-  var res = await _authFetch(API_BASE + '/drift');
+  const res = await _authFetch(API_BASE + '/drift');
   return res.json();
 }

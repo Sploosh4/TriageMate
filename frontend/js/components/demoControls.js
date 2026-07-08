@@ -1,6 +1,6 @@
 // demoControls.js — Demo Data Generator UI controls
 
-var demoState = {
+const demoState = {
   active: false,
   scenarios: [],
   generating: false
@@ -30,9 +30,9 @@ async function clearAllFindings() {
 
 function toggleDemoMode() {
   demoState.active = !demoState.active;
-  var panel = document.getElementById('demo-controls-panel');
-  var badge = document.getElementById('demo-mode-badge');
-  var watermark = document.getElementById('demo-watermark');
+  const panel = document.getElementById('demo-controls-panel');
+  const badge = document.getElementById('demo-mode-badge');
+  const watermark = document.getElementById('demo-watermark');
 
   if (demoState.active) {
     panel.classList.remove('hidden');
@@ -56,7 +56,7 @@ function toggleDemoMode() {
 }
 
 function renderDemoControls() {
-  var panel = document.getElementById('demo-controls-panel');
+  const panel = document.getElementById('demo-controls-panel');
   panel.innerHTML =
     '<div class="demo-controls-header">Demo Data Generator</div>' +
     '<div class="demo-controls-body">' +
@@ -81,19 +81,19 @@ function renderDemoControls() {
 }
 
 function populateScenarioPicker(scenarios) {
-  var picker = document.getElementById('scenario-picker');
+  const picker = document.getElementById('scenario-picker');
   if (!picker) return;
   picker.innerHTML = '';
 
   // Random Wave option first
-  var randomOpt = document.createElement('option');
+  const randomOpt = document.createElement('option');
   randomOpt.value = '_random_';
   randomOpt.textContent = '-- Random Wave (Host-Appropriate) --';
   picker.appendChild(randomOpt);
 
   // Scenario options
   scenarios.forEach(function(s) {
-    var opt = document.createElement('option');
+    const opt = document.createElement('option');
     opt.value = s.id;
     opt.textContent = s.name + ' (' + s.finding_count + ' findings)';
     picker.appendChild(opt);
@@ -101,22 +101,22 @@ function populateScenarioPicker(scenarios) {
 }
 
 function wireDemoEventListeners() {
-  var toggleBtn = document.getElementById('demo-toggle-btn');
+  const toggleBtn = document.getElementById('demo-toggle-btn');
   if (!toggleBtn) return;
 
   toggleBtn.addEventListener('click', toggleDemoMode);
 
   // Generate button (delegation on panel since it gets replaced)
-  var panel = document.getElementById('demo-controls-panel');
+  const panel = document.getElementById('demo-controls-panel');
   panel.addEventListener('click', function(e) {
-    var generateBtn = e.target.closest('#demo-generate-btn');
+    const generateBtn = e.target.closest('#demo-generate-btn');
     if (!generateBtn) return;
     handleGenerate();
   });
 
   // Clear button
   panel.addEventListener('click', function(e) {
-    var clearBtn = e.target.closest('#demo-clear-btn');
+    const clearBtn = e.target.closest('#demo-clear-btn');
     if (!clearBtn) return;
     handleClear();
   });
@@ -126,26 +126,26 @@ async function handleGenerate() {
   if (demoState.generating) return;
   demoState.generating = true;
 
-  var btn = document.getElementById('demo-generate-btn');
-  var status = document.getElementById('demo-status');
+  const btn = document.getElementById('demo-generate-btn');
+  const status = document.getElementById('demo-status');
   if (btn) btn.disabled = true;
   if (status) status.textContent = 'Generating...';
 
   try {
-    var scenarioId = document.getElementById('scenario-picker').value;
-    var size = document.getElementById('wave-size-select').value;
+    const scenarioId = document.getElementById('scenario-picker').value;
+    const size = document.getElementById('wave-size-select').value;
 
-    var payload;
+    let payload;
     if (scenarioId === '_random_') {
       payload = { mode: 'random', size: size };
     } else {
       payload = { mode: 'scenario', scenario_id: scenarioId };
     }
 
-    var results = await generateDemoWave(payload);
+    const results = await generateDemoWave(payload);
 
     // Refresh queue data
-    var queueResponse = await fetchQueue();
+    const queueResponse = await fetchQueue();
     appState.queueData = queueResponse.rows;
     refreshQueue();
 
@@ -160,11 +160,11 @@ async function handleGenerate() {
 }
 
 async function handleClear() {
-  var status = document.getElementById('demo-status');
+  const status = document.getElementById('demo-status');
   if (!confirm('Archive all findings and clear the queue?')) return;
 
   try {
-    var result = await clearAllFindings();
+    const result = await clearAllFindings();
     appState.queueData = [];
     refreshQueue();
     if (status) status.textContent = result.message;

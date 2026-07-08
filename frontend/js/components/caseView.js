@@ -1,6 +1,6 @@
 // caseView.js — Case view rendering
 function highlightYaml(yaml) {
-  var html = escHtml(yaml);
+  let html = escHtml(yaml);
   html = html.replace(/^(\s*)([a-zA-Z_][-\w.]*?)(\s*:)/gm, '$1<span class="yaml-key">$2</span>$3');
   html = html.replace(/^(\s*-\s+)([a-zA-Z_][-\w.]+?)(\s*:)/gm, '$1<span class="yaml-key">$2</span>$3');
   html = html.replace(/(:\s*)&quot;([^&]*)&quot;/g, '$1<span class="yaml-string">&quot;$2&quot;</span>');
@@ -83,7 +83,7 @@ function renderCase(caseResponse) {
   }
 
   // Enrichment staleness badge
-  var staleBadge = '';
+  let staleBadge = '';
   if (cv.nvdFreshness !== undefined && cv.nvdFreshness > 86400) {
     staleBadge = '<span class="enrichment-stale-badge">Enrichment Stale</span>';
   } else if (cv.nvdFreshness === -1) {

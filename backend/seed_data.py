@@ -761,7 +761,7 @@ SEED_ROWS = [
         "asset_criticality_contribution": 17,
         "exposure_contribution": 6,
         "patch_remediation_contribution": 2,
-        "ml_exploitation_contribution": 6,
+        "ml_exploitation_contribution": 7,
         "epss_substituted": True,
         "epss_substituted_value": 0.72,
         "epss_substitution_confidence": 0.79,
@@ -840,7 +840,7 @@ SEED_ROWS = [
                 },
                 {
                     "name": "ML Exploitation Probability Contribution",
-                    "awarded": 6,
+                    "awarded": 7,
                     "max": 10,
                     "justification": "XGBoost model predicted 0.65 exploitation probability with 0.76 confidence.",
                 },
