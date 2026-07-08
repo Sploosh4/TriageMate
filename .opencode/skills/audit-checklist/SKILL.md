@@ -56,7 +56,7 @@ Track Tier 2 LLM calls — token counts, provider used, fallback triggered. Comp
 Check last-modified timestamps on all cache files in `backend/data/`. Flag any cache older than its TTL. Identify which caches need refresh before the next pipeline run.
 
 ### 10. Score Drift Audit
-Track the 7 demo row scores over time. If any score shifts by more than ±3 from its baseline (94, 87, 71, 55, 63, 41, 22), flag for investigation. This catches silent model drift.
+Track the 7 demo row scores over time. If any score shifts by more than ±3 from its baseline (94, 87, 71, 63, 55, 41, 22), flag for investigation. This catches silent model drift.
 
 ### 11. Integration Health Audit
 Test each integration module with a known CVE. Verify graceful degradation — failed integrations must not crash the pipeline. Check that all integrations return safe defaults on error.

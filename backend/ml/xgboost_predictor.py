@@ -37,6 +37,47 @@ CWE_EPSS_THRESHOLDS = {
 }
 DEFAULT_EPSS_THRESHOLD = 0.84
 
+# Tabular feature keys in the EXACT order xgboost_predictor.predict() builds
+# the feature vector for XGBoost inference. Must match build_tabular_features()
+# in train_xgboost.py index-by-index. 35 features total.
+TABULAR_FEATURE_ORDER = [
+    "cvss_av",
+    "cvss_ac",
+    "cvss_pr",
+    "cvss_ui",
+    "cvss_s",
+    "cvss_c",
+    "cvss_i",
+    "cvss_a",
+    "epss_score",
+    "patch_available",
+    "patch_applied",
+    "internet_facing",
+    "domain_joined",
+    "data_classification",
+    "mission_prevalence",
+    "public_wellbeing_impact",
+    "lateral_reachability",
+    "boundary_reachability",
+    "downstream_assets",
+    "patch_lag_days",
+    "exploitdb_has_poc",
+    "metasploit_has_payload",
+    "threat_intel_pulses",
+    "nvd_reference_count",
+    "cve_desc_tokens",
+    "vulnerability_age_days",
+    "vendor_popularity_index",
+    "cvss_exploitability_sub",
+    "cvss_impact_sub",
+    "is_top_25_cwe",
+    "is_rce_signature",
+    "is_privesc_signature",
+    "is_bypass_signature",
+    "is_dos_signature",
+    "is_traversal_signature",
+]
+
 _model = None
 _calibrator = None
 _lock = threading.Lock()
@@ -95,6 +136,74 @@ def _tier_zero_check(features: dict) -> dict | None:
     return None
 
 
+def _build_tabular_array(features: dict) -> np.ndarray:
+    """Build tabular feature array from features dict using TABULAR_FEATURE_ORDER.
+
+    Each key in TABULAR_FEATURE_ORDER maps to a feature extractor:
+    - Boolean fields use int(features.get(key, default))
+    - Categorical fields use encoding helpers
+    - Numeric fields use features.get(key, default)
+    """
+    # Per-key defaults and extraction logic
+    _defaults = {
+        "cvss_av": 3,
+        "cvss_ac": 1,
+        "cvss_pr": 2,
+        "cvss_ui": 1,
+        "cvss_s": 0,
+        "cvss_c": 2,
+        "cvss_i": 2,
+        "cvss_a": 2,
+        "epss_score": 0.0,
+        "lateral_reachability": 0,
+        "boundary_reachability": 0,
+        "downstream_assets": 0,
+        "patch_lag_days": 0,
+        "threat_intel_pulses": 0,
+        "nvd_reference_count": 0,
+        "cve_desc_tokens": 0,
+        "vulnerability_age_days": 0,
+        "vendor_popularity_index": 0.0,
+        "cvss_exploitability_sub": 0.0,
+        "cvss_impact_sub": 0.0,
+    }
+    _bool_keys = {
+        "patch_available",
+        "patch_applied",
+        "internet_facing",
+        "domain_joined",
+        "exploitdb_has_poc",
+        "metasploit_has_payload",
+        "is_top_25_cwe",
+        "is_rce_signature",
+        "is_privesc_signature",
+        "is_bypass_signature",
+        "is_dos_signature",
+        "is_traversal_signature",
+    }
+    _bool_defaults = {
+        "patch_available": True,
+        "domain_joined": True,
+    }
+
+    row = []
+    for key in TABULAR_FEATURE_ORDER:
+        if key == "data_classification":
+            val = _encode_classification(features.get(key, "OFFICIAL"))
+        elif key == "mission_prevalence":
+            val = _encode_mission(features.get(key, "Support"))
+        elif key == "public_wellbeing_impact":
+            val = _encode_wellbeing(features.get(key, "Minimal"))
+        elif key in _bool_keys:
+            default = _bool_defaults.get(key, False)
+            val = int(features.get(key, default))
+        else:
+            val = features.get(key, _defaults.get(key, 0.0))
+        row.append(val)
+
+    return np.array([row], dtype=np.float32)
+
+
 def predict(features: dict) -> dict:
     """
     Predict exploitation probability for a vulnerability + asset combination.
@@ -124,48 +233,7 @@ def predict(features: dict) -> dict:
 
     description = features.get("description", "")
 
-    tabular = np.array(
-        [
-            [
-                features.get("cvss_av", 3),
-                features.get("cvss_ac", 1),
-                features.get("cvss_pr", 2),
-                features.get("cvss_ui", 1),
-                features.get("cvss_s", 0),
-                features.get("cvss_c", 2),
-                features.get("cvss_i", 2),
-                features.get("cvss_a", 2),
-                features.get("epss_score", 0.0),
-                int(features.get("patch_available", True)),
-                int(features.get("patch_applied", False)),
-                int(features.get("internet_facing", False)),
-                int(features.get("domain_joined", True)),
-                _encode_classification(features.get("data_classification", "OFFICIAL")),
-                _encode_mission(features.get("mission_prevalence", "Support")),
-                _encode_wellbeing(features.get("public_wellbeing_impact", "Minimal")),
-                features.get("lateral_reachability", 0),
-                features.get("boundary_reachability", 0),
-                features.get("downstream_assets", 0),
-                features.get("patch_lag_days", 0),
-                int(features.get("exploitdb_has_poc", False)),
-                int(features.get("metasploit_has_payload", False)),
-                features.get("threat_intel_pulses", 0),
-                features.get("nvd_reference_count", 0),
-                features.get("cve_desc_tokens", 0),
-                features.get("vulnerability_age_days", 0),
-                features.get("vendor_popularity_index", 0.0),
-                features.get("cvss_exploitability_sub", 0.0),
-                features.get("cvss_impact_sub", 0.0),
-                int(features.get("is_top_25_cwe", False)),
-                int(features.get("is_rce_signature", False)),
-                int(features.get("is_privesc_signature", False)),
-                int(features.get("is_bypass_signature", False)),
-                int(features.get("is_dos_signature", False)),
-                int(features.get("is_traversal_signature", False)),
-            ]
-        ],
-        dtype=np.float32,
-    )
+    tabular = _build_tabular_array(features)
 
     if description:
         text_vec = encode_description(description).reshape(1, -1)

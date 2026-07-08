@@ -359,7 +359,30 @@ class DatabaseManager:
                 -- Background audit
                 audit_selected BOOLEAN DEFAULT FALSE,
                 audit_result TEXT,
-                audit_date TEXT
+                audit_date TEXT,
+
+                -- Review queue
+                flagged_for_review BOOLEAN DEFAULT FALSE,
+                review_status TEXT,
+                review_decision TEXT,
+                reviewed_by TEXT,
+                reviewed_at TEXT,
+                override_score INTEGER,
+                override_band TEXT
+            )
+        """)
+
+        conn.executescript("""
+            CREATE TABLE IF NOT EXISTS reviews (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                vulnerability_id TEXT NOT NULL,
+                case_id INTEGER NOT NULL,
+                analyst_decision TEXT NOT NULL,
+                override_score INTEGER,
+                override_band TEXT,
+                notes TEXT,
+                analyst_name TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
 
@@ -429,6 +452,16 @@ class DatabaseManager:
                 audit_selected BOOLEAN DEFAULT FALSE,
                 audit_result TEXT,
                 audit_date TEXT,
+
+                -- Review queue
+                flagged_for_review BOOLEAN DEFAULT FALSE,
+                review_status TEXT,
+                review_decision TEXT,
+                reviewed_by TEXT,
+                reviewed_at TEXT,
+                override_score INTEGER,
+                override_band TEXT,
+
                 resolved_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 resolution_reason TEXT DEFAULT 'demo_clear'
             )
@@ -530,7 +563,30 @@ class DatabaseManager:
                 -- Background audit
                 audit_selected BOOLEAN DEFAULT FALSE,
                 audit_result TEXT,
-                audit_date TEXT
+                audit_date TEXT,
+
+                -- Review queue
+                flagged_for_review BOOLEAN DEFAULT FALSE,
+                review_status TEXT,
+                review_decision TEXT,
+                reviewed_by TEXT,
+                reviewed_at TEXT,
+                override_score INTEGER,
+                override_band TEXT
+            )
+        """)
+
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS reviews (
+                id SERIAL PRIMARY KEY,
+                vulnerability_id TEXT NOT NULL,
+                case_id INTEGER NOT NULL,
+                analyst_decision TEXT NOT NULL,
+                override_score INTEGER,
+                override_band TEXT,
+                notes TEXT,
+                analyst_name TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
 
@@ -600,6 +656,16 @@ class DatabaseManager:
                 audit_selected BOOLEAN DEFAULT FALSE,
                 audit_result TEXT,
                 audit_date TEXT,
+
+                -- Review queue
+                flagged_for_review BOOLEAN DEFAULT FALSE,
+                review_status TEXT,
+                review_decision TEXT,
+                reviewed_by TEXT,
+                reviewed_at TEXT,
+                override_score INTEGER,
+                override_band TEXT,
+
                 resolved_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 resolution_reason TEXT DEFAULT 'demo_clear'
             )

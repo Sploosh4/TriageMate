@@ -19,7 +19,7 @@
 | `docs/architecture/` | 1 | `MVP_SCOPE.md` |
 | `docs/guides/` | 1 | `WINDOWS_SETUP.md` |
 | `docs/planning/` | 3 | `ROADMAP.md`, `ai-doc-strategy-2026-07-07.md`, `file-consolidation-plan-2026-07-07.md` |
-| `docs/reference/` | 4 | `AI_PROBLEMS.md`, `xgboost-investigation-report.md`, `ml-implementation-plan.md`, `hostname-standards.md` |
+| `docs/reference/` | 3 (1 archived) | `AI_PROBLEMS.md`, `xgboost-investigation-report.md`, `hostname-standards.md` (+ `ml-implementation-plan.md` archived to `docs/archive/`) |
 | `docs/research/` | 1 | `RESEARCH_FINDINGS.md` |
 | `docs/archive/` | 6 | Various research prompts and early docs |
 | `docs/archive/handoffs/` | 1 | `SPRINT_9_HANDOFF.md` |
@@ -40,7 +40,7 @@ It documents sprint status, config, known bugs, and the project file tree. Howev
 
 **Finding 3: Status warnings are inconsistent.**
 - `MVP_SCOPE.md` has a large CAUTION banner — excellent
-- `ml-implementation-plan.md` has an OUTDATED warning — good
+- `ml-implementation-plan.md` has been archived to `docs/archive/` (was OUTDATED) — now preserved
 - `AI_PROBLEMS.md` uses ✅ FIXED / 🟢 WON'T FIX badges — good pattern
 - `xgboost-investigation-report.md` has a STATUS NOTE about artifacts not existing — good
 - `RESEARCH_FINDINGS.md` has a NOTE about roadmap superseding it — excellent
@@ -59,7 +59,7 @@ It documents sprint status, config, known bugs, and the project file tree. Howev
 **Finding 6: Some files have unclear audience and purpose.**
 - `TRIAGEMATE_BOOK_PROMPT.md` (deleted) (broken) was described as a "book generation prompt" — a prompt template, not project documentation
 - `hostname-standards.md` is a 43-citation academic-style paper on hostname nomenclature — valuable reference but entirely external research, not TriageMate-specific
-- `ml-implementation-plan.md` is explicitly outdated but preserved as historical reference
+- `ml-implementation-plan.md` is archived at `docs/archive/ml-implementation-plan.md` — historical reference only
 - Archive files (`Additional Information.md`, `TriageMate ML Research.md`, etc.) are early-iteration source docs that fed into later synthesis
 
 **Finding 7: File naming is inconsistent across 6+ conventions.**
@@ -68,7 +68,7 @@ It documents sprint status, config, known bugs, and the project file tree. Howev
 |---|---|---|
 | ALL_CAPS_SNAKE | `MVP_SCOPE.md`, `AI_PROBLEMS.md`, `ROADMAP.md`, `DEMO_SCRIPT.md` (deleted), `WINDOWS_SETUP.md` | 5 |
 | Pascal-ish | `SPRINT_NEXT_PLAN.md`, `RESEARCH_FINDINGS.md`, `xgboost-investigation-report.md` | 3 |
-| Spaced + em-dash | `ml-implementation-plan.md` | 1 |
+| Spaced + em-dash | `ml-implementation-plan.md` (→ `docs/archive/`) | 1 |
 | Full Sentence Case | `hostname-standards.md` | 1 |
 | Lowercase | `AGENTS.md` | 1 |
 | Numbered | `SPRINT_9_HANDOFF.md`, `SPRINT_2_HANDOFF.md`, etc. | 13 |
@@ -127,7 +127,7 @@ The index should contain:
 | **`RESEARCH_FINDINGS.md` + `xgboost-investigation-report.md`** | Both analyse the XGBoost model pipeline. `xgboost-investigation-report.md` covers 8 root-cause fixes from June 2026. `RESEARCH_FINDINGS.md` covers 5 parallel research streams from July 2026, including pipeline drift analysis. They reference overlapping issues (feature mismatch, temporal bias, KEV starvation). | **Fewer files:** Eliminates 1 file. **Downside:** The investigation report is about code fixes already applied; the research findings are about remaining improvement opportunities. Different temporal contexts. **Recommendation:** Keep separate but cross-reference. Add a "Relationship to Research Findings" section at the top of the investigation report. |
 | **`TRIAGEMATE_BOOK_PROMPT.md` (deleted) (broken)** | This is a _prompt template_ for generating a book about TriageMate, not project documentation. If it existed, it belongs in a `prompts/` directory, not `docs/`. | **Fewer files:** Remove from the documentation surface. **Downside:** None — it's already broken. Just clean it up. |
 | **`WINDOWS_SETUP.md`** | Currently standalone. Could be Section 4 of a unified `SETUP.md` that also covers Linux/macOS, Docker, and bare-metal. | **Fewer files:** Slight consolidation. **Downside:** A single setup guide is longer to parse. **Recommendation:** Keep standalone but rename to `setup-windows.md` to match a convention. A general setup guide could be created at `docs/guides/setup.md` that references the OS-specific files. |
-| **`ml-implementation-plan.md`** | This is explicitly outdated but is the largest ML architecture reference. Its content (Section 1 architecture overview, feature list, pipeline data flow) overlaps with `ROADMAP.md`, `MVP_SCOPE.md`, and `SPRINT_NEXT_PLAN.md`. | **Fewer files:** Could archive it fully. **Downside:** It's a useful historical reference for understanding _why_ decisions were made. **Recommendation:** Keep archived. Ensure `ROADMAP.md` cross-references it for historical context. |
+| **`docs/archive/ml-implementation-plan.md`** | Archived — largest ML architecture reference (outdated). Its content overlaps with `ROADMAP.md`, `MVP_SCOPE.md`, and `SPRINT_NEXT_PLAN.md`. | **Done:** Archived to `docs/archive/`. Historical reference preserved. |
 | **Archive root files (`Additional Information.md`, `TriageMate ML Research.md`, etc.)** | These 6 files are source materials that fed into the ML Implementation Plan. They are never read by AIs and should not appear in `docs/INDEX.md`. | **Fewer files:** None in the active surface. **Downside:** If someone needs to trace a design decision to its original source, these are valuable. **Recommendation:** Keep archived, exclude from INDEX.md, add a note in INDEX.md saying "archive files preserved for provenance — not needed for normal work". |
 
 ### 3.2 Summary of Recommended Merges
@@ -137,7 +137,7 @@ The index should contain:
 | **MERGE into ROADMAP.md** | `SPRINT_NEXT_PLAN.md` implementation details (as collapsible) | Eliminates 1 file, reduces confusion about which is authoritative |
 | **KEEP separate** | `RESEARCH_FINDINGS.md` vs `xgboost-investigation-report.md` | Different temporal/contextual focus. Add cross-refs. |
 | **REMOVE (broken symlink)** | `DEMO_SCRIPT.md` (deleted), `TRIAGEMATE_BOOK_PROMPT.md` (deleted) | Already broken. Clean up the reference in AGENTS.md | ✅ Done — both symlinks removed from root |
-| **ARCHIVE** | `ml-implementation-plan.md` if ROADMAP absorbs its current-state info | Already marked outdated. Could be moved to `docs/archive/` |
+| **ARCHIVE** | `ml-implementation-plan.md` ✅ Done — moved to `docs/archive/` | Already marked outdated. Moved to archive. |
 | **KEEP standalone** | `WINDOWS_SETUP.md` | Specific enough to merit its own file. Rename for convention. |
 
 ---
@@ -188,7 +188,7 @@ The index should contain:
 | `WINDOWS_SETUP.md` | `guide-setup-windows.md` | |
 | `DEMO_SCRIPT.md` (deleted) | (remove — broken symlink) | ✅ Already deleted — no action needed |
 | `TRIAGEMATE_BOOK_PROMPT.md` (deleted) | `prompt-triagemate-book.md` (or remove) | ✅ Already deleted — symlink removed; if restored, move to `prompts/` not `docs/` |
-| `ml-implementation-plan.md` | `archive-ml-implementation-plan.md` | Move to archive |
+| `ml-implementation-plan.md` | `docs/archive/ml-implementation-plan.md` ✅ Done | Moved to archive |
 | `hostname-standards.md` | `ref-hostname-standards.md` | |
 | `SPRINT_9_HANDOFF.md` | `archive-sprint-9-handoff.md` | |
 
@@ -437,7 +437,7 @@ Ordered steps for strike to execute:
 | 5 | `docs/reference/AI_PROBLEMS.md` | CURRENT | AI | Bug tracker for AI-generated code issues, fixes, and workarounds | ~2,800 | 2026-07-02 |
 | 6 | `docs/reference/xgboost-investigation-report.md` | CURRENT | AI | Root cause analysis of 8 model issues, fixes applied, pre/post metrics | ~4,000 | 2026-07-02 |
 | 7 | `docs/research/RESEARCH_FINDINGS.md` | CURRENT | AI | Research on label strategy, early indicators, missing KEV, EPSS baseline, pipeline drifts | ~5,000 | 2026-07-03 |
-| 8 | `docs/reference/ml-implementation-plan.md` | OUTDATED | Both | Original ML architecture plan — superseded by implementation changes | ~6,500 | 2026-06-16 |
+| 8 | `docs/archive/ml-implementation-plan.md` | ARCHIVED | Both | Original ML architecture plan — superseded by implementation changes | ~6,500 | 2026-06-16 → 2026-07-08 (archived) |
 | 9 | `docs/reference/hostname-standards.md` | CURRENT | Human | Reference doc on hostname nomenclature and WA government data classification | ~4,000 | 2026-06-16 |
 | 10 | `docs/guides/WINDOWS_SETUP.md` | CURRENT | Human | Windows 10/11 setup instructions | ~1,500 | 2026-06-16 |
 | 11 | `docs/archive/handoffs/SPRINT_9_HANDOFF.md` | ARCHIVE | Both | Historical sprint handoff — data corpus build, feature fill | ~1,900 | 2026-07-02 |

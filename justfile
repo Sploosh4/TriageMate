@@ -147,7 +147,8 @@ graphify:
     cd ../../graphify && python3 generators/file_tree.py && \
     python3 generators/api_deps.py && \
     python3 generators/knowledge_graph.py && \
-    python3 generators/ml_inventory.py
+    python3 generators/ml_inventory.py && \
+    python3 generators/feature_parity.py
 
 # --- Database ---
 
@@ -165,8 +166,8 @@ db-schema:
 
 # --- Full Sprint Gate ---
 
-# Run full sprint quality gate: lint → test → audit-all
-gate: lint test audit-all
+# Run full sprint quality gate: lint → test → graphify → audit-all
+gate: lint test graphify audit-all
     @echo "============================================"
     @echo "Sprint quality gate passed."
     @echo "============================================"

@@ -15,7 +15,9 @@ description: Python, FastAPI, SQLite, database schema, pipeline logic, API endpo
 ```
 Pre-Tier: hostname dictionary → mission/public-wellbeing tags
 Tier 0:   deterministic rules → auto-resolve or escalate
-Tier 1:   XGBoost (419 total features: 35 tabular + 384 SBERT, ROC-AUC 0.9677)
+Tier 1:   XGBoost exploitation probability predictor.
+          → See `graphify_output/ml_inventory.md` §Tier 1 for current model metrics.
+          → See `graphify_output/feature_parity.md` for inference/training parity status.
 Tier 2:   Cloud LLM (force-reflection prompt, multi-provider failover)
 Scoring:  6-dimension weighted formula (CVSS, EPSS, Asset Criticality, Exposure, Patch, ML Exploitation) → 0-100
 ```
@@ -75,7 +77,7 @@ A local MCP server registered in `opencode.jsonc` that provides direct read-only
 Equivalent to `just db-shell` but callable inline by the LLM.
 
 ## Score Contract
-The 7 demo rows must score within ±3 of: 94, 87, 71, 55, 63, 41, 22
+The 7 demo rows must score within ±3 of: 94, 87, 71, 63, 55, 41, 22
 
 ## Related Skills
 - `ml-engineering` — when touching build_feature_vector(), feature vector contracts, training, or ML models

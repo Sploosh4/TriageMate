@@ -60,6 +60,8 @@ python -m ml.generate_supplemental_hostnames
 python -m ml.ingest_docs
 ```
 
+→ See `graphify_output/ml_inventory.md` for the canonical file inventory with exact sizes. Paths below are stable by convention.
+
 ## File Locations
 
 | What | Where |

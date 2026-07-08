@@ -200,8 +200,11 @@ async def health():
 
     from ml.vector_store import DB_PATH as rag_db_path
     from integrations.nvd import get_nvd_health
+    from integrations.cache_health import get_kev_health, get_epss_health
 
     nvd_health = get_nvd_health()
+    kev_health = get_kev_health()
+    epss_health = get_epss_health()
 
     return {
         "status": "ok",
@@ -213,6 +216,8 @@ async def health():
         "cwe_available": getattr(app.state, "cwe_available", False),
         "nvd_last_success": nvd_health["nvd_last_success"],
         "nvd_status": nvd_health["nvd_status"],
+        **kev_health,
+        **epss_health,
         "demo_mode": os.getenv("DEMO_MODE", "false").lower() == "true",
         "auth_required": not AUTH_DISABLED,
     }

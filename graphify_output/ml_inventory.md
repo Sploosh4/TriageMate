@@ -2,7 +2,7 @@
 
 > Canonical reference — read this before touching any ML code.
 
-> Generated: 2026-07-07 23:53:35
+> Generated: 2026-07-08 12:58:09
 
 ---
 
@@ -14,15 +14,19 @@
 | epss_model_v2 | `backend/ml/epss_model_v2.pkl` | 1 MB | pickled model |
 | epss_model_v3 | `backend/ml/epss_model_v3.pkl` | 1 MB | pickled model |
 | pre_tier_model | `backend/ml/pre_tier_model.pkl` | 5 MB | pickled model |
+| xgboost_calibrator | `backend/ml/xgboost_calibrator.pkl` | 827 B | pickled model |
 | xgboost_model | `backend/ml/xgboost_model.pkl` | 1 MB | pickled model |
 | xgboost_model_old | `backend/ml/xgboost_model_old.pkl` | 1 MB | pickled model |
+| xgboost_model_pre_retrain | `backend/ml/xgboost_model_pre_retrain.pkl` | 1 MB | pickled model |
 | training_data | `backend/ml/training_data.npz` | 156 MB | numpy training data |
 | training_data_v2 | `backend/ml/training_data_v2.npz` | 341 MB | numpy training data |
+| training_data_v2_pre_clean | `backend/ml/training_data_v2_pre_clean.npz` | 341 MB | numpy training data |
 | enriched_cves | `backend/ml/enriched_cves.json` | 179 MB | JSON data |
 | nvd_checkpoint | `backend/ml/nvd_checkpoint.json` | 72 B | JSON data |
 | nvd_cves_cached | `backend/ml/nvd_cves_cached.json` | 80 MB | JSON data |
 | pretier_supplemental | `backend/ml/pretier_supplemental.json` | 206 KB | JSON data |
 | pretier_training_data | `backend/ml/pretier_training_data.json` | 37 KB | JSON data |
+| threshold_info | `backend/ml/threshold_info.json` | 78 B | JSON data |
 
 ## Script Inventory
 
@@ -54,7 +58,7 @@
 
 ## ML Directory (`backend/ml/`)
 
-- `README.md`  (1 KB)
+- `README.md`  (368 B)
 - `encoder.py`  (2 KB)
 - `enriched_cves.json`  (179 MB)
 - `epss_model.pkl`  (523 KB)
@@ -70,6 +74,7 @@
 - `pretier_features.py`  (12 KB)
 - `pretier_supplemental.json`  (206 KB)
 - `pretier_training_data.json`  (37 KB)
+- `threshold_info.json`  (78 B)
 - `train_epss_substitutor.py`  (10 KB)
 - `train_epss_v2.py`  (18 KB)
 - `train_epss_v3.py`  (12 KB)
@@ -77,10 +82,13 @@
 - `train_xgboost.py`  (44 KB)
 - `training_data.npz`  (156 MB)
 - `training_data_v2.npz`  (341 MB)
+- `training_data_v2_pre_clean.npz`  (341 MB)
 - `vector_store.py`  (13 KB)
+- `xgboost_calibrator.pkl`  (827 B)
 - `xgboost_model.pkl`  (1 MB)
 - `xgboost_model_old.pkl`  (1 MB)
-- `xgboost_predictor.py`  (8 KB)
+- `xgboost_model_pre_retrain.pkl`  (1 MB)
+- `xgboost_predictor.py`  (9 KB)
 
 ## Data Directory (`backend/data/`)
 
@@ -117,17 +125,14 @@
 
 ## Tier 1: XGBoost Exploitation Predictor
 
-### WARNING: Deployed model is stale
+### Model State: Retrained
 
-| Metric | Current Deployed | New Training Data |
-|--------|-----------------|-------------------|
-| Samples | 93,000 (Sprint 3) | 253,568 |
-| Features | 419 (35 + 384 SBERT) | 419 (35 + 384 SBERT) |
-| ROC-AUC | 0.9677 | Unknown (not yet trained) |
-| KEV recall | 835 of 1,631 (51%) | Unknown |
-| Status | Live in production | Built, NOT retrained on this data |
-
-**Command to retrain:** `python -m ml.train_xgboost --train --data-file ml/training_data_v2.npz`
+| Metric | Value |
+|--------|-------|
+| Samples | 253,568 |
+| Features | 419 (35 tabular + 384 SBERT) |
+| ROC-AUC | 0.9459 |
+| Training date | 2026-07-08 |
 
 - **File:** `backend/ml/xgboost_model.pkl`
 - **Predictor wrapper:** `backend/ml/xgboost_predictor.py`
@@ -135,7 +140,7 @@
 
   **35 tabular features** from `ingest_helpers.py`:
   - 8 CVSS metrics (av, ac, pr, ui, s, c, i, a)
-  - cvss_score, epss_score
+  - cvss_score (metadata only, NOT a model input), epss_score
   - patch_available, patch_applied
   - internet_facing, domain_joined
   - data_classification, mission_prevalence
@@ -155,14 +160,12 @@
   - Cache: `@lru_cache(maxsize=8192)`
   - PCA removed in v2.5 (previously 64-dim)
 
-  **IMPORTANT -- dimension note:**
-  - NPZ stores 420 columns (36 tabular + 384 SBERT)
-  - Model input is 419 dims (35 tabular + 384 SBERT)
-  - `osv_lead_days` is metadata, NOT a model input
+  **Dimension note:**
+  - Feature vector: 419 columns (35 tabular + 384 SBERT)
+  - Model trained on 419 features — predictor sends 419 features — aligned ✓
 
 - **Output:** Binary exploitation probability [0, 1]
-- **ROC-AUC:** 0.9677 (current deployed -- Sprint 3 retrain on 93K records)
-  - Pre-fix (label leakage) ROC-AUC was 0.9946 -- NOT representative
+- **ROC-AUC:** 0.9459 (retrained on 253,568 samples, 2026-07-08)
 - **Routing thresholds:**
   - P >= 0.65 -> Auto-resolve exploited (skip Tier 2)
   - P <= 0.35 -> Auto-resolve low risk
@@ -170,10 +173,10 @@
   - Ensemble std >= 0.15 -> Route to Tier 2 (uncertain)
 - **Training data:** `backend/ml/training_data_v2.npz` (253,568 samples, 341 MB)
 - **Training script:** `backend/ml/train_xgboost.py` (two-phase: gather + train)
-- **Calibrator:** `backend/ml/xgboost_calibrator.pkl` (NOT YET GENERATED)
-- **Lines of code (predictor):** 233
+- **Calibrator:** `backend/ml/xgboost_calibrator.pkl` (LogisticRegression, EXISTS)
+- **Lines of code (predictor):** 301
 - **Lines of code (training):** 1195
-- **Status:** 🔧 Retrain pending -- corpus built, model not retrained on v2 data
+- **Status:** ✅ Retrained 2026-07-08 on 253,568 samples (v2 data)
 
 ## EPSS Substitution Models
 
@@ -212,7 +215,7 @@ NVD API 2.0 feeds
   -> fetch_nvd_corpus.py
     -> nvd_corpus.json (186K CVEs, 145 MB)
       -> build_training_corpus.py (+ EPSS, KEV, vendor index, ExploitDB)
-        -> training_data_v2.npz (253K samples, 420 cols, 341 MB)
+        -> training_data_v2.npz (253K samples, 419 cols, 341 MB)
           -> train_xgboost.py
             -> xgboost_model.pkl
             -> xgboost_calibrator.pkl

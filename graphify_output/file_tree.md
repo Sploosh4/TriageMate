@@ -25,13 +25,12 @@ TriageMate MVP/
 │   │   │   ├── ux-designer.md
 │   │   │   └── wa-gov-consultant.md
 │   │   └── skills/
-│   │       ├── dual-database-ddl/
-│   │       │   └── SKILL.md
-│   │       └── feature-vector-spec/
+│   │       └── dual-database-ddl/
 │   │           └── SKILL.md
 │   ├── plans/
 │   │   ├── 2026-07-07-doc-cleanup-sprint.md  Sprint: Documentation Cleanup & Tool Audit
-│   │   └── 2026-07-07-skill-system-consolidation.md  Plan: Skill System Consolidation
+│   │   ├── 2026-07-07-skill-system-consolidation.md  Plan: Skill System Consolidation
+│   │   └── 2026-07-08-clean-corpus-sprint.md  Sprint: Clean Corpus
 │   ├── skills/
 │   │   ├── audit-checklist/
 │   │   │   └── SKILL.md  Audit Checklist
@@ -125,6 +124,7 @@ TriageMate MVP/
 │   │   ├── pretier_supplemental.json  205.9 KB
 │   │   ├── pretier_training_data.json  37.0 KB
 │   │   ├── README.md  TriageMate ML Artifacts
+│   │   ├── threshold_info.json  78.0 B
 │   │   ├── train_epss_substitutor.py  ── seed for reproducibility ──────────────────────────────────────────────
 │   │   ├── train_epss_v2.py  ── seed for reproducibility ──────────────────────────────────────────────
 │   │   ├── train_epss_v3.py  ── Constants (identical to v2 for drop-in compatibility) ──────────────────
@@ -155,6 +155,7 @@ TriageMate MVP/
 │   │   ├── __init__.py
 │   │   ├── conftest.py  Disable LLM API key before any app imports to prevent real API calls
 │   │   ├── test_demo_generator.py  Structural Tests (6)
+│   │   ├── test_feature_parity.py  ── Tabular feature keys in the EXACT order xgboost_predictor.predict() builds th
 │   │   ├── test_fuzzed_ingest.py  ── Mock responses for network-dependent pipeline functions ─────────────
 │   │   ├── test_health.py  Health endpoint smoke tests.
 │   │   ├── test_ingest.py  Remove any previously created test records before each ingest test.
@@ -178,8 +179,10 @@ TriageMate MVP/
 │   ├── scoring.py  Round to nearest int, .5 always rounds up (not banker's rounding).
 │   ├── seed_data.py  Row 1: CVE-2023-34362 — MOVEit Transfer SQL Injection
 │   ├── triagemate.db  96.0 KB
-│   └── triagemate.db.backup  1.3 MB
+│   ├── triagemate.db.backup  1.3 MB
+│   └── triagemate.db.pre_retrain  96.0 KB
 ├── backlog/
+│   └── TASK_STORE_COLUMNS_IN_NPZ.md  Task: Store Column Names in NPZ Metadata
 ├── docs/
 │   ├── architecture/
 │   │   └── MVP_SCOPE.md  TriageMate MVP — Scope Document
@@ -201,6 +204,7 @@ TriageMate MVP/
 │   │   ├── Additional Information.md  ARCHIVED — Following a Piece of Data: The TriageMate Pipeline Journey
 │   │   ├── External Auditor Response.md  External Audit Report — Demo Data Generator
 │   │   ├── EXTERNAL_AUDITOR_PROMPT.md  External Auditor Prompt — Demo Data Generator
+│   │   ├── ml-implementation-plan.md  TriageMate ML Implementation Plan — Final
 │   │   ├── SECOND_WAVE_PROMPT.md  Wave 2 Audit Prompt — LOGIC & SEMANTIC CORRECTNESS
 │   │   ├── SPRINT_NEXT_PLAN.md  Sprint NEXT Plan — Model Retrain + Operational Upgrades
 │   │   ├── TriageMate ML Research Prompt.md  ARCHIVED — TriageMate ML Research Prompt
@@ -215,7 +219,6 @@ TriageMate MVP/
 │   ├── reference/
 │   │   ├── AI_PROBLEMS.md  AI Problems — Discrepancies Found During Development
 │   │   ├── hostname-standards.md  **Technical Reference Architecture for Hostname Nomenclature and Information Gov
-│   │   ├── ml-implementation-plan.md  TriageMate ML Implementation Plan — Final
 │   │   └── xgboost-investigation-report.md  XGBoost Exploitation Model — Investigation Report
 │   ├── research/
 │   │   └── RESEARCH_FINDINGS.md  TriageMate — Sprint NEXT+2 Research Findings
@@ -237,6 +240,7 @@ TriageMate MVP/
 │   └── index.html  9.7 KB
 ├── graphify_output/
 │   ├── api_deps.md  TriageMate — API Dependency Map
+│   ├── feature_parity.md  TriageMate — Feature Parity Report
 │   ├── file_tree.md  TriageMate — File Tree
 │   ├── knowledge_graph.json  11.4 KB
 │   └── ml_inventory.md  TriageMate — ML Model Inventory
@@ -250,7 +254,7 @@ TriageMate MVP/
 ├── docker-compose.yml  1.8 KB
 ├── Dockerfile  1.3 KB
 ├── index.html  119.4 KB
-├── justfile  4.6 KB
+├── justfile  4.7 KB
 ├── MVP_SCOPE.md  TriageMate MVP — Scope Document
 ├── opencode.jsonc  924.0 B
 ├── requirements-dev.txt  115.0 B

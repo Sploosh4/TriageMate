@@ -57,3 +57,27 @@ class TestHealthEndpoint:
         assert isinstance(data["rag_documents"], int), (
             f"rag_documents should be int, got {type(data['rag_documents'])}"
         )
+
+
+class TestHealthCacheFreshness:
+    """Health endpoint cache freshness keys."""
+
+    async def test_health_has_cache_freshness_keys(self, client):
+        """Response must include KEV and EPSS cache freshness metadata."""
+        response = await client.get("/api/health")
+        assert response.status_code == 200
+        data = response.json()
+
+        assert "kev_last_refresh" in data, "Missing kev_last_refresh"
+        assert isinstance(data["kev_last_refresh"], str), "kev_last_refresh must be str"
+
+        assert "kev_entry_count" in data, "Missing kev_entry_count"
+        assert isinstance(data["kev_entry_count"], int), "kev_entry_count must be int"
+
+        assert "epss_last_refresh" in data, "Missing epss_last_refresh"
+        assert isinstance(data["epss_last_refresh"], str), (
+            "epss_last_refresh must be str"
+        )
+
+        assert "epss_entry_count" in data, "Missing epss_entry_count"
+        assert isinstance(data["epss_entry_count"], int), "epss_entry_count must be int"

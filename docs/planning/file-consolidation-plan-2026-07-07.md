@@ -18,10 +18,10 @@
 |---|------|-------|-----------|----------|-----------|---------------|-------|
 | 1 | `docs/architecture/MVP_SCOPE.md` | 230 | ~3,800 | Architecture | 🔴 STALE — self-declared outdated | Heavy overlap with ROADMAP.md (§Sprint Status) | Banner says "written Sprint 1, not updated" |
 | 2 | `docs/planning/ROADMAP.md` | 388 | ~6,500 | Planning | 🟢 CURRENT | Contains content from SPRINT_NEXT_PLAN (items 2,3,6,8), MVP_SCOPE (status), AI_PROBLEMS (bug table) | Best single source of truth |
-| 3 | `docs/archive/SPRINT_NEXT_PLAN.md` | 322 | ~5,300 | Planning | 🟡 SUPERSEDED | 90% duplicated in ROADMAP.md (§Sprint NEXT) | Only Item 1 (XGBoost retrain) remains pending; rest is already in ROADMAP |
+| 3 | `docs/archive/SPRINT_NEXT_PLAN.md` | 322 | ~5,300 | Planning | 🟡 SUPERSEDED | 90% duplicated in ROADMAP.md (§Sprint NEXT) | Item 1 (XGBoost retrain) completed 2026-07-08; rest is already in ROADMAP |
 | 4 | `docs/reference/AI_PROBLEMS.md` | 165 | ~2,700 | Reference | 🟡 MOSTLY STALE | Overlaps with xgboost-investigation-report (both document bugs) | Only 1 unfixed item (#14, won't-fix). Rest is historical record |
-| 5 | `docs/reference/xgboost-investigation-report.md` | 214 | ~3,500 | Reference | 🟡 MIXED | Overlaps with AI_PROBLEMS (bugs), RESEARCH_FINDINGS (ML), ML Plan (architecture) | Deep dive report with 8 fixes. Fixes applied, retrain pending |
-| 6 | `docs/reference/ml-implementation-plan.md` | 882 | ~15,000 | Reference | 🔴 STALE — self-declared outdated | Major overlap with RESEARCH_FINDINGS, xgboost-investigation-report, MVP_SCOPE | Banner says "OUTDATED — preserved for historical reference" |
+| 5 | `docs/reference/xgboost-investigation-report.md` | 214 | ~3,500 | Reference | 🟡 MIXED | Overlaps with AI_PROBLEMS (bugs), RESEARCH_FINDINGS (ML), ML Plan (architecture) | Deep dive report with 8 fixes. All 8 fixes applied, retrain completed 2026-07-08 |
+| 6 | `docs/archive/ml-implementation-plan.md` | 882 | ~15,000 | Reference (Archived) | 🔴 ARCHIVED — moved to archive | Major overlap with RESEARCH_FINDINGS, xgboost-investigation-report, MVP_SCOPE | Preserved for historical reference in `docs/archive/` |
 | 7 | `docs/reference/hostname-standards.md` | 175 | ~5,000* | Reference | 🟢 EXTERNAL REFERENCE | Low overlap — unique content | Long external citations, research-heavy |
 | 8 | `docs/research/RESEARCH_FINDINGS.md` | 192 | ~3,200 | Research | 🟡 MIXED | Overlaps with xgboost-investigation-report (ML fixes), ML Plan (strategy) | Some findings acted on in Sprint NEXT; has note saying "written before Sprint NEXT" |
 | 9 | `docs/guides/WINDOWS_SETUP.md` | 118 | ~1,900 | Guides | 🟢 CURRENT | Low overlap | Focused, single-purpose |
@@ -79,7 +79,7 @@
 | Source File | Role in New Doc | Preserved | Dropped |
 |-------------|----------------|-----------|---------|
 | `ROADMAP.md` | Master status | Sprint status table, all done items, config table, quick start, project map | — |
-| `SPRINT_NEXT_PLAN.md` | Active work item | Item 1 (XGBoost retrain) — the only pending item | Items 2,3,6,8 (already done, already in ROADMAP), implementation order, verification commands |
+| `SPRINT_NEXT_PLAN.md` | Active work item | Item 1 (XGBoost retrain) — completed 2026-07-08 | Items 2,3,6,8 (already done, already in ROADMAP), implementation order, verification commands |
 | `AI_PROBLEMS.md` | Bug tracker | #14 (only unfixed item) moved to ROADMAP Known Bugs section | All fixed items (historical record preserved in archive) |
 
 **Proposed action:** 
@@ -103,7 +103,7 @@
 |-------------|----------------|-----------|---------|
 | `xgboost-investigation-report.md` | Root cause analysis + fixes | 8 findings, fix descriptions, verification steps, file-change table | Duplicate bug listings that overlap with AI_PROBLEMS |
 | `RESEARCH_FINDINGS.md` | Future research findings | Q1-Q5 findings, feature importance analysis, KEV missing analysis, EPSS baseline | Roadmap sections now superseded by Sprint NEXT+ actions |
-| `ml-implementation-plan.md` | Architecture decisions + training strategy | Feature list (§2.1), training data blueprint (§4), operational cadence (§6), RAG plan (§5), source divergence log (Appendix A) | Outdated content: PCA references, SecureBERT2.0 CWE encoder details, pre-Sprint-9 feature counts, incorrect model parameters |
+| `docs/archive/ml-implementation-plan.md` | Architecture decisions + training strategy (archived) | Feature list (§2.1), training data blueprint (§4), operational cadence (§6), RAG plan (§5), source divergence log (Appendix A) | Outdated content: PCA references, SecureBERT2.0 CWE encoder details, pre-Sprint-9 feature counts, incorrect model parameters |
 
 **Proposed new file:** `docs/reference/ML_GUIDE.md` (~600 lines)  
 **Contents by section:**
@@ -192,7 +192,7 @@ After consolidation, the active documentation set would be:
 - `docs/planning/SPRINT_NEXT_PLAN.md` → superseded by ROADMAP.md
 - `docs/reference/AI_PROBLEMS.md` → superseded by ROADMAP.md §Known Bugs
 - `docs/reference/xgboost-investigation-report.md` → merged into ML_GUIDE.md
-- `docs/reference/ml-implementation-plan.md` → merged into ML_GUIDE.md
+- `docs/archive/ml-implementation-plan.md` → merged into ML_GUIDE.md
 - `docs/research/RESEARCH_FINDINGS.md` → merged into ML_GUIDE.md
 
 **Deleted / rebuilt symlinks:**
@@ -226,7 +226,7 @@ After consolidation, the active documentation set would be:
 | 2.2 | Move `SPRINT_NEXT_PLAN.md` to `docs/archive/planning/SPRINT_NEXT_PLAN.md` |
 | 2.3 | Move `AI_PROBLEMS.md` to `docs/archive/reference/AI_PROBLEMS.md` |
 | 2.4 | Move `xgboost-investigation-report.md` to `docs/archive/reference/` |
-| 2.5 | Move `ml-implementation-plan.md` to `docs/archive/reference/` |
+| 2.5 | Move `ml-implementation-plan.md` to `docs/archive/` ✅ Done |
 | 2.6 | Move `RESEARCH_FINDINGS.md` to `docs/archive/research/RESEARCH_FINDINGS.md` |
 
 ### Phase 3 — Fix Symlinks (10 min)

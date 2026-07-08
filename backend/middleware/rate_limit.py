@@ -1,3 +1,4 @@
+import os
 import time
 
 
@@ -24,6 +25,15 @@ class TokenBucket:
         return max(0.0, (1.0 - self.tokens) / self.rate)
 
 
-ingest_bucket = TokenBucket(rate_per_minute=30, burst_size=50)
-demo_bucket = TokenBucket(rate_per_minute=10, burst_size=15)
-clear_bucket = TokenBucket(rate_per_minute=2, burst_size=3)
+ingest_bucket = TokenBucket(
+    rate_per_minute=int(os.getenv("INGEST_RATE_PER_MIN", "30")),
+    burst_size=int(os.getenv("INGEST_BURST_SIZE", "50")),
+)
+demo_bucket = TokenBucket(
+    rate_per_minute=int(os.getenv("DEMO_RATE_PER_MIN", "10")),
+    burst_size=int(os.getenv("DEMO_BURST_SIZE", "15")),
+)
+clear_bucket = TokenBucket(
+    rate_per_minute=int(os.getenv("CLEAR_RATE_PER_MIN", "2")),
+    burst_size=int(os.getenv("CLEAR_BURST_SIZE", "3")),
+)

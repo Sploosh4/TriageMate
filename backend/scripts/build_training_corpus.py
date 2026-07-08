@@ -4,7 +4,7 @@ a training-ready dataset with REAL distributions for ALL features.
 
 Replaces the Phase 1 of train_xgboost.py.
 
-Output: backend/ml/training_data_v2.npz (420 features: 36 tabular + 384 text SBERT; model uses 419 — osv_lead_days is metadata)
+Output: backend/ml/training_data_v2.npz (419 features: 35 tabular + 384 text SBERT; osv_lead_days stored as metadata)
 
 Usage:
     cd backend
@@ -116,7 +116,6 @@ _FEATURE_NAMES = [
     "is_bypass_signature",
     "is_dos_signature",
     "is_traversal_signature",
-    "osv_lead_days",
 ]
 
 _VENDOR_POPULARITY_CACHE: dict[str, float] | None = None
@@ -331,13 +330,14 @@ def build_feature_vectors(
     epss_cache: dict,
     edb_map: dict,
     limit: int = 0,
-) -> tuple[np.ndarray, np.ndarray, list[str], list[str]]:
+) -> tuple[np.ndarray, np.ndarray, list[str], list[str], list[int]]:
     logger.info("[Phase 2] Building feature vectors...")
 
     cve_ids: list[str] = []
     dates: list[str] = []
     descriptions: list[str] = []
     rows: list[list[float]] = []
+    osv_lead_days_list: list[int] = []
 
     items = list(nvd_corpus.items())
     if limit > 0:
@@ -419,6 +419,7 @@ def build_feature_vectors(
                     osv_lead_days = (nvd_dt - osv_dt).days
                 except (ValueError, TypeError):
                     pass
+        osv_lead_days_list.append(osv_lead_days)
 
         row = [
             float(_cvss_av(cvss_vec.get("AV", "N"))),
@@ -456,7 +457,6 @@ def build_feature_vectors(
             float(is_bypass),
             float(is_dos),
             float(is_traversal),
-            float(osv_lead_days),
         ]
         rows.append(row)
         cve_ids.append(cve_id)
@@ -465,7 +465,7 @@ def build_feature_vectors(
 
     X_tab = np.array(rows, dtype=np.float32)
     logger.info("  Tabular feature matrix: %s", X_tab.shape)
-    return X_tab, np.array(cve_ids), dates, descriptions
+    return X_tab, np.array(cve_ids), dates, descriptions, osv_lead_days_list
 
 
 # ─── Phase 3: Labels ──────────────────────────────────────────────────────
@@ -562,8 +562,10 @@ def save_dataset(
     output_path: str,
     dates: list[str] | None = None,
     cve_ids: np.ndarray | None = None,
+    columns: np.ndarray | None = None,
+    osv_lead_days: list[int] | None = None,
 ):
-    """Save (n, 419+) feature matrix, labels, feature names, and optional dates + CVE IDs."""
+    """Save (n, 419+) feature matrix, labels, feature names, and optional dates + CVE IDs + columns metadata."""
     logger.info("[Phase 5] Saving dataset to %s ...", output_path)
     path = Path(output_path)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -572,6 +574,10 @@ def save_dataset(
         save_dict["dates"] = np.array(dates, dtype=str)
     if cve_ids is not None:
         save_dict["cve_ids"] = cve_ids
+    if columns is not None:
+        save_dict["columns"] = columns
+    if osv_lead_days is not None:
+        save_dict["osv_lead_days"] = np.array(osv_lead_days, dtype=np.int32)
     np.savez_compressed(path, **save_dict)
     size_mb = path.stat().st_size / (1024 * 1024)
     logger.info("  Saved: X=%s, y=%s, %.1f MB", X.shape, y.shape, size_mb)
@@ -605,7 +611,7 @@ def main():
         logger.error("NVD corpus is empty.")
         sys.exit(1)
 
-    X_tab, cve_ids, dates, descriptions = build_feature_vectors(
+    X_tab, cve_ids, dates, descriptions, osv_lead_days_list = build_feature_vectors(
         nvd_corpus,
         kev_cache,
         epss_cache,
@@ -642,6 +648,7 @@ def main():
     cve_ids = cve_ids[filtered_indices]
     dates = [dates[i] for i in filtered_indices]
     descriptions = [descriptions[i] for i in filtered_indices]
+    osv_lead_days_list = [osv_lead_days_list[i] for i in filtered_indices]
 
     logger.info("  Applying same filter to feature matrix: %s", X_tab.shape)
 
@@ -665,7 +672,17 @@ def main():
         f"Feature name count mismatch: {len(all_feature_names)} != {X.shape[1]}"
     )
 
-    save_dataset(X, y, all_feature_names, args.output, dates=dates, cve_ids=cve_ids)
+    columns_arr = np.array(_FEATURE_NAMES, dtype=str)
+    save_dataset(
+        X,
+        y,
+        all_feature_names,
+        args.output,
+        dates=dates,
+        cve_ids=cve_ids,
+        columns=columns_arr,
+        osv_lead_days=osv_lead_days_list,
+    )
 
     logger.info("Build complete.")
 

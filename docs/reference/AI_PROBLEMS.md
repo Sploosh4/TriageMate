@@ -35,7 +35,7 @@ Documentation of incorrect AI-generated code, mismatches between code and actual
 **Impact:** `cv="prefit"` was removed in sklearn 1.9 (`InvalidParameterError`), and 5-fold CV on temporal data leaks future information into calibration folds.
 **Fix applied:** Removed `CalibratedClassifierCV` entirely. XGBoost already outputs calibrated probabilities via its built-in `binary:logistic` loss function. Predictor now exports raw XGBoost model directly. Compatibility check (`hasattr(model, "calibrated_classifiers_")`) preserved for future use.
 
-**Post-investigation addendum (July 2026):** The XGBoost investigation report found that `scale_pos_weight=~214` (used to handle class imbalance) distorts `binary:logistic` probability outputs — they are calibrated for the weighted distribution, not the true distribution. Removal was the correct emergency fix for the sklearn 1.9 `cv="prefit"` breakage, but post-hoc Platt scaling will be re-added during the next retrain cycle. See `xgboost-investigation-report.md` §Finding 5.
+**Post-investigation addendum (July 2026):** The XGBoost investigation report found that `scale_pos_weight=~214` (used to handle class imbalance) distorts `binary:logistic` probability outputs — they are calibrated for the weighted distribution, not the true distribution. Removal was the correct emergency fix for the sklearn 1.9 `cv="prefit"` breakage. Platt scaling re-added ✅ (`backend/ml/xgboost_calibrator.pkl`). See `xgboost-investigation-report.md` §Finding 5.
 
 ### ~~6. Train script: EPSS API only fetches first page~~ ✅ FIXED
 **File:** `backend/ml/train_xgboost.py`
@@ -49,7 +49,7 @@ Documentation of incorrect AI-generated code, mismatches between code and actual
 **Impact:** Future exploitation info leaked into calibration folds.
 **Fix applied:** Calibration removed entirely (see #5). No cross-validation in current training pipeline.
 
-**Post-investigation addendum (July 2026):** See #5 addendum — calibration will be re-added during next retrain (Platt scaling with temporal validation split to avoid the original leakage issue).
+**Post-investigation addendum (July 2026):** See #5 addendum — Platt scaling re-added ✅ (`backend/ml/xgboost_calibrator.pkl` with temporal validation split to avoid the original leakage issue).
 
 ### ~~8. Train script: Early stopping shrinks actual tree count~~ ✅ FIXED
 **File:** `backend/ml/train_xgboost.py`
@@ -122,7 +122,7 @@ Documentation of incorrect AI-generated code, mismatches between code and actual
 **Problem:** sklearn 1.9 removed `cv="prefit"` string support, causing `InvalidParameterError` during Phase 2.
 **Fix applied:** Removed Platt calibration entirely. XGBoost's `binary:logistic` objective already produces well-calibrated probabilities.
 
-**Post-investigation addendum (July 2026):** See #5 addendum — `scale_pos_weight` distorts these probabilities; Platt scaling to be re-added during next retrain with proper temporal validation split.
+**Post-investigation addendum (July 2026):** See #5 addendum — `scale_pos_weight` distorts these probabilities; Platt scaling re-added ✅ (`backend/ml/xgboost_calibrator.pkl` with temporal validation split).
 
 ### I. 30-day observation window for label quality ✅ FIXED
 **File:** `backend/ml/train_xgboost.py`
@@ -138,7 +138,7 @@ Documentation of incorrect AI-generated code, mismatches between code and actual
 
 ### ~~K. XGBoost model trained with wrong feature count (69→68)~~ ✅ FIXED (Sprint 3)
 **Root cause:** `cisa_kev` was removed as a training feature (label leakage fix, Item A), reducing features from 37→36 tabular (69→68 total). The training data migration (`load_training_data`) correctly strips column 9 from legacy data, and `build_tabular_features()` allocates 36 columns. But the `xgboost_model.pkl` was **never retrained** — the old 69-feature model was still deployed. At runtime, the predictor built 68 features, handed them to a model expecting 69, and raised `ValueError: Feature shape mismatch`.
-**Fix applied:** Ran `python -m ml.train_xgboost --train` to retrain the model from the existing 68-column `training_data.npz` (93,018 records). Model now expects 68 features. ROC-AUC: 0.9677.
+**Fix applied:** Ran `python -m ml.train_xgboost --train` to retrain the model from the existing 68-column `training_data.npz` (93,018 records). Model now expects 68 features. ROC-AUC: 0.9677 (Sprint 3 model — superseded by full retrain 2026-07-08 which achieved ROC-AUC 0.9459 on honest evaluation with point-in-time labels and chronological split).
 
 ---
 
