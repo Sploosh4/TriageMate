@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from pydantic import BaseModel
 from fastapi import APIRouter, HTTPException
 from database import get_db
+from ingest_helpers import compliance_category as _compliance_category
 from models import (
     QueueRow,
     CaseResponse,
@@ -29,7 +30,7 @@ def _row_to_queue_row(r) -> QueueRow:
     compliance_str = (
         r["data_classification"] or "Category 1"
     )  # WAICP: OFFICIAL (was PRIS Act Category 1)
-    cat = int(compliance_str.split()[-1]) if "Category" in compliance_str else 1
+    cat = _compliance_category(compliance_str)
     return QueueRow(
         id=r["id"],
         vulnerability_id=r["vulnerability_id"],

@@ -20,6 +20,7 @@ from ingest_helpers import (
     build_feature_vector,
     query_rag,
     get_asset_context,
+    compliance_category as _compliance_category,
 )
 from ml.epss_substitutor import calculate_substitution
 from routers.cases import _band_colour
@@ -30,18 +31,6 @@ from integrations.tenable import parse_tenable_webhook, parse_tenable_batch
 
 logger = logging.getLogger("triagemate.ingest")
 router = APIRouter(tags=["Ingest"])
-
-
-def _compliance_category(data_classification: str) -> int:
-    """Map WAICP classification to numeric compliance category."""
-    mapping = {
-        "OFFICIAL Sensitive": 4,
-        "OFFICIAL": 2,
-    }
-    try:
-        return mapping.get(data_classification, 1)
-    except Exception:
-        return 1
 
 
 def _build_summaries(
@@ -99,7 +88,7 @@ async def ingest_vulnerability(payload: IngestRequest, request: Request = None):
 
     # 1. Pre-Tier: mission tags
     _t0 = time.monotonic()
-    mission_tags = pre_tier.predict_mission_tags(payload.hostname, payload.target_ip)
+    mission_tags = pre_tier.predict_mission_tags(payload.hostname)
     _t_pre_tier = time.monotonic() - _t0
 
     # 2. Asset context

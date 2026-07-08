@@ -3,6 +3,7 @@ from fastapi import APIRouter
 from database import get_db
 import json
 from pathlib import Path
+from ingest_helpers import compliance_category as _compliance_category
 from models import (
     QueueRow,
     QueueResponse,
@@ -53,7 +54,7 @@ def get_queue():
         compliance_str = (
             r["data_classification"] or "Category 1"
         )  # WAICP: OFFICIAL (was PRIS Act Category 1)
-        cat = int(compliance_str.split()[-1]) if "Category" in compliance_str else 1
+        cat = _compliance_category(compliance_str)
         rows.append(
             QueueRow(
                 id=r["id"],

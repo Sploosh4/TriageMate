@@ -127,8 +127,6 @@ def mock_external_deps():
                 "status": "threat_intel_found",
             },
         ),
-        # OSV (network)
-        patch("ingest_helpers.query_osv", return_value=None),
     ]
     for p in patchers:
         p.start()

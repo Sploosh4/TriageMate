@@ -106,7 +106,6 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="TriageMate API", version="2.5.0", lifespan=lifespan)
-app.state.cwe_available = False  # Standalone CWE ML classifier deprecated — ingest_cwe.py (NVD API + regex) is the active implementation
 
 # TODO(cloud-deploy): restrict allow_origins to known frontend domains
 # and set allow_credentials=True when moving off localhost.
@@ -169,7 +168,7 @@ app.include_router(auth.router)
 app.include_router(queue.router, dependencies=[Depends(get_current_user)])
 app.include_router(cases.router, dependencies=[Depends(get_current_user)])
 app.include_router(ingest.router, dependencies=[Depends(get_current_user)])
-app.include_router(models_router.router)
+app.include_router(models_router.router, dependencies=[Depends(get_current_user)])
 
 
 @app.get("/")
@@ -217,7 +216,6 @@ async def health():
         "llm_available": bool(api_key),
         "rag_documents": doc_count,
         "rag_store_path": str(rag_db_path),
-        "cwe_available": getattr(app.state, "cwe_available", False),
         "nvd_last_success": nvd_health["nvd_last_success"],
         "nvd_status": nvd_health["nvd_status"],
         **kev_health,

@@ -165,7 +165,7 @@ def _predict_with_model(hostname: str) -> dict | None:
 # ─── PUBLIC API ─────────────────────────────────────────────────────────────
 
 
-def predict_mission_tags(hostname: str, ip: str) -> dict:
+def predict_mission_tags(hostname: str) -> dict:
     """
     Predict mission prevalence and public well-being impact for an asset.
 
@@ -178,7 +178,6 @@ def predict_mission_tags(hostname: str, ip: str) -> dict:
 
     Args:
         hostname: The fully qualified hostname of the asset
-        ip: The IP address of the asset (currently unused)
 
     Returns:
         dict with 'mission_prevalence', 'mission_prevalence_confidence',

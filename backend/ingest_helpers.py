@@ -17,7 +17,6 @@ from integrations.nvd import get_nvd_data
 from integrations.exploitdb import has_poc as _has_exploitdb_poc
 from integrations.metasploit import has_payload as _has_metasploit_payload
 from integrations.otx import query_otx_pulses
-from integrations.osv import query_osv
 
 
 def lookup_data_classification(hostname: str) -> str:
@@ -34,6 +33,15 @@ def is_internet_facing(hostname: str) -> bool:
     Delegates to the CMDB adapter. Defaults to False for unknowns.
     """
     return _cmdb_internet_facing(hostname)
+
+
+def compliance_category(data_classification: str) -> int:
+    """Map WAICP classification to numeric compliance category."""
+    mapping = {
+        "OFFICIAL Sensitive": 4,
+        "OFFICIAL": 2,
+    }
+    return mapping.get(data_classification, 1)
 
 
 def _parse_cvss_vector(vector: str) -> dict:
@@ -424,7 +432,6 @@ def build_feature_vector(payload, mission_tags: dict, tier_0_result: dict) -> di
         payload.cvss_score or 0.0,
     )
     otx_result = query_otx_pulses(payload.vulnerability_id)
-    query_osv(payload.vulnerability_id)
 
     return {
         "cvss_av": _cvss_av(cvss_vec.get("AV", "N")),

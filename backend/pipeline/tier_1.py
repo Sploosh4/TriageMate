@@ -62,10 +62,9 @@ def _heuristic_evaluate(features: dict) -> dict:
     mission = features.get("mission_prevalence", "Support")
     wellbeing = features.get("public_wellbeing_impact", "Minimal")
     internet_facing = features.get("internet_facing", False)
-    reachability = features.get("lateral_reachability_count", 0)
+    reachability = features.get("lateral_reachability", 0)
     domain_joined = features.get("domain_joined", False)
-    priv_account = features.get("privileged_service_account", False)
-    cross_boundary = features.get("cross_boundary_reachability", 0)
+    cross_boundary = features.get("boundary_reachability", 0)
 
     base_score = (cvss / 10.0) * 0.4 + epss * 0.3
     env_score = 0.0
@@ -73,7 +72,7 @@ def _heuristic_evaluate(features: dict) -> dict:
         env_score -= 0.15
     if reachability > 20:
         env_score += 0.15
-    if domain_joined and priv_account:
+    if domain_joined:
         env_score += 0.12
     if cross_boundary > 5:
         env_score += 0.10
