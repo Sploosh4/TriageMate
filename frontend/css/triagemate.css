@@ -1256,6 +1256,37 @@ body {
 }
 
 /* ===== SCREEN 4: DRIFT DASHBOARD ===== */
+
+/* Model info bar at top of drift dashboard */
+.model-info-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin-bottom: 16px;
+  align-items: center;
+}
+.model-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.model-info-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+}
+.model-info-value {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
 .drift-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

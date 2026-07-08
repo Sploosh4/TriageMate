@@ -22,6 +22,7 @@
 | Sprint 8 | Feature Field Enrichment | ✅ Complete |
 | **Sprint 9** | **Data Supremacy** | ✅ Complete |
 | **Sprint 10** | **Operational Readiness** | ✅ Complete |
+| **Sprint 11** | **Model Governance + Ops Hardening** | ✅ Complete |
 
 ---
 
@@ -107,6 +108,9 @@
 | `POST /api/ingest/batch` | ✅ Done |
 | `POST /api/ingest/tenable` | ✅ Done (Tenable webhook) |
 | `GET /api/health` | ✅ Done |
+| `GET /api/model/versions` | ✅ Done — Sprint 11 |
+| `POST /api/model/activate` | ✅ Done — Sprint 11 |
+| `GET /api/model/status` | ✅ Done — Sprint 11 |
 | `POST /api/auth/login` | ✅ Done (JWT) |
 | `POST /api/auth/refresh` | ✅ Done |
 | Swagger UI at `/docs` | ✅ Done |
@@ -137,6 +141,7 @@
 | Review queue (4 endpoints) | ✅ Done (implemented, tests pending — see Sprint NEXT+ Wave 1) — flag, review, history, queue listing |
 | Alembic migrations (001–005) | ✅ Done — versioned schema, no ad-hoc helpers |
 | LanceDB vector store | ✅ Done — 9 demo docs, FTS index |
+| Model version registry (`model_registry.json`) | ✅ Done — Sprint 11 | 3 versions tracked; `GET /api/model/versions`, `POST /api/model/activate`, `GET /api/model/status` |
 | CWE classifier | 🐛 Deprecated — replaced by NVD API + regex |
 
 ---
@@ -202,15 +207,15 @@ Planned after model retraining completes. Focus: test coverage, operational guar
 |---|------|--------|--------|
 | 9 | **Tests for review + drift endpoints** | 4 hrs | ✅ Done — `test_review.py` (12 tests), `test_drift.py` (6 tests) |
 | 10 | **Feature-parity guard test** | 1 hr | ✅ Done — `test_feature_parity.py` (7 tests) verifies 35-col tabular match between trainer and predictor |
-| 11 | **Seed data ML dimension** | 30 min | 📋 Remaining — verify `ml_exploitation_contribution` in demo rows |
+| 11 | **Seed data ML dimension** | 30 min | ✅ Done — verified by audit (final-2026-07-08.md); all 7 demo rows consistent with scoring formula |
 | 12 | **Retrain verification** | 1 hr | ✅ Done — scores match baseline [94,87,71,63,55,41,22] ±3 |
 
 ### Wave 2 — Operational Resilience
 
 | # | Item | Effort | Status |
 |---|------|--------|--------|
-| 13 | **Model rollback** | 2 hrs | 📋 Deferred — lowest urgency since model was just retrained |
-| 14 | **Auto-resolved audit sampling** | 2 hrs | 📋 Remaining |
+| 13 | **Model version management** | 2 hrs | ✅ Done — config-file registry, activate API, predictor reload (covers rollback) |
+| 14 | **Auto-resolved audit sampling** | 2 hrs | ✅ Done — fixed in `ingest.py`; Tier 1 auto-resolved cases now enter audit pool |
 | 15 | **Cache freshness in health** | 1 hr | ✅ Done — `kev_last_refresh`, `epss_last_refresh`, `kev_entry_count`, `epss_entry_count` in `/api/health` |
 
 ### Wave 3 — Feature Additions
@@ -219,7 +224,7 @@ Planned after model retraining completes. Focus: test coverage, operational guar
 |---|------|--------|--------|
 | 16 | **Rate limiting** | 1 day | ✅ Done — Token bucket on ingest/clear/demo, configurable via env vars (`INGEST_RATE_PER_MIN`, `INGEST_BURST_SIZE`, etc.) |
 | 17 | **EPSS substitution retrain** | 1-2 days | 📋 Remaining |
-| 18 | **Model comparison endpoint** | 1 hr | 📋 Remaining |
+| 18 | **Model comparison endpoint** | 1 hr | ✅ Done — `GET /api/model/status` with metadata + score comparison; visible in drift dashboard |
 
 ---
 

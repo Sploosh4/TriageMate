@@ -299,7 +299,12 @@ async def ingest_vulnerability(payload: IngestRequest):
     # 11. Audit selection for auto-resolved cases
     from audit import should_audit, select_for_audit
 
-    audit_selected = should_audit(detection_tier, t0_result["routing"])
+    # Determine effective routing for audit sampling:
+    # If Tier 0 escalated and Tier 1 ran, use Tier 1's routing instead.
+    effective_routing = t0_result["routing"]
+    if t0_result["routing"] == "escalated" and t1_result:
+        effective_routing = t1_result["routing"]
+    audit_selected = should_audit(detection_tier, effective_routing)
 
     # 12. Insert into database
     conn = get_db()

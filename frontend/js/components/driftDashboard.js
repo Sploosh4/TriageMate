@@ -1,5 +1,8 @@
 // driftDashboard.js — Model Drift Dashboard (CSS-only charts)
 async function initDriftDashboard() {
+  // Load model status info panel
+  loadModelStatusPanel();
+
   try {
     var res = await _authFetch('/api/drift');
     var data = await res.json();
@@ -9,6 +12,35 @@ async function initDriftDashboard() {
     var container = document.getElementById('drift-dashboard-container');
     if (container) container.innerHTML = '<div class="review-empty">Failed to load drift metrics.</div>';
   }
+}
+
+function loadModelStatusPanel() {
+  var panel = document.getElementById('model-info-panel');
+  if (!panel) return;
+
+  fetch('/api/model/status')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var v = data.active_version;
+      if (!v) {
+        panel.innerHTML = '<div class="drift-panel"><div class="drift-panel-title">Deployed Model</div><div class="drift-no-data">No active model</div></div>';
+        return;
+      }
+      var samples = v.metrics.training_samples ? v.metrics.training_samples.toLocaleString() : 'N/A';
+      var rocAuc = v.metrics.roc_auc != null ? v.metrics.roc_auc : 'N/A';
+      var trainedDate = v.created_at ? new Date(v.created_at).toLocaleDateString() : 'N/A';
+      var html = '<div class="model-info-bar">';
+      html += '<div class="model-info-item"><span class="model-info-label">Deployed Model</span><span class="model-info-value">' + v.label + '</span></div>';
+      html += '<div class="model-info-item"><span class="model-info-label">ROC-AUC</span><span class="model-info-value">' + rocAuc + '</span></div>';
+      html += '<div class="model-info-item"><span class="model-info-label">Samples</span><span class="model-info-value">' + samples + '</span></div>';
+      html += '<div class="model-info-item"><span class="model-info-label">Trained</span><span class="model-info-value">' + trainedDate + '</span></div>';
+      html += '</div>';
+      panel.innerHTML = html;
+    })
+    .catch(function(err) {
+      console.error('Failed to load model status:', err);
+      panel.innerHTML = '';
+    });
 }
 
 function renderDriftDashboard(data) {

@@ -13,7 +13,7 @@ from fastapi import FastAPI, Depends  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 from database import init_db  # noqa: E402
-from routers import auth, queue, cases, ingest  # noqa: E402
+from routers import auth, queue, cases, ingest, models as models_router  # noqa: E402
 from auth import get_current_user, AUTH_DISABLED  # noqa: E402
 import asyncio  # noqa: E402
 
@@ -166,6 +166,7 @@ app.include_router(auth.router)
 app.include_router(queue.router, dependencies=[Depends(get_current_user)])
 app.include_router(cases.router, dependencies=[Depends(get_current_user)])
 app.include_router(ingest.router, dependencies=[Depends(get_current_user)])
+app.include_router(models_router.router)
 
 
 @app.get("/")

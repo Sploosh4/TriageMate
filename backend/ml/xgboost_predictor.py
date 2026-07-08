@@ -3,8 +3,12 @@ Tier 1 XGBoost exploitation probability predictor.
 
 Loads the trained XGBoost model and provides a predict() function
 for the 35 tabular features + CVE description text.
+
+Supports model version management via model_registry.json — the active
+model can be changed at runtime with set_active_version().
 """
 
+import json
 import threading
 
 import numpy as np
@@ -14,9 +18,18 @@ from pathlib import Path
 
 from ml.encoder import encode_description
 
+# Default paths (fallbacks when registry is unavailable)
 MODEL_FILE = Path(__file__).parent / "xgboost_model.pkl"
 CALIBRATOR_FILE = Path(__file__).parent / "xgboost_calibrator.pkl"
 THRESHOLD_INFO_FILE = Path(__file__).parent / "threshold_info.json"
+
+REGISTRY_PATH = Path(__file__).parent / "model_registry.json"
+
+# Dynamic model paths — initialised from registry at import time.
+# Fall back to default constants if the registry cannot be read.
+_active_model_path: Path = MODEL_FILE
+_active_calibrator_path: Path | None = CALIBRATOR_FILE
+_active_threshold_path: Path | None = THRESHOLD_INFO_FILE
 
 # Probability + uncertainty zoning thresholds for routing decisions.
 LOW_PROB_THRESHOLD = 0.20
@@ -88,22 +101,118 @@ def _get_model():
     if _model is None:
         with _lock:
             if _model is None:
-                if not MODEL_FILE.exists():
+                model_path = _active_model_path
+                if not model_path.exists():
                     raise FileNotFoundError(
-                        f"XGBoost model not found at {MODEL_FILE}. "
+                        f"XGBoost model not found at {model_path}. "
                         "Run the training pipeline first."
                     )
-                _model = joblib.load(MODEL_FILE)
+                _model = joblib.load(model_path)
     return _model
 
 
 def _get_calibrator():
     global _calibrator
-    if _calibrator is None and CALIBRATOR_FILE.exists():
+    cal_path = _active_calibrator_path
+    if _calibrator is None and cal_path is not None and cal_path.exists():
         with _lock:
-            if _calibrator is None and CALIBRATOR_FILE.exists():
-                _calibrator = joblib.load(CALIBRATOR_FILE)
+            if _calibrator is None and cal_path is not None and cal_path.exists():
+                _calibrator = joblib.load(cal_path)
     return _calibrator
+
+
+def _read_registry() -> dict:
+    """Read the model registry JSON file. Returns empty structure on error."""
+    try:
+        if REGISTRY_PATH.exists():
+            with open(REGISTRY_PATH) as f:
+                return json.load(f)
+    except Exception:
+        pass
+    return {"active_version": None, "versions": []}
+
+
+def _init_active_paths_from_registry():
+    """Initialise module-level path variables from the model registry.
+
+    Called at import time and after registry changes. Falls back to default
+    constants if the registry cannot be read or the active version is unknown.
+    """
+    global _active_model_path, _active_calibrator_path, _active_threshold_path
+    registry = _read_registry()
+    active_version = registry.get("active_version")
+    if active_version:
+        base = Path(__file__).parent
+        for v in registry.get("versions", []):
+            if v["version"] == active_version:
+                _active_model_path = base / v["model_file"]
+                _active_calibrator_path = (
+                    base / v["calibrator_file"] if v.get("calibrator_file") else None
+                )
+                _active_threshold_path = (
+                    base / v["threshold_file"] if v.get("threshold_file") else None
+                )
+                return
+    # Fallback to defaults
+    _active_model_path = MODEL_FILE
+    _active_calibrator_path = CALIBRATOR_FILE
+    _active_threshold_path = THRESHOLD_INFO_FILE
+
+
+def set_active_version(version: str):
+    """Switch the active XGBoost model version at runtime.
+
+    Reads the registry to resolve *version* to file paths, updates the
+    module-level path variables, and resets the in-memory model/calibrator
+    cache so the next call to predict() triggers a lazy reload.
+
+    Thread-safe: acquires the same _lock used by _get_model() / _get_calibrator().
+    """
+    global _active_model_path, _active_calibrator_path, _active_threshold_path
+    global _model, _calibrator
+
+    registry = _read_registry()
+    base = Path(__file__).parent
+    found = None
+    for v in registry.get("versions", []):
+        if v["version"] == version:
+            found = v
+            break
+
+    if found is None:
+        raise ValueError(f"Version '{version}' not found in model registry.")
+
+    with _lock:
+        _active_model_path = base / found["model_file"]
+        _active_calibrator_path = (
+            base / found["calibrator_file"] if found.get("calibrator_file") else None
+        )
+        _active_threshold_path = (
+            base / found["threshold_file"] if found.get("threshold_file") else None
+        )
+        # Invalidate in-memory cache — forces lazy reload on next predict()
+        _model = None
+        _calibrator = None
+
+
+def get_active_version_info() -> dict:
+    """Return the active version's metadata from the registry."""
+    registry = _read_registry()
+    active_version = registry.get("active_version")
+    if active_version:
+        for v in registry.get("versions", []):
+            if v["version"] == active_version:
+                return {
+                    "version": v["version"],
+                    "label": v["label"],
+                    "metrics": v.get("metrics", {}),
+                    "created_at": v.get("created_at", ""),
+                }
+    return {"version": None, "label": "", "metrics": {}, "created_at": ""}
+
+
+# ── Initialise active paths from registry at module load time ────────
+_init_active_paths_from_registry()
 
 
 def _tier_zero_check(features: dict) -> dict | None:
