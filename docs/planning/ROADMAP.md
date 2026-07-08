@@ -23,6 +23,8 @@
 | **Sprint 9** | **Data Supremacy** | ✅ Complete |
 | **Sprint 10** | **Operational Readiness** | ✅ Complete |
 | **Sprint 11** | **Model Governance + Ops Hardening** | ✅ Complete |
+| **Sprint 12** | **Gap Hardening** | ✅ Complete |
+| **Sprint 13** | **EPSS Data Pipeline + Documentation** | ✅ Complete |
 
 ---
 
@@ -223,7 +225,7 @@ Planned after model retraining completes. Focus: test coverage, operational guar
 | # | Item | Effort | Status |
 |---|------|--------|--------|
 | 16 | **Rate limiting** | 1 day | ✅ Done — Token bucket on ingest/clear/demo, configurable via env vars (`INGEST_RATE_PER_MIN`, `INGEST_BURST_SIZE`, etc.) |
-| 17 | **EPSS substitution retrain** | 1-2 days | 📋 Remaining |
+| 17 | **EPSS substitution retrain** | 1-2 days | 🔧 Assessed — see `backend/reports/intel/epss-retrain-assessment.md` |
 | 18 | **Model comparison endpoint** | 1 hr | ✅ Done — `GET /api/model/status` with metadata + score comparison; visible in drift dashboard |
 
 ---

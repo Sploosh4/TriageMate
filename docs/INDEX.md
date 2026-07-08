@@ -30,9 +30,9 @@
 
 | File | Status | Description |
 |---|---|---|
-| `planning/ROADMAP.md` | CURRENT | Master roadmap + sprint history + next actions. All 9 sprints tracked. |
+| `planning/ROADMAP.md` | CURRENT | Master roadmap + sprint history + next actions. All sprints tracked (13 completed, 1 in progress). |
 | `planning/ai-doc-strategy-2026-07-07.md` | CURRENT | This consolidation plan — how and why docs were restructured. |
-| `planning/file-consolidation-plan-2026-07-07.md` | CURRENT | Bookkeeper's detailed consolidation analysis. |
+| `planning/file-consolidation-plan-2026-07-07.md` | ARCHIVED | Bookkeeper's consolidation proposals — superseded by current doc structure. See `docs/INDEX.md`. |
 
 ## Reference
 

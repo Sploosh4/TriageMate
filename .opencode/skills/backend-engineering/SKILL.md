@@ -31,7 +31,7 @@ Scoring:  6-dimension weighted formula (CVSS, EPSS, Asset Criticality, Exposure,
 - `backend/pipeline/tier_1.py` — XGBoost exploitation probability
 - `backend/pipeline/tier_2.py` — Cloud LLM conflict resolution
 - `backend/ingest_helpers.py` — `build_feature_vector()`, CWE lookups
-- `backend/routers/` — API endpoint routers (auth, cases, ingest, queue)
+- `backend/routers/` — API endpoint routers (auth, cases, ingest, models, queue)
 
 ## Conventions
 - Database access: always use `get_db()` — never create new connection paths

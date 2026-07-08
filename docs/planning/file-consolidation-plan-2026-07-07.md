@@ -1,6 +1,6 @@
 # .md File Consolidation Plan
 
-> **Status: CURRENT** (7 July 2026)
+> **Status: ARCHIVED** — proposals superseded by current INDEX.md + ROADMAP.md structure. See `docs/INDEX.md` for current doc index.
 
 **Date:** 7 July 2026  
 **Author:** Bookkeeper  
