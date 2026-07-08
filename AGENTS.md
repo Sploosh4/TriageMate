@@ -9,9 +9,6 @@ All subagents load the `decision-framework` skill at the start of every task. It
 ## Sprint Workflow
 The commander plans sprints, executes them via subagent delegation, and triggers bookkeeper at sprint end. Sprint plans live in `.opencode/plans/`.
 
-## Quality Gate Loop (Commander)
-After every batch of changes, verify. If issues are found, fix them and re-verify. Repeat until clean. This applies regardless of what changed — run whatever checks are appropriate (tests, audits, bookkeeping), fix whatever they find, stop only when two consecutive passes return nothing.
-
 ## Documentation Structure
 
 All project documentation lives under `docs/` in subdirectories by category. Root-level `.md` files (except `AGENTS.md`) are symlinks into `docs/` for backward compatibility.

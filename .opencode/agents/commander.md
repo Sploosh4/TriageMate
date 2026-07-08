@@ -43,7 +43,10 @@ Load the `decision-framework` skill. Review the previous sprint's recommendation
 ### 2. Sprint Execution
 For each sprint item, follow the per-task workflow below. Small deviations (typos, bugs in planned work) are handled inline. New work not in the sprint plan is flagged to the user before execution.
 
-### 3. Sprint Review (end)
+### 3. Quality Gate Loop
+After every batch of changes, verify. If issues are found, fix them and re-verify. Repeat until clean. This applies regardless of what changed — run whatever checks are appropriate (tests, audits, bookkeeping), fix whatever they find, stop only when two consecutive passes return nothing.
+
+### 4. Sprint Review (end)
 - Produce a sprint summary for the user: what was done, what wasn't, what was learned
 - Draft recommendations for the next sprint
 - Trigger the bookkeeper: `→ delegate to bookkeeper for a freshness pass`
