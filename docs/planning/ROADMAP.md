@@ -184,7 +184,7 @@ All Sprint NEXT items are complete. Item 1 (XGBoost retrain) was **completed 202
 
 | # | Item | Status | Notes |
 |---|---|---|---|
-| 1 | XGBoost retrain on `training_data_v2.npz` | ✅ Done — Retrained 2026-07-08 | **Retrained on 253,568 samples (341 MB).** ROC-AUC: 0.9459. Model trained on 419 features (35 tabular + 384 SBERT). Calibrator and threshold_info exported. Score verification: 7 demo rows within ±3 of expected values. |
+| 1 | XGBoost retrain on `training_data_v2.npz` | ✅ Done — Retrained 2026-07-08 | **Retrained on 253,568 samples (341 MB).** ROC-AUC: 0.9459. Model trained on 419 features (35 tabular + 384 SBERT). Calibrator and threshold_info exported. Score verification (2026-07-08): 7 demo rows within ±3 of expected values. |
 | 2 | Pre-Tier RandomForest classifier | ✅ Already existed | 60-dim MultiOutputClassifier with KNOWN_TAGS fallback. No changes needed. |
 | 3 | Model drift monitoring dashboard | ✅ Done | `GET /api/drift`, CSS-only charts, 4 panels |
 | 4 | Rate limiting + CI/CD | ✅ Complete | Rate limiting implemented and configurable via env vars. CI/CD pipeline expanded with Docker build, coverage reporting, and frontend syntax check jobs. |
@@ -318,6 +318,8 @@ Planned after model retraining completes. Focus: test coverage, operational guar
 | `backend/ml/reference_distributions.json` | ✅ Done | Per-feature bin boundaries from `training_data_v2.npz` |
 | `GET /api/drift/ml` | ✅ Done | PSI per feature + composite, status thresholds: stable (<0.1), warning (≥0.1), critical (≥0.25) |
 | `test_drift_ml.py` | ✅ Done | PSI computation, endpoint shape, fuzzed round-trip |
+
+> **Note:** In demo mode with small sample counts (e.g. 7–21 rows), PSI values may show "critical" or "warning" status on some features. This is expected — the reference distributions were built from 253K training samples, and small demo datasets will not match. Drift monitoring is meaningful only at production scale (hundreds+ of inference rows).
 
 ### Stress Testing + Visibility
 

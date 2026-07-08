@@ -83,6 +83,8 @@ async def get_model_status():
 
     active_info = None
     available = []
+    # Reference baseline from retrain verification (2026-07-08).
+    # A snapshot, not recomputed from live inference.
     score_comparison = {
         "baseline_scores": [94, 87, 71, 63, 55, 41, 22],
         "versions": {},

@@ -572,7 +572,7 @@ SEED_ROWS = [
         "tier_2_rag_result": None,
         "tier_2_confidence": None,
         "tier_2_resolution_summary": None,
-        "priority_score": 55,
+        "priority_score": 63,
         "risk_band": "Critical",
         "cvss_contribution": 35,
         "epss_contribution": 14,
@@ -603,7 +603,7 @@ SEED_ROWS = [
         "weakness_template_raw": 'template_id: ML-2024-SCREENCONNECT-CBR-001\ntemplate_name: "RMM Gateway Compromise — Cross-Boundary Lateral Movement Amplifier"\nmodel_type: XGBoost Reciprocal Rank Fusion (RRF) Ensemble\ntraining_cutoff: 2025-06-30\nfeature_vector:\n  - feature: "cvss_base_score"\n    value: 10.0\n    weight_contribution: 0.15\n  - feature: "epss_score"\n    value: 0.878\n    weight_contribution: 0.12\n  - feature: "software_category"\n    value: "remote_monitoring_and_management"\n    weight_contribution: 0.18\n  - feature: "cross_boundary_reachability_count"\n    value: 14\n    weight_contribution: 0.25\n  - feature: "downstream_network_zone_diversity"\n    value: 5\n    weight_contribution: 0.18\n  - feature: "inbound_network_restriction"\n    value: TRUE\n    weight_contribution: -0.10\n  - feature: "data_classification_level"\n    value: "OFFICIAL_Sensitive"\n    weight_contribution: 0.07\nmodel_confidence: 0.83',
         "advisory_ref_id": "ADV-CVE-2024-1709",
         "advisory_quote": "The Western Australian Security Operations Centre has assessed CVE-2024-1709 as a high-severity threat to WA government entities using ConnectWise ScreenConnect for remote management. Of particular concern is the risk posed to shared services providers who manage endpoints across multiple agencies.",
-        "investigation_notes": "The following summary has been pre-filled for analyst review and editing.\n\nCVE-2024-1709 on per-PRD-RMM-GW01.sharedservices.wa.gov.au has been assigned a priority score of 55 and a risk band of Critical by the ML Tier model.\n\nImmediate recommended action: Upgrade ConnectWise ScreenConnect from version 23.9.7.8804 to version 23.9.8 or later. Pending upgrade, temporarily restrict all inbound connections to port 8040.",
+        "investigation_notes": "The following summary has been pre-filled for analyst review and editing.\n\nCVE-2024-1709 on per-PRD-RMM-GW01.sharedservices.wa.gov.au has been assigned a priority score of 63 and a risk band of Critical by the ML Tier model.\n\nImmediate recommended action: Upgrade ConnectWise ScreenConnect from version 23.9.7.8804 to version 23.9.8 or later. Pending upgrade, temporarily restrict all inbound connections to port 8040.",
         "mitre_techniques_json": json.dumps(
             [
                 {
@@ -753,8 +753,8 @@ SEED_ROWS = [
         "tier_2_conflict_note": "Primary exploitability assessment: Active exploitation confirmed, weaponised in spear-phishing targeting government social services. Negative constraint: Microsoft advisory states registry key mitigation blocks attack vector. RAG search returned conflicting GPO deployment records — ASR rule may or may not be active on this endpoint.",
         "tier_2_rag_result": "UNCERTAIN — CMDB records conflict",
         "tier_2_confidence": 0.72,
-        "tier_2_resolution_summary": "Exploitability signal dominates. Mitigation status unverifiable. Assign score 63 — Critical band. Flag for manual ASR verification.",
-        "priority_score": 63,
+        "tier_2_resolution_summary": "Exploitability signal dominates. Mitigation status unverifiable. Assign score 55 — Critical band. Flag for manual ASR verification.",
+        "priority_score": 55,
         "risk_band": "Critical",
         "cvss_contribution": 24,
         "epss_contribution": 14,
@@ -785,7 +785,7 @@ SEED_ROWS = [
         "weakness_template_raw": 'template_id: SLM-2023-OFFICE-SRCH-001\ntemplate_name: "Office URI Protocol RCE — User Interaction vs Government Targeting Conflict Resolver"\nmodel_type: Small Language Model (SLM) — Textual Conflict Resolution\ninput_documents:\n  - document_type: "exploitability_assessment"\n    source: "WASOC Threat Intelligence Feed + CISA KEV"\n    key_text: "Active exploitation confirmed. Malicious Office documents targeting government social services agencies."\n    sentiment: HIGH_RISK\n  - document_type: "negative_constraint"\n    source: "Microsoft Security Response Center Advisory"\n    key_text: "Customers who apply the registry key mitigation are protected. The attack requires user interaction."\n    sentiment: RISK_MITIGATED\n  - document_type: "rag_retrieval_result"\n    source: "Internal CMDB + Group Policy Management Console"\n    key_text: "CMDB record 2026-03-07: GPO replication failure. UNCERTAIN."\n    sentiment: UNCERTAIN',
         "advisory_ref_id": "ADV-CVE-2023-36884",
         "advisory_quote": "The Western Australian Security Operations Centre has confirmed that CVE-2023-36884 is being actively exploited in targeted spear-phishing campaigns against Australian state government social services agencies. Attackers are sending malicious Office documents themed around child protection case updates.",
-        "investigation_notes": "The following summary has been pre-filled for analyst review and editing.\n\nCVE-2023-36884 on per-PRD-FILE-STORE02.communities.wa.gov.au has been assigned a priority score of 63 and a risk band of Critical by the SLM Tier engine. This case was escalated to the SLM due to a text conflict between the exploitability assessment and the negative constraint.\n\nImmediate recommended action: Manually verify the status of the Microsoft Defender ASR rule on per-PRD-FILE-STORE02.",
+        "investigation_notes": "The following summary has been pre-filled for analyst review and editing.\n\nCVE-2023-36884 on per-PRD-FILE-STORE02.communities.wa.gov.au has been assigned a priority score of 55 and a risk band of Critical by the SLM Tier engine. This case was escalated to the SLM due to a text conflict between the exploitability assessment and the negative constraint.\n\nImmediate recommended action: Manually verify the status of the Microsoft Defender ASR rule on per-PRD-FILE-STORE02.",
         "mitre_techniques_json": json.dumps(
             [
                 {
