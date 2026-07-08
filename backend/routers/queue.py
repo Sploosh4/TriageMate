@@ -238,6 +238,9 @@ def get_ml_drift():
             """
             SELECT tier_1_features FROM vulnerabilities
             WHERE tier_1_features IS NOT NULL
+            UNION ALL
+            SELECT tier_1_features FROM resolved_vulnerabilities
+            WHERE tier_1_features IS NOT NULL
             """
         )
         for row in cursor.fetchall():

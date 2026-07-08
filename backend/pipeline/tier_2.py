@@ -265,7 +265,7 @@ def _build_openai_schema() -> dict:
 
 async def call_openai(
     system_content: str, user_content: str, api_key: str, model: str
-) -> dict:
+) -> tuple[dict, dict]:
     """Call OpenAI Chat Completions with json_schema response format.
 
     Uses json_schema mode (not json_object) for schema-enforced output.
@@ -316,6 +316,7 @@ async def call_openai(
                 # Log usage for cost tracking
                 usage = data.get("usage", {})
                 _record_api_call("openai", model, usage)
+                usage_dict = _compute_usage_dict("openai", usage)
 
                 required = [
                     "text_conflict",
@@ -329,7 +330,7 @@ async def call_openai(
                     if field not in result:
                         raise ValueError(f"Missing field in LLM response: {field}")
 
-                return result
+                return result, usage_dict
 
         except httpx.HTTPStatusError as e:
             if e.response.status_code == 429:
@@ -375,7 +376,7 @@ def _build_anthropic_schema() -> dict:
 
 async def call_anthropic(
     system_content: str, user_content: str, api_key: str, model: str
-) -> dict:
+) -> tuple[dict, dict]:
     """Call Anthropic Messages API with structured output via SDK.
 
     Uses client.messages.parse() with Pydantic-based output_config.
@@ -429,22 +430,21 @@ async def call_anthropic(
 
             # Log usage — Anthropic returns usage in response.usage
             if hasattr(response, "usage") and response.usage:
-                _record_api_call(
-                    "anthropic",
-                    model,
-                    {
-                        "prompt_tokens": response.usage.input_tokens,
-                        "completion_tokens": response.usage.output_tokens,
-                        "cached_tokens": getattr(
-                            response.usage, "cache_read_input_tokens", None
-                        )
-                        or 0,
-                    },
-                )
+                usage_data = {
+                    "prompt_tokens": response.usage.input_tokens,
+                    "completion_tokens": response.usage.output_tokens,
+                    "cached_tokens": getattr(
+                        response.usage, "cache_read_input_tokens", None
+                    )
+                    or 0,
+                }
+                _record_api_call("anthropic", model, usage_data)
+                usage_dict = _compute_usage_dict("anthropic", usage_data)
             else:
                 _record_api_call("anthropic", model, {})
+                usage_dict = {"tokens_in": 0, "tokens_out": 0, "cost_usd": 0.0}
 
-            return result
+            return result, usage_dict
 
         except RateLimitError as e:
             retry_after = float(
@@ -492,7 +492,7 @@ def _together_supports_json_schema(model: str) -> bool:
 
 async def call_together(
     system_content: str, user_content: str, api_key: str, model: str
-) -> dict:
+) -> tuple[dict, dict]:
     """Call Together AI API for open-weight models.
 
     Uses json_schema response_format if supported by the model.
@@ -544,6 +544,7 @@ async def call_together(
                 # Log usage
                 usage = data.get("usage", {})
                 _record_api_call("together", model, usage)
+                usage_dict = _compute_usage_dict("together", usage)
 
                 required = [
                     "text_conflict",
@@ -557,7 +558,7 @@ async def call_together(
                     if field not in result:
                         raise ValueError(f"Missing field in LLM response: {field}")
 
-                return result
+                return result, usage_dict
 
         except httpx.HTTPStatusError as e:
             if e.response.status_code == 429:
@@ -585,6 +586,23 @@ async def call_together(
 # ---------------------------------------------------------------------------
 # Cost Tracking
 # ---------------------------------------------------------------------------
+
+
+def _compute_usage_dict(provider: str, usage: dict) -> dict:
+    """Extract per-call token counts and cost from an API usage dict."""
+    prompt_tokens = usage.get("prompt_tokens", 0) or usage.get("input_tokens", 0) or 0
+    completion_tokens = (
+        usage.get("completion_tokens", 0) or usage.get("output_tokens", 0) or 0
+    )
+    rates = _COST_RATES.get(provider, {"input": 0.0, "output": 0.0})
+    cost = (prompt_tokens / 1_000_000) * rates["input"] + (
+        completion_tokens / 1_000_000
+    ) * rates["output"]
+    return {
+        "tokens_in": prompt_tokens,
+        "tokens_out": completion_tokens,
+        "cost_usd": round(cost, 6),
+    }
 
 
 def _record_api_call(provider: str, model: str, usage: dict):
@@ -682,22 +700,27 @@ async def evaluate_tier_2(
     if BACKUP_PROVIDER and BACKUP_API_KEY:
         providers.append((BACKUP_PROVIDER, BACKUP_API_KEY, BACKUP_MODEL or LLM_MODEL))
 
+    _ZERO_USAGE = {"tokens_in": 0, "tokens_out": 0, "cost_usd": 0.0}
+
     last_error = None
     for provider, api_key, model in providers:
         try:
             if provider == "openai":
-                result = await call_openai(system_content, user_content, api_key, model)
+                result, usage = await call_openai(
+                    system_content, user_content, api_key, model
+                )
             elif provider == "anthropic":
-                result = await call_anthropic(
+                result, usage = await call_anthropic(
                     system_content, user_content, api_key, model
                 )
             elif provider == "together":
-                result = await call_together(
+                result, usage = await call_together(
                     system_content, user_content, api_key, model
                 )
             else:
                 raise ValueError(f"Unknown LLM provider: {provider}")
 
+            result["_usage"] = usage
             logger.info(f"Tier 2 resolved by {provider} ({model}) for {cve_id}")
             return result
 
@@ -711,6 +734,7 @@ async def evaluate_tier_2(
     # Fallback: use known conflict resolutions
     if cve_id in KNOWN_CONFLICTS:
         result = dict(KNOWN_CONFLICTS[cve_id])
+        result["_usage"] = dict(_ZERO_USAGE)
         result["conflict_note"] += (
             f" [Note: Cloud LLM unavailable"
             f" ({str(last_error)[:100] if last_error else 'all providers failed'})."
@@ -722,4 +746,6 @@ async def evaluate_tier_2(
     # Neutral default for unknown CVEs
     error_msg = str(last_error)[:200] if last_error else "All providers unavailable"
     logger.error(f"Tier 2 no resolution available for {cve_id}: {error_msg}")
-    return _neutral_default(cve_id, error_msg)
+    neutral = _neutral_default(cve_id, error_msg)
+    neutral["_usage"] = dict(_ZERO_USAGE)
+    return neutral

@@ -1,8 +1,11 @@
 """
 Final priority score calculation.
 
-Combines outputs from all pipeline stages into a 0-100 score
+Combines outputs from all pipeline stages into a score
 with per-dimension breakdown for the frontend scoring weights display.
+
+Weights sum to 107 (CVSS 40 + EPSS 20 + criticality 20 + exposure 12 +
+patch 5 + ml_exploitation 10). The final total is clamped to 0-100.
 """
 
 
@@ -25,7 +28,8 @@ def calculate_final_score(
     substituted_epss=None,
 ) -> dict:
     """
-    Calculate the 0-100 priority score from six weighted dimensions plus optional Tier 2 score adjustment.
+    Calculate the priority score from six weighted dimensions plus optional Tier 2 score adjustment.
+    Weights sum to 107; final total is clamped to 0-100.
 
     Returns a dict with per-dimension breakdown for the scoring weights display.
 
@@ -89,12 +93,14 @@ def calculate_final_score(
         exposure += 3
     dimensions["exposure"] = exposure
 
-    # Patch availability (max 5) — 5 points if patch applied, 0 otherwise
+    # Patch availability (max 5)
     patch_score = 0
-    if patch_available and not patch_applied:
-        patch_score = 0
+    if not patch_available:
+        patch_score = 0  # no remediation available — neutral, not punitive
     elif patch_available and patch_applied:
-        patch_score = 5
+        patch_score = 5  # remediated
+    else:
+        patch_score = 0  # patch exists but not applied — overdue
     dimensions["patch"] = patch_score
 
     total = sum(dimensions.values())

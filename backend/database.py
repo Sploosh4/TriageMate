@@ -421,6 +421,9 @@ class DatabaseManager:
                 exposure_contribution INTEGER,
                 patch_remediation_contribution INTEGER,
                 ml_exploitation_contribution INTEGER DEFAULT 0,
+
+                -- ML drift monitoring
+                tier_1_features TEXT,
                 epss_substituted BOOLEAN DEFAULT FALSE,
                 epss_substituted_value REAL,
                 epss_substitution_confidence REAL,
@@ -685,6 +688,9 @@ class DatabaseManager:
                 exposure_contribution INTEGER,
                 patch_remediation_contribution INTEGER,
                 ml_exploitation_contribution INTEGER DEFAULT 0,
+
+                -- ML drift monitoring
+                tier_1_features TEXT,
                 epss_substituted BOOLEAN DEFAULT FALSE,
                 epss_substituted_value REAL,
                 epss_substitution_confidence REAL,

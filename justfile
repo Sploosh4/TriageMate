@@ -10,36 +10,41 @@
 
 # --- Variables ---
 BACKEND := "backend"
+PY := ".venv/bin/python"
+PIP := ".venv/bin/pip"
+RUFF := ".venv/bin/ruff"
+PYTEST := ".venv/bin/pytest"
+UVICORN := ".venv/bin/uvicorn"
 
 # --- Dev Loop ---
 
 # Run all tests with verbose output
 test:
-    cd {{BACKEND}} && pytest tests/ -v
+    cd {{BACKEND}} && {{PYTEST}} tests/ -v
 
 # Run a specific test file (e.g., just test-file test_health)
 test-file file:
-    cd {{BACKEND}} && pytest tests/{{file}}.py -v
+    cd {{BACKEND}} && {{PYTEST}} tests/{{file}}.py -v
 
 # Run Tier 2 unit tests with coverage (must be >= 70%)
 verify-tier2:
-    cd {{BACKEND}} && .venv/bin/python -m pytest tests/test_tier2.py -v --cov=pipeline.tier_2 --cov-report=term --cov-fail-under=70
+    cd {{BACKEND}} && {{PY}} -m pytest tests/test_tier2.py -v --cov=pipeline.tier_2 --cov-report=term --cov-fail-under=70
 
 # Lint check only (no changes)
 lint:
-    cd {{BACKEND}} && ruff check . && ruff format --check .
+    cd {{BACKEND}} && {{RUFF}} check . && {{RUFF}} format --check .
 
 # Lint and auto-fix
 lint-fix:
-    cd {{BACKEND}} && ruff check . --fix && ruff format .
+    cd {{BACKEND}} && {{RUFF}} check . --fix && {{RUFF}} format .
 
 # Start FastAPI dev server with auto-reload
 server:
-    cd {{BACKEND}} && uvicorn main:app --reload --host 0.0.0.0 --port 8000
+    cd {{BACKEND}} && {{UVICORN}} main:app --reload --host 0.0.0.0 --port 8000
 
 # Start FastAPI dev server with demo mode enabled
 server-demo:
-    cd {{BACKEND}} && DEMO_MODE=true uvicorn main:app --reload --host 0.0.0.0 --port 8000
+    cd {{BACKEND}} && DEMO_MODE=true {{UVICORN}} main:app --reload --host 0.0.0.0 --port 8000
 
 # --- Docker ---
 
@@ -63,104 +68,104 @@ docker-build:
 
 # Install production + dev dependencies
 install:
-    cd {{BACKEND}} && pip install -r requirements.txt && pip install -r ../requirements-dev.txt
+    cd {{BACKEND}} && {{PIP}} install -r requirements.txt && {{PIP}} install -r ../requirements-dev.txt
 
 # Seed demo data into the database
 seed-db:
-    cd {{BACKEND}} && python3 seed_data.py
+    cd {{BACKEND}} && {{PY}} seed_data.py
 
 # --- Data Pipeline ---
 
 # Refresh threat intel caches (default: all)
 # e.g., just refresh-caches nvd
 refresh-caches source="":
-    cd {{BACKEND}} && python3 -m scripts.refresh_caches {{if source != "" {"--source " + source} else {""}}}
+    cd {{BACKEND}} && {{PY}} -m scripts.refresh_caches {{if source != "" {"--source " + source} else {""}}}
 
 # Bulk fetch NVD corpus (200K+ CVEs)
 fetch-corpus:
-    cd {{BACKEND}} && python3 -m scripts.fetch_nvd_corpus
+    cd {{BACKEND}} && {{PY}} -m scripts.fetch_nvd_corpus
 
 # Resume NVD corpus fetch from checkpoint
 fetch-corpus-resume:
-    cd {{BACKEND}} && python3 -m scripts.fetch_nvd_corpus --resume
+    cd {{BACKEND}} && {{PY}} -m scripts.fetch_nvd_corpus --resume
 
 # Build unified training NPZ from NVD corpus
 build-corpus +args="":
-    cd {{BACKEND}} && python3 -m scripts.build_training_corpus {{args}}
+    cd {{BACKEND}} && {{PY}} -m scripts.build_training_corpus {{args}}
 
 # Build CWE hierarchy JSON (downloads MITRE XML first)
 build-cwe:
-    cd {{BACKEND}} && python3 -m scripts.build_cwe_hierarchy --download
+    cd {{BACKEND}} && {{PY}} -m scripts.build_cwe_hierarchy --download
 
 # Build vendor popularity index
 build-vendor-index:
-    cd {{BACKEND}} && python3 -m scripts.build_vendor_index
+    cd {{BACKEND}} && {{PY}} -m scripts.build_vendor_index
 
 # --- ML Training ---
 
 # Full XGBoost training pipeline (gather + train)
 train-xgboost +args="":
-    cd {{BACKEND}} && python3 -m ml.train_xgboost {{args}}
+    cd {{BACKEND}} && {{PY}} -m ml.train_xgboost {{args}}
 
 # Train Pre-Tier RandomForest classifier
 train-pretier:
-    cd {{BACKEND}} && python3 -m ml.train_pre_tier
+    cd {{BACKEND}} && {{PY}} -m ml.train_pre_tier
 
 # Train EPSS substitution model v3
 train-epss:
-    cd {{BACKEND}} && python3 -m ml.train_epss_v3
+    cd {{BACKEND}} && {{PY}} -m ml.train_epss_v3
 
 # Train EPSS substitution model v4 (sector-aware)
 train-epss-v4:
-    cd {{BACKEND}} && python3 -m ml.train_epss_v4
+    cd {{BACKEND}} && {{PY}} -m ml.train_epss_v4
 
 # Retrain all ML models from scratch (synthetic data → pre-tier → EPSS v4)
 retrain-all:
     @echo "=== Generating synthetic data ==="
-    cd {{BACKEND}} && python3 -m ml.generate_synthetic_data_v2
-    cd {{BACKEND}} && python3 -m ml.generate_synthetic_findings
-    cd {{BACKEND}} && python3 -m scripts.load_research_refs
+    cd {{BACKEND}} && {{PY}} -m ml.generate_synthetic_data_v2
+    cd {{BACKEND}} && {{PY}} -m ml.generate_synthetic_findings
+    cd {{BACKEND}} && {{PY}} -m scripts.load_research_refs
     @echo "=== Validating synthetic data ==="
-    cd {{BACKEND}} && python3 -m scripts.validate_synthetic_data --table synthetic_assets
+    cd {{BACKEND}} && {{PY}} -m scripts.validate_synthetic_data --table synthetic_assets
     @echo "=== Training Pre-Tier model ==="
-    cd {{BACKEND}} && python3 -m ml.train_pre_tier --from-db
+    cd {{BACKEND}} && {{PY}} -m ml.train_pre_tier --from-db
     @echo "=== Training EPSS v4 model ==="
-    cd {{BACKEND}} && python3 -m ml.train_epss_v4
+    cd {{BACKEND}} && {{PY}} -m ml.train_epss_v4
     @echo "=== Done ==="
 
 # Fetch EPSS training data
 fetch-epss-data:
-    cd {{BACKEND}} && python3 -m ml.fetch_epss_data
+    cd {{BACKEND}} && {{PY}} -m ml.fetch_epss_data
 
 # Generate supplemental hostnames for Pre-Tier training  # DEPRECATED — use `just generate-synthetic-data` instead
 generate-hostnames:
-    cd {{BACKEND}} && python3 -m ml.generate_supplemental_hostnames  # DEPRECATED
+    cd {{BACKEND}} && {{PY}} -m ml.generate_supplemental_hostnames  # DEPRECATED
 
 # Ingest documents into LanceDB vector store
 ingest-docs:
-    cd {{BACKEND}} && python3 -m ml.ingest_docs
+    cd {{BACKEND}} && {{PY}} -m ml.ingest_docs
 
 # --- Analysis ---
 
 # ML calibration audit
 audit-calibration:
-    cd {{BACKEND}} && python3 -m analysis.calibration_audit
+    cd {{BACKEND}} && {{PY}} -m analysis.calibration_audit
 
 # EPSS substitution accuracy evaluation
 audit-epss:
-    cd {{BACKEND}} && python3 -m analysis.epss_eval
+    cd {{BACKEND}} && {{PY}} -m analysis.epss_eval
 
 # Feature vector contract compliance check
 audit-features:
-    cd {{BACKEND}} && python3 -m analysis.feature_parity_check
+    cd {{BACKEND}} && {{PY}} -m analysis.feature_parity_check
 
 # Data schema conversion validation
 audit-schema:
-    cd {{BACKEND}} && python3 -m analysis.validate_conversion
+    cd {{BACKEND}} && {{PY}} -m analysis.validate_conversion
 
 # Run ML drift tests and endpoint check
 verify-drift:
-    cd {{BACKEND}} && .venv/bin/python -m pytest tests/test_drift_ml.py -v
+    cd {{BACKEND}} && {{PY}} -m pytest tests/test_drift_ml.py -v
     @echo "--- Drift endpoint check ---"
     curl -s http://localhost:8000/api/drift/ml | python3 -m json.tool
 
@@ -180,10 +185,10 @@ stress-test:
     done
     @echo "Running locust (60s)..."
     cd {{BACKEND}} && STRESS_RUN_ID=$(date +%Y-%m-%d-%H%M%S) \
-        locust -f tests/load/locustfile.py --headless \
+        .venv/bin/locust -f tests/load/locustfile.py --headless \
         -u 10 -r 2 -t 60s --host http://localhost:8000
     @echo "Generating report..."
-    cd {{BACKEND}} && .venv/bin/python scripts/stress_report.py reports/stress/$(ls -t reports/stress/ | head -1 | sed 's/.db//')
+    cd {{BACKEND}} && {{PY}} scripts/stress_report.py reports/stress/$(ls -t reports/stress/ | head -1 | sed 's/.db//')
     @echo "=== Done ==="
 
 # Stress test without LLM (no API cost)
@@ -198,10 +203,10 @@ stress-test-no-llm:
     @echo "Running locust (60s)..."
     cd {{BACKEND}} && STRESS_RUN_ID=$(date +%Y-%m-%d-%H%M%S) \
         TRIAGEMATE_LLM_API_KEY="" \
-        locust -f tests/load/locustfile.py --headless \
+        .venv/bin/locust -f tests/load/locustfile.py --headless \
         -u 10 -r 2 -t 60s --host http://localhost:8000
     @echo "Generating report..."
-    cd {{BACKEND}} && .venv/bin/python scripts/stress_report.py reports/stress/$(ls -t reports/stress/ | head -1 | sed 's/.db//')
+    cd {{BACKEND}} && {{PY}} scripts/stress_report.py reports/stress/$(ls -t reports/stress/ | head -1 | sed 's/.db//')
     @echo "=== Done ==="
 
 # --- Graphify (sibling project) ---

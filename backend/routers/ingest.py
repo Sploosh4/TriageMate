@@ -246,9 +246,9 @@ async def ingest_vulnerability(payload: IngestRequest, request: Request = None):
                 "text_conflict": t2_result.get("text_conflict", False),
                 "confidence": t2_result.get("confidence", 0.0),
                 "score_adjustment": t2_result.get("score_adjustment", 0),
-                "tokens_in": 0,
-                "tokens_out": 0,
-                "cost_usd": 0.0,
+                "tokens_in": t2_result.get("_usage", {}).get("tokens_in", 0),
+                "tokens_out": t2_result.get("_usage", {}).get("tokens_out", 0),
+                "cost_usd": t2_result.get("_usage", {}).get("cost_usd", 0.0),
                 "latency_ms": round(_t_tier_2 * 1000, 2),
             }
             if t2_result
@@ -260,6 +260,10 @@ async def ingest_vulnerability(payload: IngestRequest, request: Request = None):
         },
         "total_latency_ms": round(_total * 1000, 2),
     }
+
+    # Strip transient _usage key from t2_result before it reaches the DB
+    if t2_result:
+        t2_result.pop("_usage", None)
 
     # Build detection reason
     reason_parts = [f"{detection_tier}: CVSS {payload.cvss_score}"]
@@ -654,30 +658,12 @@ async def list_demo_scenarios():
         )
 
 
-# Module-level rate limiter for demo requests
-_DEMO_LAST_TIME: float = 0.0
-_DEMO_MIN_INTERVAL: float = 2.0  # seconds
-
-
 @router.post("/api/demo/generate")
 async def generate_demo_findings(request: Request):
     """Generate demo findings from a scenario or random wave (DEMO_MODE only)."""
     gate = _demo_only()
     if gate:
         return gate
-
-    import time as _time
-
-    global _DEMO_LAST_TIME
-    now = _time.time()
-    if now - _DEMO_LAST_TIME < _DEMO_MIN_INTERVAL:
-        return JSONResponse(
-            status_code=429,
-            content={
-                "detail": f"Rate limited. Try again in {int(_DEMO_MIN_INTERVAL - (now - _DEMO_LAST_TIME))}s."
-            },
-        )
-    _DEMO_LAST_TIME = now
 
     body = await request.json()
     mode = body.get("mode", "scenario")
@@ -728,29 +714,12 @@ async def generate_demo_findings(request: Request):
     return await ingest_vulnerability_batch(requests_list)
 
 
-_CLEAR_LAST_TIME: float = 0.0
-_CLEAR_MIN_INTERVAL: float = 30.0
-
-
 @router.post("/api/ingest/clear")
 async def clear_all_findings():
     """Archive all current findings and clear the queue (DEMO_MODE only)."""
     gate = _demo_only()
     if gate:
         return gate
-
-    import time as _time
-
-    global _CLEAR_LAST_TIME
-    now = _time.time()
-    if now - _CLEAR_LAST_TIME < _CLEAR_MIN_INTERVAL:
-        return JSONResponse(
-            status_code=429,
-            content={
-                "detail": f"Rate limited. Try again in {int(_CLEAR_MIN_INTERVAL - (now - _CLEAR_LAST_TIME))}s."
-            },
-        )
-    _CLEAR_LAST_TIME = now
 
     conn = get_db()
 
@@ -771,6 +740,7 @@ async def clear_all_findings():
                 cvss_contribution, epss_contribution,
                 asset_criticality_contribution, exposure_contribution,
                 patch_remediation_contribution, ml_exploitation_contribution,
+                tier_1_features,
                 epss_substituted, epss_substituted_value,
                 epss_substitution_confidence, epss_substitution_reason,
                 data_classification, network_zone, interface_type,
@@ -798,6 +768,7 @@ async def clear_all_findings():
                    cvss_contribution, epss_contribution,
                    asset_criticality_contribution, exposure_contribution,
                    patch_remediation_contribution, ml_exploitation_contribution,
+                   tier_1_features,
                    epss_substituted, epss_substituted_value,
                    epss_substitution_confidence, epss_substitution_reason,
                    data_classification, network_zone, interface_type,

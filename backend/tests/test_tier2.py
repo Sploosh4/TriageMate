@@ -204,11 +204,14 @@ class TestCallOpenAI:
             }
         )
 
-        result = await call_openai("sys", "user", "sk-test", "gpt-4o-mini")
+        result, usage = await call_openai("sys", "user", "sk-test", "gpt-4o-mini")
 
         assert result["text_conflict"] is False
         assert result["confidence"] == 0.85
         assert result["rag_result"] == "NOT_NEEDED"
+        assert usage["tokens_in"] == 150
+        assert usage["tokens_out"] == 50
+        assert usage["cost_usd"] > 0.0
         client.post.assert_called_once()
 
     @patch("httpx.AsyncClient")
@@ -264,9 +267,10 @@ class TestCallOpenAI:
 
         client.post.side_effect = [error_resp, success_resp]
 
-        result = await call_openai("sys", "user", "sk-test", "gpt-4o-mini")
+        result, usage = await call_openai("sys", "user", "sk-test", "gpt-4o-mini")
 
         assert result["text_conflict"] is False
+        assert usage["tokens_in"] == 150
         assert client.post.call_count == 2
 
     @patch("httpx.AsyncClient")
@@ -299,9 +303,10 @@ class TestCallOpenAI:
         # Two failures, then success
         client.post.side_effect = [_make_500(), _make_500(), success_resp]
 
-        result = await call_openai("sys", "user", "sk-test", "gpt-4o-mini")
+        result, usage = await call_openai("sys", "user", "sk-test", "gpt-4o-mini")
 
         assert result["text_conflict"] is False
+        assert usage["tokens_in"] == 150
         assert client.post.call_count == 3
 
     @patch("httpx.AsyncClient")
@@ -353,12 +358,14 @@ class TestCallAnthropic:
 
         mock_client.messages.parse.return_value = mock_parsed
 
-        result = await call_anthropic(
+        result, usage = await call_anthropic(
             "sys", "user", "sk-ant-api03-test", "claude-haiku-4-5"
         )
 
         assert result["text_conflict"] is False
         assert result["confidence"] == 0.85
+        assert usage["tokens_in"] == 150
+        assert usage["tokens_out"] == 50
         mock_client.messages.parse.assert_called_once()
 
     @patch("anthropic.AsyncAnthropic")
@@ -408,11 +415,13 @@ class TestCallAnthropic:
 
         mock_client.messages.parse.side_effect = [rate_limit_err, mock_parsed]
 
-        result = await call_anthropic(
+        result, usage = await call_anthropic(
             "sys", "user", "sk-ant-api03-test", "claude-haiku-4-5"
         )
 
         assert result["text_conflict"] is False
+        assert usage["tokens_in"] == 100
+        assert usage["tokens_out"] == 30
         assert mock_client.messages.parse.call_count == 2
 
 
@@ -439,12 +448,14 @@ class TestCallTogether:
             }
         )
 
-        result = await call_together(
+        result, usage = await call_together(
             "sys", "user", "sk-together-test", "meta-llama/Llama-3.3-70B-Instruct-Turbo"
         )
 
         assert result["text_conflict"] is False
         assert result["confidence"] == 0.85
+        assert usage["tokens_in"] == 150
+        assert usage["tokens_out"] == 50
 
     @patch("pipeline.tier_2._together_supports_json_schema")
     @patch("httpx.AsyncClient")
@@ -462,11 +473,12 @@ class TestCallTogether:
             }
         )
 
-        result = await call_together(
+        result, usage = await call_together(
             "sys", "user", "sk-together-test", "some-unknown-model"
         )
 
         assert result["text_conflict"] is False
+        assert usage["tokens_in"] == 150
         mock_schema_check.assert_called_once_with("some-unknown-model")
 
         # Verify that response_format was NOT in the request body
@@ -520,6 +532,8 @@ class TestEvaluateTier2:
         },
     )
 
+    _MOCK_USAGE_RETURN = {"tokens_in": 100, "tokens_out": 50, "cost_usd": 0.0001}
+
     @patch("pipeline.tier_2.call_openai", new_callable=AsyncMock)
     @patch("pipeline.tier_2.call_anthropic", new_callable=AsyncMock)
     @patch("pipeline.tier_2.call_together", new_callable=AsyncMock)
@@ -529,7 +543,10 @@ class TestEvaluateTier2:
         """Primary (openai) succeeds → returns result, backup never called."""
         from pipeline.tier_2 import evaluate_tier_2
 
-        mock_openai.return_value = dict(MOCK_TIER_2_RESULT)
+        mock_openai.return_value = (
+            dict(MOCK_TIER_2_RESULT),
+            dict(self._MOCK_USAGE_RETURN),
+        )
 
         result = await evaluate_tier_2(**self._COMMON_ARGS)
 

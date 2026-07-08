@@ -54,7 +54,7 @@ def _load_cve_data():
         if cvss is None:
             continue
         epss_entry = epss_data.get(cve_id, {})
-        epss_val = epss_entry["epss"] if isinstance(epss_entry, dict) else 0.0
+        epss_val = epss_entry.get("epss", 0.0) if isinstance(epss_entry, dict) else 0.0
         is_kev = cve_id in kev_data
 
         if is_kev:
@@ -208,9 +208,9 @@ def on_locust_init(environment, **kwargs):
     _DB_PATH = _get_db_path(_RUN_ID)
     create_db(_DB_PATH)
     config = {
-        "workers": environment.parsed_options
-        and environment.parsed_options.num_workers
-        or 1,
+        "workers": getattr(environment.parsed_options, "processes", 1)
+        if environment.parsed_options
+        else 1,
         "host": environment.host or "",
     }
     insert_run(_DB_PATH, _RUN_ID, config)

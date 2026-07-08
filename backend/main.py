@@ -108,6 +108,9 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="TriageMate API", version="2.5.0", lifespan=lifespan)
 app.state.cwe_available = False  # Standalone CWE ML classifier deprecated — ingest_cwe.py (NVD API + regex) is the active implementation
 
+# TODO(cloud-deploy): restrict allow_origins to known frontend domains
+# and set allow_credentials=True when moving off localhost.
+# Tracked in ROADMAP.md § Sprint NEXT+ Item 7.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

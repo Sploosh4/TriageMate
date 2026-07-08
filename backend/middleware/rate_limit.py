@@ -30,8 +30,8 @@ ingest_bucket = TokenBucket(
     burst_size=int(os.getenv("INGEST_BURST_SIZE", "50")),
 )
 demo_bucket = TokenBucket(
-    rate_per_minute=int(os.getenv("DEMO_RATE_PER_MIN", "10")),
-    burst_size=int(os.getenv("DEMO_BURST_SIZE", "15")),
+    rate_per_minute=int(os.getenv("DEMO_RATE_PER_MIN", "30")),
+    burst_size=int(os.getenv("DEMO_BURST_SIZE", "1")),
 )
 clear_bucket = TokenBucket(
     rate_per_minute=int(os.getenv("CLEAR_RATE_PER_MIN", "2")),

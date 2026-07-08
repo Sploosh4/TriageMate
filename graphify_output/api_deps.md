@@ -137,15 +137,6 @@
 - `os`  (import)
 - `time`  (import)
 
-## backend/integrations/llm.py
-
-**Stdlib**
-
-- `logging`  (import)
-- `os`  (import)
-- `time`  (import)
-- `typing`  (from(Any), from(Dict), from(Optional))
-
 ## backend/integrations/metasploit.py
 
 **Project**
@@ -305,6 +296,39 @@
 - `pathlib`  (from(Path))
 - `random`  (import)
 
+## backend/ml/generate_synthetic_data_v2.py
+
+**Project**
+
+- `database`  (from(get_db))
+
+**Stdlib**
+
+- `collections`  (from(Counter))
+- `datetime`  (from(datetime))
+- `json`  (import)
+- `logging`  (import)
+- `pathlib`  (from(Path))
+- `random`  (import)
+
+## backend/ml/generate_synthetic_findings.py
+
+**Project**
+
+- `database`  (from(get_db), from(init_db))
+
+**External**
+
+- `numpy`  (import)
+
+**Stdlib**
+
+- `json`  (import)
+- `logging`  (import)
+- `os`  (import)
+- `random`  (import)
+- `sys`  (import)
+
 ## backend/ml/ingest_docs.py
 
 **Project**
@@ -370,10 +394,31 @@
 - `os`  (import)
 - `sys`  (import)
 
+## backend/ml/train_epss_v4.py
+
+**Project**
+
+- `database`  (from(get_db), from(init_db))
+
+**External**
+
+- `joblib`  (import)
+- `numpy`  (import)
+- `sklearn.metrics`  (from(mean_squared_error), from(r2_score))
+- `sklearn.model_selection`  (from(train_test_split))
+- `xgboost`  (from(XGBRegressor))
+
+**Stdlib**
+
+- `logging`  (import)
+- `os`  (import)
+- `sys`  (import)
+
 ## backend/ml/train_pre_tier.py
 
 **Project**
 
+- `database`  (from(get_db))
 - `ml.pretier_features`  (from(AGENCIES), from(extract_features), from(feature_vector_to_array), from(get_feature_count), from(get_feature_names))
 
 **External**
@@ -387,7 +432,9 @@
 
 **Stdlib**
 
+- `argparse`  (import)
 - `collections`  (from(Counter))
+- `datetime`  (from(datetime), from(timezone))
 - `json`  (import)
 - `logging`  (import)
 - `pathlib`  (from(Path))
@@ -457,7 +504,7 @@
 
 **External**
 
-- `pydantic`  (from(BaseModel))
+- `pydantic`  (from(BaseModel), from(Field))
 
 **Stdlib**
 
@@ -558,7 +605,7 @@
 - `audit`  (from(select_for_audit), from(should_audit))
 - `database`  (from(get_db))
 - `ingest_cwe`  (from(get_cwe))
-- `ingest_helpers`  (from(build_feature_vector), from(get_asset_context), from(is_internet_facing), from(lookup_data_classification), from(query_rag))
+- `ingest_helpers`  (from(build_feature_vector), from(get_asset_context), from(is_internet_facing), from(lookup_data_classification), from(query_rag), from(serialize_tabular_features))
 - `integrations.advisories`  (from(get_advisory))
 - `integrations.cmdb`  (from(validate_wa_gov_hostname))
 - `integrations.demo_generator`  (from(generate_random_wave), from(generate_scenario_findings), from(get_scenarios_list), from(inject_enrichment))
@@ -604,8 +651,9 @@
 
 **Project**
 
+- `analysis.drift`  (from(compute_drift))
 - `database`  (from(get_db))
-- `models`  (from(DriftMetricsResponse), from(MetricsResponse), from(QueueResponse), from(QueueRow))
+- `models`  (from(DriftMetricsResponse), from(MetricsResponse), from(MlDriftFeature), from(MlDriftResponse), from(QueueResponse), from(QueueRow))
 
 **External**
 
@@ -614,6 +662,9 @@
 **Stdlib**
 
 - `datetime`  (from(datetime), from(timedelta), from(timezone))
+- `json`  (import)
+- `pathlib`  (from(Path))
+- `sqlite3`  (import)
 
 ## backend/scheduler.py
 

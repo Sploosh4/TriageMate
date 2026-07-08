@@ -72,9 +72,9 @@
 ---
 
 ### cloud-llm-engineering
-> Tier 2 cloud LLM integration, API call architecture, prompt engineering, retry/backoff, multi-provider failover. Use when editing pipeline/tier_2.py, integrations/llm.py, or working on LLM-related pipeline logic.
+> Tier 2 cloud LLM integration, API call architecture, prompt engineering, retry/backoff, multi-provider failover. Use when editing pipeline/tier_2.py, or working on LLM-related pipeline logic.
 
-**Why:** Narrow trigger — "Tier 2," "LLM," "retry/backoff," "multi-provider" are unique keywords that won't collide with other skills. File paths (tier_2.py, llm.py) give concrete matches. Small surface area means this skill only loads on LLM work.
+**Why:** Narrow trigger — "Tier 2," "LLM," "retry/backoff," "multi-provider" are unique keywords that won't collide with other skills. File path (tier_2.py) gives concrete match. Small surface area means this skill only loads on LLM work. Note: `integrations/llm.py` was removed in Sprint 15.5 hygiene cleanup — all logic consolidated into `pipeline/tier_2.py`.
 
 ---
 

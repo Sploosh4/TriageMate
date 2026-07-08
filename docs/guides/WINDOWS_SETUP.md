@@ -33,16 +33,16 @@ Or extract the ZIP archive and `cd` into the extracted folder.
 ### 2. Create a virtual environment
 
 ```batch
-python -m venv venv
+python -m venv .venv
 ```
 
 ### 3. Activate the virtual environment
 
 ```batch
-venv\Scripts\activate
+.venv\Scripts\activate
 ```
 
-You should see `(venv)` in the prompt.
+You should see `(.venv)` in the prompt.
 
 ### 4. Install dependencies
 
@@ -107,7 +107,7 @@ Open your browser to **http://localhost:8000**
 | Permission errors | Run Command Prompt **as Administrator** |
 | Port 8000 in use | Add `--port 8001` to the uvicorn command and use `http://localhost:8001` |
 | SentenceTransformer download fails | Retry — the HuggingFace CDN is reliable. Ensure internet is connected. |
-| `uvicorn` not found | Ensure `venv\Scripts\activate` ran successfully, then `pip install uvicorn` |
+| `uvicorn` not found | Ensure `.venv\Scripts\activate` ran successfully, then `pip install uvicorn` |
 
 ## Docker on Windows
 

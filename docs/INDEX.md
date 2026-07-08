@@ -30,7 +30,7 @@
 
 | File | Status | Description |
 |---|---|---|
-| `planning/ROADMAP.md` | CURRENT | Master roadmap + sprint history + next actions. All sprints tracked (14 completed). §Sprint 14 covers synthetic data infrastructure: `synthetic_assets` (1,827 rows), `synthetic_findings` (777 rows), `research_references` (97 refs), Pre-Tier model retrain, EPSS v4 sector-aware model, system name embedding, and `just retrain-all` automation. |
+| `planning/ROADMAP.md` | CURRENT | Master roadmap + sprint history + next actions. All sprints tracked (15 completed: Sprints 1–15.5). §Sprint 14 covers synthetic data infrastructure: `synthetic_assets` (1,827 rows), `synthetic_findings` (777 rows), `research_references` (97 refs), Pre-Tier model retrain, EPSS v4 sector-aware model, system name embedding, and `just retrain-all` automation. |
 | `planning/HANDOFF-2026-07-08.md` | CURRENT | Handoff document covering ML drift monitoring, Tier 2 LLM query coverage, network topology/Sentinel status, and stress testing status. Answers what was deferred post-MVP. |
 | `planning/ai-doc-strategy-2026-07-07.md` | CURRENT | This consolidation plan — how and why docs were restructured. |
 | `planning/file-consolidation-plan-2026-07-07.md` | ARCHIVED | Bookkeeper's consolidation proposals — superseded by current doc structure. See `docs/INDEX.md`. |
@@ -121,8 +121,8 @@ These files are regenerated on demand with `just graphify`. They are always curr
 
 | File | Description |
 |---|---|
-| `graphify_output/file_tree.md` | Complete annotated directory tree (255+ entries) |
-| `graphify_output/api_deps.md` | Python import dependency map (371 dependencies) |
+| `graphify_output/file_tree.md` | Complete annotated directory tree (299 entries, auto-generated) |
+| `graphify_output/api_deps.md` | Python import dependency map (421 dependencies, auto-generated) |
 | `graphify_output/ml_inventory.md` | Canonical ML model and script inventory |
 | `graphify_output/knowledge_graph.json` | Structured CVE↔hostname↔CWE knowledge graph |
 | `graphify_output/feature_parity.md` | Tabular feature parity check (inference vs training vs inventory) |

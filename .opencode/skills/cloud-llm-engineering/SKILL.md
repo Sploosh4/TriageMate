@@ -1,6 +1,6 @@
 ---
 name: cloud-llm-engineering
-description: Tier 2 cloud LLM integration, API call architecture, prompt engineering, retry/backoff, multi-provider failover. Use when editing pipeline/tier_2.py, integrations/llm.py, or working on LLM-related pipeline logic.
+description: Tier 2 cloud LLM integration, API call architecture, prompt engineering, retry/backoff, multi-provider failover. Use when editing pipeline/tier_2.py, or working on LLM-related pipeline logic.
 ---
 
 # TriageMate Cloud LLM Engineering
@@ -21,8 +21,7 @@ Primary → Backup → KNOWN_CONFLICTS fallback → neutral default
 Step A → Step B → Step C → structured JSON output
 
 ## Key Files
-- `backend/pipeline/tier_2.py` — cloud LLM call, force-reflection prompt, fallback chain
-- `backend/integrations/llm.py` — provider abstraction, API key management, retry logic
+- `backend/pipeline/tier_2.py` — cloud LLM call, force-reflection prompt, fallback chain, provider abstraction, retry logic
 - `backend/integrations/nvd.py` — NVD API lookups (used alongside LLM for CWE context)
 
 ## Cost Targets

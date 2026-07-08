@@ -26,6 +26,8 @@
 | **Sprint 12** | **Gap Hardening** | ✅ Complete |
 | **Sprint 13** | **EPSS Data Pipeline + Documentation** | ✅ Complete |
 | **Sprint 14** | **Research & Synthetic Data** | ✅ Complete (2026-07-08) |
+| **Sprint 15** | **Production Confidence** | ✅ Complete (2026-07-08) |
+| **Sprint 15.5** | **Hygiene Cleanup** | ✅ Complete (2026-07-08) |
 
 ---
 
@@ -147,7 +149,7 @@
 | Threshold info (`threshold_info.json`) | ✅ Done — Classification threshold and F1 score exported during retrain 2026-07-08 |
 | Drift dashboard (`GET /api/drift`) | ✅ Done — CSS-only charts, 30-day trend, tier routing, risk bands |
 | Review queue (4 endpoints) | ✅ Done (implemented, tests pending — see Sprint NEXT+ Wave 1) — flag, review, history, queue listing |
-| Alembic migrations (001–005) | ✅ Done — versioned schema, no ad-hoc helpers |
+| Alembic migrations (001–007) | ✅ Done — versioned schema, no ad-hoc helpers |
 | LanceDB vector store | ✅ Done — 9 demo docs, FTS index |
 | Model version registry (`model_registry.json`) | ✅ Done — Sprint 11 | 3 versions tracked; `GET /api/model/versions`, `POST /api/model/activate`, `GET /api/model/status` |
 | CWE classifier | 🐛 Deprecated — replaced by NVD API + regex |
@@ -189,7 +191,7 @@ All Sprint NEXT items are complete. Item 1 (XGBoost retrain) was **completed 202
 | 5 | Retrain EPSS substitution model | ✅ Done — v3 & v4 operational | v3 model operational with real FIRST.org EPSS baselines (344K CVEs). v4 sector-aware model trained on 777 synthetic_findings rows. |
 | 6 | Tier 3 Human Review queue | ✅ Done | 4 endpoints, alembic 004 migration, frontend review panel |
 | 7 | Cloud deploy + HTTPS | 📋 Todo | Move from localhost to real deployment |
-| 8 | Alembic database migrations | ✅ Done | 5 versioned migrations, ad-hoc helpers removed, wired into startup |
+| 8 | Alembic database migrations | ✅ Done | 7 versioned migrations, ad-hoc helpers removed, wired into startup |
 
 ### Done (previously deferred — now complete)
 
@@ -296,10 +298,82 @@ Planned after model retraining completes. Focus: test coverage, operational guar
 
 ---
 
+## Sprint 15 — Production Confidence (8 July 2026)
+
+> Tier 2 unit test suite, ML drift foundation (XGBoost), stress testing infrastructure, and Docker hardening.
+
+### Tier 2 Unit Test Suite
+
+| Item | Status | Details |
+|------|--------|---------|
+| `test_tier2.py` | ✅ Done | ~15 tests: `build_prompt()`, `call_openai()` (success, 429, 5xx, timeout, invalid JSON), `call_anthropic()` (success, refusal, rate limit), `call_together()` (markdown fence stripping), `evaluate_tier_2()` orchestration, `KNOWN_CONFLICTS` fallback, `_record_api_call()` cost tracking |
+| `just verify-tier2` | ✅ Done | Coverage ≥ 70% on `pipeline/tier_2.py` |
+
+### ML Drift Foundation (XGBoost)
+
+| Item | Status | Details |
+|------|--------|---------|
+| Alembic migration 006 | ✅ Done | `tier_1_features TEXT` column to `vulnerabilities` |
+| `backend/analysis/drift.py` | ✅ Done | `compute_psi()` standard 10-bin equal-width PSI formula |
+| `backend/ml/reference_distributions.json` | ✅ Done | Per-feature bin boundaries from `training_data_v2.npz` |
+| `GET /api/drift/ml` | ✅ Done | PSI per feature + composite, status thresholds: stable (<0.1), warning (≥0.1), critical (≥0.25) |
+| `test_drift_ml.py` | ✅ Done | PSI computation, endpoint shape, fuzzed round-trip |
+
+### Stress Testing + Visibility
+
+| Item | Status | Details |
+|------|--------|---------|
+| Pipeline timing | ✅ Done | `time.monotonic()` per tier, trace dict in ingest |
+| Verbose response mode | ✅ Done | `X-TriageMate-Verbose: true` header triggers `_trace` field |
+| Test DB + Locust client | ✅ Done | `backend/analysis/stress_db.py`, `backend/tests/load/locustfile.py` |
+| Stress report generator | ✅ Done | `backend/scripts/stress_report.py` — 7-section report |
+| Docker hardening | ✅ Done | `WEB_CONCURRENCY` env var, `mem_limit: 512m`, `cpus: 1.0` |
+| `just stress-test` | ✅ Done | Orchestration: start stack → wait → locust → analysis → report |
+| `just stress-test-no-llm` | ✅ Done | Same without LLM cost |
+
+---
+
+## Sprint 15.5 — Hygiene Cleanup (8 July 2026)
+
+> Repository hygiene, dead code removal, code fixes, and documentation sync.
+
+### Phase A — Tracked Junk Removal
+
+| Item | Status | Details |
+|------|--------|---------|
+| Delete tracked junk | ✅ Done | `=1.13.0`, `Opencode Error Logs/`, `temp_opencode_config/`, `Training Outcome Temp.txt`, `backend/triagemate.db.pre_retrain` |
+| Delete untracked junk | ✅ Done | `backend/=2.31.0`, `backend/.coverage`, `backend/ml/xgboost_model_old.pkl`, `backend/ml/xgboost_model_pre_retrain.pkl`, `backend/ml/training_data_v2_pre_clean.npz` |
+| `.gitignore` strengthened | ✅ Done | Added patterns for scratch files, ML snapshots, DB snapshots, coverage |
+| Consolidate to `.venv` | ✅ Done | Removed legacy `backend/venv/`, all references now use `.venv/` |
+
+### Phase B — Dead Code Removal
+
+| Item | Status | Details |
+|------|--------|---------|
+| Remove `integrations/llm.py` | ✅ Done | Superseded by `pipeline/tier_2.py`. No imports found. `just lint && just test` — zero failures. |
+
+### Phase C — Code Fixes
+
+| Item | Status | Details |
+|------|--------|---------|
+| Scoring docstring + patch logic | ✅ Done | Weights sum clarification (107 clamped to 100), patch availability intent clarified |
+| Drift endpoint reads `resolved_vulnerabilities` | ✅ Done | Alembic migration 007 added `tier_1_features` to `resolved_vulnerabilities`, archive INSERT updated, drift UNIONs both tables |
+| Rate-limit consolidation | ✅ Done | Removed duplicate globals from `ingest.py`, demo bucket tightened to 30/min |
+| Real LLM cost in verbose trace | ✅ Done | `evaluate_tier_2()` returns tuple with cost delta; ingest trace uses real values |
+| CORS TODO comment | ✅ Done | Flagged wildcard origin as cloud-deploy deferral |
+
+### Phase D — Documentation Sync (this report)
+
+| Item | Status | Details |
+|------|--------|---------|
+| Bookkeeper freshness pass | ✅ Done | See `backend/reports/bookkeeping/2026-07-08-hygiene-freshness.md` |
+
+---
+
 ## Quick Start
 
 ```bash
-cd backend && source venv/bin/activate
+cd backend && source .venv/bin/activate
 uvicorn main:app --reload --host 0.0.0.0
 # Open http://localhost:8000
 ```
