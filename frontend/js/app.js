@@ -1,5 +1,5 @@
 // app.js — Application state and initialization
-var appState = {
+const appState = {
   screen: 'queue',
   currentRowId: null,
   filter: 'All Tiers',
@@ -11,16 +11,16 @@ var appState = {
 };
 
 function navigateToScreen(screen) {
-  var screens = ['screen-queue', 'screen-case', 'screen-review', 'screen-drift'];
+  const screens = ['screen-queue', 'screen-case', 'screen-review', 'screen-drift'];
   screens.forEach(function(id) {
-    var el = document.getElementById(id);
+    const el = document.getElementById(id);
     if (el) {
       el.classList.remove('active');
       el.classList.add('hidden');
     }
   });
 
-  var target = document.getElementById('screen-' + screen);
+  const target = document.getElementById('screen-' + screen);
   if (target) {
     target.classList.remove('hidden');
     target.classList.add('active');
@@ -52,7 +52,7 @@ async function init() {
     .then(function(r) { return r.json(); })
     .then(function(health) {
       if (health.demo_mode) {
-        var wm = document.getElementById('demo-watermark');
+        const wm = document.getElementById('demo-watermark');
         if (wm) wm.style.display = 'block';
         document.body.classList.add('demo-active');
       }
@@ -61,11 +61,11 @@ async function init() {
 
   // Auth is disabled or user is authenticated — proceed normally
   try {
-    var results = await Promise.all([
+    const results = await Promise.all([
       fetchQueue(),
       fetchMetrics()
     ]);
-    var queueResponse = results[0];
+    const queueResponse = results[0];
     appState.queueData = queueResponse.rows;
 
     renderQueue(appState.queueData, appState.filter, appState.activeMetricFilter, appState.searchQuery);
@@ -81,7 +81,7 @@ async function init() {
 
 async function showCase(rowId) {
   try {
-    var caseData = await fetchCase(rowId);
+    const caseData = await fetchCase(rowId);
     appState.currentCaseData = caseData;
     appState.currentRowId = rowId;
     renderCase(caseData);
@@ -100,7 +100,7 @@ function showQueue() {
 
 function wireEventListeners() {
   // Search input
-  var searchInput = document.getElementById('queue-search');
+  const searchInput = document.getElementById('queue-search');
   searchInput.addEventListener('input', function(e) {
     appState.searchQuery = e.target.value;
     renderQueue(appState.queueData, appState.filter, appState.activeMetricFilter, appState.searchQuery);
@@ -118,9 +118,9 @@ function wireEventListeners() {
 
   // Column sort
   document.querySelector('#queue-table thead').addEventListener('click', function(e) {
-    var th = e.target.closest('th.sortable');
+    const th = e.target.closest('th.sortable');
     if (!th) return;
-    var column = th.dataset.sort;
+    const column = th.dataset.sort;
     if (sortState.column === column) {
       sortState.direction = sortState.direction === 'asc' ? 'desc' : 'asc';
     } else {
@@ -132,19 +132,19 @@ function wireEventListeners() {
 
   // Queue row clicks (event delegation)
   document.getElementById('queue-body').addEventListener('click', function(e) {
-    var tr = e.target.closest('tr[data-row-id]');
+    const tr = e.target.closest('tr[data-row-id]');
     if (tr) {
-      var rowId = parseInt(tr.dataset.rowId, 10);
+      const rowId = parseInt(tr.dataset.rowId, 10);
       showCase(rowId);
     }
   });
 
   document.getElementById('queue-body').addEventListener('keydown', function(e) {
     if (e.key === 'Enter' || e.key === ' ') {
-      var tr = e.target.closest('tr[data-row-id]');
+      const tr = e.target.closest('tr[data-row-id]');
       if (tr) {
         e.preventDefault();
-        var rowId = parseInt(tr.dataset.rowId, 10);
+        const rowId = parseInt(tr.dataset.rowId, 10);
         showCase(rowId);
       }
     }
@@ -157,13 +157,13 @@ function wireEventListeners() {
 
   // Accordion delegation
   document.getElementById('accordion-container').addEventListener('click', function(e) {
-    var header = e.target.closest('.accordion-header');
+    const header = e.target.closest('.accordion-header');
     if (!header) return;
-    var accordion = header.closest('.accordion');
+    const accordion = header.closest('.accordion');
     if (!accordion) return;
-    var id = accordion.dataset.accordionId;
+    const id = accordion.dataset.accordionId;
 
-    var allAccordions = document.querySelectorAll('.accordion');
+    const allAccordions = document.querySelectorAll('.accordion');
     allAccordions.forEach(function(a) {
       if (a.dataset.accordionId === id) {
         a.classList.toggle('open');
@@ -175,9 +175,9 @@ function wireEventListeners() {
 
   // Metric boxes click
   document.getElementById('metric-boxes-row').addEventListener('click', function(e) {
-    var box = e.target.closest('.metric-box');
+    const box = e.target.closest('.metric-box');
     if (!box) return;
-    var metric = box.dataset.metric;
+    const metric = box.dataset.metric;
     if (appState.activeMetricFilter === metric) {
       appState.activeMetricFilter = null;
       box.classList.remove('active-filter');
@@ -192,7 +192,7 @@ function wireEventListeners() {
   // Metric boxes keyboard
   document.getElementById('metric-boxes-row').addEventListener('keydown', function(e) {
     if (e.key === 'Enter' || e.key === ' ') {
-      var box = e.target.closest('.metric-box');
+      const box = e.target.closest('.metric-box');
       if (!box) return;
       e.preventDefault();
       box.click();
@@ -201,12 +201,12 @@ function wireEventListeners() {
 
   // Notes save
   document.getElementById('notes-save-btn').addEventListener('click', async function() {
-    var btn = document.getElementById('notes-save-btn');
-    var status = document.getElementById('notes-save-status');
+    const btn = document.getElementById('notes-save-btn');
+    const status = document.getElementById('notes-save-status');
     btn.disabled = true;
     status.textContent = 'Saving...';
     try {
-      var notes = document.getElementById('notes-textarea').value;
+      const notes = document.getElementById('notes-textarea').value;
       await saveNotes(appState.currentRowId, notes);
       status.textContent = '\u2713 Saved';
       setTimeout(function() { status.textContent = ''; }, 3000);
@@ -234,7 +234,7 @@ function wireEventListeners() {
   });
 
   // Review tab
-  var reviewTab = document.getElementById('review-tab-btn');
+  const reviewTab = document.getElementById('review-tab-btn');
   if (reviewTab) {
     reviewTab.addEventListener('click', function() {
       navigateToScreen('review');
@@ -242,7 +242,7 @@ function wireEventListeners() {
   }
 
   // Drift tab
-  var driftTab = document.getElementById('drift-tab-btn');
+  const driftTab = document.getElementById('drift-tab-btn');
   if (driftTab) {
     driftTab.addEventListener('click', function() {
       navigateToScreen('drift');
@@ -250,7 +250,7 @@ function wireEventListeners() {
   }
 
   // Review back button
-  var reviewBack = document.getElementById('review-back-btn');
+  const reviewBack = document.getElementById('review-back-btn');
   if (reviewBack) {
     reviewBack.addEventListener('click', function() {
       showQueue();
@@ -258,7 +258,7 @@ function wireEventListeners() {
   }
 
   // Drift back button
-  var driftBack = document.getElementById('drift-back-btn');
+  const driftBack = document.getElementById('drift-back-btn');
   if (driftBack) {
     driftBack.addEventListener('click', function() {
       showQueue();

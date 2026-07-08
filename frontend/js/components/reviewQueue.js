@@ -1,5 +1,5 @@
 // reviewQueue.js — Tier 3 Human Review Queue
-var reviewState = {
+const reviewState = {
   rows: [],
   expandedId: null,
   caseData: null,
@@ -14,7 +14,7 @@ function getRiskColour(score) {
 }
 
 function escHtml(str) {
-  var div = document.createElement('div');
+  const div = document.createElement('div');
   div.textContent = str;
   return div.innerHTML;
 }
@@ -27,8 +27,8 @@ function getTierBadgeClass(tier) {
 
 async function initReviewQueue() {
   try {
-    var res = await _authFetch('/api/review/queue');
-    var data = await res.json();
+    const res = await _authFetch('/api/review/queue');
+    const data = await res.json();
     reviewState.rows = data.rows || [];
   } catch (err) {
     console.error('Failed to load review queue:', err);
@@ -40,7 +40,7 @@ async function initReviewQueue() {
 }
 
 function renderReviewQueue() {
-  var container = document.getElementById('review-queue-container');
+  const container = document.getElementById('review-queue-container');
   if (!container) return;
 
   if (reviewState.rows.length === 0) {
@@ -48,7 +48,7 @@ function renderReviewQueue() {
     return;
   }
 
-  var html = '<table id="review-table"><thead><tr>' +
+  let html = '<table id="review-table"><thead><tr>' +
     '<th>Vulnerability ID</th>' +
     '<th>Hostname</th>' +
     '<th>Score</th>' +
@@ -59,10 +59,10 @@ function renderReviewQueue() {
     '</tr></thead><tbody>';
 
   reviewState.rows.forEach(function(r) {
-    var colour = getRiskColour(r.priorityScore);
-    var isExpanded = reviewState.expandedId === r.id;
-    var reviewStatus = r.reviewStatus || 'Pending';
-    var conflictBadge = r.tier2TextConflict
+    const colour = getRiskColour(r.priorityScore);
+    const isExpanded = reviewState.expandedId === r.id;
+    const reviewStatus = r.reviewStatus || 'Pending';
+    const conflictBadge = r.tier2TextConflict
       ? '<span class="review-conflict-badge">Conflict</span>'
       : '<span class="review-no-conflict">None</span>';
 
@@ -95,9 +95,9 @@ function renderReviewQueue() {
 }
 
 function renderReviewDetail(caseResponse, reviewRow) {
-  var cv = caseResponse.caseView;
-  var qr = caseResponse.queueRow;
-  var html = '';
+  const cv = caseResponse.caseView;
+  const qr = caseResponse.queueRow;
+  let html = '';
 
   html += '<div class="review-panels">';
 
@@ -114,7 +114,7 @@ function renderReviewDetail(caseResponse, reviewRow) {
   html += '</div></div>';
 
   html += '<div class="review-panel review-panel-accordions">';
-  var accordions = [
+  const accordions = [
     { label: 'Scanner Output', content: '<pre class="code-block">' + escHtml(cv.scannerOutput) + '</pre>' },
     { label: 'Weakness Logic Template', content: '<pre class="code-block">' + escHtml(cv.weaknessTemplate) + '</pre>' },
     { label: 'Advisory Reference', content: '<div class="advisory-quote"><strong>' + escHtml(cv.advisoryRefId) + '</strong><br><br>' + escHtml(cv.advisoryQuote) + '</div>' }
@@ -171,7 +171,7 @@ function renderReviewDetail(caseResponse, reviewRow) {
 function wireReviewEvents() {
   document.querySelectorAll('.review-row').forEach(function(row) {
     row.addEventListener('click', function(e) {
-      var id = parseInt(row.dataset.reviewId, 10);
+      const id = parseInt(row.dataset.reviewId, 10);
       if (reviewState.expandedId === id) {
         reviewState.expandedId = null;
         reviewState.caseData = null;
@@ -186,14 +186,14 @@ function wireReviewEvents() {
     });
   });
 
-  var container = document.getElementById('review-queue-container');
+  const container = document.getElementById('review-queue-container');
   if (!container) return;
 
   container.addEventListener('click', function(e) {
-    var btn = e.target.closest('.review-btn');
+    const btn = e.target.closest('.review-btn');
     if (btn) {
-      var decision = btn.dataset.decision;
-      var fields = container.querySelector('.review-override-fields');
+      const decision = btn.dataset.decision;
+      const fields = container.querySelector('.review-override-fields');
       document.querySelectorAll('.review-btn').forEach(function(b) { b.classList.remove('selected'); });
       btn.classList.add('selected');
       if (fields) {
@@ -202,27 +202,27 @@ function wireReviewEvents() {
     }
   });
 
-  var slider = document.getElementById('override-score-slider');
+  const slider = document.getElementById('override-score-slider');
   if (slider) {
     slider.addEventListener('input', function() {
-      var val = document.getElementById('override-score-value');
+      const val = document.getElementById('override-score-value');
       if (val) val.textContent = slider.value;
     });
   }
 
-  var submitBtn = document.getElementById('review-submit-btn');
+  const submitBtn = document.getElementById('review-submit-btn');
   if (submitBtn) {
     submitBtn.addEventListener('click', submitReview);
   }
 }
 
 function wireReviewAccordionEvents() {
-  var container = document.getElementById('review-queue-container');
+  const container = document.getElementById('review-queue-container');
   if (!container) return;
   container.addEventListener('click', function(e) {
-    var header = e.target.closest('.review-accordion-header');
+    const header = e.target.closest('.review-accordion-header');
     if (!header) return;
-    var accordion = header.closest('.review-accordion');
+    const accordion = header.closest('.review-accordion');
     if (!accordion) return;
     accordion.classList.toggle('open');
   });
@@ -230,8 +230,8 @@ function wireReviewAccordionEvents() {
 
 async function loadReviewCaseDetail(caseId) {
   try {
-    var res = await _authFetch('/api/case/' + caseId);
-    var data = await res.json();
+    const res = await _authFetch('/api/case/' + caseId);
+    const data = await res.json();
     reviewState.caseData = data;
   } catch (err) {
     console.error('Failed to load case detail:', err);
@@ -245,27 +245,27 @@ async function loadReviewCaseDetail(caseId) {
 async function submitReview() {
   if (!reviewState.expandedId) return;
 
-  var selectedBtn = document.querySelector('.review-btn.selected');
+  const selectedBtn = document.querySelector('.review-btn.selected');
   if (!selectedBtn) {
     setReviewStatus('Please select confirm or override.', 'error');
     return;
   }
-  var analystName = document.getElementById('review-analyst-name');
+  const analystName = document.getElementById('review-analyst-name');
   if (!analystName || !analystName.value.trim()) {
     setReviewStatus('Please enter your name.', 'error');
     return;
   }
 
-  var decision = selectedBtn.dataset.decision;
-  var body = {
+  const decision = selectedBtn.dataset.decision;
+  const body = {
     analyst_decision: decision,
     notes: document.getElementById('review-notes') ? document.getElementById('review-notes').value : '',
     analyst_name: analystName.value.trim(),
   };
 
   if (decision === 'override') {
-    var slider = document.getElementById('override-score-slider');
-    var band = document.getElementById('override-band-select');
+    const slider = document.getElementById('override-score-slider');
+    const band = document.getElementById('override-band-select');
     body.override_score = slider ? parseInt(slider.value, 10) : null;
     body.override_band = band ? band.value : null;
   }
@@ -273,7 +273,7 @@ async function submitReview() {
   setReviewStatus('Submitting...', '');
 
   try {
-    var res = await _authFetch('/api/case/' + reviewState.expandedId + '/review', {
+    const res = await _authFetch('/api/case/' + reviewState.expandedId + '/review', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
@@ -292,7 +292,7 @@ async function submitReview() {
 }
 
 function setReviewStatus(msg, type) {
-  var el = document.getElementById('review-submit-status');
+  const el = document.getElementById('review-submit-status');
   if (!el) return;
   el.textContent = msg;
   el.className = 'review-submit-status';

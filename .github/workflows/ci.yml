@@ -27,16 +27,27 @@ jobs:
           pip install -r backend/requirements.txt
           pip install -r requirements-dev.txt
 
-      - name: Run tests
+      - name: Run tests with coverage
         run: |
           cd backend
-          python -m pytest tests/ -v
+          python -m pytest tests/ -v --cov=backend --cov-report=term-missing --cov-fail-under=60
 
       - name: Run ruff check
         run: ruff check backend/
 
       - name: Run ruff format check
         run: ruff format --check backend/
+
+  frontend-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Check JS syntax
+        run: node --check frontend/js/*.js && node --check frontend/js/components/*.js
 
   lint-only:
     runs-on: ubuntu-latest
@@ -45,3 +56,11 @@ jobs:
       - uses: astral-sh/ruff-action@v3
         with:
           args: "check backend/"
+
+  docker-build:
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/sprint-'))
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Docker image
+        run: docker build .
