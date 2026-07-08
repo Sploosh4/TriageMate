@@ -1,7 +1,7 @@
 # Synthetic Data Validation Report
 
 **Date:** 2026-07-08
-**Total rows checked:** 3442
+**Total rows checked:** 3665
 **Rows with failures:** 0
 **Checks passed:** 10/10
 **Checks failed:** 0/10
@@ -56,7 +56,7 @@
 
 **Status:** ✅ PASS
 
-**Detail:** Most common vector appears 26/3442 times (threshold: 344). Unique vectors: 2456.
+**Detail:** Most common vector appears 28/3665 times (threshold: 366). Unique vectors: 2618.
 
 ### 6. Hostname format
 
@@ -68,13 +68,13 @@
 
 **Status:** ✅ PASS
 
-**Detail:** Distribution — MP: {'Peripheral': 794, 'Core': 1655, 'Support': 993}, WI: {'Minimal': 1285, 'Moderate': 966, 'Severe': 1191}. Threshold (80%): 2754.
+**Detail:** Distribution — MP: {'Peripheral': 847, 'Core': 1784, 'Support': 1034}, WI: {'Minimal': 1351, 'Moderate': 1018, 'Severe': 1296}. Threshold (80%): 2932.
 
 ### 8. Research traceability
 
 **Status:** ✅ PASS
 
-**Detail:** Checked 3442 rows with references. Found 0 orphan references.
+**Detail:** Checked 3665 rows with references. Found 0 orphan references.
 
 ### 9. Confidence bounds
 
@@ -86,7 +86,7 @@
 
 **Status:** ✅ PASS
 
-**Detail:** Holdout: 660/3442 (19.2%). Target range: 15-25%.
+**Detail:** Holdout: 708/3665 (19.3%). Target range: 15-25%.
 
 
 ---
@@ -95,15 +95,15 @@
 
 | Dimension | Value | Count | % |
 |---|---|---:|--:|
-| mission_prevalence | Core | 1655 | 48.1% |
-| mission_prevalence | Peripheral | 794 | 23.1% |
-| mission_prevalence | Support | 993 | 28.8% |
-| mission_prevalence | **Total** | **3442** | |
+| mission_prevalence | Core | 1784 | 48.7% |
+| mission_prevalence | Peripheral | 847 | 23.1% |
+| mission_prevalence | Support | 1034 | 28.2% |
+| mission_prevalence | **Total** | **3665** | |
 
-| public_wellbeing_impact | Minimal | 1285 | 37.3% |
-| public_wellbeing_impact | Moderate | 966 | 28.1% |
-| public_wellbeing_impact | Severe | 1191 | 34.6% |
-| public_wellbeing_impact | **Total** | **3442** | |
+| public_wellbeing_impact | Minimal | 1351 | 36.9% |
+| public_wellbeing_impact | Moderate | 1018 | 27.8% |
+| public_wellbeing_impact | Severe | 1296 | 35.4% |
+| public_wellbeing_impact | **Total** | **3665** | |
 
 ---
 

@@ -12,6 +12,9 @@ backend/ml/*.pkl
 backend/ml/training_data.npz
 *.db
 *.db.backup
+*.db-shm
+*.db-wal
+*.db-journal
 .DS_Store
 .env
 # Environment file (secrets)

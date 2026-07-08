@@ -43,9 +43,10 @@ python -c "from ingest_helpers import build_feature_vector; print('ok')"
 ## Key Files
 - `backend/ingest_helpers.py` — `build_feature_vector()`, CWE lookups
 - `backend/pipeline/pre_tier.py` — `KNOWN_TAGS` dict, mission/impact tag assignment
+- `backend/ml/generate_synthetic_findings.py` — generates host-to-vulnerability mappings for EPSS v4 training
 - `backend/ml/train_xgboost.py` — XGBoost training pipeline
 - `backend/ml/train_pre_tier.py` — Pre-tier classifier training
-- `backend/ml/train_epss_v2.py`, `train_epss_v3.py` — EPSS model training
+- `backend/ml/train_epss_v2.py`, `train_epss_v3.py`, `train_epss_v4.py` — EPSS model training
 - `backend/ml/xgboost_predictor.py` — XGBoost inference
 - `backend/ml/epss_substitutor.py` — EPSS substitution engine
 - `backend/ml/encoder.py` — SentenceTransformer SBERT

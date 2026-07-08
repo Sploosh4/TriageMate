@@ -30,7 +30,7 @@
 
 | File | Status | Description |
 |---|---|---|
-| `planning/ROADMAP.md` | CURRENT | Master roadmap + sprint history + next actions. All sprints tracked (14 completed). §Sprint 14 covers synthetic data infrastructure: `synthetic_assets` (1,827 rows), `synthetic_findings` (11,400 rows), `research_references` (97 refs), and Pre-Tier model retrain. |
+| `planning/ROADMAP.md` | CURRENT | Master roadmap + sprint history + next actions. All sprints tracked (14 completed). §Sprint 14 covers synthetic data infrastructure: `synthetic_assets` (1,827 rows), `synthetic_findings` (777 rows), `research_references` (97 refs), Pre-Tier model retrain, EPSS v4 sector-aware model, system name embedding, and `just retrain-all` automation. |
 | `planning/ai-doc-strategy-2026-07-07.md` | CURRENT | This consolidation plan — how and why docs were restructured. |
 | `planning/file-consolidation-plan-2026-07-07.md` | ARCHIVED | Bookkeeper's consolidation proposals — superseded by current doc structure. See `docs/INDEX.md`. |
 
@@ -75,6 +75,7 @@
 | What's broken? | `reference/AI_PROBLEMS.md` (all issues resolved ✅) |
 | What ML models exist and how do they work? | `graphify_output/ml_inventory.md` (auto-generated) |
 | How do I train the model? | `planning/ROADMAP.md` §Sprint NEXT |
+| How do I retrain all ML models from scratch? | Use `just retrain-all` — see ROADMAP.md §Sprint 14 |
 | How do I set up on Windows? | `guides/WINDOWS_SETUP.md` |
 | What WA gov conventions apply? | `reference/hostname-standards.md` |
 | What data does the corpus contain? | `planning/ROADMAP.md` §Data Corpus |
@@ -87,13 +88,15 @@
 | How to load research references? | `backend/scripts/load_research_refs.py` — `python -m scripts.load_research_refs` |
 | What's in the WA gov infrastructure research? | `backend/reports/intel/wa-gov-infrastructure-research.md` |
 | What are the 3 new Sprint 14 DB tables? | `docs/planning/ROADMAP.md` §Sprint 14 or `docs/INDEX.md` §New Database Tables |
+| What is EPSS v4 and where does it fit? | Fallback model in Tier 1: v4 → v3 → v2 → v1 → heuristic rule engine. See ROADMAP.md §Sprint 14. |
+| What is system name embedding? | Feature index 59: `system_category` (ordinal 0-8) replaces binary `has_known_system` in Pre-Tier. See ROADMAP.md §Pre-Tier Model Retrain. |
 
 ## New Database Tables (Sprint 14)
 
 | Table | Rows | Purpose |
 |---|---|---|
 | `synthetic_assets` | 1,827 | Synthetic WA gov hostnames across 23 agencies — hostname, agency, environment, network zone, mission/wellbeing labels, blind holdout flag, research source refs |
-| `synthetic_findings` | 11,400 | Host-to-vulnerability mappings with realistic exploitation likelihoods; designed for EPSS v4 sector-aware training |
+| `synthetic_findings` | 777 | Host-to-vulnerability mappings with realistic exploitation likelihoods; used for EPSS v4 sector-aware training |
 | `research_references` | 97 | WA government ICT research references — agency inventories, software profiles, hostname conventions, methodology citations |
 
 ## New Scripts (Sprint 14)
@@ -101,7 +104,15 @@
 | Script | Command | Purpose |
 |---|---|---|
 | `backend/ml/generate_synthetic_data_v2.py` | `python -m ml.generate_synthetic_data_v2` | Generates 1,500–2,000 synthetic WA gov hostnames with probabilistic labels, blind holdout, and confidence scores; inserts into `synthetic_assets` |
+| `backend/ml/generate_synthetic_findings.py` | `python -m ml.generate_synthetic_findings` | Generates host-to-vulnerability mappings with exploitation likelihoods for EPSS v4 training; inserts into `synthetic_findings` |
+| `backend/ml/train_epss_v4.py` | `python -m ml.train_epss_v4` | Trains the EPSS v4 sector-aware substitution model from `synthetic_findings` data |
 | `backend/scripts/load_research_refs.py` | `python -m scripts.load_research_refs` | Seeds or refreshes `research_references` table from embedded WA gov ICT research corpus |
+
+## New Automation (Sprint 14)
+
+| Command | Purpose |
+|---|---|
+| `just retrain-all` | Retrains all ML models from scratch: synthetic data → pre-tier → EPSS v4 |
 
 ## Graphify — Auto-Generated Knowledge Artifacts
 

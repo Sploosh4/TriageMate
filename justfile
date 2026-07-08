@@ -106,13 +106,31 @@ train-pretier:
 train-epss:
     cd {{BACKEND}} && python3 -m ml.train_epss_v3
 
+# Train EPSS substitution model v4 (sector-aware)
+train-epss-v4:
+    cd {{BACKEND}} && python3 -m ml.train_epss_v4
+
+# Retrain all ML models from scratch (synthetic data → pre-tier → EPSS v4)
+retrain-all:
+    @echo "=== Generating synthetic data ==="
+    cd {{BACKEND}} && python3 -m ml.generate_synthetic_data_v2
+    cd {{BACKEND}} && python3 -m ml.generate_synthetic_findings
+    cd {{BACKEND}} && python3 -m scripts.load_research_refs
+    @echo "=== Validating synthetic data ==="
+    cd {{BACKEND}} && python3 -m scripts.validate_synthetic_data --table synthetic_assets
+    @echo "=== Training Pre-Tier model ==="
+    cd {{BACKEND}} && python3 -m ml.train_pre_tier --from-db
+    @echo "=== Training EPSS v4 model ==="
+    cd {{BACKEND}} && python3 -m ml.train_epss_v4
+    @echo "=== Done ==="
+
 # Fetch EPSS training data
 fetch-epss-data:
     cd {{BACKEND}} && python3 -m ml.fetch_epss_data
 
-# Generate supplemental hostnames for Pre-Tier training
+# Generate supplemental hostnames for Pre-Tier training  # DEPRECATED — use `just generate-synthetic-data` instead
 generate-hostnames:
-    cd {{BACKEND}} && python3 -m ml.generate_supplemental_hostnames
+    cd {{BACKEND}} && python3 -m ml.generate_supplemental_hostnames  # DEPRECATED
 
 # Ingest documents into LanceDB vector store
 ingest-docs:

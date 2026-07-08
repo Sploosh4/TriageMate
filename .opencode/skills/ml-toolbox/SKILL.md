@@ -22,7 +22,11 @@ python -m ml.train_pre_tier --from-db       # SQLite synthetic_assets (Sprint 14
 # EPSS substitution models
 python -m ml.train_epss_v2
 python -m ml.train_epss_v3
+python -m ml.train_epss_v4
 python -m ml.train_epss_substitutor
+
+# Retrain all ML models from scratch (synthetic data → pre-tier → EPSS v4)
+just retrain-all                    # convenience wrapper (runs from backend/)
 ```
 
 ## Synthetic Data (Sprint 14+)
@@ -31,6 +35,9 @@ python -m ml.train_epss_substitutor
 # Generate synthetic WA gov hostnames (1,500–2,000 rows)
 python -m ml.generate_synthetic_data_v2      # inserts into synthetic_assets table
 # Also produces: backend/ml/synthetic_data_v2.json, backend/ml/synthetic_holdout_v2.json
+
+# Generate host-to-vulnerability mappings (777 rows for EPSS v4)
+python -m ml.generate_synthetic_findings     # inserts into synthetic_findings table
 
 # Load research references into DB
 python -m scripts.load_research_refs          # seeds the research_references table
@@ -65,8 +72,8 @@ python -m scripts.build_cwe_hierarchy --download    # download MITRE XML first
 # Build vendor popularity index
 python -m scripts.build_vendor_index
 
-# Generate supplemental hostnames for training
-python -m ml.generate_supplemental_hostnames
+# Generate supplemental hostnames for training  # DEPRECATED — use generate_synthetic_data_v2 instead
+python -m ml.generate_supplemental_hostnames  # DEPRECATED
 
 # Ingest documents into LanceDB vector store
 python -m ml.ingest_docs
@@ -80,7 +87,7 @@ python -m ml.ingest_docs
 |---|---|
 | XGBoost model | `backend/ml/xgboost_model.pkl` |
 | Pre-Tier model | `backend/ml/pre_tier_model.pkl` |
-| EPSS models | `backend/ml/epss_model.pkl`, `backend/ml/epss_model_v2.pkl`, `backend/ml/epss_model_v3.pkl` |
+| EPSS models | `backend/ml/epss_model.pkl`, `backend/ml/epss_model_v2.pkl`, `backend/ml/epss_model_v3.pkl`, `backend/ml/epss_model_v4.pkl` |
 | Training data | `backend/ml/training_data.npz`, `backend/ml/training_data_v2.npz` |
 | NVD corpus | `backend/data/nvd_corpus.json` |
 | NVD cache | `backend/data/nvd_cache.json` |
@@ -115,3 +122,8 @@ python -c "from database import get_db; db = get_db(); print('Assets:', db.execu
 - ROC-AUC must be reported after every retraining
 - 7 demo row scores must be verified (±3 tolerance)
 - Training data must exclude 7 demo CVEs
+
+## Feature Notes (Pre-Tier)
+- `has_known_system` (binary) has been replaced by `system_category` (ordinal 0-8) — feature index 59
+- `system_category` categorises system names into functional categories based on the WA government naming conventions
+- See `backend/ml/pretier_features.py` for the full category mapping

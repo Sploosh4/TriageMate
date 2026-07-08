@@ -16,7 +16,7 @@ Feature vector (60 dimensions):
   Index 46-49: extended lifecycle (eol, sun, mig, act — binary)
   Index 50-52: OS platform (win, lnx, sol — binary)
   Index 53-58: role suffix detected (ap, db, web, fe, be, rpt — binary)
-  Index    59: has_known_system (binary — detected real WA Gov system name)
+  Index    59: system_category (ordinal 0-8 — functional category of system name)
 
 Must be kept in sync between training and inference.
 """
@@ -232,6 +232,129 @@ CATEGORY_1_KEYWORDS = [
 ]
 
 
+# ─── SYSTEM CATEGORY MAPPING ────────────────────────────────────────────────
+
+
+def get_system_category(system_name: str | None) -> int:
+    """
+    Map a system name to a functional category for better generalization.
+
+    0 = No system name extracted
+    1 = Infrastructure/utility (backup, file, print, dns, scan, log, nms, wsus, monitor, store, san, veeam, splunk, siem, patching, network)
+    2 = Productivity/collaboration (exchange, mail, email, sharepoint, wiki, confluence, staffportal, exc)
+    3 = Enterprise/line-of-business (sap, oracle, moveit, manageengine, servicenow, temis, oracleebs, oraclefinancials, mft, goanywhere)
+    4 = Access/security (citrix, vpn, proxy, gateway, screenconnect, firewall, edr, crowdstrike, sentinel, cyberark, pam, beyondtrust, bomgar)
+    5 = Application server (web, app, api, application, portal)
+    6 = Database (db, sql, cluster, database)
+    7 = Other known system (exists in KNOWN_SYSTEM_NAMES but doesn't match above)
+    8 = Unknown system name (not in KNOWN_SYSTEM_NAMES and doesn't match above)
+
+    This replaces the binary has_known_system with a multi-level ordinal
+    that lets the model learn "category 3 systems are usually critical"
+    vs "category 1 systems are usually low priority."
+    """
+    if not system_name:
+        return 0
+
+    name_lower = system_name.lower()
+
+    # Category 1: Infrastructure/utility
+    if any(
+        kw in name_lower
+        for kw in [
+            "backup",
+            "file",
+            "print",
+            "dns",
+            "scan",
+            "log",
+            "nms",
+            "wsus",
+            "splunk",
+            "siem",
+            "monitor",
+            "patching",
+            "network",
+            "store",
+            "san",
+            "veeam",
+        ]
+    ):
+        return 1
+
+    # Category 2: Productivity/collaboration
+    if any(
+        kw in name_lower
+        for kw in [
+            "exchange",
+            "mail",
+            "email",
+            "sharepoint",
+            "wiki",
+            "confluence",
+            "staffportal",
+            "exc",
+        ]
+    ):
+        return 2
+
+    # Category 3: Enterprise/line-of-business
+    if any(
+        kw in name_lower
+        for kw in [
+            "sap",
+            "oracle",
+            "moveit",
+            "manageengine",
+            "servicenow",
+            "temis",
+            "oracleebs",
+            "oraclefinancials",
+            "mft",
+            "goanywhere",
+        ]
+    ):
+        return 3
+
+    # Category 4: Access/security
+    if any(
+        kw in name_lower
+        for kw in [
+            "citrix",
+            "vpn",
+            "proxy",
+            "gateway",
+            "screenconnect",
+            "firewall",
+            "edr",
+            "crowdstrike",
+            "sentinel",
+            "cyberark",
+            "pam",
+            "beyondtrust",
+            "bomgar",
+            "connectwise",
+            "teamviewer",
+            "anydesk",
+        ]
+    ):
+        return 4
+
+    # Category 5: Application server
+    if any(kw in name_lower for kw in ["web", "app", "api", "application", "portal"]):
+        return 5
+
+    # Category 6: Database
+    if any(kw in name_lower for kw in ["db", "sql", "cluster", "database"]):
+        return 6
+
+    # Check KNOWN_SYSTEM_NAMES
+    if name_lower in [s.lower() for s in KNOWN_SYSTEM_NAMES]:
+        return 7
+
+    return 8
+
+
 # ─── FEATURE EXTRACTION ─────────────────────────────────────────────────────
 
 
@@ -318,10 +441,89 @@ def extract_features(hostname: str) -> dict:
     features["has_suffix_be"] = 1 if any(p.endswith("be01") for p in parts) else 0
     features["has_suffix_rpt"] = 1 if any(p.endswith("rpt01") for p in parts) else 0
 
-    # 11. Known system name detection
-    features["has_known_system"] = (
-        1 if any(sys_name in all_parts_str for sys_name in KNOWN_SYSTEM_NAMES) else 0
-    )
+    # 11. System category detection (replaces binary has_known_system)
+    # Step 1: Check for KNOWN_SYSTEM_NAMES in the hostname
+    known_match = None
+    for sys_name in KNOWN_SYSTEM_NAMES:
+        if sys_name in all_parts_str:
+            known_match = sys_name
+            break
+
+    if known_match:
+        features["system_category"] = get_system_category(known_match)
+    else:
+        # Step 2: Fallback — check hostname for category keywords that
+        # won't false-positive on role suffixes (web, app, db, etc.)
+        # Only checking system-level keywords here.
+        _h = all_parts_str.lower()
+        if any(
+            kw in _h
+            for kw in [
+                "backup",
+                "file",
+                "print",
+                "dns",
+                "scan",
+                "log",
+                "monitor",
+                "nms",
+                "wsus",
+                "splunk",
+                "siem",
+                "patching",
+                "store",
+                "san",
+                "veeam",
+            ]
+        ):
+            features["system_category"] = 1
+        elif any(
+            kw in _h
+            for kw in [
+                "exchange",
+                "mail",
+                "email",
+                "sharepoint",
+                "wiki",
+                "confluence",
+                "staffportal",
+                "exc",
+            ]
+        ):
+            features["system_category"] = 2
+        elif any(
+            kw in _h
+            for kw in [
+                "sap",
+                "oracle",
+                "moveit",
+                "manageengine",
+                "servicenow",
+                "temis",
+                "mft",
+                "goanywhere",
+            ]
+        ):
+            features["system_category"] = 3
+        elif any(
+            kw in _h
+            for kw in [
+                "citrix",
+                "vpn",
+                "proxy",
+                "gateway",
+                "screenconnect",
+                "firewall",
+                "edr",
+                "crowdstrike",
+                "sentinel",
+                "cyberark",
+                "pam",
+            ]
+        ):
+            features["system_category"] = 4
+        else:
+            features["system_category"] = 8
 
     return features
 
@@ -431,7 +633,7 @@ def _get_feature_order() -> list:
         "has_suffix_be",
         "has_suffix_rpt",
     ]
-    names += ["has_known_system"]
+    names += ["system_category"]
     return names
 
 

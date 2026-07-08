@@ -1,13 +1,14 @@
 """
-EPSS substitution — hybrid ML + rule engine (v3 with fallback chain).
+EPSS substitution — hybrid ML + rule engine (v4 with fallback chain).
 
 Adjusts raw FIRST.org EPSS scores based on sector-specific threat intelligence.
 EPSS is a global exploitation probability — it is not sector-aware. This module:
 
-  1. Attempts to use an XGBoost model v3 (backend/ml/epss_model_v3.pkl) for prediction.
-  2. Falls back to v2 model (backend/ml/epss_model_v2.pkl) if v3 absent.
-  3. Falls back to v1 model (backend/ml/epss_model.pkl) if v2 absent.
-  4. Falls back to the heuristic rule engine if no model is available.
+  1. Attempts to use an XGBoost model v4 (backend/ml/epss_model_v4.pkl) for prediction.
+  2. Falls back to v3 model (backend/ml/epss_model_v3.pkl) if v4 absent.
+  3. Falls back to v2 model (backend/ml/epss_model_v2.pkl) if v3 absent.
+  4. Falls back to v1 model (backend/ml/epss_model.pkl) if v2 absent.
+  5. Falls back to the heuristic rule engine if no model is available.
 
 The rule engine applies multipliers for CVEs that target specific sectors
 (government, healthcare, education, etc.) more than the global average.
@@ -129,34 +130,34 @@ CWES_V2 = [
 ML_CONFIDENCE_THRESHOLD = 0.3
 
 
-# ── Load ML model on import (try v3 first, then v2, then v1) ───────────────
+# ── Load ML model on import (try v4 first, then v3, v2, v1) ────────────────
 _model = None
 _model_metadata = None
-_model_is_v2 = False  # True for v3 and v2 (same 37-feature layout)
-_model_version = None  # "v1", "v2", or "v3"
+_model_is_v2 = False  # True for v4, v3 and v2 (same 37-feature layout)
+_model_version = None  # "v1", "v2", "v3", or "v4"
 _model_feature_names = None
 _model_agencies = None
 _model_cwes = None
 
 _ml_dir = os.path.dirname(__file__)
 
-# Try v3 model first (trained on real FIRST.org EPSS data)
-_model_v3_path = os.path.join(_ml_dir, "epss_model_v3.pkl")
-if os.path.isfile(_model_v3_path):
+# Try v4 model first (sector-aware, trained on research-grounded synthetic findings)
+_model_v4_path = os.path.join(_ml_dir, "epss_model_v4.pkl")
+if os.path.isfile(_model_v4_path):
     try:
-        _artifact = joblib.load(_model_v3_path)
+        _artifact = joblib.load(_model_v4_path)
         _model = _artifact["model"]
         _model_metadata = _artifact.get("metadata", {})
         _model_feature_names = _artifact.get("feature_names", [])
         _model_agencies = _artifact.get("agencies", AGENCIES_V2)
         _model_cwes = _artifact.get("cwes", CWES_V2)
-        _model_is_v2 = True  # v3 uses same 37-feature layout as v2
-        _model_version = "v3"
+        _model_is_v2 = True  # v4 uses same 37-feature layout as v2/v3
+        _model_version = "v4"
         logger.info(
-            "Loaded EPSS substitution ML model v3 from %s "
+            "Loaded EPSS substitution ML model v4 from %s "
             "(R²=%.4f, RMSE=%.4f, %d features, %d agencies, %d CWEs, "
             "training_source=%s)",
-            _model_v3_path,
+            _model_v4_path,
             _model_metadata.get("r2", 0),
             _model_metadata.get("rmse", 0),
             _model_metadata.get("n_features", 0),
@@ -166,11 +167,44 @@ if os.path.isfile(_model_v3_path):
         )
     except Exception as exc:
         logger.warning(
-            "Failed to load EPSS ML model v3 from %s: %s", _model_v3_path, exc
+            "Failed to load EPSS ML model v4 from %s: %s", _model_v4_path, exc
         )
         _model = None
 else:
-    logger.info("No EPSS ML model v3 found at %s", _model_v3_path)
+    logger.info("No EPSS ML model v4 found at %s", _model_v4_path)
+
+# Try v3 model second (fallback — only if v4 didn't load)
+if _model is None:
+    _model_v3_path = os.path.join(_ml_dir, "epss_model_v3.pkl")
+    if os.path.isfile(_model_v3_path):
+        try:
+            _artifact = joblib.load(_model_v3_path)
+            _model = _artifact["model"]
+            _model_metadata = _artifact.get("metadata", {})
+            _model_feature_names = _artifact.get("feature_names", [])
+            _model_agencies = _artifact.get("agencies", AGENCIES_V2)
+            _model_cwes = _artifact.get("cwes", CWES_V2)
+            _model_is_v2 = True  # v3 uses same 37-feature layout as v2
+            _model_version = "v3"
+            logger.info(
+                "Loaded EPSS substitution ML model v3 from %s "
+                "(R²=%.4f, RMSE=%.4f, %d features, %d agencies, %d CWEs, "
+                "training_source=%s)",
+                _model_v3_path,
+                _model_metadata.get("r2", 0),
+                _model_metadata.get("rmse", 0),
+                _model_metadata.get("n_features", 0),
+                _model_metadata.get("n_agencies", len(_model_agencies)),
+                _model_metadata.get("n_cwes", len(_model_cwes)),
+                _model_metadata.get("training_source", "unknown"),
+            )
+        except Exception as exc:
+            logger.warning(
+                "Failed to load EPSS ML model v3 from %s: %s", _model_v3_path, exc
+            )
+            _model = None
+    else:
+        logger.info("No EPSS ML model v3 found at %s", _model_v3_path)
 
 # Try v2 model second (fallback — only if v3 didn't load)
 if _model is None:
@@ -358,6 +392,7 @@ def _rule_engine(
             "substituted_epss": floor,
             "original_epss": 0.0,
             "confidence": 0.5,
+            "model_version": "rule_engine",
             "reason": f"EPSS not provided. Floor generated from {'CISA KEV' if cisa_kev else 'conservative default'} ({floor}).",
         }
 
@@ -390,6 +425,7 @@ def _rule_engine(
             "substituted_epss": raw_epss,
             "original_epss": raw_epss,
             "confidence": 0.0,
+            "model_version": "rule_engine",
             "reason": "",
         }
 
@@ -418,6 +454,7 @@ def _rule_engine(
         "substituted_epss": substituted_epss,
         "original_epss": raw_epss,
         "confidence": confidence,
+        "model_version": "rule_engine",
         "reason": reason,
     }
 
@@ -580,6 +617,7 @@ def _ml_predict(
         "original_epss": raw_epss,
         "confidence": confidence,
         "reason": reason,
+        "model_version": model_label,
     }
 
 
@@ -600,8 +638,8 @@ def calculate_substitution(
     """
     Calculate a sector-adjusted EPSS score for a given CVE and asset.
 
-    Uses the ML model (v3 preferred, v2 fallback, v1 last resort) when
-    available and confident; falls back to the heuristic rule engine otherwise.
+    Uses the ML model (v4 preferred, v3 fallback, v2 fallback, v1 last resort)
+    when available and confident; falls back to the heuristic rule engine otherwise.
 
     Args:
         cve_id: The CVE identifier (e.g., CVE-2023-36884)

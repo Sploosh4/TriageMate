@@ -91,9 +91,11 @@ Three new tables were added during Sprint 14 for synthetic data and research ref
 - **Consumed by:** `ml.train_pre_tier` (with `--from-db` flag)
 
 ### `synthetic_findings`
-- **Rows:** 11,400
+- **Rows:** 777
 - **Purpose:** Maps synthetic hosts to vulnerabilities with realistic exploitation likelihoods; designed for EPSS v4 sector-aware training
 - **Key columns:** (host_id, vulnerability_id, exploitation_likelihood, etc.)
+- **Populated by:** `python -m ml.generate_synthetic_findings`
+- **Consumed by:** `ml.train_epss_v4`
 
 ### `research_references`
 - **Rows:** 97
@@ -101,6 +103,11 @@ Three new tables were added during Sprint 14 for synthetic data and research ref
 - **Key columns:** `ref_id`, `category` (AGENCY/SOFTWARE/SYSTEM/SECTOR), `title`, `description`, `source`, `reference_url`, `created_at`
 - **Populated by:** `python -m scripts.load_research_refs`
 - **Source report:** `backend/reports/intel/wa-gov-infrastructure-research.md`
+
+### Feature Index 59 — `system_category` (replaces `has_known_system`)
+- Feature index 59 in the Pre-Tier 60-dim feature vector uses `system_category` (ordinal 0-8) instead of the binary `has_known_system`
+- Categorises system names into functional categories (e.g., infrastructure, security, database, application, network, storage, identity, end-user, general)
+- See `backend/ml/pretier_features.py` for the `get_system_category()` mapping function
 
 ### Dual DDL pattern
 Each of these tables was added to **both** `_init_db_sqlite()` and `_init_db_pg()` in `backend/database.py`. The synthetic tables (`synthetic_assets`, `synthetic_findings`, `research_references`) are created with `CREATE TABLE IF NOT EXISTS`.
