@@ -18,7 +18,7 @@
 | Root (symlinks to `docs/`) | 6 | `MVP_SCOPE.md`, `ROADMAP.md`, `AI_PROBLEMS.md`, `RESEARCH_FINDINGS.md`, `XGBOOST_INVESTIGATION_REPORT.md`, `WINDOWS_SETUP.md` — (2 broken removed: `DEMO_SCRIPT.md` (deleted), `TRIAGEMATE_BOOK_PROMPT.md` (deleted)) |
 | `docs/architecture/` | 1 | `MVP_SCOPE.md` |
 | `docs/guides/` | 1 | `WINDOWS_SETUP.md` |
-| `docs/planning/` | 3 | `ROADMAP.md`, `ai-doc-strategy-2026-07-07.md`, `file-consolidation-plan-2026-07-07.md` |
+| `docs/planning/` | 2 | `ROADMAP.md`, `ai-doc-strategy-2026-07-07.md` |
 | `docs/reference/` | 3 (1 archived) | `AI_PROBLEMS.md`, `xgboost-investigation-report.md`, `hostname-standards.md` (+ `ml-implementation-plan.md` archived to `docs/archive/`) |
 | `docs/research/` | 1 | `RESEARCH_FINDINGS.md` |
 | `docs/archive/` | 6 | Various research prompts and early docs |

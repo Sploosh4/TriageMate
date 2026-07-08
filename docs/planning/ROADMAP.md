@@ -187,7 +187,7 @@ All Sprint NEXT items are complete. Item 1 (XGBoost retrain) was **completed 202
 | 1 | XGBoost retrain on `training_data_v2.npz` | ✅ Done — Retrained 2026-07-08 | **Retrained on 253,568 samples (341 MB).** ROC-AUC: 0.9459. Model trained on 419 features (35 tabular + 384 SBERT). Calibrator and threshold_info exported. Score verification (2026-07-08): 7 demo rows within ±3 of expected values. |
 | 2 | Pre-Tier RandomForest classifier | ✅ Already existed | 60-dim MultiOutputClassifier with KNOWN_TAGS fallback. No changes needed. |
 | 3 | Model drift monitoring dashboard | ✅ Done | `GET /api/drift`, CSS-only charts, 4 panels |
-| 4 | Rate limiting + CI/CD | ✅ Complete | Rate limiting implemented and configurable via env vars. CI/CD pipeline expanded with Docker build, coverage reporting, and frontend syntax check jobs. |
+| 4 | Rate limiting + CI/CD | ✅ Partially Complete | Rate limiting implemented and configurable via env vars. CI/CD pipeline is deferred — `.github/workflows/ci.yml` not yet created. |
 | 5 | Retrain EPSS substitution model | ✅ Done — v3 & v4 operational | v3 model operational with real FIRST.org EPSS baselines (344K CVEs). v4 sector-aware model trained on 777 synthetic_findings rows. |
 | 6 | Tier 3 Human Review queue | ✅ Done | 4 endpoints, alembic 004 migration, frontend review panel |
 | 7 | Cloud deploy + HTTPS | 📋 Todo | Move from localhost to real deployment |
@@ -221,7 +221,7 @@ Planned after model retraining completes. Focus: test coverage, operational guar
 | # | Item | Effort | Status |
 |---|------|--------|--------|
 | 9 | **Tests for review + drift endpoints** | 4 hrs | ✅ Done — `test_review.py` (12 tests), `test_drift.py` (6 tests) |
-| 10 | **Feature-parity guard test** | 1 hr | ✅ Done — `test_feature_parity.py` (7 tests) verifies 35-col tabular match between trainer and predictor |
+| 10 | **Feature-parity guard test** | 1 hr | ✅ Done — `test_feature_parity.py` (6 tests) verifies 35-col tabular match between trainer and predictor |
 | 11 | **Seed data ML dimension** | 30 min | ✅ Done — verified and fixed CVE-2023-36884 value (6→7). See `backend/reports/seed-data-ml-dimension.md`. |
 | 12 | **Retrain verification** | 1 hr | ✅ Done — scores match baseline [94,87,71,63,55,41,22] ±3 |
 
@@ -249,7 +249,7 @@ Planned after model retraining completes. Focus: test coverage, operational guar
 
 | # | Item | Estimate | Status | Notes |
 |---|---|---|---|---|
-| 1 | CI/CD Pipeline Expansion | 1 hr | ✅ Done | Docker build job, pytest-cov coverage (≥60%), frontend-lint job with node --check. 4 jobs total in `.github/workflows/ci.yml`. |
+| 1 | CI/CD Pipeline Expansion | 1 hr | 📋 Todo | Docker build job, pytest-cov coverage (≥60%), frontend-lint job with node --check. Not yet implemented — `.github/workflows/ci.yml` does not exist on disk. |
 | 2 | Scoring Engine Unit Tests | 1 hr | ✅ Done | 16 tests across 5 test classes in `backend/tests/test_scoring.py`. Covers all 6 dimensions, band mapping, edge cases, Tier 2 integration. |
 | 3 | Frontend Dark Mode + JS Modernization | 2 hr | ✅ Done | 58 new CSS custom properties, ~50 hex→var conversions, full `[data-theme="dark"]` block, theme toggle with localStorage persistence + prefers-color-scheme detection. All 9 JS files converted from `var`→`let`/`const` (164 const + 7 let), `defer` on all script tags. |
 | 4 | Seed Data ML Dimension Verification | 30 min | ✅ Done | Bug found and fixed: CVE-2023-36884 had wrong `ml_exploitation_contribution` (6→7). All 7 rows verified correct. Report at `backend/reports/seed-data-ml-dimension.md`. |
@@ -306,7 +306,7 @@ Planned after model retraining completes. Focus: test coverage, operational guar
 
 | Item | Status | Details |
 |------|--------|---------|
-| `test_tier2.py` | ✅ Done | ~15 tests: `build_prompt()`, `call_openai()` (success, 429, 5xx, timeout, invalid JSON), `call_anthropic()` (success, refusal, rate limit), `call_together()` (markdown fence stripping), `evaluate_tier_2()` orchestration, `KNOWN_CONFLICTS` fallback, `_record_api_call()` cost tracking |
+| `test_tier2.py` | ✅ Done | 21 tests: `build_prompt()`, `call_openai()` (success, 429, 5xx, timeout, invalid JSON), `call_anthropic()` (success, refusal, rate limit), `call_together()` (markdown fence stripping), `evaluate_tier_2()` orchestration, `KNOWN_CONFLICTS` fallback, `_record_api_call()` cost tracking |
 | `just verify-tier2` | ✅ Done | Coverage ≥ 70% on `pipeline/tier_2.py` |
 
 ### ML Drift Foundation (XGBoost)
@@ -329,7 +329,7 @@ Planned after model retraining completes. Focus: test coverage, operational guar
 | Verbose response mode | ✅ Done | `X-TriageMate-Verbose: true` header triggers `_trace` field |
 | Test DB + Locust client | ✅ Done | `backend/analysis/stress_db.py`, `backend/tests/load/locustfile.py` |
 | Stress report generator | ✅ Done | `backend/scripts/stress_report.py` — 7-section report |
-| Docker hardening | ✅ Done | `WEB_CONCURRENCY` env var, `mem_limit: 512m`, `cpus: 1.0` |
+| Docker hardening | ✅ Done | `WEB_CONCURRENCY` env var, `memory: 1024M`, `cpus: 2.0` |
 | `just stress-test` | ✅ Done | Orchestration: start stack → wait → locust → analysis → report |
 | `just stress-test-no-llm` | ✅ Done | Same without LLM cost |
 

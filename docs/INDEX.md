@@ -33,7 +33,7 @@
 | `planning/ROADMAP.md` | CURRENT | Master roadmap + sprint history + next actions. All sprints tracked (15 completed: Sprints 1–15.5). §Sprint 14 covers synthetic data infrastructure: `synthetic_assets` (1,827 rows), `synthetic_findings` (777 rows), `research_references` (97 refs), Pre-Tier model retrain, EPSS v4 sector-aware model, system name embedding, and `just retrain-all` automation. |
 | `planning/HANDOFF-2026-07-08.md` | CURRENT | Handoff document covering ML drift monitoring, Tier 2 LLM query coverage, network topology/Sentinel status, and stress testing status. Answers what was deferred post-MVP. |
 | `planning/ai-doc-strategy-2026-07-07.md` | CURRENT | This consolidation plan — how and why docs were restructured. |
-| `planning/file-consolidation-plan-2026-07-07.md` | ARCHIVED | Bookkeeper's consolidation proposals — superseded by current doc structure. See `docs/INDEX.md`. |
+| `archive/file-consolidation-plan-2026-07-07.md` | ARCHIVED | Bookkeeper's consolidation proposals — superseded by current doc structure. See `docs/INDEX.md`. |
 
 ## Reference
 
