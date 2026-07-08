@@ -1,6 +1,11 @@
 """
 Tier 2 LLM provider abstraction layer for TriageMate.
 
+DEPRECATED: All provider logic and orchestration live in pipeline/tier_2.py.
+This module's helpers are superseded by pipeline/tier_2.py and remain here
+only for backward compatibility. New code should import from pipeline.tier_2
+directly.
+
 Provides a unified interface for:
 - OpenAI (gpt-4o-mini)
 - Anthropic (claude-3-haiku)
@@ -77,7 +82,7 @@ def get_backup_api_key() -> Optional[str]:
 # ---------------------------------------------------------------------------
 
 
-def retry_with_backoff(
+def retry_with_backoff(  # DEPRECATED: unused — retry logic is now inline in pipeline/tier_2.py provider functions.
     call_fn,
     max_retries: int = 3,
     base_delay: float = 1.0,
@@ -142,7 +147,9 @@ def retry_with_backoff(
 # Provider-specific helpers
 # ---------------------------------------------------------------------------
 
-KNOWN_CONFLICTS: Dict[str, Dict[str, Any]] = {
+KNOWN_CONFLICTS: Dict[
+    str, Dict[str, Any]
+] = {  # DEPRECATED: use pipeline.tier_2.KNOWN_CONFLICTS instead. This module's version is unused.
     # Known CVE → neutral default scores used when LLM is unavailable
     # or when the CVE is part of the demo set.
     #

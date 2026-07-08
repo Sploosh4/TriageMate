@@ -368,7 +368,10 @@ class DatabaseManager:
                 reviewed_by TEXT,
                 reviewed_at TEXT,
                 override_score INTEGER,
-                override_band TEXT
+                override_band TEXT,
+
+                -- ML drift monitoring
+                tier_1_features TEXT
             )
         """)
 
@@ -629,7 +632,10 @@ class DatabaseManager:
                 reviewed_by TEXT,
                 reviewed_at TEXT,
                 override_score INTEGER,
-                override_band TEXT
+                override_band TEXT,
+
+                -- ML drift monitoring
+                tier_1_features TEXT
             )
         """)
 

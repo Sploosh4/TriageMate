@@ -4,9 +4,16 @@ async function initDriftDashboard() {
   loadModelStatusPanel();
 
   try {
-    const res = await _authFetch('/api/drift');
-    const data = await res.json();
-    renderDriftDashboard(data);
+    const [driftRes, mlDriftRes] = await Promise.all([
+      _authFetch('/api/drift'),
+      _authFetch('/api/drift/ml')
+    ]);
+    const driftData = await driftRes.json();
+    let mlDriftData = null;
+    if (mlDriftRes.ok) {
+      mlDriftData = await mlDriftRes.json();
+    }
+    renderDriftDashboard(driftData, mlDriftData);
   } catch (err) {
     console.error('Failed to load drift data:', err);
     const container = document.getElementById('drift-dashboard-container');
@@ -43,7 +50,7 @@ function loadModelStatusPanel() {
     });
 }
 
-function renderDriftDashboard(data) {
+function renderDriftDashboard(data, mlDriftData) {
   const container = document.getElementById('drift-dashboard-container');
   if (!container) return;
 
@@ -121,6 +128,43 @@ function renderDriftDashboard(data) {
   html += '<div class="drift-feature-row"><span class="drift-feature-label">Avg Priority</span><span class="drift-feature-value">' + data.featureDrift.avgPriority + '</span></div>';
   html += '<div class="drift-feature-row"><span class="drift-feature-label">Total Audited</span><span class="drift-feature-value">' + data.totalAudited + '</span></div>';
   html += '</div></div>';
+
+  // Panel 5: ML Drift (XGBoost PSI)
+  html += '<div class="drift-panel">';
+  html += '<div class="drift-panel-title">ML Drift (XGBoost PSI)</div>';
+  if (mlDriftData && mlDriftData.totalSamples > 0) {
+    var psi = mlDriftData.compositePsi;
+    var psiStatus = mlDriftData.status;
+    var psiColour = psiStatus === 'critical' ? '#EF4444' : psiStatus === 'warning' ? '#F97316' : '#22C55E';
+    var psiLabel = psiStatus === 'critical' ? 'Critical Drift' : psiStatus === 'warning' ? 'Warning' : 'Stable';
+
+    html += '<div class="drift-psi-gauge" style="text-align:center;padding:12px 0;">';
+    html += '<div style="font-size:36px;font-weight:700;color:' + psiColour + ';">' + psi.toFixed(4) + '</div>';
+    html += '<div style="font-size:14px;color:' + psiColour + ';margin-top:4px;">' + psiLabel + '</div>';
+    html += '<div style="font-size:12px;color:#94A3B8;margin-top:8px;">Samples: ' + mlDriftData.totalSamples + '</div>';
+    html += '</div>';
+
+    // Feature table (hide features with psi <= 0.01)
+    var hasFeatures = false;
+    html += '<div class="drift-feature-table" style="margin-top:8px;">';
+    for (var fname in mlDriftData.features) {
+      var feat = mlDriftData.features[fname];
+      if (feat.psi <= 0.01) continue;
+      hasFeatures = true;
+      var fColour = feat.status === 'critical' ? '#EF4444' : feat.status === 'warning' ? '#F97316' : '#22C55E';
+      html += '<div class="drift-feature-row">';
+      html += '<span class="drift-feature-label" title="' + fname + '">' + fname + '</span>';
+      html += '<span class="drift-feature-value" style="color:' + fColour + ';">' + feat.psi.toFixed(4) + ' <span style="font-size:11px;opacity:0.7;">(' + feat.status + ')</span></span>';
+      html += '</div>';
+    }
+    if (!hasFeatures) {
+      html += '<div class="drift-no-data" style="padding:8px 0;">All features stable (PSI ≤ 0.01)</div>';
+    }
+    html += '</div>';
+  } else {
+    html += '<div class="drift-no-data" style="padding:16px 0;">No ML feature data yet. PSI will appear after findings are ingested through Tier 1.</div>';
+  }
+  html += '</div>';
 
   html += '</div>'; // drift-grid
 

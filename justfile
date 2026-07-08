@@ -21,6 +21,10 @@ test:
 test-file file:
     cd {{BACKEND}} && pytest tests/{{file}}.py -v
 
+# Run Tier 2 unit tests with coverage (must be >= 70%)
+verify-tier2:
+    cd {{BACKEND}} && .venv/bin/python -m pytest tests/test_tier2.py -v --cov=pipeline.tier_2 --cov-report=term --cov-fail-under=70
+
 # Lint check only (no changes)
 lint:
     cd {{BACKEND}} && ruff check . && ruff format --check .
@@ -154,9 +158,51 @@ audit-features:
 audit-schema:
     cd {{BACKEND}} && python3 -m analysis.validate_conversion
 
+# Run ML drift tests and endpoint check
+verify-drift:
+    cd {{BACKEND}} && .venv/bin/python -m pytest tests/test_drift_ml.py -v
+    @echo "--- Drift endpoint check ---"
+    curl -s http://localhost:8000/api/drift/ml | python3 -m json.tool
+
 # Run all audits sequentially
 audit-all: audit-calibration audit-epss audit-features audit-schema
     @echo "All audits complete."
+
+# Full stress test with real LLM API calls
+stress-test:
+    @echo "=== TriageMate Stress Test ==="
+    @echo "Starting stack..."
+    docker compose up -d --wait
+    @echo "Waiting for healthy..."
+    @for i in 1 2 3 4 5 6 7 8 9 10; do \
+        curl -sf http://localhost:8000/api/health > /dev/null && break; \
+        sleep 2; \
+    done
+    @echo "Running locust (60s)..."
+    cd {{BACKEND}} && STRESS_RUN_ID=$(date +%Y-%m-%d-%H%M%S) \
+        locust -f tests/load/locustfile.py --headless \
+        -u 10 -r 2 -t 60s --host http://localhost:8000
+    @echo "Generating report..."
+    cd {{BACKEND}} && .venv/bin/python scripts/stress_report.py reports/stress/$(ls -t reports/stress/ | head -1 | sed 's/.db//')
+    @echo "=== Done ==="
+
+# Stress test without LLM (no API cost)
+stress-test-no-llm:
+    @echo "=== TriageMate Stress Test (no LLM) ==="
+    TRIAGEMATE_LLM_API_KEY="" docker compose up -d --wait
+    @echo "Waiting for healthy..."
+    @for i in 1 2 3 4 5 6 7 8 9 10; do \
+        curl -sf http://localhost:8000/api/health > /dev/null && break; \
+        sleep 2; \
+    done
+    @echo "Running locust (60s)..."
+    cd {{BACKEND}} && STRESS_RUN_ID=$(date +%Y-%m-%d-%H%M%S) \
+        TRIAGEMATE_LLM_API_KEY="" \
+        locust -f tests/load/locustfile.py --headless \
+        -u 10 -r 2 -t 60s --host http://localhost:8000
+    @echo "Generating report..."
+    cd {{BACKEND}} && .venv/bin/python scripts/stress_report.py reports/stress/$(ls -t reports/stress/ | head -1 | sed 's/.db//')
+    @echo "=== Done ==="
 
 # --- Graphify (sibling project) ---
 

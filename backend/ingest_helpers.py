@@ -490,6 +490,91 @@ def build_feature_vector(payload, mission_tags: dict, tier_0_result: dict) -> di
     }
 
 
+# Tabular feature order (35 features) — must match xgboost_predictor.TABULAR_FEATURE_ORDER
+# and build_training_corpus._FEATURE_NAMES
+TABULAR_FEATURE_ORDER = [
+    "cvss_av",
+    "cvss_ac",
+    "cvss_pr",
+    "cvss_ui",
+    "cvss_s",
+    "cvss_c",
+    "cvss_i",
+    "cvss_a",
+    "epss_score",
+    "patch_available",
+    "patch_applied",
+    "internet_facing",
+    "domain_joined",
+    "data_classification",
+    "mission_prevalence",
+    "public_wellbeing_impact",
+    "lateral_reachability",
+    "boundary_reachability",
+    "downstream_assets",
+    "patch_lag_days",
+    "exploitdb_has_poc",
+    "metasploit_has_payload",
+    "threat_intel_pulses",
+    "nvd_reference_count",
+    "cve_desc_tokens",
+    "vulnerability_age_days",
+    "vendor_popularity_index",
+    "cvss_exploitability_sub",
+    "cvss_impact_sub",
+    "is_top_25_cwe",
+    "is_rce_signature",
+    "is_privesc_signature",
+    "is_bypass_signature",
+    "is_dos_signature",
+    "is_traversal_signature",
+]
+
+
+def serialize_tabular_features(features_dict: dict) -> str:
+    """Serialize the 35 tabular features into a JSON string for drift monitoring.
+
+    Extracts feature values from the build_feature_vector() output dict,
+    encoding categorical fields as the XGBoost model does, and returns
+    a JSON string with feature_name: encoded_value pairs.
+
+    Args:
+        features_dict: Output of build_feature_vector().
+
+    Returns:
+        JSON string of {feature_name: value, ...} for all 35 tabular features.
+    """
+    import json
+
+    result = {}
+    for key in TABULAR_FEATURE_ORDER:
+        if key == "data_classification":
+            result[key] = _encode_classification(features_dict.get(key, "OFFICIAL"))
+        elif key == "mission_prevalence":
+            result[key] = _encode_mission(features_dict.get(key, "Support"))
+        elif key == "public_wellbeing_impact":
+            result[key] = _encode_wellbeing(features_dict.get(key, "Minimal"))
+        elif key in (
+            "patch_available",
+            "patch_applied",
+            "internet_facing",
+            "domain_joined",
+            "exploitdb_has_poc",
+            "metasploit_has_payload",
+            "is_top_25_cwe",
+            "is_rce_signature",
+            "is_privesc_signature",
+            "is_bypass_signature",
+            "is_dos_signature",
+            "is_traversal_signature",
+        ):
+            result[key] = int(features_dict.get(key, False))
+        else:
+            result[key] = features_dict.get(key, 0.0)
+
+    return json.dumps(result)
+
+
 def query_rag(hostname: str, cwe_class: str = "") -> dict:
     """Query internal documentation repositories for asset configuration.
 

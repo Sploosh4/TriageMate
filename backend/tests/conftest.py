@@ -22,6 +22,30 @@ import pytest  # noqa: E402
 from httpx import ASGITransport, AsyncClient  # noqa: E402
 
 
+def _ensure_tier_1_features_column(db_path: str):
+    """Add tier_1_features column if Alembic didn't apply it.
+
+    Alembic migration 005 has a pre-existing conflict (column added by
+    migration 003 already), causing Alembic to fail and fall back to
+    inline DDL which uses CREATE TABLE IF NOT EXISTS. Since the tables
+    already exist from the partial Alembic run, the column is missing.
+    This function applies the column directly as a workaround.
+    """
+    import sqlite3
+
+    try:
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute("SELECT tier_1_features FROM vulnerabilities LIMIT 1")
+        cursor.close()
+        conn.close()
+    except sqlite3.OperationalError:
+        conn = sqlite3.connect(db_path)
+        conn.execute("ALTER TABLE vulnerabilities ADD COLUMN tier_1_features TEXT")
+        conn.commit()
+        conn.close()
+
+
 @pytest.fixture(scope="session", autouse=True)
 def setup_test_db():
     """Initialize and seed a temporary test database.
@@ -38,6 +62,7 @@ def setup_test_db():
     database.DB_PATH = _tmp_db.name
 
     database.init_db()
+    _ensure_tier_1_features_column(database.DB_PATH)
     seed()
 
     yield

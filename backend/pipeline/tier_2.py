@@ -32,6 +32,7 @@ LLM_API_KEY = os.getenv("TRIAGEMATE_LLM_API_KEY", "")
 LLM_MODEL = os.getenv("TRIAGEMATE_LLM_MODEL", "gpt-4o-mini")
 LLM_MAX_TOKENS = int(os.getenv("TRIAGEMATE_LLM_MAX_TOKENS", "1024"))
 LLM_TIMEOUT = int(os.getenv("TRIAGEMATE_LLM_TIMEOUT", "30"))
+LLM_BASE_URL = os.getenv("TRIAGEMATE_LLM_BASE_URL", "https://api.openai.com/v1")
 
 BACKUP_PROVIDER = os.getenv("TRIAGEMATE_LLM_BACKUP_PROVIDER", "")
 BACKUP_API_KEY = os.getenv("TRIAGEMATE_LLM_BACKUP_API_KEY", "")
@@ -279,7 +280,7 @@ async def call_openai(
         try:
             async with httpx.AsyncClient(timeout=timeout) as client:
                 response = await client.post(
-                    "https://api.openai.com/v1/chat/completions",
+                    f"{LLM_BASE_URL}/chat/completions",
                     headers={
                         "Authorization": f"Bearer {api_key}",
                         "Content-Type": "application/json",

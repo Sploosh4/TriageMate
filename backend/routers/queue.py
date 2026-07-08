@@ -1,7 +1,16 @@
 from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter
 from database import get_db
-from models import QueueRow, QueueResponse, MetricsResponse, DriftMetricsResponse
+import json
+from pathlib import Path
+from models import (
+    QueueRow,
+    QueueResponse,
+    MetricsResponse,
+    DriftMetricsResponse,
+    MlDriftResponse,
+    MlDriftFeature,
+)
 
 router = APIRouter(tags=["Queue"])
 
@@ -184,4 +193,73 @@ def get_drift_metrics():
         detection_tier_trend=detection_tier_trend,
         feature_drift=feature_drift,
         total_audited=total_audited,
+    )
+
+
+# ── ML Drift Monitoring ──────────────────────────────────────────────────────
+
+# Load reference distributions once at module level for performance
+_REFERENCE_DISTS_PATH = (
+    Path(__file__).resolve().parent.parent / "ml" / "reference_distributions.json"
+)
+_REFERENCE_DISTS: dict | None = None
+
+
+def _load_reference_dists() -> dict:
+    """Lazy-load reference distributions from JSON file."""
+    global _REFERENCE_DISTS
+    if _REFERENCE_DISTS is not None:
+        return _REFERENCE_DISTS
+    if _REFERENCE_DISTS_PATH.exists():
+        with open(_REFERENCE_DISTS_PATH) as f:
+            _REFERENCE_DISTS = json.load(f)
+        return _REFERENCE_DISTS
+    return {"features": {}, "num_samples": 0}
+
+
+@router.get("/api/drift/ml", response_model=MlDriftResponse)
+def get_ml_drift():
+    """Compute ML drift (PSI) for all ingested tier_1_features.
+
+    Returns per-feature PSI values and a composite score comparing
+    current inference data against the training reference distribution.
+    """
+    from analysis.drift import compute_drift
+    import sqlite3 as _sqlite3
+
+    reference_dists = _load_reference_dists()
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    features_json_list = []
+    try:
+        cursor.execute(
+            """
+            SELECT tier_1_features FROM vulnerabilities
+            WHERE tier_1_features IS NOT NULL
+            """
+        )
+        for row in cursor.fetchall():
+            try:
+                feature_dict = json.loads(row["tier_1_features"])
+                features_json_list.append(feature_dict)
+            except (json.JSONDecodeError, TypeError, KeyError):
+                continue
+    except _sqlite3.OperationalError:
+        # Column may not exist yet (early migration state) — return zero drift
+        pass
+
+    conn.close()
+
+    result = compute_drift(features_json_list, reference_dists)
+
+    return MlDriftResponse(
+        features={
+            name: MlDriftFeature(psi=f["psi"], status=f["status"])
+            for name, f in result["features"].items()
+        },
+        composite_psi=result["composite_psi"],
+        status=result["status"],
+        total_samples=result["total_samples"],
     )

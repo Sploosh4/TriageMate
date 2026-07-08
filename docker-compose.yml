@@ -41,6 +41,11 @@ services:
       - NVD_API_KEY=${NVD_API_KEY:-}
       # Disable HuggingFace HTTP in container (model pre-cached in image)
       - HF_HUB_OFFLINE=1
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 1024M
     depends_on:
       db:
         condition: service_healthy

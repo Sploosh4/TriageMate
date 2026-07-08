@@ -54,7 +54,12 @@ def _parse_json_column(val, default=None):
 
 
 def _row_to_case_view(r) -> CaseViewData:
-    substitution_block = None
+    substitution_block = SubstitutionBlock(
+        original_epss="0",
+        substituted_epss="0",
+        model_confidence="0",
+        reason="No EPSS substitution performed",
+    )
     if r["epss_substituted"]:
         substitution_block = SubstitutionBlock(
             original_epss=str(r["epss_score"]) if r["epss_score"] is not None else "0",

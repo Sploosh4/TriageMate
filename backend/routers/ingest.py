@@ -1,6 +1,7 @@
 import json
 import logging
 import os as _os
+import time
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse
 from database import get_db
@@ -86,10 +87,20 @@ def _demo_only():
     return None
 
 
-@router.post("/api/ingest", response_model=CaseResponse)
-async def ingest_vulnerability(payload: IngestRequest):
+@router.post(
+    "/api/ingest", response_model=CaseResponse, response_model_exclude_none=True
+)
+async def ingest_vulnerability(payload: IngestRequest, request: Request = None):
+    _t_start = time.monotonic()
+    _verbose = False
+    if request is not None:
+        _verbose = request.headers.get("X-TriageMate-Verbose", "").lower() == "true"
+    trace = {}  # built locally, returned if verbose header present
+
     # 1. Pre-Tier: mission tags
+    _t0 = time.monotonic()
     mission_tags = pre_tier.predict_mission_tags(payload.hostname, payload.target_ip)
+    _t_pre_tier = time.monotonic() - _t0
 
     # 2. Asset context
     data_classification = lookup_data_classification(payload.hostname)
@@ -127,6 +138,7 @@ async def ingest_vulnerability(payload: IngestRequest):
     )
 
     # 5. Tier 0: deterministic routing
+    _t1 = time.monotonic()
     t0_result = tier_0.evaluate_tier_0(
         cvss_score=payload.cvss_score,
         cisa_kev=payload.cisa_kev,
@@ -134,14 +146,25 @@ async def ingest_vulnerability(payload: IngestRequest):
         data_classification=data_classification,
         internet_facing=internet_facing,
     )
+    _t_tier_0 = time.monotonic() - _t1
 
     t1_result = None
     t2_result = None
 
     # 6. If ambiguous, run Tier 1
+    tier_1_features_json = None
+    _t_tier_1 = 0.0
+    _t_tier_2 = 0.0
     if t0_result["routing"] == "escalated":
+        _t2 = time.monotonic()
         features = build_feature_vector(payload, mission_tags, t0_result)
         t1_result = tier_1.evaluate_tier_1(features)
+        _t_tier_1 = time.monotonic() - _t2
+
+        # Store encoded tabular features for ML drift monitoring
+        from ingest_helpers import serialize_tabular_features
+
+        tier_1_features_json = serialize_tabular_features(features)
 
         # 7a. RAG query with CWE context (CWE already classified above)
         if cwe_result:
@@ -155,6 +178,7 @@ async def ingest_vulnerability(payload: IngestRequest):
 
         # 7b. If still ambiguous, run Tier 2
         if t1_result["routing"] == "escalated":
+            _t3 = time.monotonic()
             t2_result = await tier_2.evaluate_tier_2(
                 cve_id=payload.vulnerability_id,
                 cvss_score=payload.cvss_score,
@@ -167,6 +191,7 @@ async def ingest_vulnerability(payload: IngestRequest):
                 mission_tags=mission_tags,
                 cwe_result=cwe_result,
             )
+            _t_tier_2 = time.monotonic() - _t3
 
     # 7. Calculate final score
     scoring = calculate_final_score(
@@ -189,6 +214,52 @@ async def ingest_vulnerability(payload: IngestRequest):
         detection_tier = "SLM Tier"
     elif t1_result and not t2_result:
         detection_tier = "ML Tier"
+
+    # Build trace dict
+    _total = time.monotonic() - _t_start
+    trace = {
+        "pre_tier": {
+            "tags": mission_tags,
+            "confidence": mission_tags.get("mission_prevalence_confidence", 0.0),
+            "latency_ms": round(_t_pre_tier * 1000, 2),
+        },
+        "tier_0": {
+            "routing": t0_result.get("routing", ""),
+            "reason": t0_result.get("resolution", ""),
+            "latency_ms": round(_t_tier_0 * 1000, 2),
+        },
+        "tier_1": (
+            {
+                "exploitation_prob": t1_result.get("exploitation_probability", 0.0),
+                "confidence": t1_result.get("confidence", 0.0),
+                "routing": t1_result.get("routing", ""),
+                "latency_ms": round(_t_tier_1 * 1000, 2),
+            }
+            if t1_result
+            else None
+        ),
+        "tier_2": (
+            {
+                "called": True,
+                "provider": getattr(tier_2, "LLM_PROVIDER", ""),
+                "model": getattr(tier_2, "LLM_MODEL", ""),
+                "text_conflict": t2_result.get("text_conflict", False),
+                "confidence": t2_result.get("confidence", 0.0),
+                "score_adjustment": t2_result.get("score_adjustment", 0),
+                "tokens_in": 0,
+                "tokens_out": 0,
+                "cost_usd": 0.0,
+                "latency_ms": round(_t_tier_2 * 1000, 2),
+            }
+            if t2_result
+            else {"called": False}
+        ),
+        "scoring": {
+            "final_score": scoring["total"],
+            "risk_band": scoring["band"],
+        },
+        "total_latency_ms": round(_total * 1000, 2),
+    }
 
     # Build detection reason
     reason_parts = [f"{detection_tier}: CVSS {payload.cvss_score}"]
@@ -325,7 +396,8 @@ async def ingest_vulnerability(payload: IngestRequest):
             operating_system, role, business_owner, technical_owner, registered_applications, dependent_assets,
             service_account, detection_tier, detection_reason,
             scanner_output_raw, weakness_template_raw, advisory_ref_id, advisory_quote, investigation_notes,
-            mitre_techniques_json, scoring_weights_json, asset_registry_json, summary_paragraphs_json
+            mitre_techniques_json, scoring_weights_json, asset_registry_json, summary_paragraphs_json,
+            tier_1_features
         ) VALUES (
             ?, ?, ?, ?, ?, ?,
             ?, ?, ?, ?,
@@ -340,7 +412,8 @@ async def ingest_vulnerability(payload: IngestRequest):
             ?, ?, ?, ?, ?, ?,
             ?, ?, ?,
             ?, ?, ?, ?, ?,
-            ?, ?, ?, ?, ?
+            ?, ?, ?, ?, ?,
+            ?
         )
     """,
         (
@@ -400,6 +473,7 @@ async def ingest_vulnerability(payload: IngestRequest):
             json.dumps(weights),
             json.dumps([]),
             json.dumps(summary_paragraphs),
+            tier_1_features_json,
         ),
     )
     new_id = cursor.lastrowid
@@ -458,9 +532,7 @@ async def ingest_vulnerability(payload: IngestRequest):
             substituted_epss=str(effective_epss),
             model_confidence=str(epss_sub["confidence"]),
             reason=epss_sub["reason"],
-        )
-        if epss_sub["substituted"]
-        else None,
+        ),
         score_gauge_value=scoring["total"],
         score_gauge_band=scoring["band"],
         gauge_band_colour=_band_colour(scoring["band"]),
@@ -481,18 +553,31 @@ async def ingest_vulnerability(payload: IngestRequest):
         ],
     )
 
+    if _verbose:
+        return CaseResponse(
+            queue_row=queue_row, case_view=case_view, trace_output=trace
+        )
     return CaseResponse(queue_row=queue_row, case_view=case_view)
 
 
-@router.post("/api/ingest/batch", response_model=list[CaseResponse])
-async def ingest_vulnerability_batch(payloads: list[IngestRequest]):
+@router.post(
+    "/api/ingest/batch",
+    response_model=list[CaseResponse],
+    response_model_exclude_none=True,
+)
+async def ingest_vulnerability_batch(
+    payloads: list[IngestRequest], request: Request = None
+):
     """Bulk ingest: accepts a list of IngestRequest, returns a list of CaseResponse.
 
     Each item is processed independently through the full pipeline.
     """
+    _verbose = False
+    if request is not None:
+        _verbose = request.headers.get("X-TriageMate-Verbose", "").lower() == "true"
     results: list[CaseResponse] = []
     for item in payloads:
-        result = await ingest_vulnerability(item)
+        result = await ingest_vulnerability(item, request=request)
         results.append(result)
     return results
 

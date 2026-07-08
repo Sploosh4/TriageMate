@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 
 
@@ -84,6 +84,7 @@ class QueueResponse(BaseModelConfig):
 class CaseResponse(BaseModelConfig):
     queue_row: QueueRow
     case_view: CaseViewData
+    trace_output: Optional[dict] = Field(default=None, alias="_trace")
 
 
 class MetricsResponse(BaseModelConfig):
@@ -181,3 +182,15 @@ class DriftMetricsResponse(BaseModelConfig):
     detection_tier_trend: list[dict]
     feature_drift: dict
     total_audited: int
+
+
+class MlDriftFeature(BaseModelConfig):
+    psi: float
+    status: str
+
+
+class MlDriftResponse(BaseModelConfig):
+    features: dict[str, MlDriftFeature]
+    composite_psi: float
+    status: str
+    total_samples: int
