@@ -1,6 +1,6 @@
 # TriageMate — Sprint NEXT+2 Research Findings
 
-> **Status: OUTDATED** — Research from 3 July 2026. Several findings (threat_intel_pulses variance, missing random seed, CIA default mismatch, CWE-stratified EPSS thresholds) have been resolved in Sprint NEXT. See ROADMAP.md §Sprint NEXT for current status. Historical analysis preserved for context.
+> **Status: OUTDATED** — Research from 3 July 2026. Several findings (threat_intel_pulses variance, missing random seed, CWE-stratified EPSS thresholds, KEV backfill, ExploitDB data load) have been resolved in Sprint NEXT. 2 of 5 critical pipeline drifts remain (CIA default mismatch, lateral_reachability type). Historical analysis preserved for context.
 
 **Prepared for:** Commander  
 **Date:** 2026-07-03  
@@ -12,7 +12,7 @@
 
 Five parallel research streams analysed TriageMate's exploitation prediction pipeline. Three cross-cutting themes emerged:
 
-1. **The training corpus is the binding constraint.** 516 of 1,631 KEV entries are missing from the training set (31.6% loss). 14 configuration drifts exist between the two pipeline implementations. Fixing these yields the highest per-hour ROI of any change.
+1. **The training corpus was the binding constraint.** ~~516 of 1,631 KEV entries~~ → **FIXED (Sprint NEXT):** All 1,631 KEV entries now in corpus via `--kev-ids` backfill (1,617 positive labels). ~~14 configuration drifts~~ → 5 critical drifts identified, 3 fixed. Two remain (CIA default mismatch, lateral_reachability type).
 
 2. **EPSS alone is a strong signal but not sufficient.** ROC-AUC 0.94 for KEV prediction, but best F1 is only 0.42. Stratified thresholds by CWE and CVSS band materially improve this and are trivial to implement.
 
@@ -56,13 +56,15 @@ Five parallel research streams analysed TriageMate's exploitation prediction pip
 | 9 | OSV published date | OSV API (already called) | Earliest disclosure date | 0–30d | **Free—already fetched, not stored** |
 | 10 | CWE-288 (Auth Bypass variant) | NVD (corpus) | 4.9×, median lag 22d | Day 0 | Free |
 
-**Key finding:** ExploitDB PoC and Metasploit fields in the corpus (`exploitdb_has_poc`, `metasploit_has_payload`) are **always False for all 186K entries** — zero variance. The data exists in `files_exploits.csv` (25,037 CVEs mapped, 20,097 verified) but was never loaded into the corpus. This is a pipeline gap, not a data gap.
+**Key finding:** ExploitDB PoC and Metasploit fields ~~are always False~~ → **FIXED (Sprint NEXT):** `build_training_corpus.py` now loads `files_exploits.csv` correctly. Training data has 5,232 EDB positives (2.06%) and 403 Metasploit positives (0.16%). **Note:** `nvd_corpus.json` still hardcodes these as False (pipeline gap in `fetch_nvd_corpus.py` lines 175-176); the fix is in the training corpus builder only.
 
 ---
 
 ## Q3 — Missing KEV Analysis
 
-**Question:** Why are 516 of 1,631 KEV entries missing from the training set?
+> **✅ FIXED (Sprint NEXT):** `--kev-ids` backfill flag + extended date range (1999–2026) + CVSS v3.0 fallback now capture all 1,631 KEV entries. Current training data has 1,617 positive labels (only 14 filtered by 30-day observation window). Original analysis preserved below.
+
+**Question (historical):** Why were 516 of 1,631 KEV entries missing from the training set? ~~FIXED.~~
 
 | Bucket | Count | Root Cause |
 |---|---|---|
@@ -72,7 +74,7 @@ Five parallel research streams analysed TriageMate's exploitation prediction pip
 
 **Year distribution of missing CVEs:** 2002(1), 2004(2), 2005(1), 2006(2), 2007(3), 2008(5), 2009(15), 2010(23), 2011(9), 2012(22), 2013(38), 2014(34), 2015(44), 2016(59), 2017(86), 2018(89), 2023(1), 2025(2), 2026(80).
 
-**Impact:** The pipeline has only 835 usable KEV positives (point-in-time, `dateAdded ≤ 2024-12-31`, in NVD corpus) instead of the full 1,631. That is 51.2% label loss.
+**Impact (historical):** ~~The pipeline had only 835 usable KEV positives~~ → **FIXED: 1,617 positives now.** That ~~is~~ was 51.2% label loss. Original data preserved for context.
 
 **Recommendation:** Add `--kev-ids` flag to `fetch_nvd_corpus.py` to fetch specific CVEs by ID regardless of date range. API cost: ~1.7 minutes for 516 queries. Recovers 100% of missing entries with zero corpus bloat (no need to re-fetch 40K+ pre-2019 non-KEV CVEs).
 
@@ -111,23 +113,25 @@ Five parallel research streams analysed TriageMate's exploitation prediction pip
 
 ## Q5 — Pipeline Alignment
 
+> **⚠️ PARTIALLY RESOLVED (Sprint NEXT):** 3 of 5 critical drifts fixed (published date, random.seed, threat_intel_pulses). 2 remain: `_cvss_cia` default mismatch and `lateral_reachability` type mismatch. AUC impact estimate (-0.07 to -0.15) was speculative and partially mitigated. Original analysis preserved below.
+
 **Question:** How much has the pipeline drifted between `build_training_corpus.py` and `train_xgboost.py`?
 
 **14 configuration drifts identified.** Five are critical:
 
 | # | Drift | Severity | Impact |
-|---|---|---|---|
-| 1 | `published` date **not stored** in `nvd_corpus.json` | 🔴 Critical | Chronological splits impossible; OBS_WINDOW filter uses synthetic dates off by days |
-| 2 | `_cvss_cia` default: TXB=0, BTC=2 | 🔴 Critical | Same CVE gets CVSS feature values 0 vs 2 if CIA metric missing |
-| 3 | `lateral_reachability` type: TXB=binary(0/1), BTC=count(1–30) | 🔴 Critical | Model learns ordinal, inference passes binary |
-| 4 | No `random.seed()` in BTC | 🔴 Critical | Non-reproducible builds; every corpus build different |
-| 5 | `threat_intel_pulses`: BTC hardcodes 0.0, TXB uses Poisson(λ) | 🟡 High | BTC gives zero-variance feature |
+|---|---|---|---|---|
+| ~~1~~ | ~~`published` date not stored~~ → **FIXED** | ✅ Resolved | TXB pipeline stores date; scripts pipeline still affected |
+| 2 | `_cvss_cia` default mismatch (training=0, inference=2) | 🔴 Critical | Same CVE gets different CVSS feature values |
+| 3 | `lateral_reachability` type mismatch (training=binary, inference=count) | 🔴 Critical | Model learns binary, inference passes count |
+| ~~4~~ | ~~No `random.seed()`~~ → **FIXED** | ✅ Resolved | Both pipelines now seed |
+| ~~5~~ | ~~`threat_intel_pulses` hardcoded 0.0~~ → **FIXED** | ✅ Resolved | Both pipelines now use Poisson sampler |
 
 **Other notable drifts:** `vendor_popularity_index` hardcoded 0.0 in TXB (real lookup in BTC); `patch_applied` probability model differs; `DATE_END` = 2024-12-31 (TXB) vs 2025-12-31 (fetch_nvd); `OBS_WINDOW_DAYS` = 30 (BTC) vs ~190 dynamic (TXB).
 
-**Cumulative estimated AUC impact:** −0.07 to −0.15 due to these drifts.
+**Cumulative estimated AUC impact (historical):** −0.07 to −0.15 due to these drifts. ~~Estimate was speculative (no empirical methodology). Impact partially mitigated by fixing 3 of 5 critical items.~~
 
-**Migration cost estimate:** ~13 hours for full fix. First 2 hours (critical items) recover most of the AUC loss.
+**Migration cost estimate (historical):** ~13 hours for full fix. ~~First 2 hours (critical items) recovered most AUC loss — 3 of 5 items fixed.~~ Remaining 2 drifts (CIA default + lateral_reachability) still need resolution.
 
 ---
 
@@ -139,7 +143,7 @@ Cross-checks by independent verifier found two corrections to the raw research:
 
 2. **KEV count corrected (856 → 835):** kev_cache shows 835 KEV entries in NVD corpus with `dateAdded ≤ 2024-12-31`, not 856. The 856 figure was an earlier calculation error caused by a string comparison quirk (`"" <= "2024-12-31"` evaluates True in Python for empty date strings). The correct count is 835.
 
-All 5 code-level claims verified PASS (published_date missing, CIA default mismatch, lateral_reachability type mismatch, no seed, threat_intel_pulses=0.0).
+All 5 code-level claims were verified PASS at the time of research (published_date missing, CIA default mismatch, lateral_reachability type mismatch, no seed, threat_intel_pulses=0.0). ~~3 of 5 now fixed.~~
 
 ---
 
@@ -181,14 +185,42 @@ All 5 code-level claims verified PASS (published_date missing, CIA default misma
 
 | Metric | Value |
 |---|---|
-| NVD corpus entries | 186,102 |
+| NVD corpus entries | 260,636 (2026-07) / 186,102 (2025-07 research date) |
 | EPSS cache entries | 344,852 total (140,487 overlap with NVD corpus) |
 | KEV total | 1,631 |
-| KEV in NVD corpus | 1,115 (68.4%) |
-| KEV missing from NVD corpus | 516 (31.6%) |
-| Usable KEV positives (point-in-time, ≤2024-12-31, in corpus) | 835 |
+| KEV in NVD corpus | ~~1,115~~ → **1,631 (100%)** fixed via --kev-ids |
+| KEV missing from NVD corpus | ~~516~~ → **0** |
+| Usable KEV positives (current training data) | ~~835~~ → **1,617** (14 filtered by OBS_WINDOW) |
 | Exploit-DB CVEs mapped | 25,037 |
 | Exploit-DB verified | 20,097 |
+| ExploitDB positives in training data | ~~0~~ → **5,232 (2.06%)** |
+| Metasploit positives in training data | ~~0~~ → **403 (0.16%)** |
 | Vendor popularity entries | 17,100 |
-| Pipeline config drifts identified | 14 |
-| Critical drifts | 5 |
+| Pipeline config drifts identified | 14 (5 critical: 3 fixed, 2 remain) |
+
+---
+
+## Post-Research Fixes Applied (2026-07-08)
+
+The following items documented above have been resolved since the original research date:
+
+| Fix | Sprint | Impact |
+|---|---|---|
+| `--kev-ids` backfill flag + extended date range (1999–2026) | Sprint NEXT | All 1,631 KEV → 1,617 usable positives (only 14 lost to OBS_WINDOW) |
+| `random.seed(42)` added to both pipelines | Sprint NEXT | Reproducible corpus builds |
+| `threat_intel_pulses` changed from hardcoded 0.0 to Poisson sampler | Sprint NEXT | Restored feature variance |
+| `published` date stored in TXB corpus (scripts still affected) | Sprint NEXT | Proper chronological splits in TXB pipeline |
+| ExploitDB CSV loaded into `build_training_corpus.py` | Sprint NEXT | 5,232 EDB + 403 Metasploit positives in training data |
+| CVSS v3.0 fallback in NVD fetch | Sprint NEXT | CVEs lacking v3.1 but having v3.0 now included |
+
+**Remaining:**
+| Item | Status |
+|---|---|
+| `_cvss_cia` default mismatch (training=0, inference=2) | 🔴 Unresolved |
+| `lateral_reachability` type mismatch (training=binary, inference=count) | 🔴 Unresolved |
+
+**Bugs discovered during 2026-07-08 verification audit (not yet fixed):**
+| Bug | File |
+|---|---|
+| Metasploit detection: training checks `author` field, inference checks `platform=="metasploit"` — find different matches | `build_training_corpus.py` vs `integrations/metasploit.py` |
+| Wrong column name: `exploitdb.py` reads `row.get("date", "")` but CSV column is `date_published` | `integrations/exploitdb.py` |

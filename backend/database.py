@@ -467,6 +467,63 @@ class DatabaseManager:
             )
         """)
 
+        conn.executescript("""
+            CREATE TABLE IF NOT EXISTS synthetic_assets (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                hostname TEXT NOT NULL UNIQUE,
+                ip TEXT DEFAULT '',
+                agency TEXT NOT NULL,
+                agency_domain TEXT DEFAULT '',
+                system_name TEXT DEFAULT '',
+                environment TEXT DEFAULT '',
+                os_platform TEXT DEFAULT '',
+                role TEXT DEFAULT '',
+                network_zone TEXT DEFAULT '',
+                is_internet_facing INTEGER DEFAULT 0,
+                is_dc INTEGER DEFAULT 0,
+                mission_prevalence TEXT NOT NULL,
+                public_wellbeing_impact TEXT NOT NULL,
+                confidence_mp REAL DEFAULT 0.0,
+                confidence_wi REAL DEFAULT 0.0,
+                in_holdout INTEGER DEFAULT 0,
+                source_research_ref TEXT DEFAULT '',
+                generated_at TEXT DEFAULT (datetime('now')),
+                validation_status TEXT DEFAULT 'pending',
+                validation_errors TEXT DEFAULT ''
+            )
+        """)
+
+        conn.executescript("""
+            CREATE TABLE IF NOT EXISTS synthetic_findings (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                cve_id TEXT NOT NULL,
+                hostname TEXT NOT NULL,
+                cvss_score REAL DEFAULT 0.0,
+                epss_score REAL DEFAULT 0.0,
+                cisa_kev INTEGER DEFAULT 0,
+                cwe_class TEXT DEFAULT '',
+                sector TEXT DEFAULT '',
+                agency TEXT NOT NULL,
+                exploit_maturity INTEGER DEFAULT 0,
+                has_public_poc INTEGER DEFAULT 0,
+                vendor_patch_status INTEGER DEFAULT 0,
+                source_research_ref TEXT DEFAULT '',
+                generated_at TEXT DEFAULT (datetime('now'))
+            )
+        """)
+
+        conn.executescript("""
+            CREATE TABLE IF NOT EXISTS research_references (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ref_id TEXT UNIQUE NOT NULL,
+                category TEXT NOT NULL,
+                finding TEXT NOT NULL,
+                source_url TEXT DEFAULT '',
+                confidence TEXT DEFAULT 'assumed',
+                notes TEXT DEFAULT ''
+            )
+        """)
+
         conn.commit()
 
     # ---- PostgreSQL schema ---------------------------------------------
@@ -668,6 +725,63 @@ class DatabaseManager:
 
                 resolved_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 resolution_reason TEXT DEFAULT 'demo_clear'
+            )
+        """)
+
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS synthetic_assets (
+                id SERIAL PRIMARY KEY,
+                hostname TEXT NOT NULL UNIQUE,
+                ip TEXT DEFAULT '',
+                agency TEXT NOT NULL,
+                agency_domain TEXT DEFAULT '',
+                system_name TEXT DEFAULT '',
+                environment TEXT DEFAULT '',
+                os_platform TEXT DEFAULT '',
+                role TEXT DEFAULT '',
+                network_zone TEXT DEFAULT '',
+                is_internet_facing BOOLEAN DEFAULT FALSE,
+                is_dc BOOLEAN DEFAULT FALSE,
+                mission_prevalence TEXT NOT NULL,
+                public_wellbeing_impact TEXT NOT NULL,
+                confidence_mp REAL DEFAULT 0.0,
+                confidence_wi REAL DEFAULT 0.0,
+                in_holdout BOOLEAN DEFAULT FALSE,
+                source_research_ref TEXT DEFAULT '',
+                generated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                validation_status TEXT DEFAULT 'pending',
+                validation_errors TEXT DEFAULT ''
+            )
+        """)
+
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS synthetic_findings (
+                id SERIAL PRIMARY KEY,
+                cve_id TEXT NOT NULL,
+                hostname TEXT NOT NULL,
+                cvss_score REAL DEFAULT 0.0,
+                epss_score REAL DEFAULT 0.0,
+                cisa_kev BOOLEAN DEFAULT FALSE,
+                cwe_class TEXT DEFAULT '',
+                sector TEXT DEFAULT '',
+                agency TEXT NOT NULL,
+                exploit_maturity INTEGER DEFAULT 0,
+                has_public_poc BOOLEAN DEFAULT FALSE,
+                vendor_patch_status BOOLEAN DEFAULT FALSE,
+                source_research_ref TEXT DEFAULT '',
+                generated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS research_references (
+                id SERIAL PRIMARY KEY,
+                ref_id TEXT UNIQUE NOT NULL,
+                category TEXT NOT NULL,
+                finding TEXT NOT NULL,
+                source_url TEXT DEFAULT '',
+                confidence TEXT DEFAULT 'assumed',
+                notes TEXT DEFAULT ''
             )
         """)
 

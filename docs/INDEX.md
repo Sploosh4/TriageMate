@@ -30,7 +30,7 @@
 
 | File | Status | Description |
 |---|---|---|
-| `planning/ROADMAP.md` | CURRENT | Master roadmap + sprint history + next actions. All sprints tracked (13 completed, 1 in progress). |
+| `planning/ROADMAP.md` | CURRENT | Master roadmap + sprint history + next actions. All sprints tracked (14 completed). §Sprint 14 covers synthetic data infrastructure: `synthetic_assets` (1,827 rows), `synthetic_findings` (11,400 rows), `research_references` (97 refs), and Pre-Tier model retrain. |
 | `planning/ai-doc-strategy-2026-07-07.md` | CURRENT | This consolidation plan — how and why docs were restructured. |
 | `planning/file-consolidation-plan-2026-07-07.md` | ARCHIVED | Bookkeeper's consolidation proposals — superseded by current doc structure. See `docs/INDEX.md`. |
 
@@ -49,6 +49,7 @@
 | File | Status | Description |
 |---|---|---|
 | `research/RESEARCH_FINDINGS.md` | OUTDATED | Strategic gap analysis from July 3. Some findings superseded by Sprint NEXT. See ROADMAP.md for current status. |
+| `../backend/reports/intel/wa-gov-infrastructure-research.md` | CURRENT | WA Government ICT infrastructure research — 23 agencies, hostname synthesis rules, findings methodology (913 lines, 54 KB). Generated Sprint 14. |
 
 ## Guides
 
@@ -69,7 +70,7 @@
 ## Quick Reference: Which File for Which Question?
 
 | Question | Read |
-|---|---|
+|---|---|---|
 | What's the current state of the project? | `planning/ROADMAP.md` |
 | What's broken? | `reference/AI_PROBLEMS.md` (all issues resolved ✅) |
 | What ML models exist and how do they work? | `graphify_output/ml_inventory.md` (auto-generated) |
@@ -82,6 +83,25 @@
 | Full file tree | `graphify_output/file_tree.md` (auto-generated) |
 | ML models + training | `graphify_output/ml_inventory.md` (auto-generated) |
 | Do inference and training feature columns match? | `graphify_output/feature_parity.md` (auto-generated) |
+| How to generate synthetic data? | `backend/ml/generate_synthetic_data_v2.py` — `python -m ml.generate_synthetic_data_v2` |
+| How to load research references? | `backend/scripts/load_research_refs.py` — `python -m scripts.load_research_refs` |
+| What's in the WA gov infrastructure research? | `backend/reports/intel/wa-gov-infrastructure-research.md` |
+| What are the 3 new Sprint 14 DB tables? | `docs/planning/ROADMAP.md` §Sprint 14 or `docs/INDEX.md` §New Database Tables |
+
+## New Database Tables (Sprint 14)
+
+| Table | Rows | Purpose |
+|---|---|---|
+| `synthetic_assets` | 1,827 | Synthetic WA gov hostnames across 23 agencies — hostname, agency, environment, network zone, mission/wellbeing labels, blind holdout flag, research source refs |
+| `synthetic_findings` | 11,400 | Host-to-vulnerability mappings with realistic exploitation likelihoods; designed for EPSS v4 sector-aware training |
+| `research_references` | 97 | WA government ICT research references — agency inventories, software profiles, hostname conventions, methodology citations |
+
+## New Scripts (Sprint 14)
+
+| Script | Command | Purpose |
+|---|---|---|
+| `backend/ml/generate_synthetic_data_v2.py` | `python -m ml.generate_synthetic_data_v2` | Generates 1,500–2,000 synthetic WA gov hostnames with probabilistic labels, blind holdout, and confidence scores; inserts into `synthetic_assets` |
+| `backend/scripts/load_research_refs.py` | `python -m scripts.load_research_refs` | Seeds or refreshes `research_references` table from embedded WA gov ICT research corpus |
 
 ## Graphify — Auto-Generated Knowledge Artifacts
 

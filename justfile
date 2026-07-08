@@ -154,15 +154,15 @@ graphify:
 
 # Open SQLite shell on the project database
 db-shell:
-    sqlite3 triagemate.db
+    sqlite3 {{BACKEND}}/triagemate.db
 
 # Show vulnerability count
 db-count:
-    sqlite3 triagemate.db "SELECT COUNT(*) FROM vulnerabilities;"
+    sqlite3 {{BACKEND}}/triagemate.db "SELECT COUNT(*) FROM vulnerabilities;"
 
 # Show database schema
 db-schema:
-    sqlite3 triagemate.db ".schema"
+    sqlite3 {{BACKEND}}/triagemate.db ".schema"
 
 # --- Full Sprint Gate ---
 

@@ -139,3 +139,27 @@ The original `backend/ml/cwe_classifier.py` was renamed to `cwe_classifier_depre
 The claim is **accurate in all respects**. The ModernBERT CWE encoder is deferred with no implementation, blocked on SecureBERT bugs (AI_PROBLEMS.md #1-3), and the active CWE resolution mechanism is `ingest_cwe.py` (NVD API + regex fallback).
 
 **No action required.** The documentation is consistent with the codebase state.
+
+---
+
+## Post-Audit Correction (2026-07-08)
+
+The original audit verified that the deferral claim is factually consistent with the
+codebase (no ModernBERT/SecureBERT implementation exists, deferral is documented).
+However, the **stated blocking reason is logically misleading**.
+
+**ModernBERT and SecureBERT are independent, alternative approaches — not dependent
+components.** Fixing SecureBERT head naming (AI_PROBLEMS #1) would not unblock
+ModernBERT, which is a different model requiring its own fine-tuning on NVD CWE
+mappings. The real reason the local CWE encoder is deferred:
+
+1. NVD API + regex (`ingest_cwe.py`) already provides authoritative CWE resolution
+2. A local ML model would add 656MB of weight, a training pipeline, and ongoing
+   maintenance — for marginal benefit
+3. When CWE resolution fails (NVD down + no CWE in description), the pipeline
+   degrades gracefully: the LLM prompt lacks CWE context and MITRE mapping is
+   empty, but scoring is unaffected
+
+The ROADMAP.md entry has been corrected to reflect this.
+
+The original factual findings (no ModernBERT code, deferral documented) remain valid.

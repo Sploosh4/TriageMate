@@ -25,6 +25,7 @@
 | **Sprint 11** | **Model Governance + Ops Hardening** | ✅ Complete |
 | **Sprint 12** | **Gap Hardening** | ✅ Complete |
 | **Sprint 13** | **EPSS Data Pipeline + Documentation** | ✅ Complete |
+| **Sprint 14** | **Research & Synthetic Data** | ✅ Complete (2026-07-08) |
 
 ---
 
@@ -125,7 +126,7 @@
 
 | Stage | Status | Notes |
 |---|---|---|
-| Pre-Tier | ✅ Done | Hostname dictionary + pre-tier model (60-dim RF) |
+| Pre-Tier | ✅ Done | Synthetic hostname pipeline (1,476 rows, 23 WA gov agencies) + pre-tier model (60-dim RF, 5-fold CV ~58-60%) |
 | Tier 0 | ✅ Done | Deterministic rules: KEV + CVSS + EPSS |
 | Tier 1 | ✅ Done | XGBoost (35 tabular + 384 SBERT, ROC-AUC 0.9459 retrained 2026-07-08; pre-fix label-leakage era was 0.9946, Sprint 3 post-fix was 0.9677) + probability-zoned routing (calibrated — see ML Artifacts) |
 | Tier 2 | ✅ Done | Multi-provider cloud LLM (OpenAI/Anthropic/Together) |
@@ -140,7 +141,7 @@
 | SBERT encoder (`encoder.py`) | ✅ Done — all-MiniLM-L6-v2, 384-dim (PCA removed v2.5) |
 | Training pipeline (`train_xgboost.py`) | ✅ Done — two-phase, checkpoint/resume, calibration, temporal bias fixes |
 | Training data v2 (`training_data_v2.npz`) | ✅ Done — Used for retrain 2026-07-08 | 253K samples, 419 columns (35 tabular + 384 SBERT). `osv_lead_days` is a metadata column (not a model input). Temporal + observation window filters applied. |
-| Pre-tier model (`pre_tier_model.pkl`) | ✅ Done — 60-dim MultiOutputClassifier |
+| Pre-tier model (`pre_tier_model.pkl`) | ✅ Done — 60-dim MultiOutputClassifier, 1,476 training rows, 351 blind holdout, 23 agencies, CV accuracy ~58-60% |
 | Calibrator (`xgboost_calibrator.pkl`) | ✅ Done — Platt scaling on val set, exported during retrain 2026-07-08 |
 | Threshold info (`threshold_info.json`) | ✅ Done — Classification threshold and F1 score exported during retrain 2026-07-08 |
 | Drift dashboard (`GET /api/drift`) | ✅ Done — CSS-only charts, 30-day trend, tier routing, risk bands |
@@ -176,7 +177,7 @@ See `AI_PROBLEMS.md` for the authoritative tracker.
 
 ## Sprint NEXT — All Items Complete ✅
 
-All Sprint NEXT items are complete. Item 1 (XGBoost retrain) was **completed 2026-07-08**. Items 2, 3, 6, 8 were already done. Items 4, 5, 7 remain deferred (see notes below).
+All Sprint NEXT items are complete. Item 1 (XGBoost retrain) was **completed 2026-07-08**. Items 2, 3, 5, 6, 8 were already done. Items 4, 7 remain deferred (see notes below).
 
 | # | Item | Status | Notes |
 |---|---|---|---|
@@ -184,7 +185,7 @@ All Sprint NEXT items are complete. Item 1 (XGBoost retrain) was **completed 202
 | 2 | Pre-Tier RandomForest classifier | ✅ Already existed | 60-dim MultiOutputClassifier with KNOWN_TAGS fallback. No changes needed. |
 | 3 | Model drift monitoring dashboard | ✅ Done | `GET /api/drift`, CSS-only charts, 4 panels |
 | 4 | Rate limiting + CI/CD | ✅ Complete | Rate limiting implemented and configurable via env vars. CI/CD pipeline expanded with Docker build, coverage reporting, and frontend syntax check jobs. |
-| 5 | Retrain EPSS substitution model | 📋 Todo | Blocked on sector-weighted exploitation data |
+| 5 | Retrain EPSS substitution model | ✅ Done — v3 operational | v3 model operational with real FIRST.org EPSS baselines (344K CVEs). Sector-aware v4 deferred for post-MVP. |
 | 6 | Tier 3 Human Review queue | ✅ Done | 4 endpoints, alembic 004 migration, frontend review panel |
 | 7 | Cloud deploy + HTTPS | 📋 Todo | Move from localhost to real deployment |
 | 8 | Alembic database migrations | ✅ Done | 5 versioned migrations, ad-hoc helpers removed, wired into startup |
@@ -193,8 +194,8 @@ All Sprint NEXT items are complete. Item 1 (XGBoost retrain) was **completed 202
 
 | Item | Reason |
 |------|--------|
-| Pre-Tier multi-label classifier | Blocked on labeled WA gov data |
-| Tier 2 CWE encoder (ModernBERT) | Blocked on SecureBERT bug fixes |
+| Pre-Tier multi-label classifier | ✅ Complete — trained on 1,476 research-backed synthetic hostnames, 60-dim RandomForest, 5-fold CV |
+| Tier 2 CWE encoder (ModernBERT) | Deferred — NVD API + regex sufficient for CWE resolution; local 656MB model adds complexity for marginal benefit |
 | Email / Slack notifications | Low immediate priority — no webhook config exists |
 | Cloud deploy + HTTPS | Out of MVP scope — needs Docker, reverse proxy, DNS |
 
@@ -228,7 +229,7 @@ Planned after model retraining completes. Focus: test coverage, operational guar
 | # | Item | Effort | Status |
 |---|------|--------|--------|
 | 16 | **Rate limiting** | 1 day | ✅ Done — Token bucket on ingest/clear/demo, configurable via env vars (`INGEST_RATE_PER_MIN`, `INGEST_BURST_SIZE`, etc.) |
-| 17 | **EPSS substitution retrain** | 1-2 days | 🔧 Assessed — see `backend/reports/intel/epss-retrain-assessment.md` |
+| 17 | **EPSS substitution retrain** | 1-2 days | ✅ v3 operational — real FIRST.org EPSS baselines (344K CVEs). Sector-aware v4 deferred for post-MVP. |
 | 18 | **Model comparison endpoint** | 1 hr | ✅ Done — `GET /api/model/status` with metadata + score comparison; visible in drift dashboard |
 
 ---
@@ -243,6 +244,32 @@ Planned after model retraining completes. Focus: test coverage, operational guar
 | 2 | Scoring Engine Unit Tests | 1 hr | ✅ Done | 16 tests across 5 test classes in `backend/tests/test_scoring.py`. Covers all 6 dimensions, band mapping, edge cases, Tier 2 integration. |
 | 3 | Frontend Dark Mode + JS Modernization | 2 hr | ✅ Done | 58 new CSS custom properties, ~50 hex→var conversions, full `[data-theme="dark"]` block, theme toggle with localStorage persistence + prefers-color-scheme detection. All 9 JS files converted from `var`→`let`/`const` (164 const + 7 let), `defer` on all script tags. |
 | 4 | Seed Data ML Dimension Verification | 30 min | ✅ Done | Bug found and fixed: CVE-2023-36884 had wrong `ml_exploitation_contribution` (6→7). All 7 rows verified correct. Report at `backend/reports/seed-data-ml-dimension.md`. |
+
+---
+
+## Sprint 14 — Research & Synthetic Data (8 July 2026)
+
+> Synthesised 1,476 WA gov hostnames from 23 agencies based on published WA government ICT infrastructure research. Built `synthetic_assets` table, retrained pre-tier model, and established research reference corpus.
+
+### Synthetic Data Infrastructure
+
+| Asset | Details |
+|-------|---------|
+| `synthetic_assets` table | 1,827 rows across 23 WA government agencies — hostnames, departments, classifications, network zones |
+| `synthetic_findings` table | 0 rows (table exists, EPSS v4 deferred) — DDL in database.py, no data loaded yet |
+| `research_references` table | 97 references sourced from WA government ICT research, naming conventions, and published infrastructure documentation |
+| Research report | `backend/reports/intel/wa-gov-infrastructure-research.md` — full methodology, agency inventory, hostname synthesis rules |
+
+### Pre-Tier Model Retrain
+
+| Metric | Value |
+|--------|-------|
+| Training rows | 1,476 synthetic hostnames |
+| Blind holdout | 351 rows (19.2%) |
+| Agencies | 23 WA gov departments |
+| Model | RandomForest MultiOutputClassifier (60-dim) |
+| Cross-validation | 5-fold, accuracy ~58-60% |
+| Tags predicted | `mission_prevalence`, `public_wellbeing_impact`, `internet_facing`, `data_classification` |
 
 ---
 

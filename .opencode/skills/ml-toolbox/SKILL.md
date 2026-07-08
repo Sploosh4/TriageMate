@@ -1,6 +1,6 @@
 ---
 name: ml-toolbox
-description: ML CLI commands for training, corpus building, data fetching, model evaluation. Use when running train_xgboost, build_training_corpus, fetch_nvd_corpus, refresh_caches, train_pre_tier, or any ML pipeline script.
+description: ML CLI commands for training, synthetic data, corpus building, data fetching, model evaluation. Use when running train_xgboost, generate_synthetic_data_v2, train_pre_tier, build_training_corpus, fetch_nvd_corpus, refresh_caches, load_research_refs, or any ML pipeline script.
 ---
 
 # ML Toolbox — CLI Commands
@@ -16,12 +16,24 @@ python -m ml.train_xgboost --train       # train only (skip gather)
 python -m ml.train_xgboost --gather      # gather only (skip train)
 
 # Pre-Tier RandomForest classifier
-python -m ml.train_pre_tier
+python -m ml.train_pre_tier                # JSON files (legacy)
+python -m ml.train_pre_tier --from-db       # SQLite synthetic_assets (Sprint 14+)
 
 # EPSS substitution models
 python -m ml.train_epss_v2
 python -m ml.train_epss_v3
 python -m ml.train_epss_substitutor
+```
+
+## Synthetic Data (Sprint 14+)
+
+```bash
+# Generate synthetic WA gov hostnames (1,500–2,000 rows)
+python -m ml.generate_synthetic_data_v2      # inserts into synthetic_assets table
+# Also produces: backend/ml/synthetic_data_v2.json, backend/ml/synthetic_holdout_v2.json
+
+# Load research references into DB
+python -m scripts.load_research_refs          # seeds the research_references table
 ```
 
 ## Data Pipeline
@@ -77,6 +89,9 @@ python -m ml.ingest_docs
 | Checkpoint | `backend/ml/nvd_checkpoint.json` |
 | Training JSON | `backend/ml/pretier_training_data.json` |
 | Supplemental | `backend/ml/pretier_supplemental.json` |
+| Synthetic data v2 (full) | `backend/ml/synthetic_data_v2.json` |
+| Synthetic data v2 (holdout) | `backend/ml/synthetic_holdout_v2.json` |
+| Pre-Tier metrics | `backend/ml/pre_tier_metrics.json` |
 
 ## Post-Training Validation
 
@@ -91,6 +106,9 @@ pytest backend/tests/ -v
 python -m analysis.calibration_audit
 python -m analysis.epss_eval
 python -m analysis.feature_parity_check
+
+# Synthetic data / DB integrity checks
+python -c "from database import get_db; db = get_db(); print('Assets:', db.execute('SELECT COUNT(*) FROM synthetic_assets').fetchone()[0]); print('Findings:', db.execute('SELECT COUNT(*) FROM synthetic_findings').fetchone()[0]); print('Refs:', db.execute('SELECT COUNT(*) FROM research_references').fetchone()[0]); db.close()"
 ```
 
 ## Training Screens
