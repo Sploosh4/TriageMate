@@ -30,7 +30,7 @@
 
 | File | Status | Description |
 |---|---|---|
-| `planning/ROADMAP.md` | CURRENT | Master roadmap + sprint history + next actions. All sprints tracked (16 completed: Sprints 1–16). §Sprint 14 covers synthetic data infrastructure: `synthetic_assets` (1,827 rows), `synthetic_findings` (777 rows), `research_references` (97 refs), Pre-Tier model retrain, EPSS v4 sector-aware model, system name embedding, and `just retrain-all` automation. §Sprint 16 covers ML monitoring foundation for Pre-Tier and EPSS models. |
+| `planning/ROADMAP.md` | CURRENT | Forward-looking roadmap post-Sprint 16b. Current state table, Sprint 17 (Demo Integration), Sprint 18 (Quick Wins + Monitoring), Medium-Term Engineering, and Post-MVP Infrastructure. Archived previous roadmap to `archive/ROADMAP-2026-07-09.md`. |
 | `planning/HANDOFF-2026-07-08.md` | CURRENT | Handoff document covering ML drift monitoring, Tier 2 LLM query coverage, network topology/Sentinel status, and stress testing status. Answers what was deferred post-MVP. |
 | `planning/ai-doc-strategy-2026-07-07.md` | CURRENT | This consolidation plan — how and why docs were restructured. |
 | `archive/file-consolidation-plan-2026-07-07.md` | ARCHIVED | Bookkeeper's consolidation proposals — superseded by current doc structure. See `docs/INDEX.md`. |
@@ -65,6 +65,7 @@
 | `archive/SPRINT_NEXT_PLAN.md` | ARCHIVED | Sprint NEXT detailed plan (merged into ROADMAP.md) |
 | `archive/handoffs/SPRINT_9_HANDOFF.md` | ARCHIVED | Sprint 9 handoff — data supremacy. |
 | `archive/sprints-1-6/*.md` | ARCHIVED | Sprint 1-6 handoffs, plans, team briefings. |
+| `archive/ROADMAP-2026-07-09.md` | ARCHIVED | Sprint 1–16b roadmap — superseded by new forward-looking ROADMAP.md (9 July 2026). |
 
 ---
 
@@ -75,22 +76,22 @@
 | What's the current state of the project? | `planning/ROADMAP.md` |
 | What's broken? | `reference/AI_PROBLEMS.md` (all historical issues resolved) |
 | What ML models exist and how do they work? | `graphify_output/ml_inventory.md` (auto-generated) |
-| How do I train the model? | `planning/ROADMAP.md` §Sprint NEXT |
-| How do I retrain all ML models from scratch? | Use `just retrain-all` — see ROADMAP.md §Sprint 14 |
+| How do I train the model? | `planning/ROADMAP.md` §ML Models table or `backend/ml/` scripts |
+| How do I retrain all ML models from scratch? | Use `just retrain-all` — see ROADMAP.md §Current State (ML Models table) |
 | How do I set up on Windows? | `guides/WINDOWS_SETUP.md` |
 | What WA gov conventions apply? | `reference/hostname-standards.md` |
-| What data does the corpus contain? | `planning/ROADMAP.md` §Data Corpus |
+| What data does the corpus contain? | `planning/ROADMAP.md` §Current State (Enrichment sources: 12 integrations) |
 | What's the scoring engine logic? | `architecture/MVP_SCOPE.md` §2.5 (then verify against current code) |
-| What pipeline stages exist? | `planning/ROADMAP.md` §Pipeline Stages |
+| What pipeline stages exist? | `planning/ROADMAP.md` §Current State (Pipeline stages table row) |
 | Full file tree | `graphify_output/file_tree.md` (auto-generated) |
 | ML models + training | `graphify_output/ml_inventory.md` (auto-generated) |
 | Do inference and training feature columns match? | `graphify_output/feature_parity.md` (auto-generated) |
 | How to generate synthetic data? | `backend/ml/generate_synthetic_data_v2.py` — `python -m ml.generate_synthetic_data_v2` |
 | How to load research references? | `backend/scripts/load_research_refs.py` — `python -m scripts.load_research_refs` |
 | What's in the WA gov infrastructure research? | `backend/reports/intel/wa-gov-infrastructure-research.md` |
-| What are the 3 new Sprint 14 DB tables? | `docs/planning/ROADMAP.md` §Sprint 14 or `docs/INDEX.md` §New Database Tables |
-| What is EPSS v4 and where does it fit? | Fallback model in Tier 1: v4 → v3 → v2 → v1 → heuristic rule engine. See ROADMAP.md §Sprint 14. |
-| What is system name embedding? | Feature index 59: `system_category` (ordinal 0-8) replaces binary `has_known_system` in Pre-Tier. See ROADMAP.md §Pre-Tier Model Retrain. |
+| What are the 3 new Sprint 14 DB tables? | `docs/INDEX.md` §New Database Tables (Sprint 14 detail preserved here) |
+| What is EPSS v4 and where does it fit? | Fallback model in Tier 1: v4 → v3 → v2 → v1 → heuristic rule engine. See ROADMAP.md §Current State (ML Models table: EPSS v4). |
+| What is system name embedding? | Feature index 59: `system_category` (ordinal 0-8) replaces binary `has_known_system` in Pre-Tier. See `archive/ROADMAP-2026-07-09.md` §Sprint 14 for original detail. |
 
 ## New Database Tables (Sprint 14)
 
