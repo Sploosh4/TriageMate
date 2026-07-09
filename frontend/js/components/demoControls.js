@@ -7,13 +7,13 @@ const demoState = {
 };
 
 async function fetchDemoScenarios() {
-  const res = await fetch('/api/demo/scenarios');
+  const res = await _authFetch('/api/demo/scenarios');
   if (!res.ok) throw new Error('Failed to fetch scenarios');
   return res.json();
 }
 
 async function generateDemoWave(payload) {
-  const res = await fetch('/api/demo/generate', {
+  const res = await _authFetch('/api/demo/generate', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
@@ -23,7 +23,7 @@ async function generateDemoWave(payload) {
 }
 
 async function clearAllFindings() {
-  const res = await fetch('/api/ingest/clear', { method: 'POST' });
+  const res = await _authFetch('/api/ingest/clear', { method: 'POST' });
   if (!res.ok) throw new Error('Clear failed: ' + res.status);
   return res.json();
 }

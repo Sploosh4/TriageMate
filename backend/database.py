@@ -376,10 +376,7 @@ class DatabaseManager:
 
                 -- Security context (Sprint 17)
                 telemetry_json TEXT,
-                network_context_json TEXT,
-
-                -- Security context contribution (Sprint 18)
-                security_context_contribution INTEGER DEFAULT 0
+                network_context_json TEXT
             )
         """)
 
@@ -656,10 +653,7 @@ class DatabaseManager:
 
                 -- Security context (Sprint 17)
                 telemetry_json TEXT,
-                network_context_json TEXT,
-
-                -- Security context contribution (Sprint 18)
-                security_context_contribution INTEGER DEFAULT 0
+                network_context_json TEXT
             )
         """)
 

@@ -1,3 +1,4 @@
+import html
 import json
 import logging
 import os as _os
@@ -427,7 +428,7 @@ async def ingest_vulnerability(payload: IngestRequest, request: Request = None):
             tier_2_text_conflict, tier_2_conflict_note, tier_2_rag_result, tier_2_confidence, tier_2_resolution_summary,
             priority_score, risk_band,
             cvss_contribution, epss_contribution, asset_criticality_contribution, exposure_contribution,
-            patch_remediation_contribution, ml_exploitation_contribution,
+            patch_remediation_contribution, ml_exploitation_contribution, security_context_contribution,
             epss_substituted, epss_substituted_value, epss_substitution_confidence, epss_substitution_reason,
             data_classification, network_zone, interface_type, patch_cycle, last_patch_date, last_scan_date,
             operating_system, role, business_owner, technical_owner, registered_applications, dependent_assets,
@@ -444,7 +445,7 @@ async def ingest_vulnerability(payload: IngestRequest, request: Request = None):
             ?, ?, ?, ?, ?,
             ?, ?,
             ?, ?, ?, ?,
-            ?,
+            ?, ?,
             ?, ?, ?, ?,
             ?, ?, ?, ?, ?, ?,
             ?, ?, ?, ?, ?, ?,
@@ -484,6 +485,7 @@ async def ingest_vulnerability(payload: IngestRequest, request: Request = None):
             scoring["dimensions"]["exposure"],
             scoring["dimensions"]["patch"],
             scoring["dimensions"]["ml_exploitation"],
+            scoring["dimensions"]["security_context"],
             epss_sub["substituted"],
             effective_epss if epss_sub["substituted"] else None,
             epss_sub["confidence"] if epss_sub["substituted"] else None,
@@ -510,7 +512,33 @@ async def ingest_vulnerability(payload: IngestRequest, request: Request = None):
             notes,
             json.dumps(mitre_techniques),
             json.dumps(weights),
-            json.dumps([]),
+            json.dumps(
+                [
+                    {"label": "Hostname", "value": payload.hostname},
+                    {"label": "CVSS Score", "value": str(payload.cvss_score)},
+                    {
+                        "label": "EPSS Score",
+                        "value": f"{raw_epss}"
+                        + (" (not provided)" if not epss_available else "")
+                        + (f" -> {effective_epss}" if epss_sub["substituted"] else ""),
+                    },
+                    {"label": "Data Classification", "value": data_classification},
+                    {
+                        "label": "Internet-Facing",
+                        "value": "Yes" if internet_facing else "No",
+                    },
+                    {"label": "Tier", "value": detection_tier},
+                    {
+                        "label": "Network Zone",
+                        "value": asset_ctx.get("network_zone", ""),
+                    },
+                    {"label": "Role", "value": asset_ctx.get("role", "")},
+                    {
+                        "label": "Operating System",
+                        "value": asset_ctx.get("operating_system", ""),
+                    },
+                ]
+            ),
             json.dumps(summary_paragraphs),
             tier_1_features_json,
             json.dumps(telemetry) if telemetry else None,
@@ -561,8 +589,10 @@ async def ingest_vulnerability(payload: IngestRequest, request: Request = None):
         mitre_techniques=mitre_techniques,
         text_conflict=t2_result["text_conflict"] if t2_result else False,
         text_conflict_note=t2_result["conflict_note"] if t2_result else "",
-        scanner_output=payload.scanner_output_raw or payload.raw_description or "",
-        weakness_template=payload.weakness_template_raw or "",
+        scanner_output=html.escape(
+            payload.scanner_output_raw or payload.raw_description or ""
+        ),
+        weakness_template=html.escape(payload.weakness_template_raw or ""),
         advisory_ref_id=advisory_ref_id,
         advisory_quote=advisory_quote,
         investigation_notes=notes,
@@ -777,6 +807,7 @@ async def clear_all_findings():
                 cvss_contribution, epss_contribution,
                 asset_criticality_contribution, exposure_contribution,
                 patch_remediation_contribution, ml_exploitation_contribution,
+                security_context_contribution,
                 tier_1_features,
                 epss_substituted, epss_substituted_value,
                 epss_substitution_confidence, epss_substitution_reason,
@@ -789,6 +820,7 @@ async def clear_all_findings():
                 advisory_ref_id, advisory_quote, investigation_notes,
                 mitre_techniques_json, scoring_weights_json,
                 asset_registry_json, summary_paragraphs_json,
+                telemetry_json, network_context_json,
                 created_at, updated_at, last_recheck_date,
                 audit_selected, audit_result, audit_date,
                 resolution_reason
@@ -804,7 +836,7 @@ async def clear_all_findings():
                    priority_score, risk_band,
                    cvss_contribution, epss_contribution,
                    asset_criticality_contribution, exposure_contribution,
-                   patch_remediation_contribution, ml_exploitation_contribution,
+                   patch_remediation_contribution, ml_exploitation_contribution, security_context_contribution,
                    tier_1_features,
                    epss_substituted, epss_substituted_value,
                    epss_substitution_confidence, epss_substitution_reason,
@@ -817,6 +849,7 @@ async def clear_all_findings():
                    advisory_ref_id, advisory_quote, investigation_notes,
                    mitre_techniques_json, scoring_weights_json,
                    asset_registry_json, summary_paragraphs_json,
+                   telemetry_json, network_context_json,
                    created_at, updated_at, last_recheck_date,
                    audit_selected, audit_result, audit_date,
                    'demo_clear'

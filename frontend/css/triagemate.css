@@ -86,6 +86,17 @@
   --review-success-text: #166534;
   --review-success-border: #BBF7D0;
   --review-conflict-border: #FDE68A;
+
+  /* Panel 5: Security Context theme variables */
+  --surface: var(--panel-bg);
+  --surface-alt: var(--page-bg);
+  --text-muted: var(--text-secondary);
+  --danger: #EF4444;
+  --warning: #F59E0B;
+  --success: #22C55E;
+  --info: #3B82F6;
+  --mono: 'JetBrains Mono', 'Consolas', monospace;
+  --text: var(--text-primary);
 }
 
 /* Dark Theme */
@@ -154,6 +165,17 @@
   --review-success-text: #4ade80;
   --review-success-border: #22c55e;
   --review-conflict-border: #a16207;
+
+  /* Panel 5: Security Context theme variables (dark) */
+  --surface: var(--panel-bg);
+  --surface-alt: var(--page-bg);
+  --text-muted: var(--text-secondary);
+  --danger: #F87171;
+  --warning: #FBBF24;
+  --success: #4ADE80;
+  --info: #60A5FA;
+  --mono: 'JetBrains Mono', 'Consolas', monospace;
+  --text: var(--text-primary);
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; }
@@ -371,7 +393,7 @@ body {
 
 /* ===== SCREEN 2: CASE VIEW ===== */
 
-#back-bar {
+.back-bar {
   padding: 12px var(--panel-padding) 0;
   flex-shrink: 0;
 }

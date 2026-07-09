@@ -220,6 +220,22 @@ def seed_demo_documents(db: Optional[lancedb.DBConnection] = None) -> int:
     embedder = _get_embedder()
     table = db.open_table(TABLE_NAME)
 
+    # Dedup: skip if any documents already exist in the table
+    try:
+        existing_count = table.count_rows()
+        if existing_count > 0:
+            logger.info(
+                "Demo documents already seeded (%d docs in table), skipping",
+                existing_count,
+            )
+            return 0
+    except Exception:
+        # If count_rows fails, fall back to checking for a known doc
+        existing = table.search().where("source = 'CMDB Export'").limit(1).to_list()
+        if existing:
+            logger.info("Demo documents already seeded, skipping")
+            return 0
+
     texts = [doc["text"] for doc in _SEED_DOCUMENTS]
     vectors = embedder.encode(texts, show_progress_bar=False)
 
@@ -284,8 +300,24 @@ def _empty_result(status: str, message: str) -> dict:
     return {"documents": [], "status": status, "rag_context": message}
 
 
-_rag_cache = {}
+_rag_cache: dict = {}
 _RAG_CACHE_TTL = 60
+_RAG_CACHE_MAX_SIZE = 1024
+
+
+def _evict_rag_cache() -> None:
+    """Evict oldest 25% of entries when cache exceeds max size."""
+    if len(_rag_cache) <= _RAG_CACHE_MAX_SIZE:
+        return
+    sorted_keys = sorted(_rag_cache.keys(), key=lambda k: _rag_cache[k].get("ts", 0))
+    evict_count = _RAG_CACHE_MAX_SIZE // 4  # 256
+    for old_key in sorted_keys[:evict_count]:
+        del _rag_cache[old_key]
+    logger.debug(
+        "Evicted %d stale entries from RAG cache (%d remaining)",
+        evict_count,
+        len(_rag_cache),
+    )
 
 
 def query_rag(hostname: str, cwe_class: str = "", top_k: int = 3) -> dict:
@@ -349,6 +381,7 @@ def query_rag(hostname: str, cwe_class: str = "", top_k: int = 3) -> dict:
             f"Configuration status is unknown.",
         )
         _rag_cache[cache_key] = {"result": result, "ts": now}
+        _evict_rag_cache()
         return result
 
     rag_text = "\n\n".join(
@@ -361,4 +394,5 @@ def query_rag(hostname: str, cwe_class: str = "", top_k: int = 3) -> dict:
         "rag_context": rag_text[:MAX_RAG_CHARS],
     }
     _rag_cache[cache_key] = {"result": result, "ts": now}
+    _evict_rag_cache()
     return result

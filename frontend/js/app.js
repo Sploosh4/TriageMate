@@ -45,6 +45,10 @@ async function init() {
   // initAuth will show the login modal and we stop here.
   if (typeof initAuth === 'function') {
     await initAuth();
+    // If auth is required but not authenticated, stop here (modal is shown)
+    if (window.AUTH_REQUIRED && !window.isAuthenticated()) {
+      return;
+    }
   }
 
   // Check demo mode on page load — show watermark if active

@@ -495,6 +495,8 @@ def build_feature_vector(
         "is_traversal_signature": int(
             any(re.search(p, description) for p in _TRAVERSAL_PATTERNS)
         ),
+        "cisa_kev": bool(payload.cisa_kev) if hasattr(payload, "cisa_kev") else False,
+        "cwe_class": cwe_class,
         "threat_intel_status": {
             "internet_scan": _synthetic_scan_status(internet_scan),
             "threat_pulses": _threat_pulses_status(otx_result),

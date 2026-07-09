@@ -142,6 +142,20 @@ Documentation of incorrect AI-generated code, mismatches between code and actual
 
 ---
 
+## Sprint 17 — Seed Data Recalculation & Hostname Regex (FIXED)
+
+### ~~19. Seed data scores out of sync with scoring engine~~ ✅ FIXED (Sprint 17)
+**Files:** `backend/seed_data.py`, `backend/tests/test_queue.py`, `docs/planning/ROADMAP.md`, `docs/INDEX.md`, `docs/planning/HANDOFF-2026-07-08.md`
+**Problem:** After Sprint 17 added the 7th Security Context scoring dimension and recalculated seed data, the priority scores in `seed_data.py` changed from their old values. The test expectations in `test_queue.py` (EXPECTED_PRIORITY_SCORES) and documentation references (`ROADMAP.md`, `INDEX.md`, `HANDOFF-2026-07-08.md`) still referenced the old scores.
+**Fix applied:** Updated `EXPECTED_PRIORITY_SCORES` in `test_queue.py` to `[94, 92, 86, 76, 71, 63, 57]` matching the queue sort order. Updated all stale score references across documentation.
+
+### ~~20. Hostname regex not matching WA gov conventions~~ ✅ FIXED (Sprint 17)
+**Files:** `backend/pipeline/pre_tier.py`
+**Problem:** The hostname validation regex in the Pre-Tier pipeline did not correctly match all valid WA government hostname patterns per the `hostname-standards.md` specification.
+**Fix applied:** Regex updated to correctly capture agency subdomain patterns and environment/role indicators.
+
+---
+
 ## LOW (Nuisance / cosmetic — now fixed)
 
 ### ~~11. LanceDB vector store path is ephemeral~~ ✅ FIXED (Sprint 2)

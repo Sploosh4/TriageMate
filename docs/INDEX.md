@@ -80,7 +80,7 @@
 | How do I retrain all ML models from scratch? | Use `just retrain-all` — see ROADMAP.md §Current State (ML Models table) |
 | How do I set up on Windows? | `guides/WINDOWS_SETUP.md` |
 | What WA gov conventions apply? | `reference/hostname-standards.md` |
-| What data does the corpus contain? | `planning/ROADMAP.md` §Current State (Enrichment sources: 12 integrations) |
+| What data does the corpus contain? | `planning/ROADMAP.md` §Current State (Enrichment sources: 14 integrations) |
 | What's the scoring engine logic? | `architecture/MVP_SCOPE.md` §2.5 (then verify against current code) |
 | What pipeline stages exist? | `planning/ROADMAP.md` §Current State (Pipeline stages table row) |
 | Full file tree | `graphify_output/file_tree.md` (auto-generated) |
@@ -138,7 +138,7 @@
 | **Network Context** | `backend/integrations/network_context.py` | Produces network blast-radius scores and peer topology from `synthetic_assets` table. Ingest pipeline calls this to populate `network_context_json`. |
 | **Panel 5 Frontend** | `frontend/index.html`, `frontend/js/components/caseView.js`, `frontend/css/triagemate.css` | New case-view panel for security telemetry (Sentinel incidents, EDR alerts, process evidence) and network context (blast radius gauge, zone display, peer counts). |
 | **7th Scoring Dimension** | `backend/scoring.py` | "Security Context" (max 5): composite of telemetry threat score (×3) and network blast radius (×2), clamped to 0–5. |
-| **Score Contract** | `backend/seed_data.py` | Updated expected scores: **98/91/73/66/58/44/26** (was 94/87/71/63/55/41/22 before Sprint 17). |
+| **Score Contract** | `backend/seed_data.py` | Updated expected scores: **94/92/86/76/71/63/57** (Sprint 17 recalculation). |
 
 ## Graphify — Auto-Generated Knowledge Artifacts
 

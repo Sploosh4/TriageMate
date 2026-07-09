@@ -17,7 +17,7 @@ from pathlib import Path
 
 logger = logging.getLogger("triagemate.cmdb")
 
-WA_GOV_HOSTNAME_RE = re.compile(r"^[\w-]+\.\w+\.wa\.gov\.au$")
+WA_GOV_HOSTNAME_RE = re.compile(r"^[\w-]+(?:\.\w+)+\.(?:wa\.gov\.au|wa\.edu\.au)$")
 
 _MOCK_CMDB_PATH = Path(__file__).parent.parent / "data" / "mock_cmdb.json"
 _FILE_CMDB: dict[str, dict] | None = None

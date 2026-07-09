@@ -12,6 +12,7 @@ Environment variables:
 """
 
 import os
+import logging
 from datetime import datetime, timedelta, timezone
 
 import bcrypt
@@ -19,10 +20,17 @@ import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
+logger = logging.getLogger("triagemate.auth")
+
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
 SECRET_KEY = os.getenv("TRIAGEMATE_JWT_SECRET", "dev-secret-change-me")
+if SECRET_KEY == "dev-secret-change-me":
+    logger.warning(
+        "TRIAGEMATE_JWT_SECRET is set to the insecure default 'dev-secret-change-me'. "
+        "Set a strong random secret in production via the TRIAGEMATE_JWT_SECRET environment variable."
+    )
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 REFRESH_TOKEN_EXPIRE_DAYS = 7

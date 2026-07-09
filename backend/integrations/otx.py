@@ -54,7 +54,12 @@ def query_otx_pulses(cve_id: str) -> dict:
         pulse_info = data.get("pulse_info", {})
         pulses = pulse_info.get("pulses", [])
         pulse_count = len(pulses)
-        indicators = data.get("indicator_count", 0) or pulse_info.get("count", 0)
+        raw_indicator_count = data.get("indicator_count")
+        indicators = (
+            raw_indicator_count
+            if raw_indicator_count is not None
+            else pulse_info.get("count", 0)
+        )
 
         targeted_countries = list(
             set(

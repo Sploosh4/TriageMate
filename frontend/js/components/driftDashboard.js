@@ -25,7 +25,7 @@ function loadModelStatusPanel() {
   var panel = document.getElementById('model-info-panel');
   if (!panel) return;
 
-  fetch('/api/model/status')
+  _authFetch('/api/model/status')
     .then(function(r) { return r.json(); })
     .then(function(data) {
       var v = data.active_version;
@@ -33,8 +33,8 @@ function loadModelStatusPanel() {
         panel.innerHTML = '<div class="drift-panel"><div class="drift-panel-title">Deployed Model</div><div class="drift-no-data">No active model</div></div>';
         return;
       }
-      var samples = v.metrics.training_samples ? v.metrics.training_samples.toLocaleString() : 'N/A';
-      var rocAuc = v.metrics.roc_auc != null ? v.metrics.roc_auc : 'N/A';
+      var samples = (v.metrics && v.metrics.training_samples != null) ? v.metrics.training_samples.toLocaleString() : 'N/A';
+      var rocAuc = (v.metrics && v.metrics.roc_auc != null) ? v.metrics.roc_auc : 'N/A';
       var trainedDate = v.created_at ? new Date(v.created_at).toLocaleDateString() : 'N/A';
       var html = '<div class="model-info-bar">';
       html += '<div class="model-info-item"><span class="model-info-label">Deployed Model</span><span class="model-info-value">' + v.label + '</span></div>';
@@ -58,6 +58,11 @@ function renderDriftDashboard(data, mlDriftData) {
     container.innerHTML = '<div class="review-empty">No audited cases yet. Drift metrics will appear after cases are resolved.</div>';
     return;
   }
+
+  // Guard against null/undefined nested objects
+  data.tierRouting = data.tierRouting || { auto: 0, escalated: 0 };
+  data.riskBandDistribution = data.riskBandDistribution || {};
+  data.featureDrift = data.featureDrift || { avgCvss: '--', avgEpss: '--', avgPriority: '--' };
 
   let html = '<div class="drift-grid">';
 

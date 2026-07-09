@@ -212,29 +212,29 @@ function _wireLoginUI() {
 
 // ---------------------------------------------------------------------------
 // Public entry point — called from app.js after DOMContentLoaded
+// Expose globals so app.js can check auth status
 // ---------------------------------------------------------------------------
+
+window.isAuthenticated = isAuthenticated;
 
 async function initAuth() {
   const status = await _checkAuthStatus();
+  window.AUTH_REQUIRED = status.authRequired;
 
   if (!status.authRequired) {
     AUTH_REQUIRED = false;
     AUTH_LOADED = true;
-    return;  // no auth UI needed, proceed normally
+    return;
   }
 
   AUTH_REQUIRED = true;
 
   if (isAuthenticated()) {
     AUTH_LOADED = true;
-    return;  // already logged in, proceed
+    return;
   }
 
-  // Not authenticated — show login modal
   _wireLoginUI();
   _showLoginModal();
   AUTH_LOADED = true;
 }
-
-// Expose initAuth globally so app.js can call it
-window.initAuth = initAuth;

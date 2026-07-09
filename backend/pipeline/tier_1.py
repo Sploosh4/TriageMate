@@ -43,7 +43,8 @@ def evaluate_tier_1(features: dict) -> dict:
         OSError,
         RuntimeError,
         TypeError,
-    ):
+    ) as e:
+        logger.warning("XGBoost model unavailable, using heuristic fallback: %s", e)
         result = _heuristic_evaluate(features)
         logger.info(
             "Tier 1 heuristic: prob=%.3f, conf=%.3f, routing=%s",

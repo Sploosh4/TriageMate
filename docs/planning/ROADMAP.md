@@ -15,7 +15,7 @@
 | Sprints completed | 16, 16b, 17 |
 | Pipeline stages | Pre-Tier → Tier 0 → Tier 1 → Tier 2 → Tier 3 (Human Review) |
 | Enrichment sources | 14 integrations (NVD, OSV, OTX, ExploitDB, Metasploit, Tenable, GreyNoise [deprecated], CMDB [stub], Advisories [stub], MITRE, CWE classifier, Demo generator, **Synthetic Telemetry**, **Network Context**) |
-| Demo rows | 7 CVEs, scores 98/91/73/66/58/44/26 (±3 tolerance) |
+| Demo rows | 7 CVEs, scores 94/92/86/76/71/63/57 (±3 tolerance) |
 | Auth | JWT (disabled by default, env-var-gated) |
 | Database | SQLite (default), PostgreSQL (available via DATABASE_URL) |
 | CI/CD | `.github/workflows/ci.yml` — full pipeline (matrix test, coverage, lint, Docker) |
@@ -40,7 +40,7 @@
 | **3** | **Alembic Migration 008** | ✅ Done | Adds `telemetry_json`, `network_context_json` to both tables. |
 | **4** | **7th Scoring Dimension** | ✅ Done | "Security Context" (max 5, total weight 112). Composite: threat_score × 3 + blast_radius × 2. |
 | **5** | **Panel 5 Frontend** | ✅ Done | Full-width security context panel below scoring breakdown. Two-column telemetry grid + blast radius bar. |
-| **6** | **Seed data recalculated** | ✅ Done | New scores: 98/91/73/66/58/44/26 (was 94/87/71/63/55/41/22). Synthetic assets populated. |
+| **6** | **Seed data recalculated** | ✅ Done | New scores: 94/92/86/76/71/63/57. Synthetic assets populated. |
 
 ---
 

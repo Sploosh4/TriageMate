@@ -350,6 +350,9 @@ async def call_openai(
                 continue
             raise
         except httpx.ReadTimeout:
+            if attempt < _MAX_RETRIES:
+                await asyncio.sleep(_BASE_DELAY * (2**attempt))
+                continue
             raise
 
     raise RuntimeError("OpenAI max retries exceeded")

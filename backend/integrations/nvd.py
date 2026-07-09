@@ -115,8 +115,18 @@ def _fetch_cve_data(cve_id: str) -> dict:
                 extra={"event": "nvd_api_call", "duration_ms": duration_ms},
             )
             return json.loads(resp.read().decode("utf-8"))
+    except urllib.error.URLError as e:
+        duration_ms = int((time.time() - start) * 1000)
+        logger.warning(
+            "NVD unreachable for %s in %dms: %s",
+            cve_id,
+            duration_ms,
+            e,
+            extra={"event": "nvd_api_call", "duration_ms": duration_ms},
+        )
+        _NVD_LAST_STATUS = "unreachable"
+        return {}
     except (
-        urllib.error.URLError,
         urllib.error.HTTPError,
         json.JSONDecodeError,
         OSError,
@@ -258,7 +268,7 @@ def get_nvd_data(cve_id: str) -> dict:
             "vulnerability_age_days": 0,
             "cvss_exploitability_sub": 0.0,
             "cvss_impact_sub": 0.0,
-            "patch_available": True,
+            "patch_available": False,
             "references_raw": [],
         }
         _CACHE[cve_id] = (now, result)

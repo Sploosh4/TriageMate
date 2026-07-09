@@ -61,8 +61,8 @@ function searchMatch(row, query) {
 
 function sortRows(rows, column, direction) {
   return rows.slice().sort(function(a, b) {
-    const va = a[column];
-    const vb = b[column];
+    let va = a[column];
+    let vb = b[column];
     if (typeof va === 'string') va = va.toLowerCase();
     if (typeof vb === 'string') vb = vb.toLowerCase();
     if (va === vb) return 0;

@@ -169,9 +169,19 @@ function renderReviewDetail(caseResponse, reviewRow) {
 }
 
 function wireReviewEvents() {
-  document.querySelectorAll('.review-row').forEach(function(row) {
-    row.addEventListener('click', function(e) {
-      const id = parseInt(row.dataset.reviewId, 10);
+  const container = document.getElementById('review-queue-container');
+  if (!container) return;
+
+  // Remove old container click handler to avoid accumulation
+  if (container._reviewClickHandler) {
+    container.removeEventListener('click', container._reviewClickHandler);
+  }
+
+  container._reviewClickHandler = function(e) {
+    // Row expansion via delegation (avoids per-row listeners on re-rendered DOM)
+    const reviewRow = e.target.closest('.review-row');
+    if (reviewRow) {
+      const id = parseInt(reviewRow.dataset.reviewId, 10);
       if (reviewState.expandedId === id) {
         reviewState.expandedId = null;
         reviewState.caseData = null;
@@ -183,13 +193,10 @@ function wireReviewEvents() {
       reviewState.caseData = null;
       renderReviewQueue();
       loadReviewCaseDetail(id);
-    });
-  });
+      return;
+    }
 
-  const container = document.getElementById('review-queue-container');
-  if (!container) return;
-
-  container.addEventListener('click', function(e) {
+    // Decision buttons
     const btn = e.target.closest('.review-btn');
     if (btn) {
       const decision = btn.dataset.decision;
@@ -199,20 +206,33 @@ function wireReviewEvents() {
       if (fields) {
         fields.classList.toggle('hidden', decision !== 'override');
       }
+      return;
     }
-  });
+  };
 
+  container.addEventListener('click', container._reviewClickHandler);
+
+  // Slider input (element is recreated each render, but guard against stale refs)
   const slider = document.getElementById('override-score-slider');
   if (slider) {
-    slider.addEventListener('input', function() {
+    if (slider._sliderHandler) {
+      slider.removeEventListener('input', slider._sliderHandler);
+    }
+    slider._sliderHandler = function() {
       const val = document.getElementById('override-score-value');
       if (val) val.textContent = slider.value;
-    });
+    };
+    slider.addEventListener('input', slider._sliderHandler);
   }
 
+  // Submit button (element is recreated each render, but guard against stale refs)
   const submitBtn = document.getElementById('review-submit-btn');
   if (submitBtn) {
-    submitBtn.addEventListener('click', submitReview);
+    if (submitBtn._submitHandler) {
+      submitBtn.removeEventListener('click', submitBtn._submitHandler);
+    }
+    submitBtn._submitHandler = submitReview;
+    submitBtn.addEventListener('click', submitBtn._submitHandler);
   }
 }
 
@@ -284,7 +304,10 @@ async function submitReview() {
     reviewState.caseData = null;
     setTimeout(function() {
       initReviewQueue();
-      refreshQueue();
+      fetchQueue().then(function(rows) {
+        appState.queueData = rows;
+        refreshQueue();
+      });
     }, 800);
   } catch (err) {
     setReviewStatus('Submit failed: ' + err.message, 'error');
