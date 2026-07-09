@@ -1,11 +1,11 @@
 {
   "meta": {
-    "generated": "2026-07-08T22:07:49.630524",
-    "node_count": 44,
-    "edge_count": 14,
+    "generated": "2026-07-09T10:11:30.407391",
+    "node_count": 70,
+    "edge_count": 41,
     "source_db": "/home/jpc/Documents/Cybersecurity (Temp)/TriageMate/TriageMate MVP/triagemate.db",
     "sources": {
-      "sqlite_vulnerabilities": false,
+      "sqlite_vulnerabilities": true,
       "known_tags": true,
       "nvd_cache": false,
       "synthetic_demo_cves": true
@@ -288,9 +288,245 @@
       "type": "vulnerability",
       "properties": {
         "cvss_score": 9.8,
-        "epss_score": 0.97,
+        "epss_score": 0.974,
         "cisa_kev": true,
-        "name": "MOVEit SQL Injection"
+        "risk_band": "Very Critical",
+        "tier": "Deterministic",
+        "priority_score": 94
+      }
+    },
+    {
+      "id": "T1190",
+      "type": "mitre_technique",
+      "properties": {
+        "name": "Exploit Public-Facing Application",
+        "description": "The attacker exploits the SQL injection flaw in the MOVEit Transfer web interface, which is directly accessible from the internet, to gain initial access."
+      }
+    },
+    {
+      "id": "T1505.003",
+      "type": "mitre_technique",
+      "properties": {
+        "name": "Server Software Component: Web Shell",
+        "description": "Post-exploitation, attackers have been observed deploying the LemurLoot web shell on compromised MOVEit Transfer servers to maintain persistent access and exfiltrate data over HTTPS."
+      }
+    },
+    {
+      "id": "T1041",
+      "type": "mitre_technique",
+      "properties": {
+        "name": "Exfiltration Over C2 Channel",
+        "description": "Stolen database contents, including patient referral documents, are exfiltrated through the same HTTPS channel used for command and control, blending with legitimate MOVEit Transfer traffic."
+      }
+    },
+    {
+      "id": "CVE-2023-4966",
+      "type": "vulnerability",
+      "properties": {
+        "cvss_score": 9.4,
+        "epss_score": 0.968,
+        "cisa_kev": true,
+        "risk_band": "Very Critical",
+        "tier": "Deterministic",
+        "priority_score": 87
+      }
+    },
+    {
+      "id": "T1078",
+      "type": "mitre_technique",
+      "properties": {
+        "name": "Valid Accounts",
+        "description": "After extracting a valid session token from the appliance memory, the attacker authenticates as a legitimate user without knowing their password, effectively using stolen valid accounts."
+      }
+    },
+    {
+      "id": "T1133",
+      "type": "mitre_technique",
+      "properties": {
+        "name": "External Remote Services",
+        "description": "The Citrix NetScaler ADC functions as an external remote services gateway. The attacker exploits the vulnerability to bypass the authentication mechanism of this external-facing service."
+      }
+    },
+    {
+      "id": "T1550.004",
+      "type": "mitre_technique",
+      "properties": {
+        "name": "Use Alternate Authentication Material: Web Session Cookie",
+        "description": "The extracted session token is presented as a web session cookie to the NetScaler Gateway, allowing the attacker to impersonate the victim user and access internal applications."
+      }
+    },
+    {
+      "id": "CVE-2023-27350",
+      "type": "vulnerability",
+      "properties": {
+        "cvss_score": 9.8,
+        "epss_score": 0.912,
+        "cisa_kev": true,
+        "risk_band": "Critical",
+        "tier": "ML Tier",
+        "priority_score": 71
+      }
+    },
+    {
+      "id": "T1210",
+      "type": "mitre_technique",
+      "properties": {
+        "name": "Exploitation of Remote Services",
+        "description": "An attacker who has gained initial access to the education network can exploit the PaperCut authentication bypass to move laterally to the print server."
+      }
+    },
+    {
+      "id": "T1543.003",
+      "type": "mitre_technique",
+      "properties": {
+        "name": "Create or Modify System Process: Windows Service",
+        "description": "Post-exploitation, the PaperCut service account can be used to create or modify Windows services on the print server."
+      }
+    },
+    {
+      "id": "T1003.001",
+      "type": "mitre_technique",
+      "properties": {
+        "name": "OS Credential Dumping: LSASS Memory",
+        "description": "With local administrator privileges, an attacker can dump credentials from LSASS memory on the print server."
+      }
+    },
+    {
+      "id": "CVE-2024-1709",
+      "type": "vulnerability",
+      "properties": {
+        "cvss_score": 10.0,
+        "epss_score": 0.878,
+        "cisa_kev": true,
+        "risk_band": "Critical",
+        "tier": "ML Tier",
+        "priority_score": 63
+      }
+    },
+    {
+      "id": "T1021.001",
+      "type": "mitre_technique",
+      "properties": {
+        "name": "Remote Desktop Protocol",
+        "description": "Once administrative control of the ScreenConnect server is achieved, the attacker can use the built-in ScreenConnect remote desktop functionality to access any managed endpoint."
+      }
+    },
+    {
+      "id": "T1219",
+      "type": "mitre_technique",
+      "properties": {
+        "name": "Remote Access Software",
+        "description": "The ScreenConnect platform itself is a legitimate remote access software tool. Post-compromise, the attacker leverages this existing trusted remote access channel to maintain persistence."
+      }
+    },
+    {
+      "id": "CVE-2023-36884",
+      "type": "vulnerability",
+      "properties": {
+        "cvss_score": 7.8,
+        "epss_score": 0.065,
+        "cisa_kev": true,
+        "risk_band": "Critical",
+        "tier": "SLM Tier",
+        "priority_score": 55
+      }
+    },
+    {
+      "id": "T1566.001",
+      "type": "mitre_technique",
+      "properties": {
+        "name": "Spearphishing Attachment",
+        "description": "The most common delivery mechanism is a spear-phishing email containing a malicious Office document attachment targeting government social services personnel."
+      }
+    },
+    {
+      "id": "T1203",
+      "type": "mitre_technique",
+      "properties": {
+        "name": "Exploitation for Client Execution",
+        "description": "The vulnerability is triggered when the victim opens the malicious Office document."
+      }
+    },
+    {
+      "id": "T1059.001",
+      "type": "mitre_technique",
+      "properties": {
+        "name": "Command and Scripting Interpreter: PowerShell",
+        "description": "Post-exploitation, attackers use PowerShell to download additional payloads and move laterally."
+      }
+    },
+    {
+      "id": "CVE-2023-22515",
+      "type": "vulnerability",
+      "properties": {
+        "cvss_score": 10.0,
+        "epss_score": 0.934,
+        "cisa_kev": true,
+        "risk_band": "Medium",
+        "tier": "SLM Tier",
+        "priority_score": 41
+      }
+    },
+    {
+      "id": "per-PRD-WIKI-CORE01.wapol.internal.wa.gov.au",
+      "type": "hostname",
+      "properties": {
+        "mission_prevalence": "Core",
+        "data_classification": "OFFICIAL Sensitive",
+        "network_zone": "WAPOL-Internal-Management (VLAN 92)",
+        "operating_system": "Ubuntu 22.04.3 LTS"
+      }
+    },
+    {
+      "id": "T1078.001",
+      "type": "mitre_technique",
+      "properties": {
+        "name": "Default Accounts",
+        "description": "The vulnerability creates a pathway to establish unauthorised administrator accounts on the Confluence instance."
+      }
+    },
+    {
+      "id": "T1548",
+      "type": "mitre_technique",
+      "properties": {
+        "name": "Abuse Elevation Control Mechanism",
+        "description": "The core vulnerability is an abuse of the application setup endpoint that bypasses normal access control."
+      }
+    },
+    {
+      "id": "T1213",
+      "type": "mitre_technique",
+      "properties": {
+        "name": "Data from Information Repositories",
+        "description": "Post-compromise, the attacker can access and exfiltrate Confluence wiki content."
+      }
+    },
+    {
+      "id": "CVE-2022-47966",
+      "type": "vulnerability",
+      "properties": {
+        "cvss_score": 9.8,
+        "epss_score": 0.961,
+        "cisa_kev": true,
+        "risk_band": "Low",
+        "tier": "SLM Tier",
+        "priority_score": 22
+      }
+    },
+    {
+      "id": "T1071.001",
+      "type": "mitre_technique",
+      "properties": {
+        "name": "Web Protocols",
+        "description": "Post-exploitation communication would occur over standard HTTPS."
+      }
+    },
+    {
+      "id": "T1059",
+      "type": "mitre_technique",
+      "properties": {
+        "name": "Command and Scripting Interpreter",
+        "description": "The RCE payload would execute within the Java runtime environment and could invoke operating system commands."
       }
     },
     {
@@ -415,6 +651,141 @@
       "from": "CVE-2023-34362",
       "to": "per-PRD-MOVEIT-WEB01.health.wa.gov.au",
       "type": "affects"
+    },
+    {
+      "from": "CVE-2023-34362",
+      "to": "T1190",
+      "type": "mapped_to"
+    },
+    {
+      "from": "CVE-2023-34362",
+      "to": "T1505.003",
+      "type": "mapped_to"
+    },
+    {
+      "from": "CVE-2023-34362",
+      "to": "T1041",
+      "type": "mapped_to"
+    },
+    {
+      "from": "CVE-2023-4966",
+      "to": "per-PRD-CITRIX-ADC01.transport.wa.gov.au",
+      "type": "affects"
+    },
+    {
+      "from": "CVE-2023-4966",
+      "to": "T1078",
+      "type": "mapped_to"
+    },
+    {
+      "from": "CVE-2023-4966",
+      "to": "T1133",
+      "type": "mapped_to"
+    },
+    {
+      "from": "CVE-2023-4966",
+      "to": "T1550.004",
+      "type": "mapped_to"
+    },
+    {
+      "from": "CVE-2023-27350",
+      "to": "per-PRD-PRINT-SVR05.education.wa.edu.au",
+      "type": "affects"
+    },
+    {
+      "from": "CVE-2023-27350",
+      "to": "T1210",
+      "type": "mapped_to"
+    },
+    {
+      "from": "CVE-2023-27350",
+      "to": "T1543.003",
+      "type": "mapped_to"
+    },
+    {
+      "from": "CVE-2023-27350",
+      "to": "T1003.001",
+      "type": "mapped_to"
+    },
+    {
+      "from": "CVE-2024-1709",
+      "to": "per-PRD-RMM-GW01.sharedservices.wa.gov.au",
+      "type": "affects"
+    },
+    {
+      "from": "CVE-2024-1709",
+      "to": "T1190",
+      "type": "mapped_to"
+    },
+    {
+      "from": "CVE-2024-1709",
+      "to": "T1021.001",
+      "type": "mapped_to"
+    },
+    {
+      "from": "CVE-2024-1709",
+      "to": "T1219",
+      "type": "mapped_to"
+    },
+    {
+      "from": "CVE-2023-36884",
+      "to": "per-PRD-FILE-STORE02.communities.wa.gov.au",
+      "type": "affects"
+    },
+    {
+      "from": "CVE-2023-36884",
+      "to": "T1566.001",
+      "type": "mapped_to"
+    },
+    {
+      "from": "CVE-2023-36884",
+      "to": "T1203",
+      "type": "mapped_to"
+    },
+    {
+      "from": "CVE-2023-36884",
+      "to": "T1059.001",
+      "type": "mapped_to"
+    },
+    {
+      "from": "CVE-2023-22515",
+      "to": "per-PRD-WIKI-CORE01.wapol.internal.wa.gov.au",
+      "type": "affects"
+    },
+    {
+      "from": "CVE-2023-22515",
+      "to": "T1078.001",
+      "type": "mapped_to"
+    },
+    {
+      "from": "CVE-2023-22515",
+      "to": "T1548",
+      "type": "mapped_to"
+    },
+    {
+      "from": "CVE-2023-22515",
+      "to": "T1213",
+      "type": "mapped_to"
+    },
+    {
+      "from": "CVE-2022-47966",
+      "to": "per-PRD-ITSM-TOOL01.finance.wa.gov.au",
+      "type": "affects"
+    },
+    {
+      "from": "CVE-2022-47966",
+      "to": "T1190",
+      "type": "mapped_to"
+    },
+    {
+      "from": "CVE-2022-47966",
+      "to": "T1071.001",
+      "type": "mapped_to"
+    },
+    {
+      "from": "CVE-2022-47966",
+      "to": "T1059",
+      "type": "mapped_to"
     },
     {
       "from": "CVE-2023-34362",

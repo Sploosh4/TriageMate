@@ -1,8 +1,8 @@
 # TriageMate — Master Roadmap & Status
 
-> **Status: CURRENT** (8 July 2026)
+> **Status: CURRENT** (9 July 2026)
 
-> Last updated: 8 July 2026
+> Last updated: 9 July 2026
 > Status key: ✅ Done · 🟡 Needs config · 🔧 In progress · 📋 Todo · ⏭️ Post-MVP · 🐛 Known bug
 
 ---
@@ -28,6 +28,7 @@
 | **Sprint 14** | **Research & Synthetic Data** | ✅ Complete (2026-07-08) |
 | **Sprint 15** | **Production Confidence** | ✅ Complete (2026-07-08) |
 | **Sprint 15.5** | **Hygiene Cleanup** | ✅ Complete (2026-07-08) |
+| **Sprint 16** | **ML Monitoring Foundation** | ✅ Complete (2026-07-09) |
 
 ---
 
@@ -152,6 +153,8 @@
 | Alembic migrations (001–007) | ✅ Done — versioned schema, no ad-hoc helpers |
 | LanceDB vector store | ✅ Done — 9 demo docs, FTS index |
 | Model version registry (`model_registry.json`) | ✅ Done — Sprint 11 | 3 versions tracked; `GET /api/model/versions`, `POST /api/model/activate`, `GET /api/model/status` |
+| Pre-Tier model registry (`model_registry_pre_tier.json`) | ✅ Done — Sprint 16 | Tracks pre-tier model versions for drift and rollback |
+| EPSS model registry (`model_registry_epss.json`) | ✅ Done — Sprint 16 | Tracks EPSS model versions (v1–v4) for drift and rollback |
 | CWE classifier | 🐛 Deprecated — replaced by NVD API + regex |
 
 ---

@@ -1,6 +1,6 @@
 # TriageMate — Sprint NEXT+2 Research Findings
 
-> **Status: OUTDATED** — Research from 3 July 2026. Several findings (threat_intel_pulses variance, missing random seed, CWE-stratified EPSS thresholds, KEV backfill, ExploitDB data load) have been resolved in Sprint NEXT. 2 of 5 critical pipeline drifts remain (CIA default mismatch, lateral_reachability type). Historical analysis preserved for context.
+> **Status: OUTDATED** — Research from 3 July 2026. Several findings (threat_intel_pulses variance, missing random seed, CWE-stratified EPSS thresholds, KEV backfill, ExploitDB data load) have been resolved in Sprint NEXT. All 5 critical pipeline drifts now resolved — CIA default mismatch ✅, lateral_reachability type ✅. Historical analysis preserved for context.
 
 **Prepared for:** Commander  
 **Date:** 2026-07-03  
@@ -216,11 +216,11 @@ The following items documented above have been resolved since the original resea
 **Remaining:**
 | Item | Status |
 |---|---|
-| `_cvss_cia` default mismatch (training=0, inference=2) | 🔴 Unresolved |
-| `lateral_reachability` type mismatch (training=binary, inference=count) | 🔴 Unresolved |
+| `_cvss_cia` default mismatch (training=0, inference=2) | ✅ FIXED — parity check script aligned with production inference (both use `_cvss_cia(cvss_vec.get("C", "N"))` = 0) |
+| `lateral_reachability` type mismatch (training=binary, inference=count) | ✅ FIXED — inference binarized via `min(1, _synthetic_lateral(asset_ctx))` |
 
-**Bugs discovered during 2026-07-08 verification audit (not yet fixed):**
-| Bug | File |
-|---|---|
-| Metasploit detection: training checks `author` field, inference checks `platform=="metasploit"` — find different matches | `build_training_corpus.py` vs `integrations/metasploit.py` |
-| Wrong column name: `exploitdb.py` reads `row.get("date", "")` but CSV column is `date_published` | `integrations/exploitdb.py` |
+**Bugs discovered during 2026-07-08 verification audit:**
+| Bug | File | Status |
+|---|---|---|
+| Metasploit detection: training checks `author` field, inference checks `platform=="metasploit"` — find different matches | `build_training_corpus.py` vs `integrations/metasploit.py` | ✅ FIXED — both sides now check `author` field |
+| Wrong column name: `exploitdb.py` reads `row.get("date", "")` but CSV column is `date_published` | `integrations/exploitdb.py` | ✅ FIXED — now reads `date_published` |

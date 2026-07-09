@@ -461,7 +461,7 @@ def build_feature_vector(payload, mission_tags: dict, tier_0_result: dict) -> di
         "public_wellbeing_impact": mission_tags.get(
             "public_wellbeing_impact", "Minimal"
         ),
-        "lateral_reachability": _synthetic_lateral(asset_ctx),
+        "lateral_reachability": min(1, _synthetic_lateral(asset_ctx)),
         "boundary_reachability": _synthetic_boundary(asset_ctx, internet_facing),
         "downstream_assets": _synthetic_downstream(asset_ctx),
         "patch_lag_days": _compute_patch_lag(last_patch, vulnerability_age),

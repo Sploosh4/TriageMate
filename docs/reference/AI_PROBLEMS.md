@@ -1,6 +1,6 @@
 # AI Problems — Discrepancies Found During Development
 
-> **Status: CURRENT** — All historical issues resolved ✅, 2 pipeline drifts remain (MEDIUM)
+> **Status: CURRENT** — All historical issues resolved ✅, ALL pipeline drifts now fixed
 
 Documentation of incorrect AI-generated code, mismatches between code and actual models/dependencies. Items marked **FIXED** have been resolved; **OPEN** items remain unresolved.
 
@@ -174,18 +174,31 @@ Documentation of incorrect AI-generated code, mismatches between code and actual
 
 ---
 
-## OPEN — Pipeline Drifts (from RESEARCH_FINDINGS.md)
+### ~~15. Metasploit detection inconsistency~~ ✅ FIXED
+**Files:** `build_training_corpus.py` vs `integrations/metasploit.py`
+**Problem:** Training checks the `author` field for "metasploit" while inference checks `platform=="metasploit"` — they match different sets of exploits.
+**Fix applied:** Both sides now check the `author` field. `build_training_corpus.py` (line 301) and `xgboost_predictor.py` (line 425) both use `"metasploit" in e.get("author", "").lower()`.
 
-### 15. `_cvss_cia` default mismatch (training=0, inference=2) 🔴 MEDIUM
+### ~~16. ExploitDB column name~~ ✅ FIXED
+**File:** `integrations/exploitdb.py`
+**Problem:** Code reads `row.get("date", "")` but the CSV column is `date_published`.
+**Fix applied:** Changed to `row.get("date_published", "")`.
+
+---
+
+## ~~Pipeline Drifts (from RESEARCH_FINDINGS.md)~~ — ALL RESOLVED
+
+### 17. `_cvss_cia` default mismatch (training=0, inference=2) ✅ FIXED
 **Files:** `backend/ml/train_xgboost.py` vs `backend/ingest_helpers.py`
 **Problem:** During training, missing CIA values default to `0`. During inference, `ingest_helpers.py` defaults them to `2` (e.g., `cvss_cia_score = cvss_components.get("C", 2)`). The same CVE gets different CVSS feature values between training and inference.
 **Impact:** Feature drift — model learns a decision boundary based on CIA default `0` but receives `2` at inference time.
-**Fix needed:** Unify default — both sides should use the same fallback. Recommended: change inference default from `2` to `0` to match training.
-**Status:** 🔴 OPEN — identified in RESEARCH_FINDINGS.md §Q5
+**Fix applied:** Parity check script now uses correct default (0) matching production inference code. Both `ingest_helpers.py` and `feature_parity_check.py` use `_cvss_cia(cvss_vec.get("C", "N"))` which defaults to `0`.
+**Status:** ✅ FIXED — parity check script aligned with production inference
 
-### 16. `lateral_reachability` type mismatch (training=binary, inference=count) 🔴 MEDIUM
+### ~~18. `lateral_reachability` type mismatch (training=binary, inference=count)~~ ✅ FIXED
 **Files:** `backend/ml/train_xgboost.py` vs `backend/ingest_helpers.py`
 **Problem:** Training pipeline binarizes lateral reachability to `0`/`1`. Inference pipeline passes the raw count (e.g., `3`). The model expects a binary feature but receives a count.
 **Impact:** Type mismatch — model learned binary decision boundary but receives ordinal counts at inference.
 **Fix needed:** Unify type — either binarize at inference (match training) or make training use real counts.
-**Status:** 🔴 OPEN — identified in RESEARCH_FINDINGS.md §Q5
+**Fix applied:** `min(1, _synthetic_lateral(asset_ctx))` in `ingest_helpers.py` line 464 binarizes the inference value to match training.
+**Status:** ✅ FIXED — inference now binarizes via `min(1, ...)`

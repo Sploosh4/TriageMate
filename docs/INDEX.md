@@ -17,7 +17,7 @@
 |---|---|---|---|
 | 1 | `planning/ROADMAP.md` | CURRENT | **Master status.** What exists, what's broken, what's next. Start here. |
 | 2 | `architecture/MVP_SCOPE.md` | OUTDATED | Sprint 1 scope boundaries. Many deferred items are now done. See caution banner. |
-| 3 | `reference/AI_PROBLEMS.md` | CURRENT | Bug tracker. 2 open items (pipeline drifts). |
+| 3 | `reference/AI_PROBLEMS.md` | CURRENT | Bug tracker. All historical issues resolved. |
 | 4 | `archive/ml-implementation-plan.md` | ARCHIVED | → Replaced by `graphify_output/ml_inventory.md` (auto-generated, run `just graphify`) |
 
 ## Architecture
@@ -30,7 +30,7 @@
 
 | File | Status | Description |
 |---|---|---|
-| `planning/ROADMAP.md` | CURRENT | Master roadmap + sprint history + next actions. All sprints tracked (15 completed: Sprints 1–15.5). §Sprint 14 covers synthetic data infrastructure: `synthetic_assets` (1,827 rows), `synthetic_findings` (777 rows), `research_references` (97 refs), Pre-Tier model retrain, EPSS v4 sector-aware model, system name embedding, and `just retrain-all` automation. |
+| `planning/ROADMAP.md` | CURRENT | Master roadmap + sprint history + next actions. All sprints tracked (16 completed: Sprints 1–16). §Sprint 14 covers synthetic data infrastructure: `synthetic_assets` (1,827 rows), `synthetic_findings` (777 rows), `research_references` (97 refs), Pre-Tier model retrain, EPSS v4 sector-aware model, system name embedding, and `just retrain-all` automation. §Sprint 16 covers ML monitoring foundation for Pre-Tier and EPSS models. |
 | `planning/HANDOFF-2026-07-08.md` | CURRENT | Handoff document covering ML drift monitoring, Tier 2 LLM query coverage, network topology/Sentinel status, and stress testing status. Answers what was deferred post-MVP. |
 | `planning/ai-doc-strategy-2026-07-07.md` | CURRENT | This consolidation plan — how and why docs were restructured. |
 | `archive/file-consolidation-plan-2026-07-07.md` | ARCHIVED | Bookkeeper's consolidation proposals — superseded by current doc structure. See `docs/INDEX.md`. |
@@ -39,7 +39,7 @@
 
 | File | Status | Description |
 |---|---|---|
-| `reference/AI_PROBLEMS.md` | CURRENT | Bug tracker — 2 open items (pipeline drifts). |
+| `reference/AI_PROBLEMS.md` | CURRENT | Bug tracker — all historical issues resolved. |
 | `reference/xgboost-investigation-report.md` | CURRENT | Root cause analysis of XGBoost false-negative rate. ✅ All 8 fixes applied, model retrained 2026-07-08. |
 | `archive/ml-implementation-plan.md` | ARCHIVED | → Replaced by `graphify_output/ml_inventory.md` (auto-generated, run `just graphify`) |
 | `reference/hostname-standards.md` | CURRENT | WA government hostname conventions, data classification, department naming. |
@@ -73,7 +73,7 @@
 | Question | Read |
 |---|---|---|
 | What's the current state of the project? | `planning/ROADMAP.md` |
-| What's broken? | `reference/AI_PROBLEMS.md` (2 open pipeline drifts) |
+| What's broken? | `reference/AI_PROBLEMS.md` (all historical issues resolved) |
 | What ML models exist and how do they work? | `graphify_output/ml_inventory.md` (auto-generated) |
 | How do I train the model? | `planning/ROADMAP.md` §Sprint NEXT |
 | How do I retrain all ML models from scratch? | Use `just retrain-all` — see ROADMAP.md §Sprint 14 |
@@ -114,6 +114,20 @@
 | Command | Purpose |
 |---|---|
 | `just retrain-all` | Retrains all ML models from scratch: synthetic data → pre-tier → EPSS v4 |
+
+## New ML Test Files (Sprint 16 — ML Monitoring Foundation)
+
+| File | Purpose |
+|---|---|
+| `backend/tests/test_pretier_features.py` | Pre-Tier feature extraction unit tests |
+| `backend/tests/test_pre_tier.py` | Pre-Tier model integration tests |
+| `backend/tests/test_feature_parity_pretier.py` | Feature parity check between pre-tier training and inference |
+| `backend/tests/test_feature_parity_epss.py` | Feature parity check between EPSS training and inference |
+| `backend/tests/test_epss_substitutor.py` | EPSS substitution model unit/integration tests |
+| `backend/ml/model_registry_pre_tier.json` | Pre-Tier model version registry (drift tracking, rollback) |
+| `backend/ml/model_registry_epss.json` | EPSS model version registry (v1–v4 tracking, rollback) |
+
+**Total test count:** 275+ tests (up from 142) — includes 5 new test files for Pre-Tier and EPSS monitoring.
 
 ## Graphify — Auto-Generated Knowledge Artifacts
 

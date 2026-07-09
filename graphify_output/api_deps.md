@@ -62,7 +62,6 @@
 - `integrations.exploitdb`  (from(has_poc))
 - `integrations.metasploit`  (from(has_payload))
 - `integrations.nvd`  (from(get_nvd_data))
-- `integrations.osv`  (from(query_osv))
 - `integrations.otx`  (from(query_otx_pulses))
 - `ml.vector_store`  (from(query_rag))
 
@@ -584,6 +583,7 @@
 **Project**
 
 - `database`  (from(get_db))
+- `ingest_helpers`  (from(compliance_category))
 - `integrations.nvd`  (from(get_cve_freshness))
 - `models`  (from(AssetRegistryEntry), from(CaseResponse), from(CaseViewData), from(MitreTechnique), from(QueueRow), from(ReviewQueueItem), from(ReviewQueueResponse), from(ReviewRequest), from(ScoringWeight), from(SubstitutionBlock))
 
@@ -605,7 +605,7 @@
 - `audit`  (from(select_for_audit), from(should_audit))
 - `database`  (from(get_db))
 - `ingest_cwe`  (from(get_cwe))
-- `ingest_helpers`  (from(build_feature_vector), from(get_asset_context), from(is_internet_facing), from(lookup_data_classification), from(query_rag), from(serialize_tabular_features))
+- `ingest_helpers`  (from(build_feature_vector), from(compliance_category), from(get_asset_context), from(is_internet_facing), from(lookup_data_classification), from(query_rag), from(serialize_tabular_features))
 - `integrations.advisories`  (from(get_advisory))
 - `integrations.cmdb`  (from(validate_wa_gov_hostname))
 - `integrations.demo_generator`  (from(generate_random_wave), from(generate_scenario_findings), from(get_scenarios_list), from(inject_enrichment))
@@ -653,6 +653,7 @@
 
 - `analysis.drift`  (from(compute_drift))
 - `database`  (from(get_db))
+- `ingest_helpers`  (from(compliance_category))
 - `models`  (from(DriftMetricsResponse), from(MetricsResponse), from(MlDriftFeature), from(MlDriftResponse), from(QueueResponse), from(QueueRow))
 
 **External**

@@ -40,7 +40,8 @@ TriageMate MVP/
 │   │   ├── 2026-07-08-sprint-exploitdb-fixes.md  Sprint Plan: ExploitDB/Metasploit Integration Fixes
 │   │   ├── 2026-07-08-sprint-operational-readiness.md  Sprint: Operational Readiness
 │   │   ├── 2026-07-08-sprint-parallel-polish.md  Sprint: Parallel Polish
-│   │   └── 2026-07-08-sprint-research-synthetic-data.md  Sprint Plan: Research & Synthetic Data Infrastructure
+│   │   ├── 2026-07-08-sprint-research-synthetic-data.md  Sprint Plan: Research & Synthetic Data Infrastructure
+│   │   └── 2026-07-09-sprint-16.md  Sprint 16 — ML Monitoring Foundation
 │   ├── skills/
 │   │   ├── audit-checklist/
 │   │   │   └── SKILL.md  Audit Checklist
@@ -48,6 +49,8 @@ TriageMate MVP/
 │   │   │   └── SKILL.md  TriageMate Backend Engineering
 │   │   ├── cloud-llm-engineering/
 │   │   │   └── SKILL.md  TriageMate Cloud LLM Engineering
+│   │   ├── codebase-review/
+│   │   │   └── SKILL.md  Codebase Review — Soft Skills & Methodology
 │   │   ├── devops-engineering/
 │   │   │   └── SKILL.md  TriageMate DevOps Engineering
 │   │   ├── frontend-engineering/
@@ -95,9 +98,9 @@ TriageMate MVP/
 │   │   ├── lancedb/
 │   │   │   ├── __manifest/  (LanceDB internal — 3 files, 1015.0 B)
 │   │   │   └── asset_documentation.lance/
-│   │   │       ├── _indices/  (LanceDB internal — 781 files, 2.0 MB)
-│   │   │       ├── _transactions/  (LanceDB internal — 199 files, 99.1 KB)
-│   │   │       ├── _versions/  (LanceDB internal — 200 files, 226.0 KB)
+│   │   │       ├── _indices/  (LanceDB internal — 789 files, 2.0 MB)
+│   │   │       ├── _transactions/  (LanceDB internal — 201 files, 100.1 KB)
+│   │   │       ├── _versions/  (LanceDB internal — 202 files, 228.4 KB)
 │   │   │       └── data/  (LanceDB internal — 2 files, 38.6 KB)
 │   │   ├── demo_scenarios.json  3.6 KB
 │   │   ├── epss_cache.json  19.5 MB
@@ -135,6 +138,8 @@ TriageMate MVP/
 │   │   ├── generate_synthetic_findings.py  Ensure backend is importable
 │   │   ├── ingest_docs.py  Size limits
 │   │   ├── model_registry.json  564.0 B
+│   │   ├── model_registry_epss.json  2.0 KB
+│   │   ├── model_registry_pre_tier.json  407.0 B
 │   │   ├── nvd_checkpoint.json  72.0 B
 │   │   ├── nvd_cves_cached.json  79.6 MB
 │   │   ├── pre_tier_metrics.json  1.7 KB
@@ -165,7 +170,7 @@ TriageMate MVP/
 │   │   ├── __init__.py
 │   │   ├── auth.py  Authenticate with admin credentials.
 │   │   ├── cases.py
-│   │   ├── ingest.py  Map WAICP classification to numeric compliance category.
+│   │   ├── ingest.py  Build template-based summary paragraphs matching demo row style.
 │   │   ├── models.py  Read the model registry JSON file.
 │   │   └── queue.py  )
 │   ├── scripts/
@@ -191,12 +196,17 @@ TriageMate MVP/
 │   │   ├── test_demo_generator.py  Structural Tests (6)
 │   │   ├── test_drift.py  GET /api/drift smoke tests.
 │   │   ├── test_drift_ml.py  Expected camelCase keys from the MlDriftResponse model
+│   │   ├── test_epss_substitutor.py  Verify the module initialises without error and loads a model.
 │   │   ├── test_feature_parity.py  ── Tabular feature keys in the EXACT order xgboost_predictor.predict() builds th
+│   │   ├── test_feature_parity_epss.py  ── Test cases: (raw_epss, cvss_score, cisa_kev, cwe_class, agency,
+│   │   ├── test_feature_parity_pretier.py  ── Expected contract ────────────────────────────────────────────────────────
 │   │   ├── test_fuzzed_ingest.py  ── Mock responses for network-dependent pipeline functions ─────────────
 │   │   ├── test_health.py  Health endpoint smoke tests.
 │   │   ├── test_ingest.py  Remove any previously created test records before each ingest test.
 │   │   ├── test_integration.py  Test the full ingest pipeline end-to-end.
 │   │   ├── test_model_versions.py  ── Session-scoped save/restore to isolate tests ──────────────────────
+│   │   ├── test_pre_tier.py  ── Helpers ──────────────────────────────────────────────────────────────────
+│   │   ├── test_pretier_features.py  Return only nonzero feature entries from an extract_features() dict.
 │   │   ├── test_queue.py  Expected priority scores in descending order (matching the seed data)
 │   │   ├── test_rate_limit.py  Delete CVE-TEST-RL-* records from the database.
 │   │   ├── test_review.py  Required keys for a review queue item (camelCase via ReviewQueueItem model)
@@ -213,13 +223,14 @@ TriageMate MVP/
 │   ├── ingest_cwe.py  Get CWE classification for a CVE.
 │   ├── ingest_helpers.py  Look up the WAICP data classification for an asset.
 │   ├── logging_config.py
-│   ├── main.py  ─── Load .env BEFORE any module reads os.getenv() ─────────────────────
+│   ├── main.py  ─── Resolve project root from this file's location ────────────────────
 │   ├── models.py  Convert snake_case to camelCase for API responses.
 │   ├── pytest.ini  47.0 B
 │   ├── requirements.txt  psycopg2-binary>=2.9.9
 │   ├── scheduler.py  ).fetchall()
 │   ├── scoring.py  Round to nearest int, .5 always rounds up (not banker's rounding).
 │   ├── seed_data.py  Row 1: CVE-2023-34362 — MOVEit Transfer SQL Injection
+│   ├── triagemate.db  156.0 KB
 │   └── triagemate.db.backup  1.3 MB
 ├── backlog/
 │   └── TASK_STORE_COLUMNS_IN_NPZ.md  Task: Store Column Names in NPZ Metadata
@@ -244,6 +255,7 @@ TriageMate MVP/
 │   │   ├── Additional Information.md  ARCHIVED — Following a Piece of Data: The TriageMate Pipeline Journey
 │   │   ├── External Auditor Response.md  External Audit Report — Demo Data Generator
 │   │   ├── EXTERNAL_AUDITOR_PROMPT.md  External Auditor Prompt — Demo Data Generator
+│   │   ├── file-consolidation-plan-2026-07-07.md  .md File Consolidation Plan
 │   │   ├── ml-implementation-plan.md  TriageMate ML Implementation Plan — Final
 │   │   ├── SECOND_WAVE_PROMPT.md  Wave 2 Audit Prompt — LOGIC & SEMANTIC CORRECTNESS
 │   │   ├── SPRINT_NEXT_PLAN.md  Sprint NEXT Plan — Model Retrain + Operational Upgrades
@@ -254,7 +266,6 @@ TriageMate MVP/
 │   │   └── WINDOWS_SETUP.md  TriageMate — Windows Setup Guide
 │   ├── planning/
 │   │   ├── ai-doc-strategy-2026-07-07.md  AI Documentation Strategy Proposal
-│   │   ├── file-consolidation-plan-2026-07-07.md  .md File Consolidation Plan
 │   │   ├── HANDOFF-2026-07-08.md  Handoff Document — 2026-07-08
 │   │   └── ROADMAP.md  TriageMate — Master Roadmap & Status
 │   ├── reference/
@@ -287,8 +298,9 @@ TriageMate MVP/
 │   └── ml_inventory.md  TriageMate — ML Model Inventory
 ├── .dockerignore  328.0 B
 ├── .env.example  1.8 KB
-├── .gitignore  801.0 B
-├── .pre-commit-config.yaml  413.0 B
+├── .gitignore  587.0 B
+├── .pre-commit-config.yaml  415.0 B
+├── =2.2.0  1.0 KB
 ├── AGENTS.md  TriageMate Project Rules
 ├── AI_PROBLEMS.md  AI Problems — Discrepancies Found During Development
 ├── demo-reference.html  <!--
@@ -301,6 +313,7 @@ TriageMate MVP/
 ├── requirements-dev.txt  130.0 B
 ├── RESEARCH_FINDINGS.md  TriageMate — Sprint NEXT+2 Research Findings
 ├── ROADMAP.md  TriageMate — Master Roadmap & Status
+├── triagemate.db  156.0 KB
 ├── WINDOWS_SETUP.md  TriageMate — Windows Setup Guide
 └── XGBOOST_INVESTIGATION_REPORT.md  XGBoost Exploitation Model — Investigation Report
 ```

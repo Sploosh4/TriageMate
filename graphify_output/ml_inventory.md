@@ -2,7 +2,7 @@
 
 > Canonical reference — read this before touching any ML code.
 
-> Generated: 2026-07-08 22:07:49
+> Generated: 2026-07-09 10:11:30
 
 ---
 
@@ -21,6 +21,8 @@
 | training_data_v2 | `backend/ml/training_data_v2.npz` | 341 MB | numpy training data |
 | enriched_cves | `backend/ml/enriched_cves.json` | 179 MB | JSON data |
 | model_registry | `backend/ml/model_registry.json` | 564 B | JSON data |
+| model_registry_epss | `backend/ml/model_registry_epss.json` | 2 KB | JSON data |
+| model_registry_pre_tier | `backend/ml/model_registry_pre_tier.json` | 407 B | JSON data |
 | nvd_checkpoint | `backend/ml/nvd_checkpoint.json` | 72 B | JSON data |
 | nvd_cves_cached | `backend/ml/nvd_cves_cached.json` | 80 MB | JSON data |
 | pre_tier_metrics | `backend/ml/pre_tier_metrics.json` | 2 KB | JSON data |
@@ -87,6 +89,8 @@
 - `generate_synthetic_findings.py`  (17 KB)
 - `ingest_docs.py`  (7 KB)
 - `model_registry.json`  (564 B)
+- `model_registry_epss.json`  (2 KB)
+- `model_registry_pre_tier.json`  (407 B)
 - `nvd_checkpoint.json`  (72 B)
 - `nvd_cves_cached.json`  (80 MB)
 - `pre_tier_metrics.json`  (2 KB)
@@ -141,7 +145,7 @@
   3. Default fallback -> Support / Minimal, confidence 0.60
 - **Training script:** `backend/ml/train_pre_tier.py`
 - **Training data:** `backend/ml/pretier_training_data.json`
-- **Lines of code (predictor):** 203
+- **Lines of code (predictor):** 202
 - **Lines of code (feature extractor):** 647
 - **Notes:** Model loaded lazily via `threading.Lock` on first inference. Never retrained from the live app.
 

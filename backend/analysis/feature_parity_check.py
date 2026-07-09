@@ -390,15 +390,15 @@ def build_inference_vector(
     edb_exploits = edb_map.get(cve_id, [])
 
     # Deterministic: same CVSS parse as training, but with inference defaults
-    # for cvss_c/i/a (2) when the vector component is missing.
+    # for cvss_c/i/a (0) when the vector component is missing.
     cvss_av = _cvss_av(cvss_vec.get("AV", "N"))
     cvss_ac = _cvss_ac(cvss_vec.get("AC", "L"))
     cvss_pr = _cvss_pr(cvss_vec.get("PR", "N"))
     cvss_ui = _cvss_ui(cvss_vec.get("UI", "N"))
     cvss_s = _cvss_s(cvss_vec.get("S", "U"))
-    cvss_c = 2.0 if cvss_vec.get("C") is None else float(_cvss_cia(cvss_vec["C"]))
-    cvss_i = 2.0 if cvss_vec.get("I") is None else float(_cvss_cia(cvss_vec["I"]))
-    cvss_a = 2.0 if cvss_vec.get("A") is None else float(_cvss_cia(cvss_vec["A"]))
+    cvss_c = float(_cvss_cia(cvss_vec.get("C", "N")))
+    cvss_i = float(_cvss_cia(cvss_vec.get("I", "N")))
+    cvss_a = float(_cvss_cia(cvss_vec.get("A", "N")))
 
     return [
         float(cvss_av),
@@ -461,10 +461,10 @@ def _describe_drift(feature_idx: int, train_val, infer_val, cve_id: str) -> str:
     """Generate a human-readable drift explanation."""
     name = FEATURE_NAMES[feature_idx]
 
-    if feature_idx in (5, 6, 7):  # cvss_c, cvss_i, cvss_a
+    if feature_idx in (5, 6, 7):  # cvss_c, cvss_i, cvss_a — defaults now aligned (0)
         return (
-            "Default mismatch: training defaults to 0 "
-            "(from _cvss_cia('N')), inference defaults to 2"
+            "Defaults aligned (both use _cvss_cia('N') = 0). "
+            "Unexpected drift — investigate further."
         )
     if feature_idx == 12:  # domain_joined
         return "Default mismatch: training defaults to 0 (inference defaults True→1)"
