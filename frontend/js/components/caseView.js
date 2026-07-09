@@ -119,4 +119,104 @@ function renderCase(caseResponse) {
       </div>
     </div>
   `;
+
+    // ── Panel 5: Security Context ────────────────────────────────
+    renderSecurityContext(cv);
+}
+
+/**
+ * Render Panel 5 — Security Telemetry + Network Context.
+ */
+function renderSecurityContext(cv) {
+    const panel5 = document.getElementById('panel-5');
+    if (!panel5) return;
+
+    const telemetry = cv.telemetry || {};
+    const networkCtx = cv.networkContext || {};
+
+    // ── Telemetry content ─────────────────────────────────────────
+    const contentDiv = document.getElementById('panel-5-content');
+    let html = '<div class="telemetry-grid">';
+
+    // Left column: Sentinel Incidents
+    html += '<div class="telemetry-col">';
+    html += '<div class="telemetry-col-title">Sentinel Incidents</div>';
+    const incidents = telemetry.sentinel_incidents || [];
+    if (incidents.length === 0) {
+        html += '<div class="telemetry-no-data">No related Sentinel incidents detected.</div>';
+    } else {
+        incidents.forEach(function(inc) {
+            var sev = (inc.severity || 'Informational').toLowerCase();
+            html += '<div class="telemetry-incident severity-' + sev + '">';
+            html += '<div class="telemetry-incident-title"><span class="severity-badge severity-' + sev + '">' + (inc.severity || '') + '</span> ' + (inc.title || '') + '</div>';
+            html += '<div class="telemetry-incident-meta">' + (inc.incident_id || '') + ' &middot; ' + (inc.status || '') + ' &middot; ' + (inc.detected_at || '').split('T')[0] + '</div>';
+            if (inc.mitre_techniques && inc.mitre_techniques.length) {
+                html += '<div class="telemetry-incident-mitre">MITRE: ' + inc.mitre_techniques.join(', ') + '</div>';
+            }
+            html += '</div>';
+        });
+    }
+    html += '</div>'; // end left col
+
+    // Right column: EDR Process Evidence
+    html += '<div class="telemetry-col">';
+    html += '<div class="telemetry-col-title">EDR Process Evidence</div>';
+    var processEv = telemetry.process_evidence || {};
+    if (!processEv || processEv.evidence_quality === 'none') {
+        html += '<div class="telemetry-no-data">No EDR process evidence available.</div>';
+    } else {
+        html += '<div class="process-evidence-box">';
+        if (processEv.is_running) {
+            html += '<div class="process-running">⚠ Vulnerable process IS running</div>';
+        } else {
+            html += '<div class="process-not-running">✓ Vulnerable process is NOT running</div>';
+        }
+        if (processEv.is_loaded) {
+            html += '<div class="process-running" style="margin-top:4px;">⚠ Vulnerable module IS loaded</div>';
+        } else if (processEv.evidence_quality !== 'none') {
+            html += '<div class="process-not-running" style="margin-top:4px;">✓ Vulnerable module is NOT loaded</div>';
+        }
+        html += '<div class="evidence-quality">Evidence quality: <strong>' + (processEv.evidence_quality || 'none') + '</strong></div>';
+        html += '</div>';
+
+        // EDR alerts
+        const alerts = telemetry.edr_alerts || [];
+        if (alerts.length > 0) {
+            html += '<div class="telemetry-col-title" style="margin-top:10px;">EDR Alerts</div>';
+            alerts.forEach(function(a) {
+                var sev = (a.severity || 'info').toUpperCase();
+                html += '<div class="telemetry-alert">';
+                html += '<div class="telemetry-alert-type">[' + sev + '] ' + (a.alert_type || '').replace(/_/g, ' ') + '</div>';
+                html += '<div class="telemetry-alert-detail">' + (a.details || '') + '</div>';
+                html += '</div>';
+            });
+        }
+    }
+    html += '</div>'; // end right col
+    html += '</div>'; // end telemetry-grid
+
+    // ── Network Context ───────────────────────────────────────────
+    var ncHtml = '';
+    if (!networkCtx || !networkCtx.zone) {
+        ncHtml = '<div class="telemetry-no-data">Network context data not available.</div>';
+    } else {
+        var zoneClass = networkCtx.zone === 'dmz' ? 'zone-dmz' : networkCtx.zone === 'protected' ? 'zone-protected' : networkCtx.zone === 'restricted' ? 'zone-restricted' : 'zone-internal';
+        var blastClass = networkCtx.blastRadiusScore > 0.5 ? 'high' : networkCtx.blastRadiusScore > 0.2 ? 'medium' : 'low';
+        var blastPct = Math.min(100, Math.round((networkCtx.blastRadiusScore || 0) * 100));
+
+        ncHtml += '<div class="network-context-grid">';
+        ncHtml += '<div><span class="network-zone-badge ' + zoneClass + '">' + (networkCtx.zoneDisplay || networkCtx.zone) + '</span></div>';
+        ncHtml += '<div class="network-stat"><span class="network-stat-value">' + (networkCtx.peerCount || 0) + '</span><span class="network-stat-label">Reachable Peers</span></div>';
+        ncHtml += '<div class="network-stat"><span class="network-stat-value">' + (networkCtx.internetFacingPeers || 0) + '</span><span class="network-stat-label">Internet-Facing</span></div>';
+        ncHtml += '<div class="network-stat"><span class="network-stat-value">' + (networkCtx.dcPeers || 0) + '</span><span class="network-stat-label">Domain Controllers</span></div>';
+        ncHtml += '<div class="blast-radius-bar">';
+        ncHtml += '<div class="blast-radius-label"><span>Blast Radius</span><span class="blast-radius-percent">' + blastPct + '%</span></div>';
+        ncHtml += '<div class="blast-radius-track"><div class="blast-radius-fill ' + blastClass + '" style="width:' + blastPct + '%;"></div></div>';
+        ncHtml += '</div>';
+        ncHtml += '<div style="font-size:11px;color:var(--text-muted);font-variant:small-caps;">Source: ' + (networkCtx.dataSource || 'heuristic') + '</div>';
+        ncHtml += '</div>';
+    }
+
+    contentDiv.innerHTML = html;
+    document.getElementById('network-context-section').innerHTML = ncHtml;
 }

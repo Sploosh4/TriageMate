@@ -30,6 +30,31 @@ class ScoringWeight(BaseModelConfig):
     is_substituted: bool = False
 
 
+class SecurityTelemetryEntry(BaseModelConfig):
+    """A security telemetry event (Sentinel incident or EDR alert)."""
+
+    source: str = ""
+    alert_id: str = ""
+    title: str = ""
+    severity: str = "Informational"
+    status: str = ""
+    detected_at: str = ""
+    description: str = ""
+
+
+class NetworkContextData(BaseModelConfig):
+    """Network context for a host."""
+
+    zone: str = ""
+    zone_display: str = ""
+    peer_count: int = 0
+    internet_facing_peers: int = 0
+    dc_peers: int = 0
+    blast_radius_score: float = 0.0
+    exposure_level: str = "low"
+    data_source: str = "heuristic"
+
+
 class AssetRegistryEntry(BaseModelConfig):
     label: str
     value: str
@@ -61,6 +86,8 @@ class CaseViewData(BaseModelConfig):
     scoring_weights: list[ScoringWeight]
     asset_registry: list[AssetRegistryEntry]
     nvd_freshness: int = -1
+    telemetry: Optional[dict] = None
+    network_context: Optional[NetworkContextData] = None
 
 
 class QueueRow(BaseModelConfig):

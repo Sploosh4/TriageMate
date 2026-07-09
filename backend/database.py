@@ -313,6 +313,7 @@ class DatabaseManager:
                 exposure_contribution INTEGER,
                 patch_remediation_contribution INTEGER,
                 ml_exploitation_contribution INTEGER DEFAULT 0,
+                security_context_contribution INTEGER DEFAULT 0,
 
                 -- Substitution tracking
                 epss_substituted BOOLEAN DEFAULT FALSE,
@@ -371,7 +372,14 @@ class DatabaseManager:
                 override_band TEXT,
 
                 -- ML drift monitoring
-                tier_1_features TEXT
+                tier_1_features TEXT,
+
+                -- Security context (Sprint 17)
+                telemetry_json TEXT,
+                network_context_json TEXT,
+
+                -- Security context contribution (Sprint 18)
+                security_context_contribution INTEGER DEFAULT 0
             )
         """)
 
@@ -421,9 +429,14 @@ class DatabaseManager:
                 exposure_contribution INTEGER,
                 patch_remediation_contribution INTEGER,
                 ml_exploitation_contribution INTEGER DEFAULT 0,
+                security_context_contribution INTEGER DEFAULT 0,
 
                 -- ML drift monitoring
                 tier_1_features TEXT,
+
+                -- Security context (Sprint 17)
+                telemetry_json TEXT,
+                network_context_json TEXT,
                 epss_substituted BOOLEAN DEFAULT FALSE,
                 epss_substituted_value REAL,
                 epss_substitution_confidence REAL,
@@ -580,6 +593,7 @@ class DatabaseManager:
                 exposure_contribution INTEGER,
                 patch_remediation_contribution INTEGER,
                 ml_exploitation_contribution INTEGER DEFAULT 0,
+                security_context_contribution INTEGER DEFAULT 0,
 
                 -- Substitution tracking
                 epss_substituted BOOLEAN DEFAULT FALSE,
@@ -638,7 +652,14 @@ class DatabaseManager:
                 override_band TEXT,
 
                 -- ML drift monitoring
-                tier_1_features TEXT
+                tier_1_features TEXT,
+
+                -- Security context (Sprint 17)
+                telemetry_json TEXT,
+                network_context_json TEXT,
+
+                -- Security context contribution (Sprint 18)
+                security_context_contribution INTEGER DEFAULT 0
             )
         """)
 
@@ -688,9 +709,14 @@ class DatabaseManager:
                 exposure_contribution INTEGER,
                 patch_remediation_contribution INTEGER,
                 ml_exploitation_contribution INTEGER DEFAULT 0,
+                security_context_contribution INTEGER DEFAULT 0,
 
                 -- ML drift monitoring
                 tier_1_features TEXT,
+
+                -- Security context (Sprint 17)
+                telemetry_json TEXT,
+                network_context_json TEXT,
                 epss_substituted BOOLEAN DEFAULT FALSE,
                 epss_substituted_value REAL,
                 epss_substitution_confidence REAL,

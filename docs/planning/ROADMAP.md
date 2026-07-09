@@ -15,7 +15,7 @@
 | Sprints completed | 16 + 16b |
 | Pipeline stages | Pre-Tier → Tier 0 → Tier 1 → Tier 2 → Tier 3 (Human Review) |
 | Enrichment sources | 12 integrations (NVD, OSV, OTX, ExploitDB, Metasploit, Tenable, GreyNoise [deprecated], CMDB [stub], Advisories [stub], MITRE, CWE classifier, Demo generator) |
-| Demo rows | 7 CVEs, scores 94/87/71/63/55/41/22 (±3 tolerance) |
+| Demo rows | 7 CVEs, scores 98/91/73/66/58/44/26 (±3 tolerance) |
 | Auth | JWT (disabled by default, env-var-gated) |
 | Database | SQLite (default), PostgreSQL (available via DATABASE_URL) |
 | CI/CD | `.github/workflows/ci.yml` — full pipeline (matrix test, coverage, lint, Docker) |
@@ -62,8 +62,9 @@
 | **9** | **Concept drift monitoring** | TBD | Beyond PSI — accuracy-over-time tracking, ground-truth feedback loop. |
 | **10** | **Scoring weight documentation** | 1 hr | Document the 107-sum weight design, rationale for clamping, effect on score ceiling. |
 | **11** | **Shared config module** | 3 hrs | Single source of truth for all pipeline constants across training and inference. |
-| **12** | **EPSS v4 retrain on real data** | 1–2 days | Retrain EPSS v4 on real (non-synthetic) Tenable scan aggregation data. |
-| **13** | **Multi-window labels** | 6 hrs | Replace single binary KEV label with 30/90/365d observation windows. |
+| **12** | **Multiplier-based security scoring** | 1 day | Replace additive Security Context dimension with a proportional multiplier model. Active incident + loaded code → score × 1.2. Confirmed inactive → score × 0.8. Industry-grade approach that scales context impact with existing severity. |
+| **13** | **EPSS v4 retrain on real data** | 1–2 days | Retrain EPSS v4 on real (non-synthetic) Tenable scan aggregation data. |
+| **14** | **Multi-window labels** | 6 hrs | Replace single binary KEV label with 30/90/365d observation windows. |
 
 ---
 
@@ -71,17 +72,17 @@
 
 | # | Item | Description |
 |---|---|---|
-| **14** | Cloud deploy + HTTPS + CORS restriction | Docker, reverse proxy, DNS, TLS, restrict `allow_origins=["*"]` |
-| **15** | Real Microsoft Sentinel integration | Replace synthetic with actual Azure Sentinel API |
-| **16** | Real EDR/SIEM connectors | Defender, SentinelOne, CrowdStrike, Splunk |
-| **17** | CMDB real integration | ServiceNow or iTop API replacement for stub |
-| **18** | WASOC incident data | Replace 7-CVE advisories.py stub with live feed |
-| **19** | RBAC / multi-user | Analyst vs. admin vs. viewer roles |
-| **20** | MLflow experiment tracking | Model versioning, A/B testing, experiment registry |
-| **21** | Email / Slack notifications | Webhook-driven alerting |
-| **22** | PostgreSQL default deployment | Switch default from SQLite to PostgreSQL |
-| **23** | `pytest-benchmark` + CI perf gates | Granular performance regression detection |
-| **24** | DeepSeek V4 Flash Tier 2 provider | Additional LLM provider for fallback chain |
+| **15** | Cloud deploy + HTTPS + CORS restriction | Docker, reverse proxy, DNS, TLS, restrict `allow_origins=["*"]` |
+| **16** | Real Microsoft Sentinel integration | Replace synthetic with actual Azure Sentinel API |
+| **17** | Real EDR/SIEM connectors | Defender, SentinelOne, CrowdStrike, Splunk |
+| **18** | CMDB real integration | ServiceNow or iTop API replacement for stub |
+| **19** | WASOC incident data | Replace 7-CVE advisories.py stub with live feed |
+| **20** | RBAC / multi-user | Analyst vs. admin vs. viewer roles |
+| **21** | MLflow experiment tracking | Model versioning, A/B testing, experiment registry |
+| **22** | Email / Slack notifications | Webhook-driven alerting |
+| **23** | PostgreSQL default deployment | Switch default from SQLite to PostgreSQL |
+| **24** | `pytest-benchmark` + CI perf gates | Granular performance regression detection |
+| **25** | DeepSeek V4 Flash Tier 2 provider | Additional LLM provider for fallback chain |
 
 ---
 

@@ -126,6 +126,33 @@ async def ingest_vulnerability(payload: IngestRequest, request: Request = None):
         epss_sub["substituted_epss"] if epss_sub["substituted"] else raw_epss
     )
 
+    # ── Security context enrichment (Sprint 17) ─────────────────────
+    telemetry = None
+    network_ctx = None
+    try:
+        from integrations.synthetic_telemetry import get_telemetry_context
+
+        telemetry = get_telemetry_context(
+            cve_id=payload.vulnerability_id,
+            hostname=payload.hostname,
+            cvss_score=payload.cvss_score or 0.0,
+            cisa_kev=bool(payload.cisa_kev) if hasattr(payload, "cisa_kev") else False,
+            epss_score=effective_epss,
+            description=payload.raw_description or "",
+        )
+    except Exception as e:
+        logger.warning("Security telemetry enrichment failed: %s", e)
+
+    try:
+        from integrations.network_context import get_network_context
+
+        network_ctx = get_network_context(
+            hostname=payload.hostname,
+            asset_ctx=asset_ctx,
+        )
+    except Exception as e:
+        logger.warning("Network context enrichment failed: %s", e)
+
     # 5. Tier 0: deterministic routing
     _t1 = time.monotonic()
     t0_result = tier_0.evaluate_tier_0(
@@ -146,7 +173,13 @@ async def ingest_vulnerability(payload: IngestRequest, request: Request = None):
     _t_tier_2 = 0.0
     if t0_result["routing"] == "escalated":
         _t2 = time.monotonic()
-        features = build_feature_vector(payload, mission_tags, t0_result)
+        features = build_feature_vector(
+            payload,
+            mission_tags,
+            t0_result,
+            telemetry=telemetry,
+            network_ctx=network_ctx,
+        )
         t1_result = tier_1.evaluate_tier_1(features)
         _t_tier_1 = time.monotonic() - _t2
 
@@ -195,6 +228,10 @@ async def ingest_vulnerability(payload: IngestRequest, request: Request = None):
         tier_1_result=t1_result,
         tier_2_result=t2_result,
         substituted_epss=effective_epss if epss_sub["substituted"] else None,
+        telemetry_threat_score=telemetry.get("threat_score", 0.0) if telemetry else 0.0,
+        network_blast_radius=network_ctx.get("blast_radius_score", 0.0)
+        if network_ctx
+        else 0.0,
     )
 
     # 8. Determine tier routing text
@@ -346,6 +383,13 @@ async def ingest_vulnerability(payload: IngestRequest, request: Request = None):
             "justification": "Calculated from XGBoost model exploitation probability prediction.",
             "is_substituted": False,
         },
+        {
+            "name": "Security Context",
+            "awarded": scoring["dimensions"]["security_context"],
+            "max": 5,
+            "justification": "Based on telemetry threat score and network blast radius.",
+            "is_substituted": False,
+        },
     ]
 
     # 10. Build investigation notes
@@ -390,7 +434,8 @@ async def ingest_vulnerability(payload: IngestRequest, request: Request = None):
             service_account, detection_tier, detection_reason,
             scanner_output_raw, weakness_template_raw, advisory_ref_id, advisory_quote, investigation_notes,
             mitre_techniques_json, scoring_weights_json, asset_registry_json, summary_paragraphs_json,
-            tier_1_features
+            tier_1_features,
+            telemetry_json, network_context_json
         ) VALUES (
             ?, ?, ?, ?, ?, ?,
             ?, ?, ?, ?,
@@ -406,7 +451,8 @@ async def ingest_vulnerability(payload: IngestRequest, request: Request = None):
             ?, ?, ?,
             ?, ?, ?, ?, ?,
             ?, ?, ?, ?, ?,
-            ?
+            ?,
+            ?, ?
         )
     """,
         (
@@ -467,6 +513,8 @@ async def ingest_vulnerability(payload: IngestRequest, request: Request = None):
             json.dumps([]),
             json.dumps(summary_paragraphs),
             tier_1_features_json,
+            json.dumps(telemetry) if telemetry else None,
+            json.dumps(network_ctx) if network_ctx else None,
         ),
     )
     new_id = cursor.lastrowid

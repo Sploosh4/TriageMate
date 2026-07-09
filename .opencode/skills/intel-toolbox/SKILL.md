@@ -19,6 +19,8 @@ description: Threat intelligence integration modules, data sources, cache files,
 | `tenable.py` | Tenable.io | Scanner result parsing |
 | `cmdb.py` | CMDB (stub) | Asset context and criticality |
 | `advisories.py` | Vendor advisories | Vendor security bulletins |
+| `network_context.py` | Network peer / blast radius | Peer discovery, zone exposure, blast-radius context |
+| `synthetic_telemetry.py` | Security telemetry (Sentinel + EDR) | Sentinel incidents, EDR alerts, process evidence |
 
 ## Cache Files (`backend/data/`)
 

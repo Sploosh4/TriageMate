@@ -389,7 +389,13 @@ def _threat_pulses_status(otx_result: dict) -> str:
     return "no_threat_intel_available"
 
 
-def build_feature_vector(payload, mission_tags: dict, tier_0_result: dict) -> dict:
+def build_feature_vector(
+    payload,
+    mission_tags: dict,
+    tier_0_result: dict,
+    telemetry: dict | None = None,
+    network_ctx: dict | None = None,
+) -> dict:
     """Build the full 42-key feature dict for the Tier 1 XGBoost model.
     35 keys feed the tabular model input, 6 are metadata/enrichment fields
     (`cvss_score`, `osv_fixed_versions`, `osv_package`, `osv_ecosystem`,
@@ -493,6 +499,12 @@ def build_feature_vector(payload, mission_tags: dict, tier_0_result: dict) -> di
             "internet_scan": _synthetic_scan_status(internet_scan),
             "threat_pulses": _threat_pulses_status(otx_result),
         },
+        "telemetry_threat_score": telemetry.get("threat_score", 0.0)
+        if telemetry
+        else 0.0,
+        "network_blast_radius": network_ctx.get("blast_radius_score", 0.0)
+        if network_ctx
+        else 0.0,
         "description": payload.raw_description or "",
     }
 

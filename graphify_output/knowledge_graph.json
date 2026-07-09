@@ -1,6 +1,6 @@
 {
   "meta": {
-    "generated": "2026-07-09T10:11:30.407391",
+    "generated": "2026-07-09T19:49:38.164315",
     "node_count": 70,
     "edge_count": 41,
     "source_db": "/home/jpc/Documents/Cybersecurity (Temp)/TriageMate/TriageMate MVP/triagemate.db",
@@ -292,7 +292,7 @@
         "cisa_kev": true,
         "risk_band": "Very Critical",
         "tier": "Deterministic",
-        "priority_score": 94
+        "priority_score": 98
       }
     },
     {
@@ -328,7 +328,7 @@
         "cisa_kev": true,
         "risk_band": "Very Critical",
         "tier": "Deterministic",
-        "priority_score": 87
+        "priority_score": 91
       }
     },
     {
@@ -364,7 +364,7 @@
         "cisa_kev": true,
         "risk_band": "Critical",
         "tier": "ML Tier",
-        "priority_score": 71
+        "priority_score": 73
       }
     },
     {
@@ -400,7 +400,7 @@
         "cisa_kev": true,
         "risk_band": "Critical",
         "tier": "ML Tier",
-        "priority_score": 63
+        "priority_score": 66
       }
     },
     {
@@ -428,7 +428,7 @@
         "cisa_kev": true,
         "risk_band": "Critical",
         "tier": "SLM Tier",
-        "priority_score": 55
+        "priority_score": 58
       }
     },
     {
@@ -464,7 +464,7 @@
         "cisa_kev": true,
         "risk_band": "Medium",
         "tier": "SLM Tier",
-        "priority_score": 41
+        "priority_score": 44
       }
     },
     {
@@ -510,7 +510,7 @@
         "cisa_kev": true,
         "risk_band": "Low",
         "tier": "SLM Tier",
-        "priority_score": 22
+        "priority_score": 26
       }
     },
     {

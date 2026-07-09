@@ -1,8 +1,8 @@
 """
 Tests for the Scoring Engine (``scoring.py``).
 
-``calculate_final_score`` is a pure function that combines six weighted
-dimensions (CVSS, EPSS, Asset Criticality, Exposure, Patch, ML Exploitation)
+``calculate_final_score`` is a pure function that combines seven weighted
+dimensions (CVSS, EPSS, Asset Criticality, Exposure, Patch, ML Exploitation, Security Context)
 into a 0-100 priority score with band mapping.
 
 All tests are synchronous unit tests — no fixtures, no API client needed.
@@ -38,7 +38,7 @@ class TestScoringSanity:
             f"Unexpected band: {result['band']}"
         )
         assert "dimensions" in result
-        assert len(result["dimensions"]) == 6
+        assert len(result["dimensions"]) == 7
 
     def test_critical_cve_returns_very_high_score(self):
         """CVSS 10, EPSS 0.9, max criticality, internet-facing, no patch.

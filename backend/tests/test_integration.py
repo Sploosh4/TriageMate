@@ -111,11 +111,11 @@ async def test_full_pipeline_ingest():
         )
 
         # ──────────────────────────────────────────────────────────────
-        # 4. Scoring weights — 6 dimensions with correct shape
+        # 4. Scoring weights — 7 dimensions with correct shape
         # ──────────────────────────────────────────────────────────────
         weights = cv.get("scoringWeights")
         assert isinstance(weights, list), f"scoringWeights not list: {type(weights)}"
-        assert len(weights) == 6, f"Expected 6 scoring weights, got {len(weights)}"
+        assert len(weights) == 7, f"Expected 7 scoring weights, got {len(weights)}"
         for w in weights:
             assert "name" in w, f"Weight missing 'name': {w}"
             assert "awarded" in w, f"Weight missing 'awarded': {w}"

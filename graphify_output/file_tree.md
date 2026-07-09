@@ -41,7 +41,9 @@ TriageMate MVP/
 │   │   ├── 2026-07-08-sprint-operational-readiness.md  Sprint: Operational Readiness
 │   │   ├── 2026-07-08-sprint-parallel-polish.md  Sprint: Parallel Polish
 │   │   ├── 2026-07-08-sprint-research-synthetic-data.md  Sprint Plan: Research & Synthetic Data Infrastructure
-│   │   └── 2026-07-09-sprint-16.md  Sprint 16 — ML Monitoring Foundation
+│   │   ├── 2026-07-09-sprint-16.md  Sprint 16 — ML Monitoring Foundation
+│   │   ├── 2026-07-09-sprint-16b.md  Sprint 16b — Fix 4 Open Bugs + Doc Refresh
+│   │   └── 2026-07-09-sprint-17.md  Sprint 17 — Security Telemetry + Network Context
 │   ├── skills/
 │   │   ├── audit-checklist/
 │   │   │   └── SKILL.md  Audit Checklist
@@ -83,7 +85,8 @@ TriageMate MVP/
 │   │   │   ├── 004_add_review_queue.py  Add review queue columns and reviews table
 │   │   │   ├── 005_add_ml_exploitation.py  Add ml_exploitation_contribution column
 │   │   │   ├── 006_add_tier_1_features_column.py  Add tier_1_features TEXT column to vulnerabilities
-│   │   │   └── 007_add_tier_1_features_to_resolved.py  Add tier_1_features TEXT column to resolved_vulnerabilities
+│   │   │   ├── 007_add_tier_1_features_to_resolved.py  Add tier_1_features TEXT column to resolved_vulnerabilities
+│   │   │   └── 008_add_security_context_columns.py  Add security context columns — telemetry + network context
 │   │   ├── env.py  Override sqlalchemy.url with DATABASE_URL env var if set
 │   │   ├── README  38.0 B
 │   │   └── script.py.mako  """${message}
@@ -91,16 +94,16 @@ TriageMate MVP/
 │   │   ├── calibration_audit.py  Expected Calibration Error — identical formula to train_xgboost.py.
 │   │   ├── drift.py  Compute Population Stability Index for one feature.
 │   │   ├── epss_eval.py  1. Load and Align Data
-│   │   ├── feature_parity_check.py  19.9 KB
+│   │   ├── feature_parity_check.py  19.8 KB
 │   │   ├── stress_db.py  Create SQLite database at path with the stress test schema.
 │   │   └── validate_conversion.py  9.4 KB
 │   ├── data/
 │   │   ├── lancedb/
 │   │   │   ├── __manifest/  (LanceDB internal — 3 files, 1015.0 B)
 │   │   │   └── asset_documentation.lance/
-│   │   │       ├── _indices/  (LanceDB internal — 789 files, 2.0 MB)
-│   │   │       ├── _transactions/  (LanceDB internal — 201 files, 100.1 KB)
-│   │   │       ├── _versions/  (LanceDB internal — 202 files, 228.4 KB)
+│   │   │       ├── _indices/  (LanceDB internal — 801 files, 2.1 MB)
+│   │   │       ├── _transactions/  (LanceDB internal — 204 files, 101.7 KB)
+│   │   │       ├── _versions/  (LanceDB internal — 205 files, 232.1 KB)
 │   │   │       └── data/  (LanceDB internal — 2 files, 38.6 KB)
 │   │   ├── demo_scenarios.json  3.6 KB
 │   │   ├── epss_cache.json  19.5 MB
@@ -120,9 +123,11 @@ TriageMate MVP/
 │   │   ├── greynoise.py  Query GreyNoise Community API for internet scan activity on a CVE.
 │   │   ├── metasploit.py  Check if a CVE has a Metasploit module.
 │   │   ├── mitre_mapping.py
+│   │   ├── network_context.py  Parse agency short code from a WA government hostname.
 │   │   ├── nvd.py  ─── Demo mode: local cache read path ─────────────────────────────────
 │   │   ├── osv.py  Query OSV.dev for fix version data for a CVE.
 │   │   ├── otx.py  Query AlienVault OTX API for threat pulses referencing a CVE.
+│   │   ├── synthetic_telemetry.py
 │   │   └── tenable.py  Extract the first CVE ID from plugin.cve array, or synthesize one.
 │   ├── middleware/
 │   │   ├── __init__.py
@@ -230,7 +235,7 @@ TriageMate MVP/
 │   ├── scheduler.py  ).fetchall()
 │   ├── scoring.py  Round to nearest int, .5 always rounds up (not banker's rounding).
 │   ├── seed_data.py  Row 1: CVE-2023-34362 — MOVEit Transfer SQL Injection
-│   ├── triagemate.db  156.0 KB
+│   ├── triagemate.db  840.0 KB
 │   └── triagemate.db.backup  1.3 MB
 ├── backlog/
 │   └── TASK_STORE_COLUMNS_IN_NPZ.md  Task: Store Column Names in NPZ Metadata
@@ -257,6 +262,7 @@ TriageMate MVP/
 │   │   ├── EXTERNAL_AUDITOR_PROMPT.md  External Auditor Prompt — Demo Data Generator
 │   │   ├── file-consolidation-plan-2026-07-07.md  .md File Consolidation Plan
 │   │   ├── ml-implementation-plan.md  TriageMate ML Implementation Plan — Final
+│   │   ├── ROADMAP-2026-07-09.md  TriageMate — Master Roadmap & Status
 │   │   ├── SECOND_WAVE_PROMPT.md  Wave 2 Audit Prompt — LOGIC & SEMANTIC CORRECTNESS
 │   │   ├── SPRINT_NEXT_PLAN.md  Sprint NEXT Plan — Model Retrain + Operational Upgrades
 │   │   ├── TriageMate ML Research Prompt.md  ARCHIVED — TriageMate ML Research Prompt
@@ -267,7 +273,7 @@ TriageMate MVP/
 │   ├── planning/
 │   │   ├── ai-doc-strategy-2026-07-07.md  AI Documentation Strategy Proposal
 │   │   ├── HANDOFF-2026-07-08.md  Handoff Document — 2026-07-08
-│   │   └── ROADMAP.md  TriageMate — Master Roadmap & Status
+│   │   └── ROADMAP.md  TriageMate — Roadmap
 │   ├── reference/
 │   │   ├── AI_PROBLEMS.md  AI Problems — Discrepancies Found During Development
 │   │   ├── hostname-standards.md  **Technical Reference Architecture for Hostname Nomenclature and Information Gov
@@ -289,12 +295,12 @@ TriageMate MVP/
 │   │   │   └── reviewQueue.js  // reviewQueue.js — Tier 3 Human Review Queue
 │   │   ├── api.js  // api.js — Single responsibility: talk to the backend
 │   │   └── app.js  // app.js — Application state and initialization
-│   └── index.html  10.7 KB
+│   └── index.html  11.0 KB
 ├── graphify_output/
 │   ├── api_deps.md  TriageMate — API Dependency Map
 │   ├── feature_parity.md  TriageMate — Feature Parity Report
 │   ├── file_tree.md  TriageMate — File Tree
-│   ├── knowledge_graph.json  11.4 KB
+│   ├── knowledge_graph.json  21.9 KB
 │   └── ml_inventory.md  TriageMate — ML Model Inventory
 ├── .dockerignore  328.0 B
 ├── .env.example  1.8 KB
@@ -312,8 +318,8 @@ TriageMate MVP/
 ├── opencode.jsonc  924.0 B
 ├── requirements-dev.txt  130.0 B
 ├── RESEARCH_FINDINGS.md  TriageMate — Sprint NEXT+2 Research Findings
-├── ROADMAP.md  TriageMate — Master Roadmap & Status
-├── triagemate.db  156.0 KB
+├── ROADMAP.md  TriageMate — Roadmap
+├── triagemate.db  840.0 KB
 ├── WINDOWS_SETUP.md  TriageMate — Windows Setup Guide
 └── XGBOOST_INVESTIGATION_REPORT.md  XGBoost Exploitation Model — Investigation Report
 ```

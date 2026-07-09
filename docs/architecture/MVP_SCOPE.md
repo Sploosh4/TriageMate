@@ -81,7 +81,7 @@ Define exactly what the TriageMate Minimum Viable Product delivers, what it expl
 ### 2.5 Scoring Engine
 | Component | Reason |
 |---|---|
-| Six weighted dimensions: CVSS (max 40), EPSS (max 20), Asset Criticality (max 20), Exposure (max 15), Patch (max 5), ML Exploitation Probability (max 10) | Matches demo scoring weights exactly. ML Exploitation dimension added post-MVP scope document via migration 005 |
+| Seven weighted dimensions: CVSS (max 40), EPSS (max 20), Asset Criticality (max 20), Exposure (max 12), Patch (max 5), ML Exploitation Probability (max 10), Security Context (max 5) | Matches current scoring weights in scoring.py. Security Context dimension added Sprint 17. |
 | Band mapping: 0–25 → Low, 26–50 → Medium, 51–75 → Critical, 76–100 → Very Critical | Matches demo band mapping |
 | Tier 2 score adjustment applied after dimension sum | Required for SLM cases (Rows 5, 6, 7 with negative adjustments) |
 
@@ -191,7 +191,7 @@ Define exactly what the TriageMate Minimum Viable Product delivers, what it expl
 | **Pipeline Tier 0** | Deterministic rules (production-ready) | Threshold tuning (future refinement) |
 | **Pipeline Tier 1** | XGBoost model (retrained 2026-07-08 on 253K CVEs, ROC-AUC 0.9459) | WA-specific tuning (post-MVP) |
 | **Pipeline Tier 2** | Cloud LLM + KNOWN_CONFLICTS cache | Local CWE encoder (ModernBERT) |
-| **Scoring** | 6-dimension weighted score + band mapping (CVSS/EPSS/Criticality/Exposure/Patch/ML Exploitation) | Dynamic weight learning |
+| **Scoring** | 7-dimension weighted score + band mapping (CVSS/EPSS/Criticality/Exposure/Patch/ML Exploitation/Security Context) | Dynamic weight learning |
 | **Database** | SQLite + PostgreSQL support, 7 Alembic migrations, 3 tables (vulnerabilities, resolved_vulnerabilities, reviews) | Full multi-table normalisation |
 | **RAG** | LanceDB with 7 demo documents, TTL cache, write lock, ingestion CLI | Full index of Confluence/SharePoint |
 | **Scheduler** | Daily low re-check, 7.5% audit sampling | Dashboard, alerting |
@@ -220,7 +220,7 @@ The MVP is complete when:
 
 1. `uvicorn main:app --reload` starts without errors
 2. `http://localhost:8000` renders the queue view with 7 rows matching `demo-reference.html`
-3. Each row's priority score is within ±3 of the expected values (94, 87, 71, 63, 55, 41, 22)
+3. Each row's priority score is within ±3 of the expected values (98, 91, 73, 66, 58, 44, 26)
 4. Clicking each row renders the case view with all 4 panels populated
 5. The 4 metric boxes show correct counts (2, 4, 2, 3)
 6. `POST /api/ingest` with a test payload returns a `CaseResponse` and the new row appears in the queue

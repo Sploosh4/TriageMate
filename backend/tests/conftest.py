@@ -46,6 +46,35 @@ def _ensure_tier_1_features_column(db_path: str):
         conn.close()
 
 
+def _ensure_security_context_contribution_column(db_path: str):
+    """Add security_context_contribution column if Alembic didn't apply it.
+
+    Migration 008 added telemetry_json and network_context_json but not
+    the security_context_contribution column. This ensures the column is
+    present for seed_data insertion.
+    """
+    import sqlite3
+
+    try:
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT security_context_contribution FROM vulnerabilities LIMIT 1"
+        )
+        cursor.close()
+        conn.close()
+    except sqlite3.OperationalError:
+        conn = sqlite3.connect(db_path)
+        conn.execute(
+            "ALTER TABLE vulnerabilities ADD COLUMN security_context_contribution INTEGER DEFAULT 0"
+        )
+        conn.execute(
+            "ALTER TABLE resolved_vulnerabilities ADD COLUMN security_context_contribution INTEGER DEFAULT 0"
+        )
+        conn.commit()
+        conn.close()
+
+
 @pytest.fixture(scope="session", autouse=True)
 def setup_test_db():
     """Initialize and seed a temporary test database.
@@ -63,6 +92,7 @@ def setup_test_db():
 
     database.init_db()
     _ensure_tier_1_features_column(database.DB_PATH)
+    _ensure_security_context_contribution_column(database.DB_PATH)
     seed()
 
     yield

@@ -153,6 +153,16 @@
 
 - `logging`  (import)
 
+## backend/integrations/network_context.py
+
+**Project**
+
+- `database`  (from(get_db))
+
+**Stdlib**
+
+- `logging`  (import)
+
 ## backend/integrations/nvd.py
 
 **Project**
@@ -192,6 +202,15 @@
 - `logging`  (import)
 - `os`  (import)
 - `time`  (import)
+
+## backend/integrations/synthetic_telemetry.py
+
+**Stdlib**
+
+- `datetime`  (from(datetime), from(timedelta))
+- `hashlib`  (import)
+- `logging`  (import)
+- `random`  (import)
 
 ## backend/integrations/tenable.py
 
@@ -585,7 +604,7 @@
 - `database`  (from(get_db))
 - `ingest_helpers`  (from(compliance_category))
 - `integrations.nvd`  (from(get_cve_freshness))
-- `models`  (from(AssetRegistryEntry), from(CaseResponse), from(CaseViewData), from(MitreTechnique), from(QueueRow), from(ReviewQueueItem), from(ReviewQueueResponse), from(ReviewRequest), from(ScoringWeight), from(SubstitutionBlock))
+- `models`  (from(AssetRegistryEntry), from(CaseResponse), from(CaseViewData), from(MitreTechnique), from(NetworkContextData), from(QueueRow), from(ReviewQueueItem), from(ReviewQueueResponse), from(ReviewRequest), from(ScoringWeight), from(SubstitutionBlock))
 
 **External**
 
@@ -610,7 +629,9 @@
 - `integrations.cmdb`  (from(validate_wa_gov_hostname))
 - `integrations.demo_generator`  (from(generate_random_wave), from(generate_scenario_findings), from(get_scenarios_list), from(inject_enrichment))
 - `integrations.mitre_mapping`  (from(lookup_mitre))
+- `integrations.network_context`  (from(get_network_context))
 - `integrations.nvd`  (from(get_cve_freshness))
+- `integrations.synthetic_telemetry`  (from(get_telemetry_context))
 - `integrations.tenable`  (from(parse_tenable_batch), from(parse_tenable_webhook))
 - `ml.epss_substitutor`  (from(calculate_substitution))
 - `models`  (from(CaseResponse), from(CaseViewData), from(IngestRequest), from(QueueRow), from(SubstitutionBlock))

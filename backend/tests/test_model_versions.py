@@ -131,7 +131,7 @@ class TestModelStatus:
         sc = data["score_comparison"]
         assert "baseline_scores" in sc, "score_comparison missing baseline_scores"
         assert "versions" in sc, "score_comparison missing versions"
-        assert sc["baseline_scores"] == [94, 87, 71, 63, 55, 41, 22], (
+        assert sc["baseline_scores"] == [98, 91, 73, 66, 58, 44, 26], (
             f"Unexpected baseline_scores: {sc['baseline_scores']}"
         )
 

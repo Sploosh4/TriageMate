@@ -4,8 +4,8 @@ Final priority score calculation.
 Combines outputs from all pipeline stages into a score
 with per-dimension breakdown for the frontend scoring weights display.
 
-Weights sum to 107 (CVSS 40 + EPSS 20 + criticality 20 + exposure 12 +
-patch 5 + ml_exploitation 10). The final total is clamped to 0-100.
+Weights sum to 112 (CVSS 40 + EPSS 20 + criticality 20 + exposure 12 +
+patch 5 + ml_exploitation 10 + security_context 5). The final total is clamped to 0-100.
 """
 
 
@@ -26,10 +26,12 @@ def calculate_final_score(
     tier_1_result=None,
     tier_2_result=None,
     substituted_epss=None,
+    telemetry_threat_score: float = 0.0,
+    network_blast_radius: float = 0.0,
 ) -> dict:
     """
-    Calculate the priority score from six weighted dimensions plus optional Tier 2 score adjustment.
-    Weights sum to 107; final total is clamped to 0-100.
+    Calculate the priority score from seven weighted dimensions plus optional Tier 2 score adjustment.
+    Weights sum to 112; final total is clamped to 0-100.
 
     Returns a dict with per-dimension breakdown for the scoring weights display.
 
@@ -65,6 +67,11 @@ def calculate_final_score(
     if tier_1_result and tier_1_result.get("exploitation_probability") is not None:
         ml_exploitation = _round_half_up(tier_1_result["exploitation_probability"] * 10)
     dimensions["ml_exploitation"] = ml_exploitation
+
+    # Security Context (max 5) — Sprint 17
+    security_context = round(telemetry_threat_score * 3 + network_blast_radius * 2)
+    security_context = max(0, min(5, security_context))
+    dimensions["security_context"] = security_context
 
     # Asset criticality (max 20) — based on data classification and mission tags
     # POLICY NOTE: The 12/4/0 point spread for OFFICIAL Sensitive/OFFICIAL is an

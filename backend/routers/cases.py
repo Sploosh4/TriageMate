@@ -13,6 +13,7 @@ from models import (
     ScoringWeight,
     AssetRegistryEntry,
     SubstitutionBlock,
+    NetworkContextData,
     ReviewRequest,
     ReviewQueueItem,
     ReviewQueueResponse,
@@ -77,6 +78,8 @@ def _row_to_case_view(r) -> CaseViewData:
     scoring_data = _parse_json_column(r["scoring_weights_json"])
     asset_data = _parse_json_column(r["asset_registry_json"])
     summary_data = _parse_json_column(r["summary_paragraphs_json"])
+    telemetry = _parse_json_column(r["telemetry_json"], default=None)
+    network_context = _parse_json_column(r["network_context_json"], default=None)
 
     mitre_techniques = [MitreTechnique(**m) for m in mitre_data if isinstance(m, dict)]
     scoring_weights = [ScoringWeight(**s) for s in scoring_data if isinstance(s, dict)]
@@ -111,6 +114,10 @@ def _row_to_case_view(r) -> CaseViewData:
         scoring_weights=scoring_weights,
         asset_registry=asset_registry,
         nvd_freshness=nvd_freshness,
+        telemetry=telemetry if telemetry else None,
+        network_context=NetworkContextData(**network_context)
+        if network_context
+        else None,
     )
 
 

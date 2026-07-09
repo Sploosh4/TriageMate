@@ -130,6 +130,16 @@
 
 **Total test count:** 275+ tests (up from 142) — includes 5 new test files for Pre-Tier and EPSS monitoring.
 
+## Sprint 17 — Security Telemetry, Network Context & Panel 5
+
+| Component | Files | Purpose |
+|---|---|---|
+| **Security Telemetry** | `backend/integrations/synthetic_telemetry.py` | Generates realistic Sentinel/EDR telemetry (incidents, alerts, process evidence) with threat scores for demo CVEs. Ingest pipeline calls this to populate `telemetry_json`. |
+| **Network Context** | `backend/integrations/network_context.py` | Produces network blast-radius scores and peer topology from `synthetic_assets` table. Ingest pipeline calls this to populate `network_context_json`. |
+| **Panel 5 Frontend** | `frontend/index.html`, `frontend/js/components/caseView.js`, `frontend/css/triagemate.css` | New case-view panel for security telemetry (Sentinel incidents, EDR alerts, process evidence) and network context (blast radius gauge, zone display, peer counts). |
+| **7th Scoring Dimension** | `backend/scoring.py` | "Security Context" (max 5): composite of telemetry threat score (×3) and network blast radius (×2), clamped to 0–5. |
+| **Score Contract** | `backend/seed_data.py` | Updated expected scores: **98/91/73/66/58/44/26** (was 94/87/71/63/55/41/22 before Sprint 17). |
+
 ## Graphify — Auto-Generated Knowledge Artifacts
 
 These files are regenerated on demand with `just graphify`. They are always current with the codebase.

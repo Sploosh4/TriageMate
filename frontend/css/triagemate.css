@@ -1836,3 +1836,243 @@ body.demo-active {
   min-height: 18px;
   padding-top: 4px;
 }
+
+/* ── Panel 5: Security Context (Sprint 17) ──────────────────── */
+#panel-5 {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.panel-5-header {
+    margin-bottom: 12px;
+}
+
+/* Telemetry grid: two columns for incidents + EDR */
+.telemetry-grid {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.telemetry-col {
+    flex: 1;
+    min-width: 0;
+}
+
+.telemetry-col-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+}
+
+/* Individual incident card */
+.telemetry-incident {
+    background: var(--surface-alt);
+    border-left: 3px solid var(--warning);
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    border-radius: 3px;
+    font-size: 13px;
+}
+
+.telemetry-incident.severity-high {
+    border-left-color: var(--danger);
+}
+
+.telemetry-incident.severity-medium {
+    border-left-color: var(--warning);
+}
+
+.telemetry-incident.severity-low {
+    border-left-color: var(--info);
+}
+
+.telemetry-incident-title {
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.telemetry-incident-meta {
+    color: var(--text-muted);
+    font-size: 11px;
+}
+
+.telemetry-incident-mitre {
+    font-size: 11px;
+    margin-top: 4px;
+}
+
+/* EDR alerts */
+.telemetry-alert {
+    background: var(--surface-alt);
+    padding: 8px 10px;
+    margin-bottom: 6px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-family: var(--mono);
+}
+
+.telemetry-alert-type {
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.telemetry-alert-detail {
+    color: var(--text-muted);
+    font-size: 11px;
+}
+
+/* Process evidence */
+.process-evidence-box {
+    background: var(--surface-alt);
+    padding: 10px 12px;
+    border-radius: 3px;
+    margin-bottom: 10px;
+    font-size: 13px;
+}
+
+.process-evidence-box .process-running {
+    color: var(--danger);
+    font-weight: 600;
+}
+
+.process-evidence-box .process-not-running {
+    color: var(--success);
+    font-weight: 600;
+}
+
+.process-evidence-box .evidence-quality {
+    color: var(--text-muted);
+    font-size: 11px;
+    margin-top: 4px;
+}
+
+/* No data state */
+.telemetry-no-data {
+    color: var(--text-muted);
+    font-style: italic;
+    padding: 12px 0;
+    font-size: 13px;
+}
+
+/* Network context section */
+#network-context-section {
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+    margin-top: 8px;
+}
+
+.network-context-grid {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.network-zone-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.zone-dmz { background: rgba(220, 53, 69, 0.15); color: var(--danger); }
+.zone-protected { background: rgba(40, 167, 69, 0.15); color: var(--success); }
+.zone-restricted { background: rgba(255, 193, 7, 0.15); color: var(--warning); }
+.zone-internal { background: var(--surface-alt); color: var(--text); }
+
+.network-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 60px;
+}
+
+.network-stat-value {
+    font-weight: 700;
+    font-size: 20px;
+    line-height: 1.2;
+}
+
+.network-stat-label {
+    color: var(--text-muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.blast-radius-bar {
+    width: 100%;
+    max-width: 300px;
+    margin-top: 8px;
+}
+
+.blast-radius-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.blast-radius-track {
+    width: 100%;
+    height: 8px;
+    background: var(--surface-alt);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.blast-radius-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.4s ease;
+}
+
+.blast-radius-fill.high { background: var(--danger); }
+.blast-radius-fill.medium { background: var(--warning); }
+.blast-radius-fill.low { background: var(--success); }
+
+.blast-radius-percent {
+    font-size: 20px;
+    font-weight: 700;
+}
+
+/* Severity badge (reused from queue table) */
+.severity-badge {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 2px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-right: 6px;
+}
+
+/* Dark mode overrides for Panel 5 */
+[data-theme="dark"] .telemetry-incident { background: var(--surface); }
+[data-theme="dark"] .telemetry-alert { background: var(--surface); }
+[data-theme="dark"] .process-evidence-box { background: var(--surface); }
+[data-theme="dark"] .blast-radius-track { background: var(--border); }
+
+/* Responsive: stack telemetry columns on narrow screens */
+@media (max-width: 900px) {
+    .telemetry-grid {
+        flex-direction: column;
+    }
+    .network-context-grid {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+}
