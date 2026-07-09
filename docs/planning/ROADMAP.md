@@ -12,9 +12,9 @@
 |---|---|
 | Tests | 275 pass, 0 fail |
 | Open bugs | 0 (AI_PROBLEMS.md is clean) |
-| Sprints completed | 16 + 16b |
+| Sprints completed | 16, 16b, 17 |
 | Pipeline stages | Pre-Tier → Tier 0 → Tier 1 → Tier 2 → Tier 3 (Human Review) |
-| Enrichment sources | 12 integrations (NVD, OSV, OTX, ExploitDB, Metasploit, Tenable, GreyNoise [deprecated], CMDB [stub], Advisories [stub], MITRE, CWE classifier, Demo generator) |
+| Enrichment sources | 14 integrations (NVD, OSV, OTX, ExploitDB, Metasploit, Tenable, GreyNoise [deprecated], CMDB [stub], Advisories [stub], MITRE, CWE classifier, Demo generator, **Synthetic Telemetry**, **Network Context**) |
 | Demo rows | 7 CVEs, scores 98/91/73/66/58/44/26 (±3 tolerance) |
 | Auth | JWT (disabled by default, env-var-gated) |
 | Database | SQLite (default), PostgreSQL (available via DATABASE_URL) |
@@ -31,19 +31,20 @@
 
 ---
 
-## Now — Sprint 17: Demo Integration
+## Sprint 17 — ✅ Complete (Security Context)
 
-> **Priority:** Make the demo more compelling with security telemetry context.
-
-| # | Item | Effort | Description |
+| # | Item | Status | Description |
 |---|---|---|---|
-| **1** | **Security Telemetry Module** | 2–3 hrs | Synthetic Sentinel-style incident correlation + EDR-style process/network alerts. Generates realistic demo telemetry based on KEV status, CVSS score, and vulnerability signatures. Plugs into enrichment pipeline. Displays as new accordion panel in case view. |
-| **2** | **Network Context Panel** (optional) | 1–2 hrs | Display blast radius / lateral reachability context from existing synthetic_assets data. Shows reachable peers, zone classification, blast radius severity. |
-| **3** | **Doc refresh** | 30 min | Update ROADMAP status after integration, correct CI/CD claim, run bookkeeper. |
+| **1** | **Security Telemetry Module** | ✅ Done | `synthetic_telemetry.py` — Synthetic Sentinel incidents + EDR alerts + process evidence (is the vulnerable code loaded?). Adds `telemetry_json` to DB. |
+| **2** | **Network Context Panel** | ✅ Done | `network_context.py` — DB-first peer discovery from `synthetic_assets` (1,827 assets). Blast radius, zone display, peer counts. Adds `network_context_json` to DB. |
+| **3** | **Alembic Migration 008** | ✅ Done | Adds `telemetry_json`, `network_context_json` to both tables. |
+| **4** | **7th Scoring Dimension** | ✅ Done | "Security Context" (max 5, total weight 112). Composite: threat_score × 3 + blast_radius × 2. |
+| **5** | **Panel 5 Frontend** | ✅ Done | Full-width security context panel below scoring breakdown. Two-column telemetry grid + blast radius bar. |
+| **6** | **Seed data recalculated** | ✅ Done | New scores: 98/91/73/66/58/44/26 (was 94/87/71/63/55/41/22). Synthetic assets populated. |
 
 ---
 
-## Soon — Sprint 18: Quick Wins + Monitoring
+## Now — Sprint 18: Quick Wins + Monitoring
 
 | # | Item | Effort | Description |
 |---|---|---|---|

@@ -30,7 +30,7 @@
 
 | File | Status | Description |
 |---|---|---|
-| `planning/ROADMAP.md` | CURRENT | Forward-looking roadmap post-Sprint 16b. Current state table, Sprint 17 (Demo Integration), Sprint 18 (Quick Wins + Monitoring), Medium-Term Engineering, and Post-MVP Infrastructure. Archived previous roadmap to `archive/ROADMAP-2026-07-09.md`. |
+| `planning/ROADMAP.md` | CURRENT | Forward-looking roadmap. Sprint 17 (Security Context) complete ✅. Sprint 18 (Quick Wins + Monitoring) planned. Archived previous roadmap to `archive/ROADMAP-2026-07-09.md`. |
 | `planning/HANDOFF-2026-07-08.md` | CURRENT | Handoff document covering ML drift monitoring, Tier 2 LLM query coverage, network topology/Sentinel status, and stress testing status. Answers what was deferred post-MVP. |
 | `planning/ai-doc-strategy-2026-07-07.md` | CURRENT | This consolidation plan — how and why docs were restructured. |
 | `archive/file-consolidation-plan-2026-07-07.md` | ARCHIVED | Bookkeeper's consolidation proposals — superseded by current doc structure. See `docs/INDEX.md`. |
@@ -130,7 +130,7 @@
 
 **Total test count:** 275+ tests (up from 142) — includes 5 new test files for Pre-Tier and EPSS monitoring.
 
-## Sprint 17 — Security Telemetry, Network Context & Panel 5
+## Sprint 17 — ✅ Complete (Security Telemetry, Network Context & Panel 5)
 
 | Component | Files | Purpose |
 |---|---|---|
