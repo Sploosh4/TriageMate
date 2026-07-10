@@ -31,7 +31,10 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report, roc_auc_score, f1_score
 
 from ml.encoder import encode_batch
-from pipeline.config.feature_names import TABULAR_FEATURE_ORDER
+from pipeline.config.feature_names import (
+    TABULAR_FEATURE_ORDER,
+    make_sbert_feature_names,
+)
 
 OUTPUT_DIR = Path(__file__).parent
 MODEL_FILE = OUTPUT_DIR / "xgboost_model.pkl"
@@ -113,12 +116,22 @@ def load_enriched_cves(path: Path) -> list[dict]:
 
 
 def save_training_data(
-    X: np.ndarray, y: np.ndarray, dates: np.ndarray, cve_ids: np.ndarray, path: Path
+    X: np.ndarray,
+    y: np.ndarray,
+    dates: np.ndarray,
+    cve_ids: np.ndarray,
+    path: Path,
+    n_text_dims: int = 384,
 ):
-    """Save (n, 35+384) features, labels, dates, CVE IDs, and feature names to .npz."""
-    # Build all-419 feature name array: 35 tabular names + 384 SBERT placeholders
-    sbert_names = [f"sbert_{i}" for i in range(384)]
-    feature_names = np.array(TABULAR_FEATURE_ORDER + sbert_names, dtype=str)
+    """Save (n, 35+text_dims) features, labels, dates, CVE IDs, and feature names to .npz.
+
+    Args:
+        n_text_dims: Number of text embedding dimensions. Defaults to 384 for raw SBERT.
+            Set to the number of PCA components when PCA-reduced features are used.
+    """
+    # Build feature name array: 35 tabular names + text feature names
+    text_names = make_sbert_feature_names(n_text_dims)
+    feature_names = np.array(TABULAR_FEATURE_ORDER + text_names, dtype=str)
     print(f"  Writing training data to {path.name} ... ", end="", flush=True)
     np.savez_compressed(
         path,
@@ -1033,6 +1046,55 @@ def phase_train(X: np.ndarray, y: np.ndarray, dates: np.ndarray):
     X_test, y_test = X[test_mask], y[test_mask]
 
     print(f"\n  Train: {len(X_train):,}, Val: {len(X_val):,}, Test: {len(X_test):,}")
+
+    # ── PCA Dimensionality Reduction ──────────────────────────────────
+    # Apply PCA to SBERT text embeddings ONLY (not tabular features).
+    # Fit on training split only — no data leakage to val/test.
+    PCA_ENABLED = True  # Set False to skip PCA and use raw 384-dim embeddings
+    PCA_COMPONENTS = 0.95  # Auto-select for 95% explained variance
+
+    if PCA_ENABLED:
+        from sklearn.decomposition import PCA
+
+        # Split features into tabular and text components
+        n_tabular = X_train.shape[1] - 384  # Should be 35
+        X_train_tab = X_train[:, :n_tabular]
+        X_train_text = X_train[:, n_tabular:]
+        X_val_tab = X_val[:, :n_tabular]
+        X_val_text = X_val[:, n_tabular:]
+        X_test_tab = X_test[:, :n_tabular]
+        X_test_text = X_test[:, n_tabular:]
+
+        # Fit PCA on training text embeddings only
+        pca = PCA(n_components=PCA_COMPONENTS)
+        X_train_text_pca = pca.fit_transform(X_train_text)
+        X_val_text_pca = pca.transform(X_val_text)
+        X_test_text_pca = pca.transform(X_test_text)
+
+        n_components = pca.n_components_
+        explained_var = pca.explained_variance_ratio_.sum()
+        print(
+            f"\n  PCA: 384 dims \u2192 {n_components} dims "
+            f"({explained_var:.1%} variance retained)"
+        )
+
+        # Reconstruct feature matrices
+        X_train = np.hstack([X_train_tab, X_train_text_pca]).astype(np.float32)
+        X_val = np.hstack([X_val_tab, X_val_text_pca]).astype(np.float32)
+        X_test = np.hstack([X_test_tab, X_test_text_pca]).astype(np.float32)
+
+        # Save PCA model alongside XGBoost model
+        pca_path = Path(__file__).parent / "pca_model.pkl"
+        joblib.dump(pca, pca_path)
+        print(f"  PCA model saved: {pca_path} ({n_components} components)")
+
+        # Log new dimensionality
+        print(
+            f"  New feature dimensions: tabular={n_tabular} + "
+            f"text_pca={n_components} = {X_train.shape[1]} total"
+        )
+    else:
+        print("  PCA disabled — using raw 384-dim SBERT embeddings")
 
     n_neg = int(sum(y_train == 0))
     n_pos = int(sum(y_train == 1))

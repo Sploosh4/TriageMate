@@ -15,7 +15,7 @@
 
 | # | File | Status | Description |
 |---|---|---|---|
-| 1 | `planning/ROADMAP.md` | CURRENT | **Master status.** What exists, what's broken, what's next. Sprints 17, 18 & 19 complete ✅. Start here. |
+| 1 | `planning/ROADMAP.md` | CURRENT | **Master status.** What exists, what's broken, what's next. Sprints 17, 18, 19 & 20 complete ✅. Start here. |
 | 2 | `architecture/MVP_SCOPE.md` | OUTDATED | Sprint 1 scope boundaries. Many deferred items are now done. See caution banner. |
 | 3 | `reference/AI_PROBLEMS.md` | CURRENT | Bug tracker. All historical issues resolved. |
 | 4 | `archive/ml-implementation-plan.md` | ARCHIVED | → Replaced by `graphify_output/ml_inventory.md` (auto-generated, run `just graphify`) |
@@ -32,7 +32,7 @@
 
 | File | Status | Description |
 |---|---|---|
-| `planning/ROADMAP.md` | CURRENT | Forward-looking roadmap. Sprints 17, 18 & 19 complete ✅. Sprint 19 added shared config module, scheduled retraining triggers, NPZ column names, concept drift monitoring, scoring property tests, and seed data freshness check. |
+| `planning/ROADMAP.md` | CURRENT | Forward-looking roadmap. Sprints 17, 18, 19 & 20 complete ✅. Sprint 19 added shared config module, scheduled retraining triggers, NPZ column names, concept drift monitoring, scoring property tests, and seed data freshness check. Sprint 20 added multi-step agentic LLM, customizable risk multipliers, and safe PCA. |
 | `planning/HANDOFF-2026-07-08.md` | CURRENT | Handoff document covering ML drift monitoring, Tier 2 LLM query coverage, network topology/Sentinel status, and stress testing status. Answers what was deferred post-MVP. |
 | `planning/ai-doc-strategy-2026-07-07.md` | CURRENT | This consolidation plan — how and why docs were restructured. |
 | `archive/file-consolidation-plan-2026-07-07.md` | ARCHIVED | Bookkeeper's consolidation proposals — superseded by current doc structure. See `docs/INDEX.md`. |
@@ -130,7 +130,7 @@
 | `backend/ml/model_registry_pre_tier.json` | Pre-Tier model version registry (drift tracking, rollback) |
 | `backend/ml/model_registry_epss.json` | EPSS model version registry (v1–v4 tracking, rollback) |
 
-**Total test count:** 343+ tests (up from 142) — includes 5 new test files for Pre-Tier and EPSS monitoring, plus 3 drift test files (XGBoost, EPSS, Pre-Tier) from Sprint 18, plus scoring property tests, seed verification, scheduler, NPZ metadata, and concept drift tests from Sprint 19.
+**Total test count:** 412+ tests (up from 142) — includes 5 new test files for Pre-Tier and EPSS monitoring, plus 3 drift test files (XGBoost, EPSS, Pre-Tier) from Sprint 18, plus scoring property tests, seed verification, scheduler, NPZ metadata, and concept drift tests from Sprint 19, plus 65 new tests from Sprint 20 (agent tools, admin API, PCA).
 
 ## Sprint 17 — ✅ Complete (Security Telemetry, Network Context & Panel 5)
 
@@ -175,6 +175,19 @@
 - `backend/tests/test_scheduler.py` — Retraining scheduler tests (drift check, lock mechanism, status endpoint, no-drift-no-action)
 - `backend/tests/test_npz_metadata.py` — NPZ feature_names dimension and backward compatibility tests
 - `backend/tests/test_verify_seed_scores.py` — Seed score verification tests (detects drift, passes when correct)
+
+## Sprint 20 — ✅ Complete (Agentic LLM + Customizable Weights + Safe PCA)
+
+| Component | Files | Purpose |
+|---|---|---|
+| **Multi-Step Agentic LLM** | `backend/pipeline/tier_2/tools.py`, `backend/pipeline/tier_2/agent.py`, `backend/pipeline/tier_2/__init__.py` | Transformed Tier 2 from single-shot to multi-step agent with 12 read-only tools (KEV, NVD, EPSS, CWE, MITRE, network, telemetry, advisories, ExploitDB, Metasploit, CMDB, RAG). 15-step limit, $0.50 cost budget per CVE. Feature-flag gated (`TRIAGEMATE_AGENT_ENABLED=false`). Graceful fallback to single-shot. 31 new tests. |
+| **Customizable Risk Multipliers** | `backend/routers/admin.py`, `frontend/js/components/adminSettings.js`, `backend/pipeline/config/scoring.py` | Scoring weights exposed via optional `scoring_weights.json` override file (gitignored, created at runtime). Admin API endpoints: `GET /api/admin/config/scoring`, `PUT /api/admin/config/scoring`, `POST /api/admin/config/scoring/reset`. Frontend admin settings page with 7 sliders and live demo CVE score preview. Validation rules: weights ≥1 ≤100, sum ≥100. 18 new tests. |
+| **Safe PCA Dimensionality Reduction** | `backend/ml/train_xgboost.py`, `backend/ml/xgboost_predictor.py`, `backend/ml/encoder.py` | PCA re-introduced with correct train/test hygiene — fitted on training split only. 384 SBERT dims reduced via `n_components=0.95` (retains ~50–80 dims). Saved to `pca_model.pkl` (generated at training time). Graceful fallback to full 384-dim if PCA model missing. ROC-AUC guardrail: ≥0.9359 (0.01 below baseline 0.9459). 16 new tests (embedded in `test_ml_pipeline.py`). |
+
+**Sprint 20 new/modified test files:**
+- `backend/tests/test_tier2_agent.py` — Tool unit tests + agent loop tests (KEV, NVD, EPSS, step limit, cost budget, feature flag, fallback) — 633 lines
+- `backend/tests/test_admin.py` — Admin config API tests (GET/PUT/POST, validation, auth, persistence) — 356 lines
+- `backend/tests/test_ml_pipeline.py` — PCA tests added (fit on train only, save/load, transform consistency, no leakage) — 6 new test methods
 
 ## Graphify — Auto-Generated Knowledge Artifacts
 

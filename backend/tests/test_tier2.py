@@ -457,7 +457,7 @@ class TestCallTogether:
         assert usage["tokens_in"] == 150
         assert usage["tokens_out"] == 50
 
-    @patch("pipeline.tier_2._together_supports_json_schema")
+    @patch("pipeline.tier_2.single._together_supports_json_schema")
     @patch("httpx.AsyncClient")
     async def test_non_json_schema_model(self, mock_client_cls, mock_schema_check):
         """Model NOT in TOGETHER_JSON_SCHEMA_MODELS → response_format omitted."""
@@ -534,9 +534,9 @@ class TestEvaluateTier2:
 
     _MOCK_USAGE_RETURN = {"tokens_in": 100, "tokens_out": 50, "cost_usd": 0.0001}
 
-    @patch("pipeline.tier_2.call_openai", new_callable=AsyncMock)
-    @patch("pipeline.tier_2.call_anthropic", new_callable=AsyncMock)
-    @patch("pipeline.tier_2.call_together", new_callable=AsyncMock)
+    @patch("pipeline.tier_2.single.call_openai", new_callable=AsyncMock)
+    @patch("pipeline.tier_2.single.call_anthropic", new_callable=AsyncMock)
+    @patch("pipeline.tier_2.single.call_together", new_callable=AsyncMock)
     async def test_primary_provider_succeeds(
         self, mock_together, mock_anthropic, mock_openai
     ):
@@ -556,9 +556,9 @@ class TestEvaluateTier2:
         mock_anthropic.assert_not_called()
         mock_together.assert_not_called()
 
-    @patch("pipeline.tier_2.call_openai", new_callable=AsyncMock)
-    @patch("pipeline.tier_2.call_anthropic", new_callable=AsyncMock)
-    @patch("pipeline.tier_2.call_together", new_callable=AsyncMock)
+    @patch("pipeline.tier_2.single.call_openai", new_callable=AsyncMock)
+    @patch("pipeline.tier_2.single.call_anthropic", new_callable=AsyncMock)
+    @patch("pipeline.tier_2.single.call_together", new_callable=AsyncMock)
     async def test_all_providers_fail_known_conflict(
         self, mock_together, mock_anthropic, mock_openai
     ):
@@ -581,9 +581,9 @@ class TestEvaluateTier2:
         assert "Cloud LLM" in result["conflict_note"]
         assert result["confidence"] == 0.72
 
-    @patch("pipeline.tier_2.call_openai", new_callable=AsyncMock)
-    @patch("pipeline.tier_2.call_anthropic", new_callable=AsyncMock)
-    @patch("pipeline.tier_2.call_together", new_callable=AsyncMock)
+    @patch("pipeline.tier_2.single.call_openai", new_callable=AsyncMock)
+    @patch("pipeline.tier_2.single.call_anthropic", new_callable=AsyncMock)
+    @patch("pipeline.tier_2.single.call_together", new_callable=AsyncMock)
     async def test_all_providers_fail_neutral_default(
         self, mock_together, mock_anthropic, mock_openai
     ):
@@ -670,3 +670,137 @@ class TestCostTracking:
         # Verify it's a copy, not mutable reference
         snapshot["total_calls"] = 999
         assert get_cost_tracking()["total_calls"] == 1
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# 7. Agent Feature Flag Integration Tests (Sprint 20)
+# ═══════════════════════════════════════════════════════════════════════════
+
+
+class TestEvaluateTier2WithAgent:
+    """Test evaluate_tier_2() interaction with the AgenticEvaluator feature flag."""
+
+    _COMMON_ARGS = dict(
+        cve_id="CVE-2024-TEST-AGENT",
+        cvss_score=7.5,
+        description="Agent integration test vulnerability",
+        rag_context="test.wa.gov.au some RAG context",
+        cisa_kev=False,
+        epss_score=0.5,
+        cvss_vector="CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+        upstream_scores={"exploitation_probability": "HIGH", "confidence": 0.8},
+        mission_tags={
+            "mission_prevalence": "Critical",
+            "public_wellbeing_impact": "High",
+        },
+    )
+
+    @patch("pipeline.tier_2.single.AGENT_ENABLED", True)
+    @patch("pipeline.tier_2.agent.AgenticEvaluator.evaluate", new_callable=AsyncMock)
+    @patch("pipeline.tier_2.single.call_openai", new_callable=AsyncMock)
+    async def test_agent_enabled_uses_agent_evaluator(
+        self, mock_openai, mock_agent_evaluate
+    ):
+        """When AGENT_ENABLED is True, the AgenticEvaluator is used."""
+        from pipeline.tier_2 import evaluate_tier_2
+
+        mock_agent_result = {
+            "text_conflict": False,
+            "conflict_note": "Agent resolved",
+            "rag_result": "NOT_NEEDED",
+            "resolution": "Agent resolution",
+            "confidence": 0.90,
+            "score_adjustment": 0,
+            "_usage": {"tokens_in": 500, "tokens_out": 200, "cost_usd": 0.001},
+            "_agent": {"steps": 3, "max_steps": 15},
+        }
+        mock_agent_evaluate.return_value = mock_agent_result
+
+        result = await evaluate_tier_2(**self._COMMON_ARGS)
+
+        mock_agent_evaluate.assert_called_once()
+        mock_openai.assert_not_called()
+        assert result["text_conflict"] is False
+        assert result["confidence"] == 0.90
+        assert result["_usage"]["tokens_in"] == 500
+
+    @patch("pipeline.tier_2.single.AGENT_ENABLED", True)
+    @patch("pipeline.tier_2.agent.AgenticEvaluator.evaluate", new_callable=AsyncMock)
+    @patch("pipeline.tier_2.single.call_openai", new_callable=AsyncMock)
+    async def test_agent_falls_back_to_single_shot(
+        self, mock_openai, mock_agent_evaluate
+    ):
+        """When agent fails, evaluate_tier_2 falls back to single-shot."""
+        from pipeline.tier_2 import evaluate_tier_2
+
+        # Agent raises an exception
+        mock_agent_evaluate.side_effect = Exception("Agent failed")
+
+        # Mock single-shot to succeed
+        mock_openai.return_value = (
+            {
+                "text_conflict": False,
+                "conflict_note": "Single-shot resolved after agent fail",
+                "rag_result": "NOT_NEEDED",
+                "resolution": "Fallback resolution",
+                "confidence": 0.75,
+                "score_adjustment": 0,
+            },
+            {"tokens_in": 100, "tokens_out": 50, "cost_usd": 0.0001},
+        )
+
+        result = await evaluate_tier_2(**self._COMMON_ARGS)
+
+        assert result is not None
+        assert result["text_conflict"] is False
+        assert result["confidence"] == 0.75
+        assert "single-shot" in result.get("conflict_note", "").lower()
+
+    @patch("pipeline.tier_2.single.AGENT_ENABLED", False)
+    @patch("pipeline.tier_2.single.call_openai", new_callable=AsyncMock)
+    async def test_agent_disabled_uses_single_shot(self, mock_openai):
+        """When AGENT_ENABLED is False, single-shot is used."""
+        from pipeline.tier_2 import evaluate_tier_2
+
+        mock_openai.return_value = (
+            {
+                "text_conflict": False,
+                "conflict_note": "Single-shot resolved",
+                "rag_result": "NOT_NEEDED",
+                "resolution": "Single-shot",
+                "confidence": 0.80,
+                "score_adjustment": 0,
+            },
+            {"tokens_in": 100, "tokens_out": 50, "cost_usd": 0.0001},
+        )
+
+        result = await evaluate_tier_2(**self._COMMON_ARGS)
+
+        mock_openai.assert_called_once()
+        assert result["text_conflict"] is False
+        assert result["confidence"] == 0.80
+
+    @patch("pipeline.tier_2.single.AGENT_ENABLED", True)
+    @patch("pipeline.tier_2.agent.AgenticEvaluator.evaluate", new_callable=AsyncMock)
+    @patch("pipeline.tier_2.single.call_openai", new_callable=AsyncMock)
+    async def test_agent_cost_tracking(self, mock_openai, mock_agent_evaluate):
+        """Cost tracking works when agent is used."""
+        from pipeline.tier_2 import evaluate_tier_2
+
+        mock_agent_result = {
+            "text_conflict": False,
+            "conflict_note": "Agent resolved",
+            "rag_result": "NOT_NEEDED",
+            "resolution": "Agent resolution",
+            "confidence": 0.90,
+            "score_adjustment": 0,
+            "_usage": {"tokens_in": 500, "tokens_out": 200, "cost_usd": 0.001},
+            "_agent": {"steps": 3, "max_steps": 15},
+        }
+        mock_agent_evaluate.return_value = mock_agent_result
+
+        result = await evaluate_tier_2(**self._COMMON_ARGS)
+
+        # The agent tracks its own cost separately from the module-level cost tracking
+        assert result["_usage"]["cost_usd"] == 0.001
+        assert result["_usage"]["tokens_in"] == 500

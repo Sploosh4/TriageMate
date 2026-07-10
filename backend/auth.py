@@ -96,6 +96,23 @@ def verify_password(password: str, hashed: str) -> bool:
 # ---------------------------------------------------------------------------
 # FastAPI dependency — callable via Depends(get_current_user)
 # ---------------------------------------------------------------------------
+def get_current_user_if_enabled(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+) -> dict | None:
+    """
+    FastAPI dependency that returns the current user dict if auth is enabled,
+    or a default admin dict if auth is disabled.
+
+    Used by admin endpoints that should work without auth during development
+    but be protected when auth is configured.
+    """
+    if AUTH_DISABLED:
+        return {"username": "admin", "role": "admin"}
+
+    username = get_current_user(credentials)
+    return {"username": username, "role": "admin"}
+
+
 def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
 ) -> str:

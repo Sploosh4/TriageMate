@@ -34,6 +34,12 @@ LLM_MAX_TOKENS = int(os.getenv("TRIAGEMATE_LLM_MAX_TOKENS", "1024"))
 LLM_TIMEOUT = int(os.getenv("TRIAGEMATE_LLM_TIMEOUT", "30"))
 LLM_BASE_URL = os.getenv("TRIAGEMATE_LLM_BASE_URL", "https://api.openai.com/v1")
 
+# Agent feature flag — Sprint 20: Multi-Step Agentic LLM
+# When enabled, uses AgenticEvaluator with tool-calling loop instead of single-shot prompt.
+AGENT_ENABLED = os.getenv("TRIAGEMATE_AGENT_ENABLED", "").lower() == "true"
+AGENT_MAX_STEPS = int(os.getenv("TRIAGEMATE_AGENT_MAX_STEPS", "15"))
+AGENT_COST_BUDGET = float(os.getenv("TRIAGEMATE_AGENT_COST_BUDGET", "0.50"))
+
 BACKUP_PROVIDER = os.getenv("TRIAGEMATE_LLM_BACKUP_PROVIDER", "")
 BACKUP_API_KEY = os.getenv("TRIAGEMATE_LLM_BACKUP_API_KEY", "")
 BACKUP_MODEL = os.getenv("TRIAGEMATE_LLM_BACKUP_MODEL", "")
@@ -681,10 +687,50 @@ async def evaluate_tier_2(
     """
     Evaluate a vulnerability using a cloud-hosted language model.
 
+    When AGENT_ENABLED is True, uses the AgenticEvaluator with multi-step
+    tool-calling loop. Falls back to single-shot if the agent fails.
+
+    When AGENT_ENABLED is False (default), uses the existing single-shot path.
     Falls back through: primary provider → backup provider → KNOWN_CONFLICTS → neutral default.
     Each provider uses its own retry-with-backoff logic internally.
     """
 
+    # ── Agentic path (Sprint 20) ──────────────────────────────────────
+    if AGENT_ENABLED:
+        try:
+            from .agent import AgenticEvaluator
+
+            agent = AgenticEvaluator(
+                max_steps=AGENT_MAX_STEPS,
+                cost_budget_usd=AGENT_COST_BUDGET,
+            )
+            # Extract hostname from rag_context (first token, typically the hostname)
+            hostname = rag_context.split()[0] if rag_context else "unknown"
+            result = await agent.evaluate(
+                cve_id=cve_id,
+                hostname=hostname,
+                description=description,
+                cvss_score=cvss_score,
+            )
+            # If the agent returned a neutral default with _fallback marker,
+            # fall through to single-shot
+            if result.get("_fallback") is True:
+                logger.info("Agent elected fallback for %s, using single-shot", cve_id)
+            else:
+                logger.info(
+                    "Tier 2 resolved by agent for %s in %d steps",
+                    cve_id,
+                    result.get("_agent", {}).get("steps", 0),
+                )
+                return result
+        except Exception as e:
+            logger.warning(
+                "Agent evaluation failed for %s: %s — falling back to single-shot",
+                cve_id,
+                str(e)[:200],
+            )
+
+    # ── Single-shot path (original logic) ─────────────────────────────
     system_content, user_content = build_prompt(
         cve_id,
         cvss_score,

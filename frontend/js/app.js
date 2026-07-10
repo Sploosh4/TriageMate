@@ -11,7 +11,7 @@ const appState = {
 };
 
 function navigateToScreen(screen) {
-  const screens = ['screen-queue', 'screen-case', 'screen-review', 'screen-drift'];
+  const screens = ['screen-queue', 'screen-case', 'screen-review', 'screen-drift', 'screen-admin'];
   screens.forEach(function(id) {
     const el = document.getElementById(id);
     if (el) {
@@ -32,6 +32,11 @@ function navigateToScreen(screen) {
     initReviewQueue();
   } else if (screen === 'drift' && typeof initDriftDashboard === 'function') {
     initDriftDashboard();
+  } else if (screen === 'admin' && typeof renderAdminSettings === 'function') {
+    var container = document.getElementById('admin-settings-container');
+    if (container) {
+      renderAdminSettings(container);
+    }
   }
 }
 
@@ -265,6 +270,22 @@ function wireEventListeners() {
   const driftBack = document.getElementById('drift-back-btn');
   if (driftBack) {
     driftBack.addEventListener('click', function() {
+      showQueue();
+    });
+  }
+
+  // Admin tab button
+  const adminTab = document.getElementById('admin-tab-btn');
+  if (adminTab) {
+    adminTab.addEventListener('click', function() {
+      navigateToScreen('admin');
+    });
+  }
+
+  // Admin back button
+  const adminBack = document.getElementById('admin-back-btn');
+  if (adminBack) {
+    adminBack.addEventListener('click', function() {
       showQueue();
     });
   }

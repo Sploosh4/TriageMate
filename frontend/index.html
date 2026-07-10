@@ -29,6 +29,7 @@
       </select>
       <button id="review-tab-btn" class="top-bar-tab" title="Review Queue">Review Queue</button>
       <button id="drift-tab-btn" class="top-bar-tab" title="Drift Dashboard">Drift</button>
+      <button id="admin-tab-btn" class="top-bar-tab" title="Admin Settings">Admin</button>
       <button id="demo-toggle-btn" class="demo-toggle-btn" title="Toggle Demo Mode" aria-label="Toggle demo mode">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path>
@@ -176,6 +177,16 @@
     </div>
   </div>
 
+  <!-- SCREEN 5: ADMIN SETTINGS -->
+  <div id="screen-admin" class="screen hidden">
+    <div class="back-bar">
+      <button id="admin-back-btn"><span aria-hidden="true">&larr;</span> Back to Queue</button>
+    </div>
+    <div id="admin-scroll" style="flex:1; overflow-y:auto; padding:var(--panel-padding);">
+      <div id="admin-settings-container" style="max-width:900px; margin:0 auto;"></div>
+    </div>
+  </div>
+
   <!-- LOGIN MODAL (hidden by default, shown when auth is required) -->
   <div id="auth-overlay" class="auth-overlay hidden">
     <div class="auth-modal">
@@ -202,6 +213,7 @@
 <script src="js/components/auth.js" defer></script>
 <script src="js/components/reviewQueue.js" defer></script>
 <script src="js/components/driftDashboard.js" defer></script>
+<script src="js/components/adminSettings.js" defer></script>
 <script src="js/app.js" defer></script>
 
 <script>

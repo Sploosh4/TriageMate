@@ -21,6 +21,21 @@ Before any implementation begins:
 
 ---
 
+## Commander Recommendations — Pending User Review
+
+These design decisions were identified during the conceptual analysis. The commander
+recommends the defaults below. User confirmation is required before execution.
+
+| # | Decision | Commander Recommendation | Rationale |
+|---|----------|--------------------------|-----------|
+| D1 | **Tool access scope** — Should any of the 12 planned tools be excluded? | Include all 12 tools. Restrict the agent to **read-only operations** — all tools query existing integrations and databases without making external API calls or modifying state. | Excluding tools like `search_metasploit` would reduce the agent's investigative capability. The safety property comes from the agent being read-only, not from limiting which data sources it can consult. |
+| D2 | **Weight range constraints** — What are the min/max bounds for individual scoring weights? | **Min: 1, Max: 100.** Sum must remain ≥ 100. Individual weights must be integers. | A minimum of 1 ensures every dimension contributes at least something — zeroing a dimension would eliminate a deliberate risk signal. A maximum of 100 prevents any single dimension from dominating. The ≥100 sum constraint preserves the clamping headroom (112 → clamp to 100). |
+| D3 | **PCA priority** — Given ROC-AUC 0.9459 with 419 dims, is this worth sprint time? | **Keep as Medium priority, but flag as deferrable.** If Sprint 19's retraining work significantly changes the training pipeline, defer PCA to Sprint 21 to avoid compounding instability. | PCA is an optimization — the model works correctly now. The risk of degraded ROC-AUC (even with the 0.01 guardrail) combined with Sprint 19's retraining changes makes this the most deferrable of the three items. |
+
+> **User action required:** Confirm or override each recommendation before execution begins.
+
+---
+
 ## Sprint Goals
 
 1. **Rebuild Tier 2 as a multi-step "agentic" LLM** with actual tools (KEV lookup, NVD search, EPSS query, network context, telemetry, advisory search, exploit/PoC databases, CMDB stub, and a resolution-submission tool)
@@ -61,6 +76,11 @@ Create `backend/pipeline/tier_2/tools.py` with 10-12 tool functions wrapping exi
 | `search_metasploit(cve_id)` | `integrations/metasploit.py` | Metasploit payload availability |
 | `search_cmdb(hostname)` | Stub (not yet integrated) | CMDB asset data |
 | `submit_resolution(assessment)` | Agent loop finalizer | LLM calls this to submit its decision |
+
+Each tool is read-only — it queries existing data sources and returns structured JSON.
+No tool creates, updates, or deletes data. No tool makes external API calls that the
+LLM could manipulate. The LLM chooses *which* tool to invoke; the tool implementation
+controls *how* the query is executed.
 
 **1B. Implement Agentic Loop** (~4 hrs)
 
@@ -154,8 +174,11 @@ Expose the 7-dimension scoring weights (`cvss`, `epss`, `criticality`, `exposure
 - Modify `pipeline/config/scoring.py` module:
   - On import, check if `scoring_weights.json` exists
   - If yes: load JSON, merge with defaults (JSON values override defaults)
-  - Validate: sum ≥ 100, all weights ≥ 1, all weights ≤ 100, all 7 keys present
-  - On invalid config: log warning with validation details, fall back to defaults
+Validation rules (per Decision D2):
+- All weights must be integers ≥ 1 and ≤ 100
+- Sum of all 7 weights must be ≥ 100
+- On invalid config: log WARNING, fall back to hardcoded defaults
+- On valid config: replace SCORING_WEIGHTS in-memory, recalculate TOTAL_WEIGHT
   - Cache loaded weights in memory for fast access
 - Add `reload_scoring_weights()` function to allow hot-reload without server restart
 
@@ -236,6 +259,15 @@ The model works at 0.9459 with 419 dimensions. This is an optimization, not a bu
 - **Model file size reduction** — PCA can reduce 384 dims to ~50-80 dims (95% variance retention), shrinking the XGBoost model significantly
 - **Inference speed** — fewer features mean faster tree traversal
 - **Training speed** — smaller feature space for XGBoost to search
+
+### What
+
+Optimize the SBERT embedding pipeline by adding PCA dimensionality reduction with correct train/test split hygiene, reducing model size and inference latency without significant accuracy loss.
+
+> **Deferrability note (Decision D3):** This item is marked as deferrable. If Sprint 19's
+> retraining pipeline significantly changes the training code path, defer this item to
+> Sprint 21 to avoid stacking PCA changes on top of retraining changes. The current 419-dim
+> model works correctly at ROC-AUC 0.9459 — PCA is an optimization, not a fix.
 
 ### Implementation
 
@@ -389,11 +421,13 @@ Sprint 19 (active) ──── complete ────→ Commander re-analysis
                           ┌─────────────────┼─────────────────┐
                           ↓                 ↓                  ↓
                      Item 1 (Agentic)  Item 3 (PCA)     Item 2 (Weights)
-                          │                 │                  │
-                          │                 │     depends on Sprint 19 Item 1
-                          │                 │     (config package must exist)
+                          │           [deferrable per      │
+                          │            Decision D3]   depends on Sprint 19
+                          │                             Item 1 (config pkg)
                           ↓                 ↓                  ↓
-                    Independent        Independent        Last in order
+                    Independent        Run last          Run after Item 1
+                    (feature-flag      (only if PCA      (config must exist;
+                     gated rollout)     not deferred)     admin UI last)
 ```
 
 Items 1 and 3 are independent and can be implemented in parallel. Item 2 must wait for both the Sprint 19 gate and commander verification of the config module structure.

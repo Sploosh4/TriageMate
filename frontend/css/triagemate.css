@@ -2098,3 +2098,88 @@ body.demo-active {
         gap: 12px;
     }
 }
+
+/* ===== ADMIN SETTINGS ===== */
+.admin-slider-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+    gap: 12px;
+}
+.admin-slider-label {
+    width: 200px;
+    font-size: 14px;
+    color: var(--text-primary, #1e293b);
+    font-weight: 500;
+}
+.admin-slider-input {
+    flex: 1;
+    max-width: 300px;
+}
+.admin-slider-value {
+    width: 60px;
+    text-align: right;
+    font-weight: 600;
+    font-size: 14px;
+}
+.admin-slider-max {
+    width: 50px;
+    font-size: 12px;
+    color: var(--text-secondary, #64748b);
+}
+.admin-demo-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.admin-demo-table th,
+.admin-demo-table td {
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border, #e2e8f0);
+    font-size: 14px;
+}
+.admin-demo-table th {
+    font-weight: 600;
+    color: var(--text-secondary, #64748b);
+}
+
+/* Admin button styles */
+.btn-primary {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.875rem;
+    font-weight: 600;
+    padding: 8px 20px;
+    background: var(--accent, #3B82F6);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background var(--transition-fast);
+    outline: none;
+}
+.btn-primary:hover { background: var(--accent-hover, #2563EB); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-primary:focus { box-shadow: var(--focus-ring); }
+
+.btn-secondary {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.875rem;
+    font-weight: 600;
+    padding: 8px 20px;
+    background: transparent;
+    color: var(--text-primary, #1e293b);
+    border: 1px solid var(--border, #e2e8f0);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    outline: none;
+}
+.btn-secondary:hover {
+    background: var(--hover-bg, #f1f5f9);
+    border-color: var(--accent, #3B82F6);
+}
+.btn-secondary:focus { box-shadow: var(--focus-ring); }
+
+/* Dark mode overrides for admin sliders */
+[data-theme="dark"] .admin-slider-label { color: #e2e8f0; }
+[data-theme="dark"] .admin-slider-max { color: #94a3b8; }

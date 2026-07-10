@@ -115,9 +115,33 @@ EPSS_V1_FEATURE_NAMES: list[str] = [
     "cwe_CWE-287",
 ]
 
+# ─── PCA / SBERT Feature Name Helpers ──────────────────────────────────────
+
+
+def make_sbert_feature_names(n: int = 384) -> list[str]:
+    """Generate SBERT or PCA-reduced feature names for `n` text dimensions.
+
+    Args:
+        n: Number of text feature dimensions (384 for raw SBERT,
+           or n_components after PCA reduction).
+
+    Returns:
+        List of feature name strings: ``["sbert_0", ..., "sbert_383"]``
+        or ``["pca_0", ..., "pca_{n-1}"]`` depending on n.
+
+    When n == 384, names use the ``sbert_`` prefix (raw SBERT).
+    When n < 384, names use the ``pca_`` prefix (PCA-reduced).
+    This allows downstream tools (e.g. graphify) to distinguish between
+    raw SBERT embeddings and PCA-reduced feature vectors.
+    """
+    prefix = "sbert" if n == 384 else "pca"
+    return [f"{prefix}_{i}" for i in range(n)]
+
+
 __all__ = [
     "TABULAR_FEATURE_ORDER",
     "PRE_TIER_FEATURE_NAMES",
     "EPSS_V2_FEATURE_NAMES",
     "EPSS_V1_FEATURE_NAMES",
+    "make_sbert_feature_names",
 ]

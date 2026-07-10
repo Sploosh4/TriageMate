@@ -9,6 +9,7 @@ model can be changed at runtime with set_active_version().
 """
 
 import json
+import logging
 import threading
 
 import numpy as np
@@ -27,10 +28,13 @@ from pipeline.config.thresholds import (
 )
 from pipeline.config.feature_names import TABULAR_FEATURE_ORDER
 
+logger = logging.getLogger(__name__)
+
 # Default paths (fallbacks when registry is unavailable)
 MODEL_FILE = Path(__file__).parent / "xgboost_model.pkl"
 CALIBRATOR_FILE = Path(__file__).parent / "xgboost_calibrator.pkl"
 THRESHOLD_INFO_FILE = Path(__file__).parent / "threshold_info.json"
+PCA_MODEL_PATH = Path(__file__).parent / "pca_model.pkl"
 
 REGISTRY_PATH = Path(__file__).parent / "model_registry.json"
 
@@ -42,6 +46,7 @@ _active_threshold_path: Path | None = THRESHOLD_INFO_FILE
 
 _model = None
 _calibrator = None
+_pca_model = None
 _lock = threading.Lock()
 
 
@@ -68,6 +73,29 @@ def _get_calibrator():
             if _calibrator is None and cal_path is not None and cal_path.exists():
                 _calibrator = joblib.load(cal_path)
     return _calibrator
+
+
+# ── PCA dimensionality reduction ─────────────────────────────────
+# Apply PCA to SBERT embeddings if PCA model exists.
+# Graceful degradation: if PCA model is missing, use raw 384-dim embeddings.
+
+
+def _load_pca():
+    """Load PCA model from disk. Returns None if not available."""
+    global _pca_model
+    if _pca_model is None and PCA_MODEL_PATH.exists():
+        _pca_model = joblib.load(PCA_MODEL_PATH)
+        logger.info("PCA model loaded: %d components", _pca_model.n_components_)
+    return _pca_model
+
+
+def _apply_pca(text_vec: np.ndarray) -> np.ndarray:
+    """Apply PCA to SBERT embedding. Returns reduced or original vector."""
+    pca = _load_pca()
+    if pca is not None:
+        return pca.transform(text_vec.reshape(1, -1))
+    logger.debug("PCA model not found — using raw 384-dim embedding")
+    return text_vec.reshape(1, -1)
 
 
 def _read_registry() -> dict:
@@ -297,6 +325,12 @@ def predict(features: dict) -> dict:
         text_vec = encode_description(description).reshape(1, -1)
     else:
         text_vec = np.zeros((1, 384), dtype=np.float32)
+
+    # Apply PCA to SBERT embedding if PCA model is available
+    pca = _load_pca()
+    if pca is not None:
+        text_vec = pca.transform(text_vec)
+        # text_vec is now (1, n_components)
 
     X = np.hstack([tabular, text_vec])
 
