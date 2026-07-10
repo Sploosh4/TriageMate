@@ -264,6 +264,13 @@ async def ingest_vulnerability(payload: IngestRequest, request: Request = None):
         network_blast_radius=network_ctx.get("blast_radius_score", 0.0)
         if network_ctx
         else 0.0,
+        vulnerable_code_loaded=telemetry.get("process_evidence", {}).get(
+            "is_loaded", None
+        )
+        if telemetry
+        else None,
+        confirmed_mitigated=False,  # Can be set by Tier 2 or human review in future
+        confirmed_false_positive=False,
     )
 
     # 8. Determine tier routing text
@@ -643,6 +650,7 @@ async def ingest_vulnerability(payload: IngestRequest, request: Request = None):
         score_gauge_value=scoring["total"],
         score_gauge_band=scoring["band"],
         gauge_band_colour=_band_colour(scoring["band"]),
+        context_multiplier=scoring.get("context_multiplier", 1.0),
         scoring_weights=weights,
         nvd_freshness=nvd_freshness,
         asset_registry=[

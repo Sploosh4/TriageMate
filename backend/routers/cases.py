@@ -111,6 +111,7 @@ def _row_to_case_view(r) -> CaseViewData:
         score_gauge_value=r["priority_score"],
         score_gauge_band=r["risk_band"],
         gauge_band_colour=_band_colour(r["risk_band"]),
+        context_multiplier=r.get("context_multiplier", 1.0) or 1.0,
         scoring_weights=scoring_weights,
         asset_registry=asset_registry,
         nvd_freshness=nvd_freshness,

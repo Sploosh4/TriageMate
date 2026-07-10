@@ -4,8 +4,12 @@ Final priority score calculation.
 Combines outputs from all pipeline stages into a score
 with per-dimension breakdown for the frontend scoring weights display.
 
-Weights sum to 112 (CVSS 40 + EPSS 20 + criticality 20 + exposure 12 +
-patch 5 + ml_exploitation 10 + security_context 5). The final total is clamped to 0-100.
+Weights sum to 107 (CVSS 40 + EPSS 20 + criticality 20 + exposure 12 +
+patch 5 + ml_exploitation 10). The final total is clamped to 0-100.
+
+Security Context was removed as a dimension in Sprint 21 and replaced
+by a proportional multiplier (1.20/1.10/1.00/0.85/0.70) applied to the
+total score before Tier 2 adjustment.
 """
 
 from pipeline.config.scoring import (
@@ -14,13 +18,55 @@ from pipeline.config.scoring import (
     CLAMP_MAX,
     CRITICALITY_MAX,
     PATCH_MAX,
-    SECURITY_CONTEXT_MAX,
+    CONTEXT_MULTIPLIER_VALUES,
+    TELEMETRY_ACTIVE_THRESHOLD,
 )
 
 
 def _round_half_up(x):
     """Round to nearest int, .5 always rounds up (not banker's rounding)."""
     return int(x + 0.5)
+
+
+def _determine_context_multiplier(
+    telemetry_threat_score: float,
+    vulnerable_code_loaded: bool | None = None,
+    confirmed_mitigated: bool = False,
+    confirmed_false_positive: bool = False,
+) -> float:
+    """Determine the security context multiplier based on telemetry evidence.
+
+    Returns one of: 1.20, 1.10, 1.00, 0.85, 0.70
+
+    Decision matrix (evaluated in order, first match wins):
+    1. confirmed_false_positive → 0.70
+    2. confirmed_mitigated → 0.85
+    3. telemetry_threat_score >= 3.0 AND vulnerable_code_loaded == True → 1.20
+    4. telemetry_threat_score >= 3.0 XOR vulnerable_code_loaded == True → 1.10
+    5. default → 1.00 (neutral, no penalty for missing data)
+
+    NOTE: network_blast_radius was explicitly excluded from the multiplier model.
+    Blast radius is a static network property already captured in the Exposure
+    dimension. Only dynamic threat evidence (telemetry + code load status)
+    drives the multiplier.
+
+    The telemetry active threshold (3.0) is on a 0-10 threat score scale.
+    """
+    # Order matters: first match wins
+    if confirmed_false_positive:
+        return CONTEXT_MULTIPLIER_VALUES["false_positive"]
+    if confirmed_mitigated:
+        return CONTEXT_MULTIPLIER_VALUES["mitigated"]
+
+    telemetry_active = telemetry_threat_score >= TELEMETRY_ACTIVE_THRESHOLD
+    code_loaded = vulnerable_code_loaded is True
+
+    if telemetry_active and code_loaded:
+        return CONTEXT_MULTIPLIER_VALUES["active_threat_loaded"]
+    if telemetry_active or code_loaded:
+        return CONTEXT_MULTIPLIER_VALUES["partial_evidence"]
+
+    return CONTEXT_MULTIPLIER_VALUES["neutral"]
 
 
 def calculate_final_score(
@@ -37,12 +83,16 @@ def calculate_final_score(
     substituted_epss=None,
     telemetry_threat_score: float = 0.0,
     network_blast_radius: float = 0.0,
+    vulnerable_code_loaded: bool | None = None,
+    confirmed_mitigated: bool = False,
+    confirmed_false_positive: bool = False,
 ) -> dict:
     """
-    Calculate the priority score from seven weighted dimensions plus optional Tier 2 score adjustment.
-    Weights sum to 112; final total is clamped to 0-100.
+    Calculate the priority score from six weighted dimensions plus a security context
+    multiplier and optional Tier 2 score adjustment.
+    Weights sum to 107; final total is clamped to 0-100.
 
-    Returns a dict with per-dimension breakdown for the scoring weights display.
+    Returns a dict with per-dimension breakdown, context_multiplier, and band.
 
     Args:
         cvss_score: CVSS v3.1 base score (0-10)
@@ -55,9 +105,14 @@ def calculate_final_score(
         patch_applied: Whether the patch has been applied
         tier_1_result: Output from Tier 1 (optional)
         tier_2_result: Output from Tier 2 (optional)
+        telemetry_threat_score: Threat score from security telemetry (0-10)
+        network_blast_radius: Network blast radius score (retained for backward compat)
+        vulnerable_code_loaded: Whether vulnerable code is loaded in memory
+        confirmed_mitigated: Whether the vulnerability is confirmed mitigated
+        confirmed_false_positive: Whether the finding is a confirmed false positive
 
     Returns:
-        dict with 'total' (0-100), 'band', and 'dimensions' breakdown
+        dict with 'total' (0-100), 'band', 'dimensions', and 'context_multiplier'
     """
     dimensions = {}
 
@@ -79,11 +134,6 @@ def calculate_final_score(
             * SCORING_WEIGHTS["ml_exploitation"]
         )
     dimensions["ml_exploitation"] = ml_exploitation
-
-    # Security Context (max SECURITY_CONTEXT_MAX) — Sprint 17
-    security_context = round(telemetry_threat_score * 3 + network_blast_radius * 2)
-    security_context = max(CLAMP_MIN, min(SECURITY_CONTEXT_MAX, security_context))
-    dimensions["security_context"] = security_context
 
     # Asset criticality (max CRITICALITY_MAX) — based on data classification and mission tags
     # POLICY NOTE: The 12/4/0 point spread for OFFICIAL Sensitive/OFFICIAL is an
@@ -124,6 +174,17 @@ def calculate_final_score(
 
     total = sum(dimensions.values())
 
+    # Apply multiplier BEFORE Tier 2 adjustment
+    # Rationale: Multiplier reflects deterministic environmental context (telemetry).
+    # Tier 2 LLM adjustment should have the final say on top of context-adjusted score.
+    context_multiplier = _determine_context_multiplier(
+        telemetry_threat_score=telemetry_threat_score,
+        vulnerable_code_loaded=vulnerable_code_loaded,
+        confirmed_mitigated=confirmed_mitigated,
+        confirmed_false_positive=confirmed_false_positive,
+    )
+    total = round(total * context_multiplier)
+
     # Apply Tier 2 adjustments if available
     if tier_2_result and tier_2_result.get("score_adjustment"):
         adjustment = max(-20, min(20, tier_2_result["score_adjustment"]))
@@ -141,4 +202,13 @@ def calculate_final_score(
     else:
         band = "Very Critical"
 
-    return {"total": total, "band": band, "dimensions": dimensions}
+    # DEPRECATED: security_context was removed in Sprint 21 (replaced by multiplier).
+    # Keep field set to 0 for backward compatibility with API consumers.
+    dimensions["security_context"] = 0
+
+    return {
+        "total": total,
+        "band": band,
+        "dimensions": dimensions,
+        "context_multiplier": context_multiplier,
+    }

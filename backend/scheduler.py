@@ -111,7 +111,7 @@ async def poll_drift_status() -> dict[str, float]:
         if ref_path.exists() and features_list:
             with open(ref_path) as f:
                 ref_dists = json_module.load(f)
-            drift = compute_drift(features_list, ref_dists)
+            drift = compute_drift(features_list, ref_dists, model_name="xgboost")
             result["xgboost"] = drift["composite_psi"]
         else:
             result["xgboost"] = 0.0
@@ -138,7 +138,7 @@ async def poll_drift_status() -> dict[str, float]:
         if ref_path.exists() and features_list:
             with open(ref_path) as f:
                 ref_dists = json_module.load(f)
-            drift = compute_drift(features_list, ref_dists)
+            drift = compute_drift(features_list, ref_dists, model_name="pre_tier")
             result["pre_tier"] = drift["composite_psi"]
         else:
             result["pre_tier"] = 0.0
@@ -161,7 +161,7 @@ async def poll_drift_status() -> dict[str, float]:
         if ref_path.exists() and features_list:
             with open(ref_path) as f:
                 ref_dists = json_module.load(f)
-            drift = compute_drift(features_list, ref_dists)
+            drift = compute_drift(features_list, ref_dists, model_name="epss")
             result["epss"] = drift["composite_psi"]
         else:
             result["epss"] = 0.0

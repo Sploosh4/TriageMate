@@ -18,7 +18,7 @@ from fastapi import FastAPI, Depends  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 from database import init_db  # noqa: E402
-from routers import admin, auth, queue, cases, ingest, models as models_router  # noqa: E402
+from routers import admin, auth, config, queue, cases, ingest, models as models_router  # noqa: E402
 from auth import get_current_user, AUTH_DISABLED  # noqa: E402
 import asyncio  # noqa: E402
 
@@ -212,6 +212,7 @@ app.mount(
     name="js",
 )
 
+app.include_router(config.router)
 app.include_router(auth.router)
 app.include_router(admin.router)
 app.include_router(queue.router, dependencies=[Depends(get_current_user)])

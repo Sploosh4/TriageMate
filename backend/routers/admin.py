@@ -35,7 +35,6 @@ _DEFAULT_WEIGHTS = {
     "exposure": 12,
     "patch": 5,
     "ml_exploitation": 10,
-    "security_context": 5,
 }
 _DEFAULT_TOTAL = sum(_DEFAULT_WEIGHTS.values())
 
@@ -44,8 +43,8 @@ class WeightUpdateRequest(BaseModel):
     weights: dict[str, int] = Field(
         ...,
         description=(
-            "Seven scoring weights: cvss, epss, criticality, exposure, "
-            "patch, ml_exploitation, security_context"
+            "Six scoring weights: cvss, epss, criticality, exposure, "
+            "patch, ml_exploitation (security_context was removed in Sprint 21)"
         ),
     )
 
@@ -92,7 +91,6 @@ def update_scoring_config(
         "exposure",
         "patch",
         "ml_exploitation",
-        "security_context",
     }
     if set(weights.keys()) != required:
         raise HTTPException(

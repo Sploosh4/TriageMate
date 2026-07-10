@@ -58,8 +58,8 @@ class TestGetScoringConfig:
         assert "max_weight" in data
         assert "min_total" in data
 
-    async def test_get_scoring_config_has_seven_weights(self, client):
-        """The weights dict must have all 7 keys."""
+    async def test_get_scoring_config_has_six_weights(self, client):
+        """The weights dict must have all 6 keys."""
         resp = await client.get("/api/admin/config/scoring")
         data = resp.json()
         weights = data["weights"]
@@ -70,7 +70,6 @@ class TestGetScoringConfig:
             "exposure",
             "patch",
             "ml_exploitation",
-            "security_context",
         }
 
     async def test_get_scoring_config_total_matches_sum(self, client):
@@ -90,7 +89,6 @@ class TestGetScoringConfig:
             "exposure": 12,
             "patch": 5,
             "ml_exploitation": 10,
-            "security_context": 5,
         }
 
 
@@ -109,7 +107,6 @@ class TestPutScoringConfig:
         "exposure": 10,
         "patch": 8,
         "ml_exploitation": 12,
-        "security_context": 5,
     }
 
     async def test_put_valid_weights_returns_200(self, client):
@@ -153,13 +150,12 @@ class TestPutScoringConfig:
     async def test_put_missing_key_returns_422(self, client):
         """PUT without required key must return 422."""
         bad_weights = {
-            "cvss": 40,
             "epss": 20,
             "criticality": 20,
             "exposure": 12,
             "patch": 5,
             "ml_exploitation": 10,
-            # missing security_context
+            # missing cvss
         }
         resp = await client.put(
             "/api/admin/config/scoring",
@@ -176,7 +172,6 @@ class TestPutScoringConfig:
             "exposure": 12,
             "patch": 5,
             "ml_exploitation": 10,
-            "security_context": 5,
             "extra_key": 10,
         }
         resp = await client.put(
@@ -218,7 +213,6 @@ class TestPutScoringConfig:
                     "exposure": 12,
                     "patch": "not_an_int",
                     "ml_exploitation": 10,
-                    "security_context": 5,
                 }
             },
         )
@@ -232,8 +226,7 @@ class TestPutScoringConfig:
             "criticality": 10,
             "exposure": 10,
             "patch": 10,
-            "ml_exploitation": 10,
-            "security_context": 10,  # total = 70
+            "ml_exploitation": 10,  # total = 60
         }
         resp = await client.put(
             "/api/admin/config/scoring",
@@ -260,7 +253,6 @@ class TestResetScoringConfig:
             "exposure": 10,
             "patch": 8,
             "ml_exploitation": 12,
-            "security_context": 5,
         }
         await client.put("/api/admin/config/scoring", json={"weights": custom})
 
@@ -289,7 +281,6 @@ class TestResetScoringConfig:
                     "exposure": 10,
                     "patch": 8,
                     "ml_exploitation": 12,
-                    "security_context": 5,
                 }
             },
         )
@@ -324,10 +315,9 @@ class TestConfigFileOverride:
             "cvss": 35,
             "epss": 20,
             "criticality": 18,
-            "exposure": 10,
-            "patch": 6,
-            "ml_exploitation": 8,
-            "security_context": 5,
+            "exposure": 12,
+            "patch": 5,
+            "ml_exploitation": 12,  # total = 102
         }
         with open(scoring_cfg._CONFIG_FILE, "w") as f:
             json.dump({"weights": custom}, f)
@@ -352,5 +342,4 @@ class TestConfigFileOverride:
             "exposure": 12,
             "patch": 5,
             "ml_exploitation": 10,
-            "security_context": 5,
         }

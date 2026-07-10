@@ -13,8 +13,9 @@
 | Exposure & Network Position | 12 | Internet-facing vs internal + lateral reachability |
 | Patch/Remediation | 5 | Patch available + applied status |
 | ML Exploitation Probability | 10 | XGBoost model prediction (only when Tier 1 runs) |
-| Security Context | 5 | Telemetry threat score (×3) + network blast radius (×2) |
-| **Total** | **112** | Clamped to 0–100 |
+| **Total** | **107** | Clamped to 0–100 |
+
+Note: Security Context was removed as a scored dimension in Sprint 21. It is now a proportional multiplier (see below).
 
 ## Design Rationale
 
@@ -30,14 +31,50 @@
 
 **Patch/Remediation (5 pts):** A small modifier recognising that patch status matters but should not dominate the score. Full remediation (patch available + applied) earns 5 points. A patch available but not applied scores 0 (overdue). No patch available scores 0 (neutral, not punitive — the vulnerability is unmitigated but not due to negligence).
 
-**Security Context (5 pts):** Added in Sprint 17 as the 7th dimension. Combines telemetry threat score (synthetic Sentinel/EDR incidents — is the vulnerable code loaded?) with network blast radius (how many peers can be reached from this host?). The composite formula `threat_score × 3 + blast_radius × 2` is clamped to 0–5. This is intentionally the smallest dimension because telemetry context is the newest and least-proven signal.
+## Context Multiplier (Sprint 21)
+
+Replaces the old additive Security Context dimension (0–5 points) with a proportional multiplier applied to the total base score.
+
+### Multiplier Levels
+
+| Level | Multiplier | Condition |
+|-------|-----------|-----------|
+| Active Threat + Code Loaded | × 1.20 | telemetry_threat_score ≥ 3.0 AND vulnerable_code_loaded == True |
+| Partial Evidence | × 1.10 | telemetry_threat_score ≥ 3.0 XOR vulnerable_code_loaded == True |
+| Neutral (default) | × 1.00 | No evidence either way |
+| Confirmed Mitigated | × 0.85 | confirmed_mitigated == True |
+| Confirmed False Positive | × 0.70 | confirmed_false_positive == True |
+
+### Decision Matrix
+
+The multiplier is evaluated in order (first match wins):
+1. `confirmed_false_positive` → 0.70
+2. `confirmed_mitigated` → 0.85
+3. `telemetry_threat_score >= 3.0 AND vulnerable_code_loaded == True` → 1.20
+4. `telemetry_threat_score >= 3.0 XOR vulnerable_code_loaded == True` → 1.10
+5. Default → 1.00 (neutral, no penalty for missing data)
+
+### Design Notes
+
+- `network_blast_radius` was explicitly excluded. Blast radius is a static network property already captured in the Exposure dimension. Only dynamic threat evidence (telemetry + code load status) drives the multiplier.
+- The multiplier is applied **before** Tier 2 LLM adjustment. The rationale: the multiplier reflects deterministic environmental context, and Tier 2 should have the final say on top of the context-adjusted score.
+- The telemetry active threshold of 3.0 is on a 0–10 threat score scale.
+
+### Order of Operations
+
+```
+total = sum(base dimensions)  → e.g., 60
+total = round(60 × 1.20)     → 72 (multiplier applied)
+total = 72 + 10               → 82 (Tier 2 adjustment applied)
+total = clamp(82, 0, 100)    → 82
+```
 
 ## Clamping
 
-The raw sum of all 7 dimensions can reach 112, but the final score is clamped to 0–100. This means:
+The raw sum of all 6 dimensions can reach 107, but the final score is clamped to 0–100. This means:
 - Scores > 100 are rare (require top marks in every dimension)
-- The 12-point overflow provides headroom for future dimensions without rescaling
-- A Tier 2 LLM adjustment (±20) is applied before clamping, so the LLM can influence but not break the 0–100 bound
+- The 7-point overflow provides headroom for future dimensions without rescaling
+- A Tier 2 LLM adjustment (±20) is applied after the multiplier and before clamping
 
 ## Score Bands
 
@@ -48,7 +85,7 @@ The raw sum of all 7 dimensions can reach 112, but the final score is clamped to
 | Critical | 51–75 |
 | Very Critical | 76–100 |
 
-## Demo CVE Scores (Sprint 18)
+## Demo CVE Scores (Sprint 21)
 
 As verified by `backend/tests/test_model_versions.py`:
 
@@ -66,5 +103,6 @@ As verified by `backend/tests/test_model_versions.py`:
 
 - Any weight change requires re-validation of all 7 demo CVEs
 - The total sum (before clamping) should remain >= 100 to preserve headroom
-- Security Context (5) was added in Sprint 17; it was the 7th dimension
-- See also: `backend/scoring.py:calculate_final_score()`
+- Security Context was removed in Sprint 21 and replaced by the multiplier above
+- Multiplier thresholds (`TELEMETRY_ACTIVE_THRESHOLD = 3.0`) are defined in `backend/pipeline/config/scoring.py`
+- See also: `backend/scoring.py:_determine_context_multiplier()`, `backend/scoring.py:calculate_final_score()`

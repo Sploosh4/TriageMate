@@ -26,10 +26,9 @@ var ADMIN_WEIGHT_CONFIG = [
     { key: 'exposure', label: 'Exposure & Network', max: 30, default: 12, color: '#ea580c' },
     { key: 'patch', label: 'Patch/Remediation', max: 15, default: 5, color: '#16a34a' },
     { key: 'ml_exploitation', label: 'ML Exploitation Prob.', max: 25, default: 10, color: '#0891b2' },
-    { key: 'security_context', label: 'Security Context', max: 15, default: 5, color: '#4f46e5' },
 ];
 
-var ADMIN_DEFAULT_TOTAL = 112;
+var ADMIN_DEFAULT_TOTAL = 107;
 
 var adminCurrentWeights = {};
 var adminIsDirty = false;

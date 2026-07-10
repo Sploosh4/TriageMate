@@ -129,9 +129,19 @@ function renderReviewDetail(caseResponse, reviewRow) {
   html += '<div class="review-panel review-panel-weights">';
   html += '<div class="p4-section-title">Scoring Weights</div>';
   cv.scoringWeights.forEach(function(w) {
+    // Skip Security Context — it's now a multiplier, not a dimension
+    // (the backend returns this as a vestigial weight with awarded=0)
+    if (w.name === 'Security Context') {
+      return;
+    }
     html += '<div class="weight-item"><span class="weight-name">' + escHtml(w.name) + ':</span> ' +
       w.awarded + ' out of ' + w.max + ' points &mdash; ' + escHtml(w.justification) + '.</div>';
   });
+  // Show context multiplier if present and not neutral
+  if (cv.contextMultiplier && cv.contextMultiplier !== 1.0) {
+    html += '<div class="weight-item weight-multiplier"><span class="weight-name">Context Multiplier:</span> ' +
+      '<span class="weight-value">× ' + cv.contextMultiplier.toFixed(2) + '</span></div>';
+  }
   html += '</div>';
 
   html += '</div>';

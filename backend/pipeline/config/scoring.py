@@ -2,9 +2,13 @@
 Scoring dimension weights and caps for the priority score calculator.
 
 Supports optional JSON config file override (scoring_weights.json) for
-runtime customization of the seven scoring dimension weights.
-Weights sum to 112; final total is clamped to 0-100.
+runtime customization of the six scoring dimension weights.
+Weights sum to 107; final total is clamped to 0-100.
 Each dimension has a maximum value cap enforced by scoring.py.
+
+Security Context was removed as a dimension in Sprint 21 and replaced
+by a proportional multiplier (1.20/1.10/1.00/0.85/0.70) applied to the
+total score. Multiplier constants live in this module.
 """
 
 import json
@@ -21,7 +25,6 @@ SCORING_WEIGHTS = {
     "exposure": 12,
     "patch": 5,
     "ml_exploitation": 10,
-    "security_context": 5,
 }
 
 # Validation rules
@@ -29,7 +32,7 @@ _MIN_WEIGHT = 1
 _MAX_WEIGHT = 100
 _MIN_TOTAL = 100
 
-TOTAL_WEIGHT = sum(SCORING_WEIGHTS.values())  # 112
+TOTAL_WEIGHT = sum(SCORING_WEIGHTS.values())  # 107
 CLAMP_MIN = 0
 CLAMP_MAX = 100
 
@@ -38,7 +41,18 @@ CRITICALITY_MAX = 20
 EXPOSURE_MAX = 12
 PATCH_MAX = 5
 ML_EXPLOITATION_MAX = 10
-SECURITY_CONTEXT_MAX = 5
+
+# Security Context Multiplier configuration (Sprint 21)
+# Replaces the old additive Security Context dimension (0-5 points)
+# with a proportional multiplier applied to the total score.
+CONTEXT_MULTIPLIER_VALUES = {
+    "active_threat_loaded": 1.20,
+    "partial_evidence": 1.10,
+    "neutral": 1.00,
+    "mitigated": 0.85,
+    "false_positive": 0.70,
+}
+TELEMETRY_ACTIVE_THRESHOLD = 3.0  # On 0-10 threat score scale
 
 # Optional override file
 _CONFIG_FILE = Path(__file__).parent / "scoring_weights.json"
@@ -74,7 +88,6 @@ def _load_weights_override() -> dict | None:
             "exposure",
             "patch",
             "ml_exploitation",
-            "security_context",
         }
         if set(weights.keys()) != required:
             logger.warning(
@@ -140,7 +153,6 @@ def reload_weights() -> dict:
             "exposure": 12,
             "patch": 5,
             "ml_exploitation": 10,
-            "security_context": 5,
         }
 
     TOTAL_WEIGHT = sum(SCORING_WEIGHTS.values())
@@ -166,7 +178,8 @@ __all__ = [
     "EXPOSURE_MAX",
     "PATCH_MAX",
     "ML_EXPLOITATION_MAX",
-    "SECURITY_CONTEXT_MAX",
+    "CONTEXT_MULTIPLIER_VALUES",
+    "TELEMETRY_ACTIVE_THRESHOLD",
     "reload_weights",
     "reset_weights_to_defaults",
     "_MIN_WEIGHT",

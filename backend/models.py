@@ -86,6 +86,7 @@ class CaseViewData(BaseModelConfig):
     scoring_weights: list[ScoringWeight]
     asset_registry: list[AssetRegistryEntry]
     nvd_freshness: int = -1
+    context_multiplier: float = 1.0
     telemetry: Optional[dict] = None
     network_context: Optional[NetworkContextData] = None
 

@@ -100,12 +100,23 @@ function renderCase(caseResponse) {
         if (w.isSubstituted) {
           extra = ' <span class="weight-sub-note">[Internal Metric Substituted]</span>';
         }
+        // Skip Security Context — it's now a multiplier, not a dimension
+        // (the backend returns this as a vestigial weight with awarded=0)
+        if (w.name === 'Security Context') {
+          return '';
+        }
         return '<div class="weight-item">' +
           '<span class="weight-name">' + escHtml(w.name) + ':</span> ' +
           w.awarded + ' out of ' + w.max + ' points &mdash; ' +
           escHtml(w.justification) + '.' + extra +
         '</div>';
       }).join('')}
+      ${cv.contextMultiplier && cv.contextMultiplier !== 1.0
+        ? '<div class="weight-item weight-multiplier">' +
+          '<span class="weight-name">Context Multiplier:</span> ' +
+          '<span class="weight-value">× ' + cv.contextMultiplier.toFixed(2) + '</span>' +
+          '</div>'
+        : ''}
     </div>
     <div class="panel-4-half">
       <div class="p4-section-title">Asset Registry Entry</div>

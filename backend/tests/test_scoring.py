@@ -1,9 +1,13 @@
 """
 Tests for the Scoring Engine (``scoring.py``).
 
-``calculate_final_score`` is a pure function that combines seven weighted
-dimensions (CVSS, EPSS, Asset Criticality, Exposure, Patch, ML Exploitation, Security Context)
+``calculate_final_score`` is a pure function that combines six weighted
+dimensions (CVSS, EPSS, Asset Criticality, Exposure, Patch, ML Exploitation)
+with a proportional context multiplier and optional Tier 2 adjustment
 into a 0-100 priority score with band mapping.
+
+Security Context was removed as a dimension in Sprint 21 and replaced
+by the context multiplier (1.20/1.10/1.00/0.85/0.70).
 
 All tests are synchronous unit tests — no fixtures, no API client needed.
 """
@@ -39,6 +43,8 @@ class TestScoringSanity:
         )
         assert "dimensions" in result
         assert len(result["dimensions"]) == 7
+        assert "context_multiplier" in result
+        assert result["context_multiplier"] == 1.0
 
     def test_critical_cve_returns_very_high_score(self):
         """CVSS 10, EPSS 0.9, max criticality, internet-facing, no patch.
@@ -453,6 +459,9 @@ class TestScoringPropertyTests:
         )
         assert result["total"] == 3, f"Expected minimum total=3, got {result['total']}"
         assert result["band"] == "Low", f"Expected 'Low', got '{result['band']}'"
+        assert result["context_multiplier"] == 1.0, (
+            f"Expected neutral multiplier, got {result['context_multiplier']}"
+        )
 
     def test_scoring_all_max(self):
         """All inputs at maximum → total clamped to 100, band 'Very Critical'.
@@ -524,7 +533,10 @@ class TestScoringPropertyTests:
         )
 
     def test_scoring_each_dimension_cap(self):
-        """Each of the 7 dimensions is capped at its configured maximum."""
+        """Each of the 6 dimensions is capped at its configured maximum.
+
+        security_context is no longer a dimension (Sprint 21 — replaced by multiplier).
+        """
         result = calculate_final_score(
             cvss_score=10.0,
             epss_score=1.0,
@@ -557,13 +569,17 @@ class TestScoringPropertyTests:
             f"ml_exploitation cap: expected 10, "
             f"got {result['dimensions']['ml_exploitation']}"
         )
-        assert result["dimensions"]["security_context"] == 5, (
-            f"security_context cap: expected 5, "
+        # security_context is deprecated but still in dimensions (set to 0)
+        assert result["dimensions"]["security_context"] == 0, (
+            f"Expected deprecated security_context=0, "
             f"got {result['dimensions']['security_context']}"
         )
 
-    def test_scoring_dimension_sum_112(self):
-        """Sum of max dimension values equals configured total weight (112)."""
+    def test_scoring_dimension_sum_107(self):
+        """Sum of max dimension values equals configured total weight (107).
+
+        security_context is deprecated (set to 0), so sum = 40+20+20+12+5+10+0 = 107.
+        """
         result = calculate_final_score(
             cvss_score=10.0,
             epss_score=1.0,
@@ -578,54 +594,221 @@ class TestScoringPropertyTests:
             network_blast_radius=10.0,
         )
         dim_sum = sum(result["dimensions"].values())
-        assert dim_sum == 112, f"Expected dimension sum=112, got {dim_sum}"
+        assert dim_sum == 107, f"Expected dimension sum=107, got {dim_sum}"
 
-    def test_scoring_security_context_range(self):
-        """SecurityContext is enforced within 0-5 range regardless of inputs."""
-        # Extreme high inputs → clamp to 5
-        high = calculate_final_score(
+    def test_context_multiplier_1_20(self):
+        """Active threat + loaded code → 1.20"""
+        result = calculate_final_score(
+            cvss_score=9.0,
+            epss_score=0.5,
+            mission_prevalence="Core",
+            public_wellbeing="Moderate",
+            data_classification="OFFICIAL",
+            internet_facing=False,
+            telemetry_threat_score=5.0,
+            vulnerable_code_loaded=True,
+        )
+        assert result["context_multiplier"] == 1.20, (
+            f"Expected 1.20, got {result['context_multiplier']}"
+        )
+
+    def test_context_multiplier_1_10_partial(self):
+        """Only telemetry, no code evidence → 1.10"""
+        result = calculate_final_score(
+            cvss_score=9.0,
+            epss_score=0.5,
+            mission_prevalence="Core",
+            public_wellbeing="Moderate",
+            data_classification="OFFICIAL",
+            internet_facing=False,
+            telemetry_threat_score=5.0,
+            vulnerable_code_loaded=None,
+        )
+        assert result["context_multiplier"] == 1.10, (
+            f"Expected 1.10, got {result['context_multiplier']}"
+        )
+
+    def test_context_multiplier_1_10_code_only(self):
+        """Code loaded but no telemetry → 1.10 (XOR)"""
+        result = calculate_final_score(
+            cvss_score=5.0,
+            epss_score=0.05,
+            mission_prevalence="Core",
+            public_wellbeing="Moderate",
+            data_classification="OFFICIAL",
+            internet_facing=False,
+            telemetry_threat_score=0.0,
+            vulnerable_code_loaded=True,
+        )
+        assert result["context_multiplier"] == 1.10, (
+            f"Expected 1.10, got {result['context_multiplier']}"
+        )
+
+    def test_context_multiplier_1_00_neutral(self):
+        """No evidence → 1.00"""
+        result = calculate_final_score(
+            cvss_score=5.0,
+            epss_score=0.05,
+            mission_prevalence="Core",
+            public_wellbeing="Moderate",
+            data_classification="OFFICIAL",
+            internet_facing=False,
+            telemetry_threat_score=0.0,
+            vulnerable_code_loaded=None,
+        )
+        assert result["context_multiplier"] == 1.00, (
+            f"Expected 1.00, got {result['context_multiplier']}"
+        )
+
+    def test_context_multiplier_0_85_mitigated(self):
+        """Confirmed mitigated → 0.85"""
+        result = calculate_final_score(
+            cvss_score=5.0,
+            epss_score=0.05,
+            mission_prevalence="Core",
+            public_wellbeing="Moderate",
+            data_classification="OFFICIAL",
+            internet_facing=False,
+            confirmed_mitigated=True,
+        )
+        assert result["context_multiplier"] == 0.85, (
+            f"Expected 0.85, got {result['context_multiplier']}"
+        )
+
+    def test_context_multiplier_0_70_false_positive(self):
+        """Confirmed false positive → 0.70"""
+        result = calculate_final_score(
+            cvss_score=5.0,
+            epss_score=0.05,
+            mission_prevalence="Core",
+            public_wellbeing="Moderate",
+            data_classification="OFFICIAL",
+            internet_facing=False,
+            confirmed_false_positive=True,
+        )
+        assert result["context_multiplier"] == 0.70, (
+            f"Expected 0.70, got {result['context_multiplier']}"
+        )
+
+    def test_context_multiplier_mitigated_overrides_active_threat(self):
+        """Mitigated takes priority over active threat evidence (order matters)."""
+        result = calculate_final_score(
+            cvss_score=9.0,
+            epss_score=0.5,
+            mission_prevalence="Core",
+            public_wellbeing="Moderate",
+            data_classification="OFFICIAL",
+            internet_facing=False,
+            telemetry_threat_score=5.0,
+            vulnerable_code_loaded=True,
+            confirmed_mitigated=True,
+        )
+        # mitigated (0.85) checked before active_threat_loaded (1.20)
+        assert result["context_multiplier"] == 0.85, (
+            f"Expected 0.85 (mitigated overrides), got {result['context_multiplier']}"
+        )
+
+    def test_context_multiplier_false_positive_overrides_all(self):
+        """False positive takes priority over everything."""
+        result = calculate_final_score(
+            cvss_score=9.0,
+            epss_score=0.5,
+            mission_prevalence="Core",
+            public_wellbeing="Moderate",
+            data_classification="OFFICIAL",
+            internet_facing=False,
+            telemetry_threat_score=5.0,
+            vulnerable_code_loaded=True,
+            confirmed_mitigated=True,
+            confirmed_false_positive=True,
+        )
+        # false_positive (0.70) checked first
+        assert result["context_multiplier"] == 0.70, (
+            f"Expected 0.70 (false positive overrides all), "
+            f"got {result['context_multiplier']}"
+        )
+
+    def test_multiplier_applied_before_tier_2(self):
+        """Multiplier applied BEFORE Tier 2 adjustment.
+
+        Base dimensions = 20+1+11+3+0+0 = 35 (cvss=5, epss=0.05, Core, Moderate,
+        OFFICIAL, not internet-facing, no tier_1, no patch).
+        Multiplier = 1.20 (telemetry=5.0, loaded=True).
+        Rounded total = round(35 * 1.20) = round(42.0) = 42.
+        Tier 2 +10 = 52.
+        """
+        result = calculate_final_score(
+            cvss_score=5.0,
+            epss_score=0.05,
+            mission_prevalence="Core",
+            public_wellbeing="Moderate",
+            data_classification="OFFICIAL",
+            internet_facing=False,
+            telemetry_threat_score=5.0,
+            vulnerable_code_loaded=True,
+            tier_2_result={"score_adjustment": 10},
+        )
+        # 35 * 1.20 = 42, + 10 = 52
+        assert result["total"] == 52, f"Expected 52 (42+10), got {result['total']}"
+
+    def test_multiplier_impact_on_low_score(self):
+        """Low base score × 1.20 stays in Low band.
+
+        Base dims = 8+0+0+3+0+0 = 11 (cvss=2, epss=0.01, minimal everything).
+        Multiplier = 1.20 → round(11*1.20) = round(13.2) = 13.
+        """
+        result = calculate_final_score(
+            cvss_score=2.0,
+            epss_score=0.01,
+            mission_prevalence="Peripheral",
+            public_wellbeing="Minimal",
+            data_classification="UNOFFICIAL",
+            internet_facing=False,
+            telemetry_threat_score=5.0,
+            vulnerable_code_loaded=True,
+        )
+        assert result["total"] == 13, (
+            f"Expected total=13 (11*1.20=13.2→13), got {result['total']}"
+        )
+        assert result["band"] == "Low", f"Expected 'Low', got '{result['band']}'"
+
+    def test_multiplier_impact_on_high_score(self):
+        """High base score × 1.20 clamped to 100.
+
+        Base dims = 40+20+20+12+5+10 = 107 (max).
+        Multiplier = 1.20 → round(107*1.20) = round(128.4) = 128 → clamped to 100.
+        """
+        result = calculate_final_score(
+            cvss_score=10.0,
+            epss_score=1.0,
+            mission_prevalence="Core",
+            public_wellbeing="Severe",
+            data_classification="OFFICIAL Sensitive",
+            internet_facing=True,
+            patch_available=True,
+            patch_applied=True,
+            tier_1_result={"exploitation_probability": 1.0},
+            telemetry_threat_score=5.0,
+            vulnerable_code_loaded=True,
+        )
+        assert result["total"] == 100, f"Expected 100 (clamped), got {result['total']}"
+        assert result["band"] == "Very Critical"
+
+    def test_security_context_deprecated_but_present(self):
+        """Verify security_context still in dimensions (set to 0)."""
+        result = calculate_final_score(
             cvss_score=5,
             epss_score=0.05,
             mission_prevalence="Core",
             public_wellbeing="Moderate",
             data_classification="OFFICIAL",
             internet_facing=False,
-            telemetry_threat_score=100.0,
-            network_blast_radius=100.0,
         )
-        assert high["dimensions"]["security_context"] == 5, (
-            f"Expected security_context=5 at extreme high, "
-            f"got {high['dimensions']['security_context']}"
+        assert "security_context" in result["dimensions"], (
+            "security_context should still be in dimensions (backward compat)"
         )
-
-        # Extreme low (negative) inputs → clamp to 0
-        low = calculate_final_score(
-            cvss_score=5,
-            epss_score=0.05,
-            mission_prevalence="Core",
-            public_wellbeing="Moderate",
-            data_classification="OFFICIAL",
-            internet_facing=False,
-            telemetry_threat_score=-100.0,
-            network_blast_radius=-100.0,
-        )
-        assert low["dimensions"]["security_context"] == 0, (
-            f"Expected security_context=0 at extreme low, "
-            f"got {low['dimensions']['security_context']}"
-        )
-
-        # Normal inputs (all defaults) produce non-negative, non-max value
-        mid = calculate_final_score(
-            cvss_score=5,
-            epss_score=0.05,
-            mission_prevalence="Core",
-            public_wellbeing="Moderate",
-            data_classification="OFFICIAL",
-            internet_facing=False,
-        )
-        assert 0 <= mid["dimensions"]["security_context"] <= 5, (
-            f"Expected security_context in 0-5 range, "
-            f"got {mid['dimensions']['security_context']}"
+        assert result["dimensions"]["security_context"] == 0, (
+            f"Expected security_context=0, got {result['dimensions']['security_context']}"
         )
 
     def test_scoring_band_boundaries(self):

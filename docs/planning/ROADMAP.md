@@ -10,9 +10,9 @@
 
 | Metric | Value |
 |---|---|
-| Tests | 412 pass, 0 fail |
+| Tests | 432 pass, 0 fail |
 | Open bugs | 0 (AI_PROBLEMS.md is clean) |
-| Sprints completed | 17, 18, 19, 20 |
+| Sprints completed | 17, 18, 19, 20, 21 |
 | Pipeline stages | Pre-Tier → Tier 0 → Tier 1 → Tier 2 → Tier 3 (Human Review) |
 | Enrichment sources | 14 integrations (NVD, OSV, OTX, ExploitDB, Metasploit, Tenable, GreyNoise [deprecated], CMDB [stub], Advisories [stub], MITRE, CWE classifier, Demo generator, **Synthetic Telemetry**, **Network Context**) |
 | Demo rows | 7 CVEs, scores 98/91/73/66/58/44/26 (±3 tolerance) |
@@ -88,15 +88,15 @@
 
 ---
 
-## Sprint 21 — 🟡 Planned (Multiplier-Based Security Scoring + Quick Wins)
+## Sprint 21 — ✅ Complete (Multiplier-Based Security Scoring + Quick Wins)
 
-*Planned 13 July 2026 (earliest — Sprint 20 must complete first). See `.opencode/plans/2026-07-10-sprint-21.md` for full detail.*
+*Executed 10 July 2026. See `.opencode/plans/2026-07-10-sprint-21.md` for full detail.*
 
 | # | Item | Status | Description |
 |---|---|---|---|
-| **1** | **Multiplier-Based Security Scoring** | 🟡 Planned | Replace additive Security Context (0-5 pts) with proportional multiplier (1.20/1.10/1.00/0.85/0.70). Lock in scoring formula for MVP. Updates scoring.py, frontend, tests, and demo CVE scores. |
-| **—** | **Bonus A: Config API** | 🟡 Planned | Read-only `GET /api/config` exposing thresholds, scoring weights, and multiplier config. |
-| **—** | **Bonus B: Drift Webhook** | 🟡 Planned | POST drift alerts to configured webhook URL when PSI ≥ 0.10. |
+| **1** | **Multiplier-Based Security Scoring** | ✅ Done | Replaced additive Security Context (0-5 pts) with proportional multiplier (1.20/1.10/1.00/0.85/0.70). Scoring weights reduced from 7 to 6 dimensions (total 107). Frontend updated to show context multiplier. Backward-compat `security_context=0` field retained. |
+| **—** | **Bonus A: Config API** | ✅ Done | Read-only `GET /api/config` exposing thresholds, scoring weights, multiplier config, and feature names. |
+| **—** | **Bonus B: Drift Webhook** | ✅ Done | POST drift alerts to configured webhook URL when PSI ≥ 0.10. Rate-limited to once per 6 hours per model. |
 
 ---
 
@@ -107,7 +107,7 @@
 | **8** | **Scheduled retraining** | — | ✅ **Completed in Sprint 19** (Item 2) — Retraining triggers, lock mechanism, status endpoint implemented. |
 | **9** | **Concept drift monitoring** | — | ✅ **Completed in Sprint 19** (Item 4) — Prediction distribution tracking, ground-truth API stubs, accuracy endpoint. |
 | **11** | **Shared config module** | — | ✅ **Completed in Sprint 19** (Item 1) — `backend/pipeline/config/` package created. |
-| **12** | **Multiplier-based security scoring** | 1 day | 🟡 **Planned for Sprint 21.** Replace additive Security Context dimension with a proportional multiplier model. Active incident + loaded code → score × 1.2. Confirmed inactive → score × 0.8. Industry-grade approach that scales context impact with existing severity. |
+| **12** | **Multiplier-based security scoring** | — | ✅ **Completed in Sprint 21** (Item 1) — Replaced additive Security Context with proportional multiplier (1.20/1.10/1.00/0.85/0.70). Total weight reduced to 107. |
 | **13** | **EPSS v4 retrain on real data** | 1–2 days | ⏸️ **Deferred to Post-MVP.** Retrain EPSS v4 on real (non-synthetic) Tenable scan aggregation data. Deferred per commander analysis. Requires real Tenable scan aggregation data. |
 | **14** | **Multi-window labels** | 6 hrs | 🟡 **Planned for Sprint 22.** Replace single binary KEV label with 30/90/365d observation windows. Deferred from Sprint 21 — scoring formula must be locked first before changing ML target variable. |
 
@@ -142,7 +142,7 @@ uvicorn main:app --reload --host 0.0.0.0
 ### Verification
 
 ```bash
-just test   # 412 tests, 412 pass
+just test   # 432 tests, 432 pass
 just lint   # ruff check + format
 just gate   # Full quality gate: lint → test → audit-all
 ```
