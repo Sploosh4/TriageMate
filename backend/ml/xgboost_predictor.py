@@ -38,7 +38,20 @@ HIGH_PROB_THRESHOLD = 0.50
 UNCERTAINTY_THRESHOLD = 0.10
 
 # Pre-model EPSS thresholds by CWE — fast-path bypass before XGBoost inference.
+#
+# Methodology: thresholds are derived from the EPSS evaluation analysis in
+# backend/analysis/epss_eval.py, which computes stratified optimal F1 thresholds
+# per CWE class using NVD corpus + historical KEV data. For each CWE, the
+# threshold is set at the operating point that maximises F1 on the validation
+# split for that class. The first 8 entries were the original set; the 6 new
+# entries cover the most common CWE classes from NVD corpus frequency analysis.
+#
+# The monolithic DEFAULT_EPSS_THRESHOLD (0.60) applies to any CWE not in the
+# dict. It was lowered from 0.84 because the evaluation showed optimal
+# monolithic F1 thresholds in the 0.47–0.60 range — 0.84 was extremely
+# conservative, only catching the top ~2% of CVEs by EPSS.
 CWE_EPSS_THRESHOLDS = {
+    # Existing (8)
     "CWE-22": 0.085,  # Path Traversal
     "CWE-78": 0.515,  # OS Command Injection
     "CWE-787": 0.716,  # Out-of-bounds Write
@@ -46,9 +59,16 @@ CWE_EPSS_THRESHOLDS = {
     "CWE-89": 0.500,  # SQL Injection
     "CWE-416": 0.550,  # Use-After-Free
     "CWE-20": 0.400,  # Input Validation
-    "CWE-843": 0.300,  # Type Confusion (10.9× KEV rate)
+    "CWE-843": 0.300,  # Type Confusion
+    # New additions (6) — from EPSS evaluation + NVD corpus frequency analysis
+    "CWE-125": 0.400,  # Out-of-bounds Read
+    "CWE-476": 0.450,  # NULL Pointer Dereference
+    "CWE-862": 0.350,  # Missing Authorization
+    "CWE-434": 0.500,  # File Upload (Unrestricted)
+    "CWE-306": 0.350,  # Missing Authentication
+    "CWE-269": 0.400,  # Privilege Escalation (Improper)
 }
-DEFAULT_EPSS_THRESHOLD = 0.84
+DEFAULT_EPSS_THRESHOLD = 0.60  # More inclusive default (reduced from 0.84)
 
 # Tabular feature keys in the EXACT order xgboost_predictor.predict() builds
 # the feature vector for XGBoost inference. Must match build_tabular_features()

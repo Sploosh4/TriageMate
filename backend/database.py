@@ -374,6 +374,12 @@ class DatabaseManager:
                 -- ML drift monitoring
                 tier_1_features TEXT,
 
+                -- Pre-Tier drift monitoring (Sprint 18)
+                pre_tier_features TEXT,
+
+                -- EPSS drift monitoring (Sprint 18)
+                epss_features TEXT,
+
                 -- Security context (Sprint 17)
                 telemetry_json TEXT,
                 network_context_json TEXT
@@ -397,6 +403,49 @@ class DatabaseManager:
         conn.executescript("""
             CREATE TABLE IF NOT EXISTS resolved_vulnerabilities (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+                original_id INTEGER,
+                vulnerability_id TEXT NOT NULL,
+                hostname TEXT NOT NULL,
+                cvss_score REAL NOT NULL,
+                cvss_vector TEXT,
+                cisa_kev BOOLEAN DEFAULT FALSE,
+                epss_score REAL,
+                mission_prevalence TEXT,
+                mission_prevalence_conf REAL,
+                public_wellbeing_impact TEXT,
+                public_wellbeing_conf REAL,
+                tier_0_routing TEXT,
+                tier_0_resolution TEXT,
+                tier_1_confidence REAL,
+                tier_1_exploitation_prob REAL,
+                tier_1_routing TEXT,
+                tier_2_text_conflict BOOLEAN DEFAULT FALSE,
+                tier_2_conflict_note TEXT,
+                tier_2_rag_result TEXT,
+                tier_2_confidence REAL,
+                tier_2_resolution_summary TEXT,
+                priority_score INTEGER NOT NULL,
+                risk_band TEXT NOT NULL,
+                cvss_contribution INTEGER,
+                epss_contribution INTEGER,
+                asset_criticality_contribution INTEGER,
+                exposure_contribution INTEGER,
+                patch_remediation_contribution INTEGER,
+                ml_exploitation_contribution INTEGER DEFAULT 0,
+                security_context_contribution INTEGER DEFAULT 0,
+
+                -- ML drift monitoring
+                tier_1_features TEXT,
+
+                -- Pre-Tier drift monitoring (Sprint 18)
+                pre_tier_features TEXT,
+
+                -- EPSS drift monitoring (Sprint 18)
+                epss_features TEXT,
+
+                -- Security context (Sprint 17)
+                telemetry_json TEXT,
+                network_context_json TEXT,
                 original_id INTEGER,
                 vulnerability_id TEXT NOT NULL,
                 hostname TEXT NOT NULL,
@@ -540,6 +589,32 @@ class DatabaseManager:
             )
         """)
 
+        # Sprint 18: Pre-Tier drift monitoring — add column if not already present
+        try:
+            conn.execute(
+                "ALTER TABLE vulnerabilities ADD COLUMN pre_tier_features TEXT"
+            )
+        except Exception:
+            pass
+        try:
+            conn.execute(
+                "ALTER TABLE resolved_vulnerabilities ADD COLUMN pre_tier_features TEXT"
+            )
+        except Exception:
+            pass
+
+        # Sprint 18: EPSS drift monitoring — add column if not already present
+        try:
+            conn.execute("ALTER TABLE vulnerabilities ADD COLUMN epss_features TEXT")
+        except Exception:
+            pass
+        try:
+            conn.execute(
+                "ALTER TABLE resolved_vulnerabilities ADD COLUMN epss_features TEXT"
+            )
+        except Exception:
+            pass
+
         conn.commit()
 
     # ---- PostgreSQL schema ---------------------------------------------
@@ -651,6 +726,12 @@ class DatabaseManager:
                 -- ML drift monitoring
                 tier_1_features TEXT,
 
+                -- Pre-Tier drift monitoring (Sprint 18)
+                pre_tier_features TEXT,
+
+                -- EPSS drift monitoring (Sprint 18)
+                epss_features TEXT,
+
                 -- Security context (Sprint 17)
                 telemetry_json TEXT,
                 network_context_json TEXT
@@ -707,6 +788,12 @@ class DatabaseManager:
 
                 -- ML drift monitoring
                 tier_1_features TEXT,
+
+                -- Pre-Tier drift monitoring (Sprint 18)
+                pre_tier_features TEXT,
+
+                -- EPSS drift monitoring (Sprint 18)
+                epss_features TEXT,
 
                 -- Security context (Sprint 17)
                 telemetry_json TEXT,
@@ -815,6 +902,54 @@ class DatabaseManager:
                 confidence TEXT DEFAULT 'assumed',
                 notes TEXT DEFAULT ''
             )
+        """)
+
+        # Sprint 18: Pre-Tier drift monitoring — add column if not already present
+        conn.execute("""
+            DO $$
+            BEGIN
+                IF NOT EXISTS (
+                    SELECT 1 FROM information_schema.columns
+                    WHERE table_name='vulnerabilities' AND column_name='pre_tier_features'
+                ) THEN
+                    ALTER TABLE vulnerabilities ADD COLUMN pre_tier_features TEXT;
+                END IF;
+            END $$;
+        """)
+        conn.execute("""
+            DO $$
+            BEGIN
+                IF NOT EXISTS (
+                    SELECT 1 FROM information_schema.columns
+                    WHERE table_name='resolved_vulnerabilities' AND column_name='pre_tier_features'
+                ) THEN
+                    ALTER TABLE resolved_vulnerabilities ADD COLUMN pre_tier_features TEXT;
+                END IF;
+            END $$;
+        """)
+
+        # Sprint 18: EPSS drift monitoring — add column if not already present
+        conn.execute("""
+            DO $$
+            BEGIN
+                IF NOT EXISTS (
+                    SELECT 1 FROM information_schema.columns
+                    WHERE table_name='vulnerabilities' AND column_name='epss_features'
+                ) THEN
+                    ALTER TABLE vulnerabilities ADD COLUMN epss_features TEXT;
+                END IF;
+            END $$;
+        """)
+        conn.execute("""
+            DO $$
+            BEGIN
+                IF NOT EXISTS (
+                    SELECT 1 FROM information_schema.columns
+                    WHERE table_name='resolved_vulnerabilities' AND column_name='epss_features'
+                ) THEN
+                    ALTER TABLE resolved_vulnerabilities ADD COLUMN epss_features TEXT;
+                END IF;
+            END $$;
         """)
 
         conn.commit()

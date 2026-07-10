@@ -46,6 +46,52 @@ def _ensure_tier_1_features_column(db_path: str):
         conn.close()
 
 
+def _ensure_pretier_features_column(db_path: str):
+    """Add pre_tier_features column if not already present.
+
+    This mirrors the ALTER TABLE logic in database.py for SQLite.
+    """
+    import sqlite3
+
+    try:
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute("SELECT pre_tier_features FROM vulnerabilities LIMIT 1")
+        cursor.close()
+        conn.close()
+    except sqlite3.OperationalError:
+        conn = sqlite3.connect(db_path)
+        conn.execute("ALTER TABLE vulnerabilities ADD COLUMN pre_tier_features TEXT")
+        conn.execute(
+            "ALTER TABLE resolved_vulnerabilities ADD COLUMN pre_tier_features TEXT"
+        )
+        conn.commit()
+        conn.close()
+
+
+def _ensure_epss_features_column(db_path: str):
+    """Add epss_features column if not already present.
+
+    This mirrors the ALTER TABLE logic in database.py for SQLite.
+    """
+    import sqlite3
+
+    try:
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute("SELECT epss_features FROM vulnerabilities LIMIT 1")
+        cursor.close()
+        conn.close()
+    except sqlite3.OperationalError:
+        conn = sqlite3.connect(db_path)
+        conn.execute("ALTER TABLE vulnerabilities ADD COLUMN epss_features TEXT")
+        conn.execute(
+            "ALTER TABLE resolved_vulnerabilities ADD COLUMN epss_features TEXT"
+        )
+        conn.commit()
+        conn.close()
+
+
 def _ensure_security_context_contribution_column(db_path: str):
     """Add security_context_contribution column if Alembic didn't apply it.
 
@@ -92,6 +138,8 @@ def setup_test_db():
 
     database.init_db()
     _ensure_tier_1_features_column(database.DB_PATH)
+    _ensure_pretier_features_column(database.DB_PATH)
+    _ensure_epss_features_column(database.DB_PATH)
     _ensure_security_context_contribution_column(database.DB_PATH)
     seed()
 

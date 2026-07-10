@@ -14,6 +14,7 @@ from models import (
     SubstitutionBlock,
 )
 from pipeline import pre_tier, tier_0, tier_1, tier_2
+from pipeline.pre_tier import extract_pre_tier_features
 from scoring import calculate_final_score
 from ingest_helpers import (
     lookup_data_classification,
@@ -29,6 +30,7 @@ from ingest_cwe import get_cwe
 from integrations.mitre_mapping import lookup_mitre
 from integrations.advisories import get_advisory
 from integrations.tenable import parse_tenable_webhook, parse_tenable_batch
+from integrations.nvd import get_nvd_data
 
 logger = logging.getLogger("triagemate.ingest")
 router = APIRouter(tags=["Ingest"])
@@ -92,6 +94,15 @@ async def ingest_vulnerability(payload: IngestRequest, request: Request = None):
     mission_tags = pre_tier.predict_mission_tags(payload.hostname)
     _t_pre_tier = time.monotonic() - _t0
 
+    # Extract Pre-Tier features for drift monitoring
+    pre_tier_features_json = None
+    try:
+        pre_tier_features = extract_pre_tier_features(payload.hostname)
+        if pre_tier_features:
+            pre_tier_features_json = json.dumps(pre_tier_features)
+    except Exception:
+        logger.warning("Failed to extract Pre-Tier features for %s", payload.hostname)
+
     # 2. Asset context
     data_classification = lookup_data_classification(payload.hostname)
     internet_facing = is_internet_facing(payload.hostname)
@@ -127,6 +138,19 @@ async def ingest_vulnerability(payload: IngestRequest, request: Request = None):
         epss_sub["substituted_epss"] if epss_sub["substituted"] else raw_epss
     )
 
+    # Extract EPSS feature vector for drift monitoring
+    epss_features_json = None
+    try:
+        from ml.epss_substitutor import get_last_feature_vector
+
+        epss_fv = get_last_feature_vector()
+        if epss_fv:
+            epss_features_json = json.dumps(epss_fv)
+    except Exception:
+        logger.warning(
+            "Failed to extract EPSS features for %s", payload.vulnerability_id
+        )
+
     # ── Security context enrichment (Sprint 17) ─────────────────────
     telemetry = None
     network_ctx = None
@@ -156,12 +180,19 @@ async def ingest_vulnerability(payload: IngestRequest, request: Request = None):
 
     # 5. Tier 0: deterministic routing
     _t1 = time.monotonic()
+
+    # Fetch NVD data for reference count (already cached from get_cwe() above)
+    nvd_data = get_nvd_data(payload.vulnerability_id)
+    nvd_ref_count = nvd_data.get("nvd_reference_count", 0)
+
     t0_result = tier_0.evaluate_tier_0(
         cvss_score=payload.cvss_score,
         cisa_kev=payload.cisa_kev,
         epss_score=raw_epss,
         data_classification=data_classification,
         internet_facing=internet_facing,
+        nvd_reference_count=nvd_ref_count,
+        cwe_class=cwe_class,  # CWE-stratified EPSS threshold for low-severity auto-resolve
     )
     _t_tier_0 = time.monotonic() - _t1
 
@@ -436,6 +467,8 @@ async def ingest_vulnerability(payload: IngestRequest, request: Request = None):
             scanner_output_raw, weakness_template_raw, advisory_ref_id, advisory_quote, investigation_notes,
             mitre_techniques_json, scoring_weights_json, asset_registry_json, summary_paragraphs_json,
             tier_1_features,
+            pre_tier_features,
+            epss_features,
             telemetry_json, network_context_json
         ) VALUES (
             ?, ?, ?, ?, ?, ?,
@@ -452,8 +485,9 @@ async def ingest_vulnerability(payload: IngestRequest, request: Request = None):
             ?, ?, ?,
             ?, ?, ?, ?, ?,
             ?, ?, ?, ?, ?,
-            ?,
-            ?, ?
+            ?, ?,
+            ?, ?,
+            ?
         )
     """,
         (
@@ -541,6 +575,8 @@ async def ingest_vulnerability(payload: IngestRequest, request: Request = None):
             ),
             json.dumps(summary_paragraphs),
             tier_1_features_json,
+            pre_tier_features_json,
+            epss_features_json,
             json.dumps(telemetry) if telemetry else None,
             json.dumps(network_ctx) if network_ctx else None,
         ),
@@ -809,6 +845,8 @@ async def clear_all_findings():
                 patch_remediation_contribution, ml_exploitation_contribution,
                 security_context_contribution,
                 tier_1_features,
+                pre_tier_features,
+                epss_features,
                 epss_substituted, epss_substituted_value,
                 epss_substitution_confidence, epss_substitution_reason,
                 data_classification, network_zone, interface_type,
@@ -838,6 +876,8 @@ async def clear_all_findings():
                    asset_criticality_contribution, exposure_contribution,
                    patch_remediation_contribution, ml_exploitation_contribution, security_context_contribution,
                    tier_1_features,
+                   pre_tier_features,
+                   epss_features,
                    epss_substituted, epss_substituted_value,
                    epss_substitution_confidence, epss_substitution_reason,
                    data_classification, network_zone, interface_type,

@@ -1,6 +1,6 @@
 # TriageMate — Roadmap
 
-> **Status: CURRENT** (9 July 2026)
+> **Status: CURRENT** (10 July 2026)
 > 
 > Previous roadmap archived to `docs/archive/ROADMAP-2026-07-09.md` (Sprints 1–16b complete).
 
@@ -10,12 +10,12 @@
 
 | Metric | Value |
 |---|---|
-| Tests | 275 pass, 0 fail |
+| Tests | 298 pass, 0 fail |
 | Open bugs | 0 (AI_PROBLEMS.md is clean) |
-| Sprints completed | 16, 16b, 17 |
+| Sprints completed | 16, 16b, 17, 18 |
 | Pipeline stages | Pre-Tier → Tier 0 → Tier 1 → Tier 2 → Tier 3 (Human Review) |
 | Enrichment sources | 14 integrations (NVD, OSV, OTX, ExploitDB, Metasploit, Tenable, GreyNoise [deprecated], CMDB [stub], Advisories [stub], MITRE, CWE classifier, Demo generator, **Synthetic Telemetry**, **Network Context**) |
-| Demo rows | 7 CVEs, scores 94/92/86/76/71/63/57 (±3 tolerance) |
+| Demo rows | 7 CVEs, scores 98/91/73/66/58/44/26 (±3 tolerance) |
 | Auth | JWT (disabled by default, env-var-gated) |
 | Database | SQLite (default), PostgreSQL (available via DATABASE_URL) |
 | CI/CD | `.github/workflows/ci.yml` — full pipeline (matrix test, coverage, lint, Docker) |
@@ -25,8 +25,8 @@
 | Model | Type | Status | Monitoring |
 |---|---|---|---|
 | XGBoost (Tier 1) | 419-dim, ROC-AUC 0.9459 | ✅ Active | Tests ✅, Parity ✅, Registry ✅, Calibration ✅, Drift ✅ |
-| Pre-Tier RF | 60-dim RandomForest, ~38% holdout acc | ✅ Active | Tests ✅, Parity ✅, Registry ✅, Calibration ❌, Drift ❌ |
-| EPSS v4 | 37-dim XGBRegressor, R² 0.99 | ✅ Active (fallback #1) | Tests ✅, Parity ✅, Registry ✅, Calibration ❌, Drift ❌ |
+| Pre-Tier RF | 60-dim RandomForest, ~38% holdout acc | ✅ Active | Tests ✅, Parity ✅, Registry ✅, Calibration ❌, Drift ✅ |
+| EPSS v4 | 37-dim XGBRegressor, R² 0.99 | ✅ Active (fallback #1) | Tests ✅, Parity ✅, Registry ✅, Calibration ❌, Drift ✅ |
 | EPSS v1–v3 | XGBRegressor | Fallback #2–#4 | Tests ✅, Parity ✅, Registry ✅, Calibration ❌, Drift ❌ |
 
 ---
@@ -44,14 +44,18 @@
 
 ---
 
-## Now — Sprint 18: Quick Wins + Monitoring
+## Sprint 18 — ✅ Complete (Quick Wins + Monitoring)
 
-| # | Item | Effort | Description |
-|---|---|---|---|
-| **4** | **NVD Reference Count ≥21 Tier 0 rule** | 30 min | CVEs with 21+ NVD references have 9.5× baseline KEV rate. Add deterministic rule to Tier 0. Free signal, catches high-risk CVEs at day 0. |
-| **5** | **CWE-stratified EPSS thresholds** | 30 min | Different CWE classes have very different optimal EPSS thresholds (Path Traversal: 0.085, OS Command Injection: 0.515). Stratified fallback outperforms monolithic threshold. |
-| **6** | **Pre-Tier RF drift monitoring** | 2–4 hrs | PSI-based drift endpoint for Pre-Tier model. Feature distribution tracking against reference. |
-| **7** | **EPSS drift monitoring** | 2–4 hrs | PSI-based drift endpoint for EPSS fallback models. |
+| # | Item | Effort | Status | Description |
+|---|---|---|---|---|
+| **1** | **NVD Reference Count ≥21 Tier 0 rule** | 30 min | ✅ Done | CVEs with 21+ NVD references auto-resolve as `very_critical` at Tier 0. Free signal — 9.5× baseline KEV rate. |
+| **2** | **CWE-Stratified EPSS Thresholds — Extend to Tier 0** | 45 min | ✅ Done | ✅ Part A (fix dead code in `_tier_zero_check()`) already done. Part B: Tier 0's `LOW_EPSS_THRESHOLD` is now CWE-aware instead of monolithic 0.10. |
+| **3** | **Pre-Tier RF Drift Monitoring** | 5–6 hrs | ✅ Done | PSI-based drift endpoint for Pre-Tier model (60-dim). DB migration, pipeline capture, reference dists, API. |
+| **4** | **EPSS Drift Monitoring** | 5–6 hrs | ✅ Done | PSI-based drift endpoint for EPSS fallback models (37/22-dim). Same pattern as Item 3. |
+| **—** | **Bonus A: CWE_EPSS_THRESHOLDS coverage** | 20 min | ✅ Done | Extended CWE-stratified thresholds to cover additional CWE families. |
+| **—** | **Bonus B: CWE-stratified KEV threshold** | 15 min | ✅ Done | KEV threshold now varies by CWE category instead of monolithic value. |
+| **—** | **Bonus C: threshold_info.json** | 15 min | ✅ Done | Published consolidated threshold documentation to API. |
+| **—** | **Bonus D: Scoring weight documentation** | 1 hr | ✅ Done | `docs/architecture/scoring-weights.md` — full weight design rationale, 112-sum, clamping. |
 
 ---
 
@@ -61,7 +65,6 @@
 |---|---|---|---|
 | **8** | **Scheduled retraining** | TBD | `scheduler.py` currently only does low-severity re-checks. Add model retraining triggers. |
 | **9** | **Concept drift monitoring** | TBD | Beyond PSI — accuracy-over-time tracking, ground-truth feedback loop. |
-| **10** | **Scoring weight documentation** | 1 hr | Document the 107-sum weight design, rationale for clamping, effect on score ceiling. |
 | **11** | **Shared config module** | 3 hrs | Single source of truth for all pipeline constants across training and inference. |
 | **12** | **Multiplier-based security scoring** | 1 day | Replace additive Security Context dimension with a proportional multiplier model. Active incident + loaded code → score × 1.2. Confirmed inactive → score × 0.8. Industry-grade approach that scales context impact with existing severity. |
 | **13** | **EPSS v4 retrain on real data** | 1–2 days | Retrain EPSS v4 on real (non-synthetic) Tenable scan aggregation data. |
@@ -98,7 +101,7 @@ uvicorn main:app --reload --host 0.0.0.0
 ### Verification
 
 ```bash
-just test   # 275 tests, 275 pass
+just test   # 298 tests, 298 pass
 just lint   # ruff check + format
 just gate   # Full quality gate: lint → test → audit-all
 ```

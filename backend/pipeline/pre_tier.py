@@ -200,3 +200,17 @@ def predict_mission_tags(hostname: str) -> dict:
 
     # Priority 3: Default fallback
     return dict(DEFAULT_RESPONSE)
+
+
+def extract_pre_tier_features(hostname: str) -> dict:
+    """Extract the 60-dim Pre-Tier feature vector for drift monitoring.
+
+    Uses the same ml.pretier_features.extract_features() as the model prediction.
+    Returns a dict of feature_name: value suitable for JSON serialization and drift computation.
+    """
+    from ml.pretier_features import extract_features as _extract
+
+    features = _extract(hostname)
+    if features is None:
+        return {}
+    return features

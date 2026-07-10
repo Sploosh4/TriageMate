@@ -195,6 +195,8 @@ SEED_ROWS = [
         ),
         "telemetry_json": '{"sentinel_incidents": [{"incident_id": "SEN-2026-986655", "title": "Suspected exploitation of CVE-2023-34362", "severity": "High", "status": "Resolved", "detected_at": "2024-05-23T03:06:20Z", "assigned_to": "SOC Tier 2", "related_entities": ["per-PRD-MOVEIT-WEB01.health.wa.gov.au"], "mitre_techniques": ["T1190", "T1133", "T1078"]}], "edr_alerts": [{"alert_id": "EDR-20240403-5492", "alert_type": "process_execution", "severity": "Medium", "process_name": "moveitdmz.exe", "process_path": "C:\\\\Program Files\\\\Moveit\\\\moveitdmz.exe", "user": "NT AUTHORITY\\\\NETWORK SERVICE", "timestamp": "2024-04-03T19:34:55Z", "details": "Suspicious process execution of moveitdmz.exe related to CVE-2023-34362"}, {"alert_id": "EDR-20240403-5062", "alert_type": "network_connection", "severity": "Low", "process_name": "moveitdmz.exe", "process_path": "C:\\\\Program Files\\\\Moveit\\\\moveitdmz.exe", "user": "NT AUTHORITY\\\\SYSTEM", "timestamp": "2024-03-21T07:28:16Z", "details": "Outbound connection from moveitdmz.exe to external IP address"}], "process_evidence": {"is_running": true, "is_loaded": true, "running_processes": ["moveitdmz.exe", "moverequesthandler.dll"], "evidence_quality": "high"}, "threat_score": 0.9759488385642258}',
         "network_context_json": '{"zone": "dmz", "zone_display": "DMZ (Health \\u2014 External)", "peer_count": 34, "internet_facing_peers": 19, "dc_peers": 0, "peer_classifications": {"Support": 11, "Core": 17, "Peripheral": 6}, "blast_radius_score": 0.4494117647058824, "exposure_level": "medium", "data_source": "synthetic_assets"}',
+        "pre_tier_features": None,
+        "epss_features": None,
     },
     # Row 2: CVE-2023-4966 — Citrix Bleed
     {
@@ -385,6 +387,8 @@ SEED_ROWS = [
         ),
         "telemetry_json": '{"sentinel_incidents": [{"incident_id": "SEN-2024-595124", "title": "Suspected exploitation of CVE-2023-4966", "severity": "High", "status": "Active", "detected_at": "2024-07-14T14:45:40Z", "assigned_to": "SOC Tier 2", "related_entities": ["per-PRD-CITRIX-ADC01.transport.wa.gov.au"], "mitre_techniques": ["T1078"]}, {"incident_id": "SEN-2025-956201", "title": "Suspected exploitation of CVE-2023-4966", "severity": "Low", "status": "Investigating", "detected_at": "2025-01-05T13:42:15Z", "assigned_to": "SOC Tier 1", "related_entities": ["per-PRD-CITRIX-ADC01.transport.wa.gov.au"], "mitre_techniques": ["T1133", "T1078", "T1505"]}], "edr_alerts": [{"alert_id": "EDR-20240217-3383", "alert_type": "process_execution", "severity": "Medium", "process_name": "buffer.exe", "process_path": "C:\\\\Program Files\\\\Buffer\\\\buffer.exe", "user": "IIS APPPOOL\\\\DefaultAppPool", "timestamp": "2024-05-14T09:48:47Z", "details": "Suspicious process execution of buffer.exe related to CVE-2023-4966"}], "process_evidence": {"is_running": true, "is_loaded": true, "running_processes": ["buffer.exe", "buffer_module.dll"], "evidence_quality": "high"}, "threat_score": 1.0}',
         "network_context_json": '{"zone": "dmz", "zone_display": "DMZ (Transport \\u2014 External)", "peer_count": 26, "internet_facing_peers": 16, "dc_peers": 0, "peer_classifications": {"Core": 14, "Support": 7, "Peripheral": 5}, "blast_radius_score": 0.4376923076923077, "exposure_level": "medium", "data_source": "synthetic_assets"}',
+        "pre_tier_features": None,
+        "epss_features": None,
     },
     # Row 3: CVE-2023-27350 — PaperCut Auth Bypass
     {
@@ -576,6 +580,8 @@ SEED_ROWS = [
         ),
         "telemetry_json": '{"sentinel_incidents": [{"incident_id": "SEN-2026-367763", "title": "Suspected exploitation of CVE-2023-27350", "severity": "High", "status": "Investigating", "detected_at": "2024-09-06T09:38:40Z", "assigned_to": "SOC Tier 2", "related_entities": ["per-PRD-PRINT-SVR05.education.wa.edu.au"], "mitre_techniques": ["T1210"]}, {"incident_id": "SEN-2024-149977", "title": "Suspected exploitation of CVE-2023-27350", "severity": "High", "status": "Resolved", "detected_at": "2024-06-19T09:37:41Z", "assigned_to": "SOC Tier 2", "related_entities": ["per-PRD-PRINT-SVR05.education.wa.edu.au"], "mitre_techniques": ["T1505"]}], "edr_alerts": [{"alert_id": "EDR-20240815-2399", "alert_type": "network_connection", "severity": "Low", "process_name": "authentication.exe", "process_path": "C:\\\\Program Files\\\\Authentication\\\\authentication.exe", "user": "NT AUTHORITY\\\\SYSTEM", "timestamp": "2024-10-30T19:18:09Z", "details": "Outbound connection from authentication.exe to external IP address"}], "process_evidence": {"is_running": false, "is_loaded": false, "running_processes": [], "evidence_quality": "none"}, "threat_score": 0.5272328451376124}',
         "network_context_json": '{"zone": "internal", "zone_display": "EDU (Internal \\u2014 Servers)", "peer_count": 87, "internet_facing_peers": 0, "dc_peers": 6, "peer_classifications": {"Core": 25, "Support": 44, "Peripheral": 18}, "blast_radius_score": 0.435, "exposure_level": "medium", "data_source": "synthetic_assets"}',
+        "pre_tier_features": None,
+        "epss_features": None,
     },
     # Row 4: CVE-2024-1709 — ConnectWise ScreenConnect
     {
@@ -767,6 +773,8 @@ SEED_ROWS = [
         ),
         "telemetry_json": '{"sentinel_incidents": [{"incident_id": "SEN-2024-703160", "title": "Suspected exploitation of CVE-2024-1709", "severity": "High", "status": "Investigating", "detected_at": "2024-04-10T06:53:24Z", "assigned_to": "SOC Tier 2", "related_entities": ["per-PRD-RMM-GW01.sharedservices.wa.gov.au"], "mitre_techniques": ["T1027"]}, {"incident_id": "SEN-2025-299323", "title": "Suspected exploitation of CVE-2024-1709", "severity": "High", "status": "Investigating", "detected_at": "2024-05-23T23:23:38Z", "assigned_to": "SOC Tier 2", "related_entities": ["per-PRD-RMM-GW01.sharedservices.wa.gov.au"], "mitre_techniques": ["T1078"]}], "edr_alerts": [{"alert_id": "EDR-20241018-5013", "alert_type": "process_execution", "severity": "High", "process_name": "authentication.exe", "process_path": "C:\\\\Program Files\\\\Authentication\\\\authentication.exe", "user": "IIS APPPOOL\\\\DefaultAppPool", "timestamp": "2024-04-12T16:09:43Z", "details": "Suspicious process execution of authentication.exe related to CVE-2024-1709"}, {"alert_id": "EDR-20241018-4296", "alert_type": "module_load", "severity": "Medium", "process_name": "authentication_module.dll", "process_path": "C:\\\\Program Files\\\\Authentication\\\\authentication_module.dll", "user": "IIS APPPOOL\\\\DefaultAppPool", "timestamp": "2024-08-09T07:48:02Z", "details": "Suspicious module load of authentication_module.dll in authentication.exe"}], "process_evidence": {"is_running": true, "is_loaded": true, "running_processes": ["authentication.exe", "authentication_module.dll"], "evidence_quality": "high"}, "threat_score": 0.9646478630016387}',
         "network_context_json": '{"zone": "mgmt", "zone_display": "SSC (Management \\u2014 Segment)", "peer_count": 7, "internet_facing_peers": 0, "dc_peers": 0, "peer_classifications": {"Core": 2, "Peripheral": 2, "Support": 3}, "blast_radius_score": 0.035, "exposure_level": "low", "data_source": "synthetic_assets"}',
+        "pre_tier_features": None,
+        "epss_features": None,
     },
     # Row 5: CVE-2023-36884 — Office/Windows Search RCE
     {
@@ -963,6 +971,8 @@ SEED_ROWS = [
         ),
         "telemetry_json": '{"sentinel_incidents": [{"incident_id": "SEN-2026-527325", "title": "Suspected exploitation of CVE-2023-36884", "severity": "High", "status": "Resolved", "detected_at": "2024-03-14T22:19:54Z", "assigned_to": "SOC Tier 2", "related_entities": ["per-PRD-FILE-STORE02.communities.wa.gov.au"], "mitre_techniques": ["T1071", "T1133", "T1053"]}], "edr_alerts": [{"alert_id": "EDR-20240604-4828", "alert_type": "module_load", "severity": "Medium", "process_name": "microsoft_module.dll", "process_path": "C:\\\\Program Files\\\\Microsoft\\\\microsoft_module.dll", "user": "IIS APPPOOL\\\\DefaultAppPool", "timestamp": "2024-11-15T08:29:37Z", "details": "Suspicious module load of microsoft_module.dll in microsoft.exe"}, {"alert_id": "EDR-20240604-4848", "alert_type": "network_connection", "severity": "Low", "process_name": "microsoft.exe", "process_path": "C:\\\\Program Files\\\\Microsoft\\\\microsoft.exe", "user": "NT AUTHORITY\\\\SYSTEM", "timestamp": "2024-10-22T05:02:09Z", "details": "Outbound connection from microsoft.exe to external IP address"}], "process_evidence": {"is_running": false, "is_loaded": true, "running_processes": ["microsoft_module.dll"], "evidence_quality": "medium"}, "threat_score": 0.724470950062004}',
         "network_context_json": '{"zone": "internal", "zone_display": "Communities-Internal-Servers (VLAN 312)", "peer_count": 48, "internet_facing_peers": 0, "dc_peers": 6, "peer_classifications": {"Support": 11, "Core": 26, "Peripheral": 11}, "blast_radius_score": 0.24, "exposure_level": "medium", "data_source": "synthetic_assets"}',
+        "pre_tier_features": None,
+        "epss_features": None,
     },
     # Row 6: CVE-2023-22515 — Confluence Broken Access Control
     {
@@ -1154,6 +1164,8 @@ SEED_ROWS = [
         ),
         "telemetry_json": '{"sentinel_incidents": [{"incident_id": "SEN-2026-663194", "title": "Suspected exploitation of CVE-2023-22515", "severity": "High", "status": "Investigating", "detected_at": "2024-01-22T20:45:31Z", "assigned_to": "SOC Tier 2", "related_entities": ["per-PRD-WIKI-CORE01.wapol.internal.wa.gov.au"], "mitre_techniques": ["T1078"]}], "edr_alerts": [{"alert_id": "EDR-20241222-3416", "alert_type": "process_execution", "severity": "High", "process_name": "confluence.exe", "process_path": "C:\\\\Program Files\\\\Confluence\\\\confluence.exe", "user": "NT AUTHORITY\\\\SYSTEM", "timestamp": "2024-06-29T11:21:36Z", "details": "Suspicious process execution of confluence.exe related to CVE-2023-22515"}], "process_evidence": {"is_running": true, "is_loaded": true, "running_processes": ["confluence.exe", "atlassian-extras-legacy.jar"], "evidence_quality": "high"}, "threat_score": 0.9184649897867908}',
         "network_context_json": '{"zone": "mgmt", "zone_display": "WAPOL-Internal-Management (VLAN 92)", "peer_count": 4, "internet_facing_peers": 0, "dc_peers": 1, "peer_classifications": {"Support": 1, "Core": 3}, "blast_radius_score": 0.02, "exposure_level": "low", "data_source": "synthetic_assets"}',
+        "pre_tier_features": None,
+        "epss_features": None,
     },
     # Row 7: CVE-2022-47966 — ManageEngine SAML RCE
     {
@@ -1349,6 +1361,8 @@ SEED_ROWS = [
         ),
         "telemetry_json": '{"sentinel_incidents": [{"incident_id": "SEN-2026-720528", "title": "Suspected exploitation of CVE-2022-47966", "severity": "High", "status": "Resolved", "detected_at": "2024-12-07T02:52:25Z", "assigned_to": "SOC Tier 2", "related_entities": ["per-PRD-ITSM-TOOL01.finance.wa.gov.au"], "mitre_techniques": ["T1053", "T1027"]}, {"incident_id": "SEN-2024-546364", "title": "Suspected exploitation of CVE-2022-47966", "severity": "Informational", "status": "Investigating", "detected_at": "2024-11-27T01:28:26Z", "assigned_to": "SOC Tier 1", "related_entities": ["per-PRD-ITSM-TOOL01.finance.wa.gov.au"], "mitre_techniques": ["T1566"]}], "edr_alerts": [{"alert_id": "EDR-20241204-9151", "alert_type": "process_execution", "severity": "High", "process_name": "authentication.exe", "process_path": "C:\\\\Program Files\\\\Authentication\\\\authentication.exe", "user": "NT AUTHORITY\\\\NETWORK SERVICE", "timestamp": "2024-07-19T02:31:39Z", "details": "Suspicious process execution of authentication.exe related to CVE-2022-47966"}], "process_evidence": {"is_running": true, "is_loaded": true, "running_processes": ["authentication.exe", "authentication_module.dll"], "evidence_quality": "high"}, "threat_score": 1.0}',
         "network_context_json": '{"zone": "internal", "zone_display": "Finance-Internal-Applications (VLAN 67)", "peer_count": 63, "internet_facing_peers": 0, "dc_peers": 9, "peer_classifications": {"Peripheral": 15, "Core": 31, "Support": 17}, "blast_radius_score": 0.315, "exposure_level": "medium", "data_source": "synthetic_assets"}',
+        "pre_tier_features": None,
+        "epss_features": None,
     },
 ]
 
@@ -1378,6 +1392,8 @@ def seed():
             service_account, detection_tier, detection_reason,
             scanner_output_raw, weakness_template_raw, advisory_ref_id, advisory_quote, investigation_notes,
             mitre_techniques_json, scoring_weights_json, asset_registry_json, summary_paragraphs_json,
+            pre_tier_features,
+            epss_features,
             telemetry_json, network_context_json
         ) VALUES (
             :vulnerability_id, :hostname, :cvss_score, :cvss_vector, :cisa_kev, :epss_score,
@@ -1394,6 +1410,8 @@ def seed():
             :service_account, :detection_tier, :detection_reason,
             :scanner_output_raw, :weakness_template_raw, :advisory_ref_id, :advisory_quote, :investigation_notes,
             :mitre_techniques_json, :scoring_weights_json, :asset_registry_json, :summary_paragraphs_json,
+            :pre_tier_features,
+            :epss_features,
             :telemetry_json, :network_context_json
         )
     """

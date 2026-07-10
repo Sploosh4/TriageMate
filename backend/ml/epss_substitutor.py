@@ -129,6 +129,111 @@ CWES_V2 = [
 # Minimum confidence threshold for ML predictions
 ML_CONFIDENCE_THRESHOLD = 0.3
 
+# ── Feature name mappings for drift monitoring ─────────────────────────────
+
+# v2/v3/v4 feature names (37 elements)
+V2_FEATURE_NAMES = [
+    "raw_epss",  # 0
+    "cvss_score",  # 1
+    "exploit_maturity",  # 2
+    "cisa_kev",  # 3
+    "has_public_poc",  # 4
+    "vendor_patch_status",  # 5
+    # 11 agency OHE
+    "agency_health",
+    "agency_transport",
+    "agency_education",
+    "agency_sharedservices",
+    "agency_communities",
+    "agency_police",
+    "agency_finance",
+    "agency_watercorporation",
+    "agency_dpird",
+    "agency_justice",
+    "agency_unknown",
+    # 20 CWE OHE (same order as CWES_V2)
+    "cwe_CWE-78",
+    "cwe_CWE-89",
+    "cwe_CWE-79",
+    "cwe_CWE-22",
+    "cwe_CWE-434",
+    "cwe_CWE-862",
+    "cwe_CWE-787",
+    "cwe_CWE-125",
+    "cwe_CWE-20",
+    "cwe_CWE-200",
+    "cwe_CWE-287",
+    "cwe_CWE-306",
+    "cwe_CWE-269",
+    "cwe_CWE-295",
+    "cwe_CWE-611",
+    "cwe_CWE-918",
+    "cwe_CWE-190",
+    "cwe_CWE-416",
+    "cwe_CWE-476",
+    "cwe_CWE-352",
+]
+
+# v1 feature names (22 elements)
+V1_FEATURE_NAMES = [
+    "raw_epss",  # 0
+    "cvss_score",  # 1
+    "cisa_kev",  # 2
+    # 8 agency OHE (AGENCIES_V1 + "unknown")
+    "agency_health",
+    "agency_transport",
+    "agency_education",
+    "agency_sharedservices",
+    "agency_communities",
+    "agency_police",
+    "agency_finance",
+    "agency_unknown",
+    # 11 CWE OHE (same order as CWES_V1)
+    "cwe_CWE-78",
+    "cwe_CWE-89",
+    "cwe_CWE-79",
+    "cwe_CWE-22",
+    "cwe_CWE-434",
+    "cwe_CWE-862",
+    "cwe_CWE-787",
+    "cwe_CWE-125",
+    "cwe_CWE-20",
+    "cwe_CWE-200",
+    "cwe_CWE-287",
+]
+
+
+def feature_vector_to_dict(feature_list: list, model_version: str) -> dict:
+    """Convert positional feature vector to named dict for drift monitoring.
+
+    Args:
+        feature_list: The positional feature list (37 elements for v2/v3/v4, 22 for v1)
+        model_version: "v1", "v2", "v3", or "v4"
+
+    Returns:
+        dict with feature_name: value pairs
+    """
+    if model_version in ("v2", "v3", "v4"):
+        names = V2_FEATURE_NAMES
+    else:
+        names = V1_FEATURE_NAMES
+    return dict(zip(names, feature_list))
+
+
+# Module-level storage for drift monitoring
+_last_feature_vector: dict | None = None
+_last_feature_vector_version: str | None = None
+
+
+def get_last_feature_vector() -> dict | None:
+    """Return the last computed feature vector for drift monitoring."""
+    return _last_feature_vector
+
+
+def get_last_feature_vector_version() -> str | None:
+    """Return the model version of the last feature vector."""
+    return _last_feature_vector_version
+
 
 # ── Load ML model on import (try v4 first, then v3, v2, v1) ────────────────
 _model = None
@@ -385,6 +490,11 @@ def _rule_engine(
     sector_multiplier = DEFAULT_MULTIPLIER
     reasons = []
 
+    # Rule engine does not build feature vectors — clear drift storage
+    global _last_feature_vector, _last_feature_vector_version
+    _last_feature_vector = None
+    _last_feature_vector_version = None
+
     if raw_epss is None:
         floor = 0.3 if cisa_kev else 0.05
         return {
@@ -610,6 +720,14 @@ def _ml_predict(
         confidence,
         substituted,
     )
+
+    # Store feature vector for drift monitoring
+    global _last_feature_vector, _last_feature_vector_version
+    if _model_is_v2:
+        _last_feature_vector = feature_vector_to_dict(features, _model_version or "v2")
+    else:
+        _last_feature_vector = feature_vector_to_dict(features, "v1")
+    _last_feature_vector_version = _model_version or "v1"
 
     return {
         "substituted": substituted,

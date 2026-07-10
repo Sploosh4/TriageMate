@@ -15,7 +15,7 @@
 
 | # | File | Status | Description |
 |---|---|---|---|
-| 1 | `planning/ROADMAP.md` | CURRENT | **Master status.** What exists, what's broken, what's next. Start here. |
+| 1 | `planning/ROADMAP.md` | CURRENT | **Master status.** What exists, what's broken, what's next. Sprints 17 & 18 complete ✅. Start here. |
 | 2 | `architecture/MVP_SCOPE.md` | OUTDATED | Sprint 1 scope boundaries. Many deferred items are now done. See caution banner. |
 | 3 | `reference/AI_PROBLEMS.md` | CURRENT | Bug tracker. All historical issues resolved. |
 | 4 | `archive/ml-implementation-plan.md` | ARCHIVED | → Replaced by `graphify_output/ml_inventory.md` (auto-generated, run `just graphify`) |
@@ -25,12 +25,13 @@
 | File | Status | Description |
 |---|---|---|
 | `architecture/MVP_SCOPE.md` | OUTDATED | Scope authority from Sprint 1. Many deferred items now implemented. ROC-AUC figure updated to 0.9459. |
+| `architecture/scoring-weights.md` | CURRENT | Scoring weight design — 7 dimensions (112-sum, clamped 0–100). Rationale, clamping, bands, demo CVE scores. Added Sprint 18. |
 
 ## Planning
 
 | File | Status | Description |
 |---|---|---|
-| `planning/ROADMAP.md` | CURRENT | Forward-looking roadmap. Sprint 17 (Security Context) complete ✅. Sprint 18 (Quick Wins + Monitoring) planned. Archived previous roadmap to `archive/ROADMAP-2026-07-09.md`. |
+| `planning/ROADMAP.md` | CURRENT | Forward-looking roadmap. Sprints 17 & 18 complete ✅. Sprint 18 added drift monitoring for Pre-Tier & EPSS, CWE-stratified thresholds, NVD ref count rule. Archived previous roadmap to `archive/ROADMAP-2026-07-09.md`. |
 | `planning/HANDOFF-2026-07-08.md` | CURRENT | Handoff document covering ML drift monitoring, Tier 2 LLM query coverage, network topology/Sentinel status, and stress testing status. Answers what was deferred post-MVP. |
 | `planning/ai-doc-strategy-2026-07-07.md` | CURRENT | This consolidation plan — how and why docs were restructured. |
 | `archive/file-consolidation-plan-2026-07-07.md` | ARCHIVED | Bookkeeper's consolidation proposals — superseded by current doc structure. See `docs/INDEX.md`. |
@@ -81,7 +82,7 @@
 | How do I set up on Windows? | `guides/WINDOWS_SETUP.md` |
 | What WA gov conventions apply? | `reference/hostname-standards.md` |
 | What data does the corpus contain? | `planning/ROADMAP.md` §Current State (Enrichment sources: 14 integrations) |
-| What's the scoring engine logic? | `architecture/MVP_SCOPE.md` §2.5 (then verify against current code) |
+| What's the scoring engine logic? | `architecture/scoring-weights.md` (current) or `architecture/MVP_SCOPE.md` §2.5 (outdated) |
 | What pipeline stages exist? | `planning/ROADMAP.md` §Current State (Pipeline stages table row) |
 | Full file tree | `graphify_output/file_tree.md` (auto-generated) |
 | ML models + training | `graphify_output/ml_inventory.md` (auto-generated) |
@@ -128,7 +129,7 @@
 | `backend/ml/model_registry_pre_tier.json` | Pre-Tier model version registry (drift tracking, rollback) |
 | `backend/ml/model_registry_epss.json` | EPSS model version registry (v1–v4 tracking, rollback) |
 
-**Total test count:** 275+ tests (up from 142) — includes 5 new test files for Pre-Tier and EPSS monitoring.
+**Total test count:** 298+ tests (up from 142) — includes 5 new test files for Pre-Tier and EPSS monitoring, plus 3 drift test files (XGBoost, EPSS, Pre-Tier) from Sprint 18.
 
 ## Sprint 17 — ✅ Complete (Security Telemetry, Network Context & Panel 5)
 
@@ -138,7 +139,25 @@
 | **Network Context** | `backend/integrations/network_context.py` | Produces network blast-radius scores and peer topology from `synthetic_assets` table. Ingest pipeline calls this to populate `network_context_json`. |
 | **Panel 5 Frontend** | `frontend/index.html`, `frontend/js/components/caseView.js`, `frontend/css/triagemate.css` | New case-view panel for security telemetry (Sentinel incidents, EDR alerts, process evidence) and network context (blast radius gauge, zone display, peer counts). |
 | **7th Scoring Dimension** | `backend/scoring.py` | "Security Context" (max 5): composite of telemetry threat score (×3) and network blast radius (×2), clamped to 0–5. |
-| **Score Contract** | `backend/seed_data.py` | Updated expected scores: **94/92/86/76/71/63/57** (Sprint 17 recalculation). |
+| **Score Contract** | `backend/routers/models.py` (baseline), `backend/tests/test_model_versions.py` (assertion) | Updated expected scores: **98/91/73/66/58/44/26** (Sprint 17+ recalculation, verified against `routers/models.py:89`). |
+
+## Sprint 18 — ✅ Complete (Quick Wins + Monitoring)
+
+| Component | Files | Purpose |
+|---|---|---|
+| **NVD ≥21 References Rule** | `backend/pipeline/tier_zero.py` | CVEs with 21+ NVD references auto-resolve as `very_critical` at Tier 0. 9.5× baseline KEV rate. |
+| **CWE-Stratified EPSS Thresholds** | `backend/pipeline/tier_zero.py` | Tier 0's `LOW_EPSS_THRESHOLD` is now CWE-aware — different CWE families get different thresholds. |
+| **Pre-Tier RF Drift Monitoring** | `backend/analysis/drift.py`, `backend/tests/test_drift_pretier.py`, `backend/routers/drift.py` | PSI-based drift endpoint for Pre-Tier model (60-dim). DB migration, pipeline capture, reference distributions. |
+| **EPSS Drift Monitoring** | `backend/analysis/drift.py`, `backend/tests/test_drift_epss.py`, `backend/routers/drift.py` | PSI-based drift endpoint for EPSS fallback models (37/22-dim). Same pattern as Pre-Tier drift. |
+| **XGBoost Drift Endpoint** | `backend/analysis/drift.py`, `backend/tests/test_drift_ml.py` | ML-level drift endpoint for Tier 1 XGBoost (419-dim). |
+| **General Drift Endpoint** | `backend/analysis/drift.py`, `backend/tests/test_drift.py`, `backend/routers/drift.py` | Pipeline-level drift stats (total audited, tier routing, feature drift). |
+| **Bonus Items** | Various | CWE_EPSS_THRESHOLDS coverage extended, CWE-stratified KEV threshold, `threshold_info.json` endpoint, `docs/architecture/scoring-weights.md` |
+
+**Sprint 18 new test files:**
+- `backend/tests/test_drift.py` — General drift endpoint tests
+- `backend/tests/test_drift_ml.py` — ML drift endpoint + PSI computation tests
+- `backend/tests/test_drift_epss.py` — EPSS drift endpoint tests
+- `backend/tests/test_drift_pretier.py` — Pre-Tier drift endpoint tests
 
 ## Graphify — Auto-Generated Knowledge Artifacts
 

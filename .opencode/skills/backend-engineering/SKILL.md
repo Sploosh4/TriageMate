@@ -32,6 +32,17 @@ Scoring:  6-dimension weighted formula (CVSS, EPSS, Asset Criticality, Exposure,
 - `backend/pipeline/tier_2.py` — Cloud LLM conflict resolution
 - `backend/ingest_helpers.py` — `build_feature_vector()`, CWE lookups
 - `backend/routers/` — API endpoint routers (auth, cases, ingest, models, queue)
+- `backend/ml/xgboost_predictor.py` — `CWE_EPSS_THRESHOLDS` dict (14 CWE-stratified EPSS thresholds), `DEFAULT_EPSS_THRESHOLD` (0.60), XGBoost prediction
+
+### CWE-Stratified EPSS Thresholds
+Defined in `backend/ml/xgboost_predictor.py` as `CWE_EPSS_THRESHOLDS`. These thresholds are used in two places:
+1. **Tier 0 (xgboost_predictor.py `_tier_zero_check`):** If EPSS >= CWE-specific threshold, the vulnerability fast-path-escalates before XGBoost inference.
+2. **Tier 0 (pipeline/tier_0.py):**
+   - **Low-severity auto-resolve:** If CVSS < 4.0, not KEV, and EPSS < CWE-specific threshold, auto-resolve as low.
+   - **KEV + Sensitive auto-resolve:** If KEV-listed, EPSS >= CWE-specific KEV threshold (from same dict), and OFFICIAL Sensitive, auto-resolve as very_critical.
+3. **Tier 0 (pipeline/tier_0.py) — KEV bypass:** KEV-listed CVEs on OFFICIAL Sensitive assets use the CWE-stratified threshold instead of monolithic 0.90, so a CWE-22 KEV (threshold 0.085) can auto-resolve with EPSS as low as 0.085.
+
+The default (unlisted CWE) uses `DEFAULT_EPSS_THRESHOLD = 0.60` (reduced from 0.84 in Sprint 18 for better recall). Methodology is documented in the dict's comment block and sourced from `backend/analysis/epss_eval.py`.
 
 ## Conventions
 - Database access: always use `get_db()` — never create new connection paths
@@ -77,7 +88,8 @@ A local MCP server registered in `opencode.jsonc` that provides direct read-only
 Equivalent to `just db-shell` but callable inline by the LLM.
 
 ## Score Contract
-The 7 demo rows must score within ±3 of: 94, 87, 71, 63, 55, 41, 22
+The 7 demo rows must score within ±3 of: 98, 91, 73, 66, 58, 44, 26
+(Source: `routers/models.py:89`, verified by `tests/test_model_versions.py:134`)
 
 ## Database Tables (Sprint 14+)
 

@@ -267,3 +267,127 @@ def get_ml_drift():
         status=result["status"],
         total_samples=result["total_samples"],
     )
+
+
+# ── EPSS Drift Monitoring ─────────────────────────────────────────────────────
+
+_EPSS_REFERENCE_PATH = (
+    Path(__file__).resolve().parent.parent / "ml" / "epss_reference_distributions.json"
+)
+
+
+@router.get("/api/drift/epss", response_model=MlDriftResponse)
+def get_epss_drift():
+    """Compute ML drift (PSI) for EPSS substitution model features.
+
+    Returns per-feature PSI values and a composite score comparing
+    current inference data against the training reference distribution.
+    """
+    from analysis.drift import compute_drift
+    import sqlite3 as _sqlite3
+
+    # Load EPSS reference distributions
+    if _EPSS_REFERENCE_PATH.exists():
+        with open(_EPSS_REFERENCE_PATH) as f:
+            reference_dists = json.load(f)
+    else:
+        reference_dists = {"features": {}, "num_samples": 0}
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    features_json_list = []
+    try:
+        cursor.execute("""
+            SELECT epss_features FROM vulnerabilities
+            WHERE epss_features IS NOT NULL
+            UNION ALL
+            SELECT epss_features FROM resolved_vulnerabilities
+            WHERE epss_features IS NOT NULL
+        """)
+        for row in cursor.fetchall():
+            try:
+                feature_dict = json.loads(row["epss_features"])
+                features_json_list.append(feature_dict)
+            except (json.JSONDecodeError, TypeError, KeyError):
+                continue
+    except _sqlite3.OperationalError:
+        # Column may not exist yet — return zero drift
+        pass
+
+    conn.close()
+
+    result = compute_drift(features_json_list, reference_dists)
+
+    return MlDriftResponse(
+        features={
+            name: MlDriftFeature(psi=f["psi"], status=f["status"])
+            for name, f in result["features"].items()
+        },
+        composite_psi=result["composite_psi"],
+        status=result["status"],
+        total_samples=result["total_samples"],
+    )
+
+
+# ── Pre-Tier Drift Monitoring ────────────────────────────────────────────────
+
+_PRETIER_REFERENCE_PATH = (
+    Path(__file__).resolve().parent.parent
+    / "ml"
+    / "pre_tier_reference_distributions.json"
+)
+
+
+@router.get("/api/drift/pre-tier", response_model=MlDriftResponse)
+def get_pretier_drift():
+    """Compute ML drift (PSI) for Pre-Tier 60-dim features.
+
+    Returns per-feature PSI values and a composite score comparing
+    current inference data against the training reference distribution.
+    """
+    from analysis.drift import compute_drift
+    import sqlite3 as _sqlite3
+
+    # Load Pre-Tier reference distributions
+    if _PRETIER_REFERENCE_PATH.exists():
+        with open(_PRETIER_REFERENCE_PATH) as f:
+            reference_dists = json.load(f)
+    else:
+        reference_dists = {"features": {}, "num_samples": 0}
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    features_json_list = []
+    try:
+        cursor.execute("""
+            SELECT pre_tier_features FROM vulnerabilities
+            WHERE pre_tier_features IS NOT NULL
+            UNION ALL
+            SELECT pre_tier_features FROM resolved_vulnerabilities
+            WHERE pre_tier_features IS NOT NULL
+        """)
+        for row in cursor.fetchall():
+            try:
+                feature_dict = json.loads(row["pre_tier_features"])
+                features_json_list.append(feature_dict)
+            except (json.JSONDecodeError, TypeError, KeyError):
+                continue
+    except _sqlite3.OperationalError:
+        # Column may not exist yet — return zero drift
+        pass
+
+    conn.close()
+
+    result = compute_drift(features_json_list, reference_dists)
+
+    return MlDriftResponse(
+        features={
+            name: MlDriftFeature(psi=f["psi"], status=f["status"])
+            for name, f in result["features"].items()
+        },
+        composite_psi=result["composite_psi"],
+        status=result["status"],
+        total_samples=result["total_samples"],
+    )
