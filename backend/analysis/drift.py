@@ -9,6 +9,8 @@ Provides:
 import math
 import logging
 
+from pipeline.config.thresholds import DRIFT_WARNING_PSI, DRIFT_CRITICAL_PSI
+
 logger = logging.getLogger("triagemate.drift")
 
 EPSILON = 0.0001  # Small epsilon to avoid log(0)
@@ -48,13 +50,13 @@ def _get_drift_status(psi: float) -> str:
     """Classify PSI value into stability status.
 
     Thresholds:
-        psi < 0.1   → "stable"
-        0.1 ≤ psi < 0.25 → "warning"
-        psi ≥ 0.25  → "critical"
+        psi < DRIFT_WARNING_PSI         → "stable"
+        DRIFT_WARNING_PSI ≤ psi < DRIFT_CRITICAL_PSI → "warning"
+        psi ≥ DRIFT_CRITICAL_PSI        → "critical"
     """
-    if psi >= 0.25:
+    if psi >= DRIFT_CRITICAL_PSI:
         return "critical"
-    if psi >= 0.1:
+    if psi >= DRIFT_WARNING_PSI:
         return "warning"
     return "stable"
 

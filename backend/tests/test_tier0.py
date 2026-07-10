@@ -1,6 +1,6 @@
 """Tests for Tier 0 deterministic routing rules."""
 
-from ml.xgboost_predictor import CWE_EPSS_THRESHOLDS
+from pipeline.config.thresholds import CWE_EPSS_THRESHOLDS
 from pipeline import tier_0
 
 

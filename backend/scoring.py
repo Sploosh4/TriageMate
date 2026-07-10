@@ -8,6 +8,15 @@ Weights sum to 112 (CVSS 40 + EPSS 20 + criticality 20 + exposure 12 +
 patch 5 + ml_exploitation 10 + security_context 5). The final total is clamped to 0-100.
 """
 
+from pipeline.config.scoring import (
+    SCORING_WEIGHTS,
+    CLAMP_MIN,
+    CLAMP_MAX,
+    CRITICALITY_MAX,
+    PATCH_MAX,
+    SECURITY_CONTEXT_MAX,
+)
+
 
 def _round_half_up(x):
     """Round to nearest int, .5 always rounds up (not banker's rounding)."""
@@ -52,28 +61,31 @@ def calculate_final_score(
     """
     dimensions = {}
 
-    # CVSS contribution (max 40)
+    # CVSS contribution (max CRITICALITY_MAX via weight 40)
     cvss_pct = cvss_score / 10.0
-    dimensions["cvss"] = _round_half_up(cvss_pct * 40)
+    dimensions["cvss"] = _round_half_up(cvss_pct * SCORING_WEIGHTS["cvss"])
 
-    # EPSS contribution (max 20) — use substituted EPSS if available
+    # EPSS contribution (max ML_EXPLOITATION_MAX via weight 20) — use substituted EPSS if available
     effective_epss = substituted_epss if substituted_epss is not None else epss_score
-    dimensions["epss"] = _round_half_up(effective_epss * 20)
+    dimensions["epss"] = _round_half_up(effective_epss * SCORING_WEIGHTS["epss"])
 
-    # ML exploitation probability contribution (max 10)
+    # ML exploitation probability contribution (max ML_EXPLOITATION_MAX)
     # Uses the XGBoost model prediction from Tier 1 pipeline.
     # ZERO contribution when Tier 1 was not run (e.g. auto-resolved at Tier 0).
     ml_exploitation = 0
     if tier_1_result and tier_1_result.get("exploitation_probability") is not None:
-        ml_exploitation = _round_half_up(tier_1_result["exploitation_probability"] * 10)
+        ml_exploitation = _round_half_up(
+            tier_1_result["exploitation_probability"]
+            * SCORING_WEIGHTS["ml_exploitation"]
+        )
     dimensions["ml_exploitation"] = ml_exploitation
 
-    # Security Context (max 5) — Sprint 17
+    # Security Context (max SECURITY_CONTEXT_MAX) — Sprint 17
     security_context = round(telemetry_threat_score * 3 + network_blast_radius * 2)
-    security_context = max(0, min(5, security_context))
+    security_context = max(CLAMP_MIN, min(SECURITY_CONTEXT_MAX, security_context))
     dimensions["security_context"] = security_context
 
-    # Asset criticality (max 20) — based on data classification and mission tags
+    # Asset criticality (max CRITICALITY_MAX) — based on data classification and mission tags
     # POLICY NOTE: The 12/4/0 point spread for OFFICIAL Sensitive/OFFICIAL is an
     # operational policy choice calibrated against WA SOC risk appetite.
     # It is NOT mandated by WAICP itself.
@@ -90,9 +102,9 @@ def calculate_final_score(
         criticality += 2
     elif public_wellbeing == "Moderate":
         criticality += 1
-    dimensions["criticality"] = min(20, criticality)
+    dimensions["criticality"] = min(CRITICALITY_MAX, criticality)
 
-    # Exposure (max 12 — actual code only produces 3 for internal or 12 for internet-facing)
+    # Exposure (max EXPOSURE_MAX — actual code only produces 3 for internal or 12 for internet-facing)
     exposure = 0
     if internet_facing:
         exposure += 12
@@ -100,12 +112,12 @@ def calculate_final_score(
         exposure += 3
     dimensions["exposure"] = exposure
 
-    # Patch availability (max 5)
+    # Patch availability (max PATCH_MAX)
     patch_score = 0
     if not patch_available:
         patch_score = 0  # no remediation available — neutral, not punitive
     elif patch_available and patch_applied:
-        patch_score = 5  # remediated
+        patch_score = PATCH_MAX  # remediated
     else:
         patch_score = 0  # patch exists but not applied — overdue
     dimensions["patch"] = patch_score
@@ -117,7 +129,7 @@ def calculate_final_score(
         adjustment = max(-20, min(20, tier_2_result["score_adjustment"]))
         total += adjustment
 
-    total = max(0, min(100, total))
+    total = max(CLAMP_MIN, min(CLAMP_MAX, total))
 
     # Map to band
     if total <= 25:

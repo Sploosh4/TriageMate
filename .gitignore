@@ -16,6 +16,7 @@ backend/ml/*.npz
 backend/ml/nvd_checkpoint.json
 backend/ml/nvd_cves_cached.json
 backend/ml/*.pkl
+backend/ml/.retrain.lock
 backend/ml/training_data.npz
 *.db
 *.db.backup

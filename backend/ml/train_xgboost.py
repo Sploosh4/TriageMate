@@ -31,6 +31,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report, roc_auc_score, f1_score
 
 from ml.encoder import encode_batch
+from pipeline.config.feature_names import TABULAR_FEATURE_ORDER
 
 OUTPUT_DIR = Path(__file__).parent
 MODEL_FILE = OUTPUT_DIR / "xgboost_model.pkl"
@@ -114,9 +115,19 @@ def load_enriched_cves(path: Path) -> list[dict]:
 def save_training_data(
     X: np.ndarray, y: np.ndarray, dates: np.ndarray, cve_ids: np.ndarray, path: Path
 ):
-    """Save (n, 35+384) features, labels, dates, and CVE IDs to compressed .npz."""
+    """Save (n, 35+384) features, labels, dates, CVE IDs, and feature names to .npz."""
+    # Build all-419 feature name array: 35 tabular names + 384 SBERT placeholders
+    sbert_names = [f"sbert_{i}" for i in range(384)]
+    feature_names = np.array(TABULAR_FEATURE_ORDER + sbert_names, dtype=str)
     print(f"  Writing training data to {path.name} ... ", end="", flush=True)
-    np.savez_compressed(path, X=X, y=y, dates=dates, cve_ids=cve_ids)
+    np.savez_compressed(
+        path,
+        X=X,
+        y=y,
+        dates=dates,
+        cve_ids=cve_ids,
+        feature_names=feature_names,
+    )
     size_mb = path.stat().st_size / (1024 * 1024)
     print(f"done ({size_mb:.1f} MB).")
 

@@ -15,7 +15,7 @@
 
 | # | File | Status | Description |
 |---|---|---|---|
-| 1 | `planning/ROADMAP.md` | CURRENT | **Master status.** What exists, what's broken, what's next. Sprints 17 & 18 complete ✅. Start here. |
+| 1 | `planning/ROADMAP.md` | CURRENT | **Master status.** What exists, what's broken, what's next. Sprints 17, 18 & 19 complete ✅. Start here. |
 | 2 | `architecture/MVP_SCOPE.md` | OUTDATED | Sprint 1 scope boundaries. Many deferred items are now done. See caution banner. |
 | 3 | `reference/AI_PROBLEMS.md` | CURRENT | Bug tracker. All historical issues resolved. |
 | 4 | `archive/ml-implementation-plan.md` | ARCHIVED | → Replaced by `graphify_output/ml_inventory.md` (auto-generated, run `just graphify`) |
@@ -26,12 +26,13 @@
 |---|---|---|
 | `architecture/MVP_SCOPE.md` | OUTDATED | Scope authority from Sprint 1. Many deferred items now implemented. ROC-AUC figure updated to 0.9459. |
 | `architecture/scoring-weights.md` | CURRENT | Scoring weight design — 7 dimensions (112-sum, clamped 0–100). Rationale, clamping, bands, demo CVE scores. Added Sprint 18. |
+| `architecture/comparison-vs-described-system.md` | CURRENT | Maps each of 5 described system areas to actual implementation — identifies what was simplified, added onto, or completely changed. Generated 2026-07-10. |
 
 ## Planning
 
 | File | Status | Description |
 |---|---|---|
-| `planning/ROADMAP.md` | CURRENT | Forward-looking roadmap. Sprints 17 & 18 complete ✅. Sprint 18 added drift monitoring for Pre-Tier & EPSS, CWE-stratified thresholds, NVD ref count rule. Archived previous roadmap to `archive/ROADMAP-2026-07-09.md`. |
+| `planning/ROADMAP.md` | CURRENT | Forward-looking roadmap. Sprints 17, 18 & 19 complete ✅. Sprint 19 added shared config module, scheduled retraining triggers, NPZ column names, concept drift monitoring, scoring property tests, and seed data freshness check. |
 | `planning/HANDOFF-2026-07-08.md` | CURRENT | Handoff document covering ML drift monitoring, Tier 2 LLM query coverage, network topology/Sentinel status, and stress testing status. Answers what was deferred post-MVP. |
 | `planning/ai-doc-strategy-2026-07-07.md` | CURRENT | This consolidation plan — how and why docs were restructured. |
 | `archive/file-consolidation-plan-2026-07-07.md` | ARCHIVED | Bookkeeper's consolidation proposals — superseded by current doc structure. See `docs/INDEX.md`. |
@@ -129,7 +130,7 @@
 | `backend/ml/model_registry_pre_tier.json` | Pre-Tier model version registry (drift tracking, rollback) |
 | `backend/ml/model_registry_epss.json` | EPSS model version registry (v1–v4 tracking, rollback) |
 
-**Total test count:** 298+ tests (up from 142) — includes 5 new test files for Pre-Tier and EPSS monitoring, plus 3 drift test files (XGBoost, EPSS, Pre-Tier) from Sprint 18.
+**Total test count:** 343+ tests (up from 142) — includes 5 new test files for Pre-Tier and EPSS monitoring, plus 3 drift test files (XGBoost, EPSS, Pre-Tier) from Sprint 18, plus scoring property tests, seed verification, scheduler, NPZ metadata, and concept drift tests from Sprint 19.
 
 ## Sprint 17 — ✅ Complete (Security Telemetry, Network Context & Panel 5)
 
@@ -158,6 +159,22 @@
 - `backend/tests/test_drift_ml.py` — ML drift endpoint + PSI computation tests
 - `backend/tests/test_drift_epss.py` — EPSS drift endpoint tests
 - `backend/tests/test_drift_pretier.py` — Pre-Tier drift endpoint tests
+
+## Sprint 19 — ✅ Complete (Config + Retraining + Closing the Loop)
+
+| Component | Files | Purpose |
+|---|---|---|
+| **Shared Config Module** | `backend/pipeline/config/__init__.py`, `backend/pipeline/config/thresholds.py`, `backend/pipeline/config/scoring.py`, `backend/pipeline/config/feature_names.py` | Domain-grouped config package. Single source of truth for all shared business-logic constants — thresholds, scoring weights, feature names, drift PSI thresholds. Centralize-vs-local rules documented in `__init__.py` docstring. |
+| **Scheduled Retraining Triggers** | `backend/scheduler.py`, `backend/main.py` | Drift-triggered and time-triggered model retraining. Lock mechanism prevents concurrent retrains. `GET /api/system/retrain-status` endpoint, configurable `RETRAIN_DRIFT_THRESHOLD` and `RETRAIN_INTERVAL_HOURS` env vars. |
+| **NPZ Column Names** | `backend/ml/train_xgboost.py` | `feature_names` metadata (419 dims: 35 tabular + 384 SBERT) added to `training_data.npz`. Enables graphify column correspondence verification between training output and inference input. |
+| **Concept Drift Monitoring** | `backend/routers/drift.py`, `backend/models.py` | `GET /api/drift/concept` for prediction distribution tracking, `POST /api/feedback/{id}` for ground-truth feedback (API stubs, schema deferred to Sprint 20), `GET /api/drift/accuracy` stub. |
+| **Bonus A: Scoring Property Tests** | `backend/tests/test_scoring.py` | Property-based tests covering edge cases: all-zero, all-max, negative inputs, clamping, band boundaries. |
+| **Bonus F: Seed Data Freshness Check** | `backend/scripts/verify_seed_scores.py`, `backend/tests/test_verify_seed_scores.py` | `verify_seed_scores.py` script verifies seed data scores match canonical contract from `test_model_versions.py`. Integrated via `just verify-seeds`. |
+
+**Sprint 19 new test files:**
+- `backend/tests/test_scheduler.py` — Retraining scheduler tests (drift check, lock mechanism, status endpoint, no-drift-no-action)
+- `backend/tests/test_npz_metadata.py` — NPZ feature_names dimension and backward compatibility tests
+- `backend/tests/test_verify_seed_scores.py` — Seed score verification tests (detects drift, passes when correct)
 
 ## Graphify — Auto-Generated Knowledge Artifacts
 

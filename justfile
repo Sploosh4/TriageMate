@@ -235,8 +235,12 @@ db-schema:
 
 # --- Full Sprint Gate ---
 
-# Run full sprint quality gate: lint → test → graphify → audit-all
-gate: lint test graphify audit-all
+# Verify seed data scores match canonical contract
+verify-seeds:
+	cd {{BACKEND}} && {{PY}} -m scripts.verify_seed_scores
+
+# Run full sprint quality gate: lint → test → verify-seeds → graphify → audit-all
+gate: lint test verify-seeds graphify audit-all
     @echo "============================================"
     @echo "Sprint quality gate passed."
     @echo "============================================"

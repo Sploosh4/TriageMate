@@ -7,16 +7,16 @@ Thresholds are configurable constants at the top of the file.
 
 import logging
 
-from ml.xgboost_predictor import CWE_EPSS_THRESHOLDS
+from pipeline.config.thresholds import (
+    NVD_REF_THRESHOLD,
+    KEV_CVSS_THRESHOLD,
+    KEV_EPSS_THRESHOLD,
+    LOW_CVSS_THRESHOLD,
+    LOW_EPSS_THRESHOLD,
+    CWE_EPSS_THRESHOLDS,
+)
 
 logger = logging.getLogger("triagemate.tier_0")
-
-# Threshold constants
-KEV_CVSS_THRESHOLD = 9.0
-KEV_EPSS_THRESHOLD = 0.90
-LOW_CVSS_THRESHOLD = 4.0
-LOW_EPSS_THRESHOLD = 0.10
-NVD_REF_THRESHOLD = 21
 
 
 def evaluate_tier_0(

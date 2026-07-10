@@ -221,3 +221,71 @@ class MlDriftResponse(BaseModelConfig):
     composite_psi: float
     status: str
     total_samples: int
+
+
+# ── Concept Drift Models (snake_case keys) ──────────────────────────────
+
+
+class DistributionStats(BaseModel):
+    mean: float
+    std: float
+    p50: float
+    p95: float
+
+
+class RoutingCounts(BaseModel):
+    auto_resolved: int
+    escalated: int
+
+
+class TierRouting(BaseModel):
+    tier_0_kev: int = 0
+    tier_0_epss: int = 0
+    tier_1_xgboost: int = 0
+    tier_2_llm: int = 0
+    tier_3_review: int = 0
+
+
+class DailyTimeSeries(BaseModel):
+    date: str
+    mean_prob: float
+    n: int
+
+
+class TimeSeries(BaseModel):
+    daily: list[DailyTimeSeries]
+
+
+class Window(BaseModel):
+    days: int
+    total_samples: int
+
+
+class PredictionDistribution(BaseModel):
+    exploitation_probability: DistributionStats
+    confidence: DistributionStats
+    routing: RoutingCounts
+    tier_routing: TierRouting
+
+
+class ConceptDriftResponse(BaseModel):
+    prediction_distribution: PredictionDistribution
+    window: Window
+    time_series: TimeSeries
+
+
+class FeedbackSubmission(BaseModel):
+    exploited: bool
+    notes: str | None = None
+
+
+class FeedbackResponse(BaseModel):
+    status: str
+    vulnerability_id: str
+    note: str
+
+
+class AccuracyResponse(BaseModel):
+    status: str
+    samples_with_ground_truth: int
+    message: str

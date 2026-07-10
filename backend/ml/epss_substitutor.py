@@ -21,6 +21,11 @@ import warnings
 import joblib
 import numpy as np
 
+from pipeline.config.feature_names import (
+    EPSS_V2_FEATURE_NAMES as V2_FEATURE_NAMES,
+    EPSS_V1_FEATURE_NAMES as V1_FEATURE_NAMES,
+)
+
 warnings.filterwarnings("ignore", category=FutureWarning)
 
 logger = logging.getLogger("triagemate.epss_substitute")
@@ -129,80 +134,11 @@ CWES_V2 = [
 # Minimum confidence threshold for ML predictions
 ML_CONFIDENCE_THRESHOLD = 0.3
 
+
 # ── Feature name mappings for drift monitoring ─────────────────────────────
-
-# v2/v3/v4 feature names (37 elements)
-V2_FEATURE_NAMES = [
-    "raw_epss",  # 0
-    "cvss_score",  # 1
-    "exploit_maturity",  # 2
-    "cisa_kev",  # 3
-    "has_public_poc",  # 4
-    "vendor_patch_status",  # 5
-    # 11 agency OHE
-    "agency_health",
-    "agency_transport",
-    "agency_education",
-    "agency_sharedservices",
-    "agency_communities",
-    "agency_police",
-    "agency_finance",
-    "agency_watercorporation",
-    "agency_dpird",
-    "agency_justice",
-    "agency_unknown",
-    # 20 CWE OHE (same order as CWES_V2)
-    "cwe_CWE-78",
-    "cwe_CWE-89",
-    "cwe_CWE-79",
-    "cwe_CWE-22",
-    "cwe_CWE-434",
-    "cwe_CWE-862",
-    "cwe_CWE-787",
-    "cwe_CWE-125",
-    "cwe_CWE-20",
-    "cwe_CWE-200",
-    "cwe_CWE-287",
-    "cwe_CWE-306",
-    "cwe_CWE-269",
-    "cwe_CWE-295",
-    "cwe_CWE-611",
-    "cwe_CWE-918",
-    "cwe_CWE-190",
-    "cwe_CWE-416",
-    "cwe_CWE-476",
-    "cwe_CWE-352",
-]
-
-# v1 feature names (22 elements)
-V1_FEATURE_NAMES = [
-    "raw_epss",  # 0
-    "cvss_score",  # 1
-    "cisa_kev",  # 2
-    # 8 agency OHE (AGENCIES_V1 + "unknown")
-    "agency_health",
-    "agency_transport",
-    "agency_education",
-    "agency_sharedservices",
-    "agency_communities",
-    "agency_police",
-    "agency_finance",
-    "agency_unknown",
-    # 11 CWE OHE (same order as CWES_V1)
-    "cwe_CWE-78",
-    "cwe_CWE-89",
-    "cwe_CWE-79",
-    "cwe_CWE-22",
-    "cwe_CWE-434",
-    "cwe_CWE-862",
-    "cwe_CWE-787",
-    "cwe_CWE-125",
-    "cwe_CWE-20",
-    "cwe_CWE-200",
-    "cwe_CWE-287",
-]
-
-
+# V2_FEATURE_NAMES and V1_FEATURE_NAMES are imported from
+# pipeline.config.feature_names as EPSS_V2_FEATURE_NAMES and
+# EPSS_V1_FEATURE_NAMES respectively.
 def feature_vector_to_dict(feature_list: list, model_version: str) -> dict:
     """Convert positional feature vector to named dict for drift monitoring.
 

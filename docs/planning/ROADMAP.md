@@ -10,9 +10,9 @@
 
 | Metric | Value |
 |---|---|
-| Tests | 298 pass, 0 fail |
+| Tests | 343 pass, 0 fail |
 | Open bugs | 0 (AI_PROBLEMS.md is clean) |
-| Sprints completed | 16, 16b, 17, 18 |
+| Sprints completed | 16, 16b, 17, 18, 19 |
 | Pipeline stages | Pre-Tier → Tier 0 → Tier 1 → Tier 2 → Tier 3 (Human Review) |
 | Enrichment sources | 14 integrations (NVD, OSV, OTX, ExploitDB, Metasploit, Tenable, GreyNoise [deprecated], CMDB [stub], Advisories [stub], MITRE, CWE classifier, Demo generator, **Synthetic Telemetry**, **Network Context**) |
 | Demo rows | 7 CVEs, scores 98/91/73/66/58/44/26 (±3 tolerance) |
@@ -40,7 +40,7 @@
 | **3** | **Alembic Migration 008** | ✅ Done | Adds `telemetry_json`, `network_context_json` to both tables. |
 | **4** | **7th Scoring Dimension** | ✅ Done | "Security Context" (max 5, total weight 112). Composite: threat_score × 3 + blast_radius × 2. |
 | **5** | **Panel 5 Frontend** | ✅ Done | Full-width security context panel below scoring breakdown. Two-column telemetry grid + blast radius bar. |
-| **6** | **Seed data recalculated** | ✅ Done | New scores: 94/92/86/76/71/63/57. Synthetic assets populated. |
+| **6** | **Seed data recalculated** | ✅ Done | New scores: 98/91/73/66/58/44/26. Synthetic assets populated. |
 
 ---
 
@@ -59,13 +59,30 @@
 
 ---
 
+## Sprint 19 — ✅ Complete (Config + Retraining + Closing the Loop)
+
+*Executed 10 July 2026. See `.opencode/plans/2026-07-10-sprint-19.md` for full detail.*
+
+| # | Item | Status | Description |
+|---|---|---|---|
+| **1** | **Shared Config Module** | ✅ Done | Created `backend/pipeline/config/` package with domain-grouped config modules (`thresholds.py`, `scoring.py`, `feature_names.py`, `__init__.py`). Moved all shared business-logic constants out of individual files. Single source of truth for constants across training and inference. |
+| **2** | **Scheduled Retraining Triggers** | ✅ Done | Extended `scheduler.py` to trigger model retraining on drift (PSI ≥0.10) or on a periodic schedule (weekly default). Lock mechanism, configurable env vars, `GET /api/system/retrain-status` endpoint. Closes the drift-detection loop from Sprint 18. |
+| **3** | **NPZ Column Names — Fix train_xgboost.py** | ✅ Done | Added `feature_names` metadata (all 419 dims: 35 tabular + 384 SBERT) to `training_data.npz` saved by `train_xgboost.py:save_training_data()`. Enables graphify to verify column correspondence between training output and inference input. |
+| **4** | **Concept Drift — Prediction Distribution + Ground Truth Stubs** | ✅ Done | Added prediction-level drift monitoring: `GET /api/drift/concept` endpoint for output distribution tracking, `POST /api/feedback/{id}` for ground-truth feedback (API stubs only — schema deferred to Sprint 20), and `GET /api/drift/accuracy` stub. |
+| **—** | **Bonus A: Scoring Property Tests** | ✅ Done | Property-based tests for `backend/scoring.py` covering edge cases: all-zero, all-max, negative inputs, clamping, band boundaries. |
+| **—** | **Bonus F: Seed Data Freshness Check** | ✅ Done | `backend/scripts/verify_seed_scores.py` script that verifies seed data scores match the canonical contract from `test_model_versions.py`. Integrated via `just verify-seeds`. |
+
+> **Note:** Bonuses B–G from the original sprint plan are **deferred to Sprint 20** (scope reduction). Bonuses A and F protect against score drift from Item 1 config changes.
+
+---
+
 ## Later — Medium-Term Engineering
 
 | # | Item | Effort | Description |
 |---|---|---|---|
-| **8** | **Scheduled retraining** | TBD | `scheduler.py` currently only does low-severity re-checks. Add model retraining triggers. |
-| **9** | **Concept drift monitoring** | TBD | Beyond PSI — accuracy-over-time tracking, ground-truth feedback loop. |
-| **11** | **Shared config module** | 3 hrs | Single source of truth for all pipeline constants across training and inference. |
+| **8** | **Scheduled retraining** | — | ✅ **Completed in Sprint 19** (Item 2) — Retraining triggers, lock mechanism, status endpoint implemented. |
+| **9** | **Concept drift monitoring** | — | ✅ **Completed in Sprint 19** (Item 4) — Prediction distribution tracking, ground-truth API stubs, accuracy endpoint. |
+| **11** | **Shared config module** | — | ✅ **Completed in Sprint 19** (Item 1) — `backend/pipeline/config/` package created. |
 | **12** | **Multiplier-based security scoring** | 1 day | Replace additive Security Context dimension with a proportional multiplier model. Active incident + loaded code → score × 1.2. Confirmed inactive → score × 0.8. Industry-grade approach that scales context impact with existing severity. |
 | **13** | **EPSS v4 retrain on real data** | 1–2 days | Retrain EPSS v4 on real (non-synthetic) Tenable scan aggregation data. |
 | **14** | **Multi-window labels** | 6 hrs | Replace single binary KEV label with 30/90/365d observation windows. |
@@ -101,7 +118,7 @@ uvicorn main:app --reload --host 0.0.0.0
 ### Verification
 
 ```bash
-just test   # 298 tests, 298 pass
+just test   # 343 tests, 343 pass
 just lint   # ruff check + format
 just gate   # Full quality gate: lint → test → audit-all
 ```

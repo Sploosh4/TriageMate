@@ -147,7 +147,7 @@ Documentation of incorrect AI-generated code, mismatches between code and actual
 ### ~~19. Seed data scores out of sync with scoring engine~~ ✅ FIXED (Sprint 17)
 **Files:** `backend/seed_data.py`, `backend/tests/test_queue.py`, `docs/planning/ROADMAP.md`, `docs/INDEX.md`, `docs/planning/HANDOFF-2026-07-08.md`
 **Problem:** After Sprint 17 added the 7th Security Context scoring dimension and recalculated seed data, the priority scores in `seed_data.py` changed from their old values. The test expectations in `test_queue.py` (EXPECTED_PRIORITY_SCORES) and documentation references (`ROADMAP.md`, `INDEX.md`, `HANDOFF-2026-07-08.md`) still referenced the old scores.
-**Fix applied:** Updated `EXPECTED_PRIORITY_SCORES` in `test_queue.py` to `[94, 92, 86, 76, 71, 63, 57]` matching the queue sort order. Updated all stale score references across documentation.
+**Fix applied:** Updated `EXPECTED_PRIORITY_SCORES` in `test_queue.py` to the canonical values `[98, 91, 73, 66, 58, 44, 26]` matching the score contract in `test_model_versions.py`. Updated all stale score references across documentation.
 
 ### ~~20. Hostname regex not matching WA gov conventions~~ ✅ FIXED (Sprint 17)
 **Files:** `backend/pipeline/pre_tier.py`

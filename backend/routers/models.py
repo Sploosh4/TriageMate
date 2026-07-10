@@ -83,10 +83,10 @@ async def get_model_status():
 
     active_info = None
     available = []
-    # Reference baseline from retrain verification (2026-07-08).
-    # A snapshot, not recomputed from live inference.
+    # Reference baseline — computed by verify_seed_scores.py (2026-07-10).
+    # A snapshot of what calculate_final_score() produces for the 7 demo rows.
     score_comparison = {
-        "baseline_scores": [98, 91, 73, 66, 58, 44, 26],
+        "baseline_scores": [94, 92, 76, 86, 78, 91, 77],
         "versions": {},
     }
 

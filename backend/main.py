@@ -13,6 +13,7 @@ if _env_path.exists():
 
 import logging  # noqa: E402
 from contextlib import asynccontextmanager  # noqa: E402
+from apscheduler.schedulers.asyncio import AsyncIOScheduler  # noqa: E402
 from fastapi import FastAPI, Depends  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
@@ -24,6 +25,9 @@ import asyncio  # noqa: E402
 from logging_config import setup_logging  # noqa: E402
 
 logger = logging.getLogger("triagemate")
+
+# Scheduler reference (populated during lifespan start)
+_scheduler: AsyncIOScheduler | None = None
 
 
 # Auth startup logic — hash plain-text password if needed
@@ -101,12 +105,44 @@ async def lifespan(app: FastAPI):
         )
 
     task = asyncio.create_task(_background_recheck_loop())
+
+    # ── Start retraining scheduler ───────────────────────────────────────
+    global _scheduler
+    try:
+        from scheduler import (
+            check_drift_and_retrain,
+            RETRAIN_INTERVAL_HOURS,
+            RETRAIN_DRIFT_THRESHOLD,
+        )
+
+        _scheduler = AsyncIOScheduler()
+        _scheduler.add_job(
+            check_drift_and_retrain,
+            "interval",
+            hours=RETRAIN_INTERVAL_HOURS,
+            id="drift_retrain",
+            replace_existing=True,
+        )
+        _scheduler.start()
+        logger.info(
+            "Retraining scheduler registered (interval=%dh, drift_threshold=%0.3f)",
+            RETRAIN_INTERVAL_HOURS,
+            RETRAIN_DRIFT_THRESHOLD,
+        )
+    except Exception as e:
+        logger.warning("Retraining scheduler registration skipped: %s", e)
+
     yield
+
+    # ── Shutdown ─────────────────────────────────────────────────────────
     task.cancel()
     try:
         await task
     except asyncio.CancelledError:
         pass
+    if _scheduler:
+        _scheduler.shutdown()
+        logger.info("Retraining scheduler shut down")
 
 
 app = FastAPI(title="TriageMate API", version="2.5.0", lifespan=lifespan)

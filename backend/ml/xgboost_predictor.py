@@ -18,6 +18,15 @@ from pathlib import Path
 
 from ml.encoder import encode_description
 
+from pipeline.config.thresholds import (
+    CWE_EPSS_THRESHOLDS,
+    DEFAULT_EPSS_THRESHOLD,
+    LOW_PROB_THRESHOLD,
+    MID_PROB_THRESHOLD,
+    UNCERTAINTY_THRESHOLD,
+)
+from pipeline.config.feature_names import TABULAR_FEATURE_ORDER
+
 # Default paths (fallbacks when registry is unavailable)
 MODEL_FILE = Path(__file__).parent / "xgboost_model.pkl"
 CALIBRATOR_FILE = Path(__file__).parent / "xgboost_calibrator.pkl"
@@ -30,86 +39,6 @@ REGISTRY_PATH = Path(__file__).parent / "model_registry.json"
 _active_model_path: Path = MODEL_FILE
 _active_calibrator_path: Path | None = CALIBRATOR_FILE
 _active_threshold_path: Path | None = THRESHOLD_INFO_FILE
-
-# Probability + uncertainty zoning thresholds for routing decisions.
-LOW_PROB_THRESHOLD = 0.20
-MID_PROB_THRESHOLD = 0.40
-HIGH_PROB_THRESHOLD = 0.50
-UNCERTAINTY_THRESHOLD = 0.10
-
-# Pre-model EPSS thresholds by CWE — fast-path bypass before XGBoost inference.
-#
-# Methodology: thresholds are derived from the EPSS evaluation analysis in
-# backend/analysis/epss_eval.py, which computes stratified optimal F1 thresholds
-# per CWE class using NVD corpus + historical KEV data. For each CWE, the
-# threshold is set at the operating point that maximises F1 on the validation
-# split for that class. The first 8 entries were the original set; the 6 new
-# entries cover the most common CWE classes from NVD corpus frequency analysis.
-#
-# The monolithic DEFAULT_EPSS_THRESHOLD (0.60) applies to any CWE not in the
-# dict. It was lowered from 0.84 because the evaluation showed optimal
-# monolithic F1 thresholds in the 0.47–0.60 range — 0.84 was extremely
-# conservative, only catching the top ~2% of CVEs by EPSS.
-CWE_EPSS_THRESHOLDS = {
-    # Existing (8)
-    "CWE-22": 0.085,  # Path Traversal
-    "CWE-78": 0.515,  # OS Command Injection
-    "CWE-787": 0.716,  # Out-of-bounds Write
-    "CWE-79": 0.600,  # XSS
-    "CWE-89": 0.500,  # SQL Injection
-    "CWE-416": 0.550,  # Use-After-Free
-    "CWE-20": 0.400,  # Input Validation
-    "CWE-843": 0.300,  # Type Confusion
-    # New additions (6) — from EPSS evaluation + NVD corpus frequency analysis
-    "CWE-125": 0.400,  # Out-of-bounds Read
-    "CWE-476": 0.450,  # NULL Pointer Dereference
-    "CWE-862": 0.350,  # Missing Authorization
-    "CWE-434": 0.500,  # File Upload (Unrestricted)
-    "CWE-306": 0.350,  # Missing Authentication
-    "CWE-269": 0.400,  # Privilege Escalation (Improper)
-}
-DEFAULT_EPSS_THRESHOLD = 0.60  # More inclusive default (reduced from 0.84)
-
-# Tabular feature keys in the EXACT order xgboost_predictor.predict() builds
-# the feature vector for XGBoost inference. Must match build_tabular_features()
-# in train_xgboost.py index-by-index. 35 features total.
-TABULAR_FEATURE_ORDER = [
-    "cvss_av",
-    "cvss_ac",
-    "cvss_pr",
-    "cvss_ui",
-    "cvss_s",
-    "cvss_c",
-    "cvss_i",
-    "cvss_a",
-    "epss_score",
-    "patch_available",
-    "patch_applied",
-    "internet_facing",
-    "domain_joined",
-    "data_classification",
-    "mission_prevalence",
-    "public_wellbeing_impact",
-    "lateral_reachability",
-    "boundary_reachability",
-    "downstream_assets",
-    "patch_lag_days",
-    "exploitdb_has_poc",
-    "metasploit_has_payload",
-    "threat_intel_pulses",
-    "nvd_reference_count",
-    "cve_desc_tokens",
-    "vulnerability_age_days",
-    "vendor_popularity_index",
-    "cvss_exploitability_sub",
-    "cvss_impact_sub",
-    "is_top_25_cwe",
-    "is_rce_signature",
-    "is_privesc_signature",
-    "is_bypass_signature",
-    "is_dos_signature",
-    "is_traversal_signature",
-]
 
 _model = None
 _calibrator = None

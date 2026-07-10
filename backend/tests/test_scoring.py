@@ -420,3 +420,305 @@ class TestEdgeCases:
             f"Expected ml_exploitation=9 (0.85*10=8.5→9), "
             f"got {result['dimensions']['ml_exploitation']}"
         )
+
+
+# ======================================================================
+# Property / Edge Case Tests (Sprint 19 — Bonus A)
+# ======================================================================
+
+
+class TestScoringPropertyTests:
+    """Property-based edge-case tests for the scoring engine.
+
+    Exercises boundaries, clamping, range enforcement, and caps
+    to ensure the scoring formula behaves correctly at extremes.
+    """
+
+    def test_scoring_all_zero(self):
+        """All inputs at minimum → total=3 (minimum achievable), band 'Low'.
+
+        Note: minimum total is 3 (not 0) because non-internet-facing
+        assets still score 3 from the exposure dimension.
+        """
+        result = calculate_final_score(
+            cvss_score=0,
+            epss_score=0.0,
+            mission_prevalence="Peripheral",
+            public_wellbeing="Minimal",
+            data_classification="UNOFFICIAL",
+            internet_facing=False,
+            patch_available=False,
+            telemetry_threat_score=0.0,
+            network_blast_radius=0.0,
+        )
+        assert result["total"] == 3, f"Expected minimum total=3, got {result['total']}"
+        assert result["band"] == "Low", f"Expected 'Low', got '{result['band']}'"
+
+    def test_scoring_all_max(self):
+        """All inputs at maximum → total clamped to 100, band 'Very Critical'.
+
+        Uses Sprint 19 max-input specification.
+        """
+        result = calculate_final_score(
+            cvss_score=10.0,
+            epss_score=1.0,
+            mission_prevalence="Core",
+            public_wellbeing="Severe",
+            data_classification="OFFICIAL Sensitive",
+            internet_facing=True,
+            patch_available=True,
+            patch_applied=True,
+            tier_1_result={"exploitation_probability": 1.0},
+            telemetry_threat_score=1.0,
+            network_blast_radius=1.0,
+        )
+        assert result["total"] == 100, f"Expected total=100, got {result['total']}"
+        assert result["band"] == "Very Critical", (
+            f"Expected 'Very Critical', got '{result['band']}'"
+        )
+
+    def test_scoring_negative_inputs(self):
+        """Negative CVSS/EPSS → dimension values go negative but total clamped to 0."""
+        result = calculate_final_score(
+            cvss_score=-5.0,
+            epss_score=-0.5,
+            mission_prevalence="Peripheral",
+            public_wellbeing="Minimal",
+            data_classification="UNOFFICIAL",
+            internet_facing=False,
+            patch_available=False,
+        )
+        assert result["total"] == 0, (
+            f"Expected total=0 after clamp, got {result['total']}"
+        )
+        assert result["band"] == "Low", f"Expected 'Low', got '{result['band']}'"
+        # Individual dimension values reflect negative inputs before clamping
+        assert result["dimensions"]["cvss"] < 0, (
+            f"Expected negative cvss dimension, got {result['dimensions']['cvss']}"
+        )
+        assert result["dimensions"]["epss"] < 0, (
+            f"Expected negative epss dimension, got {result['dimensions']['epss']}"
+        )
+
+    def test_scoring_clamping_100(self):
+        """Wildly overflowing inputs → total clamped to 100."""
+        result = calculate_final_score(
+            cvss_score=10.0,
+            epss_score=1.0,
+            mission_prevalence="Core",
+            public_wellbeing="Severe",
+            data_classification="OFFICIAL Sensitive",
+            internet_facing=True,
+            patch_available=True,
+            patch_applied=True,
+            tier_1_result={"exploitation_probability": 1.0},
+            tier_2_result={"score_adjustment": 99},
+            telemetry_threat_score=10.0,
+            network_blast_radius=10.0,
+        )
+        assert result["total"] == 100, (
+            f"Expected clamped total=100, got {result['total']}"
+        )
+        assert result["band"] == "Very Critical", (
+            f"Expected 'Very Critical', got '{result['band']}'"
+        )
+
+    def test_scoring_each_dimension_cap(self):
+        """Each of the 7 dimensions is capped at its configured maximum."""
+        result = calculate_final_score(
+            cvss_score=10.0,
+            epss_score=1.0,
+            mission_prevalence="Core",
+            public_wellbeing="Severe",
+            data_classification="OFFICIAL Sensitive",
+            internet_facing=True,
+            patch_available=True,
+            patch_applied=True,
+            tier_1_result={"exploitation_probability": 1.0},
+            telemetry_threat_score=10.0,
+            network_blast_radius=10.0,
+        )
+        assert result["dimensions"]["cvss"] == 40, (
+            f"cvss cap: expected 40, got {result['dimensions']['cvss']}"
+        )
+        assert result["dimensions"]["epss"] == 20, (
+            f"epss cap: expected 20, got {result['dimensions']['epss']}"
+        )
+        assert result["dimensions"]["criticality"] == 20, (
+            f"criticality cap: expected 20, got {result['dimensions']['criticality']}"
+        )
+        assert result["dimensions"]["exposure"] == 12, (
+            f"exposure cap: expected 12, got {result['dimensions']['exposure']}"
+        )
+        assert result["dimensions"]["patch"] == 5, (
+            f"patch cap: expected 5, got {result['dimensions']['patch']}"
+        )
+        assert result["dimensions"]["ml_exploitation"] == 10, (
+            f"ml_exploitation cap: expected 10, "
+            f"got {result['dimensions']['ml_exploitation']}"
+        )
+        assert result["dimensions"]["security_context"] == 5, (
+            f"security_context cap: expected 5, "
+            f"got {result['dimensions']['security_context']}"
+        )
+
+    def test_scoring_dimension_sum_112(self):
+        """Sum of max dimension values equals configured total weight (112)."""
+        result = calculate_final_score(
+            cvss_score=10.0,
+            epss_score=1.0,
+            mission_prevalence="Core",
+            public_wellbeing="Severe",
+            data_classification="OFFICIAL Sensitive",
+            internet_facing=True,
+            patch_available=True,
+            patch_applied=True,
+            tier_1_result={"exploitation_probability": 1.0},
+            telemetry_threat_score=10.0,
+            network_blast_radius=10.0,
+        )
+        dim_sum = sum(result["dimensions"].values())
+        assert dim_sum == 112, f"Expected dimension sum=112, got {dim_sum}"
+
+    def test_scoring_security_context_range(self):
+        """SecurityContext is enforced within 0-5 range regardless of inputs."""
+        # Extreme high inputs → clamp to 5
+        high = calculate_final_score(
+            cvss_score=5,
+            epss_score=0.05,
+            mission_prevalence="Core",
+            public_wellbeing="Moderate",
+            data_classification="OFFICIAL",
+            internet_facing=False,
+            telemetry_threat_score=100.0,
+            network_blast_radius=100.0,
+        )
+        assert high["dimensions"]["security_context"] == 5, (
+            f"Expected security_context=5 at extreme high, "
+            f"got {high['dimensions']['security_context']}"
+        )
+
+        # Extreme low (negative) inputs → clamp to 0
+        low = calculate_final_score(
+            cvss_score=5,
+            epss_score=0.05,
+            mission_prevalence="Core",
+            public_wellbeing="Moderate",
+            data_classification="OFFICIAL",
+            internet_facing=False,
+            telemetry_threat_score=-100.0,
+            network_blast_radius=-100.0,
+        )
+        assert low["dimensions"]["security_context"] == 0, (
+            f"Expected security_context=0 at extreme low, "
+            f"got {low['dimensions']['security_context']}"
+        )
+
+        # Normal inputs (all defaults) produce non-negative, non-max value
+        mid = calculate_final_score(
+            cvss_score=5,
+            epss_score=0.05,
+            mission_prevalence="Core",
+            public_wellbeing="Moderate",
+            data_classification="OFFICIAL",
+            internet_facing=False,
+        )
+        assert 0 <= mid["dimensions"]["security_context"] <= 5, (
+            f"Expected security_context in 0-5 range, "
+            f"got {mid['dimensions']['security_context']}"
+        )
+
+    def test_scoring_band_boundaries(self):
+        """Band boundaries at 25, 50, 75 are correctly enforced.
+
+        Uses tier_2 score_adjustment to precisely hit each boundary.
+        """
+        # --- Boundary 1: Low (≤25) vs Medium (>25) ---
+        base_low = dict(
+            cvss_score=2,
+            epss_score=0.01,
+            mission_prevalence="Peripheral",
+            public_wellbeing="Minimal",
+            data_classification="UNOFFICIAL",
+            internet_facing=False,
+        )
+        # Base total = 8 (cvss) + 0 (epss) + 0 (criticality) + 3 (exposure) = 11
+        boundary_low = calculate_final_score(
+            tier_2_result={"score_adjustment": 14}, **base_low
+        )
+        assert boundary_low["total"] == 25, (
+            f"Expected total=25 at Low boundary, got {boundary_low['total']}"
+        )
+        assert boundary_low["band"] == "Low", (
+            f"Expected 'Low' at total=25, got '{boundary_low['band']}'"
+        )
+
+        above_low = calculate_final_score(
+            tier_2_result={"score_adjustment": 15}, **base_low
+        )
+        assert above_low["total"] == 26, (
+            f"Expected total=26 above Low boundary, got {above_low['total']}"
+        )
+        assert above_low["band"] == "Medium", (
+            f"Expected 'Medium' at total=26, got '{above_low['band']}'"
+        )
+
+        # --- Boundary 2: Medium (≤50) vs Critical (>50) ---
+        base_mid = dict(
+            cvss_score=5,
+            epss_score=0.05,
+            mission_prevalence="Core",
+            public_wellbeing="Moderate",
+            data_classification="OFFICIAL",
+            internet_facing=False,
+        )
+        # Base total = 20 (cvss) + 1 (epss) + 11 (criticality) + 3 (exposure) = 35
+        boundary_mid = calculate_final_score(
+            tier_2_result={"score_adjustment": 15}, **base_mid
+        )
+        assert boundary_mid["total"] == 50, (
+            f"Expected total=50 at Medium boundary, got {boundary_mid['total']}"
+        )
+        assert boundary_mid["band"] == "Medium", (
+            f"Expected 'Medium' at total=50, got '{boundary_mid['band']}'"
+        )
+
+        above_mid = calculate_final_score(
+            tier_2_result={"score_adjustment": 16}, **base_mid
+        )
+        assert above_mid["total"] == 51, (
+            f"Expected total=51 above Medium boundary, got {above_mid['total']}"
+        )
+        assert above_mid["band"] == "Critical", (
+            f"Expected 'Critical' at total=51, got '{above_mid['band']}'"
+        )
+
+        # --- Boundary 3: Critical (≤75) vs Very Critical (>75) ---
+        base_high = dict(
+            cvss_score=9,
+            epss_score=0.3,
+            mission_prevalence="Core",
+            public_wellbeing="Severe",
+            data_classification="OFFICIAL Sensitive",
+            internet_facing=True,
+        )
+        # Base total = 36 (cvss) + 6 (epss) + 20 (criticality) + 12 (exposure) = 74
+        boundary_crit = calculate_final_score(
+            tier_2_result={"score_adjustment": 1}, **base_high
+        )
+        assert boundary_crit["total"] == 75, (
+            f"Expected total=75 at Critical boundary, got {boundary_crit['total']}"
+        )
+        assert boundary_crit["band"] == "Critical", (
+            f"Expected 'Critical' at total=75, got '{boundary_crit['band']}'"
+        )
+
+        above_crit = calculate_final_score(
+            tier_2_result={"score_adjustment": 2}, **base_high
+        )
+        assert above_crit["total"] == 76, (
+            f"Expected total=76 above Critical boundary, got {above_crit['total']}"
+        )
+        assert above_crit["band"] == "Very Critical", (
+            f"Expected 'Very Critical' at total=76, got '{above_crit['band']}'"
+        )

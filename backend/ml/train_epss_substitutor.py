@@ -19,6 +19,9 @@ import xgboost as xgb
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
 
+# EPSS feature names available from config for drift monitoring alignment:
+# from pipeline.config.feature_names import EPSS_V2_FEATURE_NAMES, EPSS_V1_FEATURE_NAMES
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("train_epss_substitutor")
 warnings.filterwarnings("ignore", category=FutureWarning)

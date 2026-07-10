@@ -72,7 +72,9 @@ def _query_peer_data(agency: str, zone: str):
         ).fetchall()
         return rows
     except Exception:
-        logger.debug("synthetic_assets query failed — will use heuristic", exc_info=True)
+        logger.debug(
+            "synthetic_assets query failed — will use heuristic", exc_info=True
+        )
         return None
     finally:
         if db is not None:

@@ -1,5 +1,7 @@
+import logging
+import statistics
 from datetime import datetime, timedelta, timezone
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 from database import get_db
 import json
 from pathlib import Path
@@ -11,9 +13,50 @@ from models import (
     DriftMetricsResponse,
     MlDriftResponse,
     MlDriftFeature,
+    ConceptDriftResponse,
+    DistributionStats,
+    RoutingCounts,
+    TierRouting,
+    PredictionDistribution,
+    Window,
+    TimeSeries,
+    DailyTimeSeries,
+    FeedbackSubmission,
+    FeedbackResponse,
+    AccuracyResponse,
 )
 
+logger = logging.getLogger("triagemate.queue")
+
 router = APIRouter(tags=["Queue"])
+
+
+@router.get("/api/system/retrain-status")
+def get_retrain_status():
+    """Return current retraining system status.
+
+    Reports lock state, interval configuration, and drift threshold.
+    """
+    from scheduler import LOCK_FILE, RETRAIN_INTERVAL_HOURS, RETRAIN_DRIFT_THRESHOLD
+
+    lock_held = LOCK_FILE.exists()
+    lock_age_hours = None
+    if lock_held:
+        try:
+            content = LOCK_FILE.read_text().strip()
+            lock_time = datetime.fromisoformat(content)
+            lock_age_hours = round(
+                (datetime.now(timezone.utc) - lock_time).total_seconds() / 3600, 1
+            )
+        except Exception:
+            pass
+
+    return {
+        "retrain_interval_hours": RETRAIN_INTERVAL_HOURS,
+        "drift_threshold": RETRAIN_DRIFT_THRESHOLD,
+        "lock_held": lock_held,
+        "lock_age_hours": lock_age_hours,
+    }
 
 
 def _relative_time(ts_str: str | None) -> str:
@@ -390,4 +433,174 @@ def get_pretier_drift():
         composite_psi=result["composite_psi"],
         status=result["status"],
         total_samples=result["total_samples"],
+    )
+
+
+# ── Concept Drift — Prediction Distribution ─────────────────────────────
+
+
+@router.get("/api/drift/concept", response_model=ConceptDriftResponse)
+def get_concept_drift(days: int = Query(30, ge=1, le=365)):
+    """Return prediction distribution metrics over a rolling window.
+
+    Queries resolved_vulnerabilities for records within the time window
+    and computes statistics on tier_1_exploitation_prob, tier_1_confidence,
+    routing decisions, and tier routing breakdown.
+    """
+    conn = get_db()
+    try:
+        cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+
+        rows = conn.execute(
+            """
+            SELECT tier_1_exploitation_prob, tier_1_confidence, tier_1_routing,
+                   detection_tier, tier_0_resolution, created_at
+            FROM resolved_vulnerabilities
+            WHERE created_at >= ?
+              AND tier_1_exploitation_prob IS NOT NULL
+            ORDER BY created_at
+        """,
+            (cutoff,),
+        ).fetchall()
+
+        if not rows:
+            return ConceptDriftResponse(
+                prediction_distribution=PredictionDistribution(
+                    exploitation_probability=DistributionStats(
+                        mean=0.0, std=0.0, p50=0.0, p95=0.0
+                    ),
+                    confidence=DistributionStats(mean=0.0, std=0.0, p50=0.0, p95=0.0),
+                    routing=RoutingCounts(auto_resolved=0, escalated=0),
+                    tier_routing=TierRouting(),
+                ),
+                window=Window(days=days, total_samples=0),
+                time_series=TimeSeries(daily=[]),
+            )
+
+        probs: list[float] = []
+        confs: list[float] = []
+        auto_resolved = 0
+        escalated = 0
+        tier_counts: dict[str, int] = {
+            "tier_0_kev": 0,
+            "tier_0_epss": 0,
+            "tier_1_xgboost": 0,
+            "tier_2_llm": 0,
+            "tier_3_review": 0,
+        }
+        daily_data: dict[str, dict] = {}
+
+        for row in rows:
+            prob = row["tier_1_exploitation_prob"]
+            conf = row["tier_1_confidence"]
+            routing = row["tier_1_routing"]
+            det_tier = row["detection_tier"]
+            t0_res = row["tier_0_resolution"]
+            created = row["created_at"]
+
+            if prob is not None:
+                probs.append(prob)
+            if conf is not None:
+                confs.append(conf)
+
+            # Routing classification
+            if routing == "auto_resolved":
+                auto_resolved += 1
+            elif routing == "escalated":
+                escalated += 1
+
+            # Tier routing mapping
+            if det_tier == "Deterministic":
+                if t0_res and "kev" in str(t0_res).lower():
+                    tier_counts["tier_0_kev"] += 1
+                else:
+                    tier_counts["tier_0_epss"] += 1
+            elif det_tier == "ML Tier":
+                tier_counts["tier_1_xgboost"] += 1
+            elif det_tier == "SLM Tier":
+                tier_counts["tier_2_llm"] += 1
+            else:
+                tier_counts["tier_3_review"] += 1
+
+            # Daily aggregation
+            date_str = created[:10] if created else "unknown"
+            if date_str not in daily_data:
+                daily_data[date_str] = {"probs": [], "n": 0}
+            if prob is not None:
+                daily_data[date_str]["probs"].append(prob)
+            daily_data[date_str]["n"] += 1
+
+        probs_sorted = sorted(probs)
+        confs_sorted = sorted(confs)
+
+        def _stats(arr: list[float]) -> DistributionStats:
+            if not arr:
+                return DistributionStats(mean=0.0, std=0.0, p50=0.0, p95=0.0)
+            return DistributionStats(
+                mean=round(statistics.mean(arr), 4),
+                std=round(statistics.stdev(arr), 4) if len(arr) > 1 else 0.0,
+                p50=round(arr[len(arr) // 2], 4),
+                p95=round(arr[min(int(len(arr) * 0.95), len(arr) - 1)], 4),
+            )
+
+        return ConceptDriftResponse(
+            prediction_distribution=PredictionDistribution(
+                exploitation_probability=_stats(probs_sorted),
+                confidence=_stats(confs_sorted),
+                routing=RoutingCounts(auto_resolved=auto_resolved, escalated=escalated),
+                tier_routing=TierRouting(**tier_counts),
+            ),
+            window=Window(days=days, total_samples=len(rows)),
+            time_series=TimeSeries(
+                daily=[
+                    DailyTimeSeries(
+                        date=date,
+                        mean_prob=(
+                            round(sum(d["probs"]) / len(d["probs"]), 4)
+                            if d["probs"]
+                            else 0.0
+                        ),
+                        n=d["n"],
+                    )
+                    for date, d in sorted(daily_data.items())
+                ]
+            ),
+        )
+    finally:
+        conn.close()
+
+
+# ── Ground-Truth Feedback (Stubs — Schema Deferred to Sprint 20) ────────
+
+
+@router.post("/api/feedback/{vulnerability_id}")
+def submit_feedback(vulnerability_id: str, feedback: FeedbackSubmission):
+    """Submit ground-truth feedback for a prediction.
+
+    NOTE: Schema migration for persistent storage is planned Sprint 20.
+    For now, feedback is validated and logged.
+    """
+    logger.info(
+        "Ground truth feedback received for %s: exploited=%s",
+        vulnerability_id,
+        feedback.exploited,
+        extra={"event": "ground_truth_feedback"},
+    )
+    return FeedbackResponse(
+        status="accepted",
+        vulnerability_id=vulnerability_id,
+        note="Feedback recorded. Schema migration pending Sprint 20.",
+    )
+
+
+@router.get("/api/drift/accuracy")
+def get_accuracy():
+    """Return accuracy metrics where ground truth is available.
+
+    Stub — returns zero-data until ground truth schema migration in Sprint 20.
+    """
+    return AccuracyResponse(
+        status="insufficient_data",
+        samples_with_ground_truth=0,
+        message="Ground truth collection requires database schema migration (planned Sprint 20)",
     )
