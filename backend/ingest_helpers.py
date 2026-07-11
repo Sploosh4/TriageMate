@@ -478,6 +478,10 @@ def build_feature_vector(
         "nvd_reference_count": nvd.get("nvd_reference_count", 0),
         "cve_desc_tokens": len(description),
         "vulnerability_age_days": vulnerability_age,
+        # KNOWN LIMITATION: vendor_popularity_index often returns 0.0 due to sparse
+        # vendor_popularity.json coverage. This is a pre-existing data quality issue —
+        # the feature provides little-to-no signal until the lookup DB is populated.
+        # See: docs/reference/AI_PROBLEMS.md (Sprint 23 audit finding).
         "vendor_popularity_index": _lookup_vendor_popularity(
             operating_system, hostname
         ),

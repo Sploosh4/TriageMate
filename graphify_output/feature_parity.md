@@ -49,12 +49,14 @@
 | 37 | `is_bypass_signature` | tabular |
 | 38 | `is_dos_signature` | tabular |
 | 39 | `is_traversal_signature` | tabular |
-| 40 | `threat_intel_status` | metadata |
-| 41 | `telemetry_threat_score` | tabular |
-| 42 | `network_blast_radius` | tabular |
-| 43 | `description` | metadata |
+| 40 | `cisa_kev` | tabular |
+| 41 | `cwe_class` | tabular |
+| 42 | `threat_intel_status` | metadata |
+| 43 | `telemetry_threat_score` | tabular |
+| 44 | `network_blast_radius` | tabular |
+| 45 | `description` | metadata |
 
-**Tabular count:** 38  
+**Tabular count:** 40  
 **Metadata count:** 6  
 
 ---
@@ -151,16 +153,16 @@
 
 | Source | Column Count |
 |--------|-------------|
-| Inference (`ingest_helpers.py`) | 38 |
+| Inference (`ingest_helpers.py`) | 40 |
 | Training (feature_parity_check.py) | 35 |
 
-❌ **MISMATCH:** Inference produces 38 tabular features but training expects 35.
+❌ **MISMATCH:** Inference produces 40 tabular features but training expects 35.
 
 ### Inference vs ML Inventory
 
 Inventory features parsed: 37
 
-❌ **In code but not in inventory:** network_blast_radius, telemetry_threat_score
+❌ **In code but not in inventory:** cisa_kev, cwe_class, network_blast_radius, telemetry_threat_score
 
 ❌ **In inventory but not in code:** cvss_score
 
@@ -172,5 +174,5 @@ Column-by-column check: 22 mismatches
 
 ## 4. Key Discrepancies
 
-- Inference produces 38 tabular features but training expects 35. Feature count drift detected.
-- Inference has 38 tabular feature keys (expected 35). Some metadata keys may be incorrectly classified.
+- Inference produces 40 tabular features but training expects 35. Feature count drift detected.
+- Inference has 40 tabular feature keys (expected 35). Some metadata keys may be incorrectly classified.

@@ -26,7 +26,7 @@ def load_canonical_scores() -> dict:
     with open(models_path) as f:
         content = f.read()
 
-    # Find the baseline_scores list — hardcoded as [98, 91, 73, 66, 58, 44, 26]
+    # Find the baseline_scores list — hardcoded as [99, 97, 74, 91, 82, 97, 80]
     match = re.search(r'"baseline_scores"\s*:\s*\[([^\]]+)\]', content)
     if not match:
         print("ERROR: Could not find baseline_scores in routers/models.py")
@@ -72,16 +72,26 @@ def run_pipeline_and_get_scores() -> dict:
         # ── Parse telemetry_json for threat_score ──
         telemetry_threat_score = 0.0
         raw_telemetry = vuln.get("telemetry_json")
+        telemetry_data = None
         if raw_telemetry:
             try:
-                telemetry = (
+                telemetry_data = (
                     json.loads(raw_telemetry)
                     if isinstance(raw_telemetry, str)
                     else raw_telemetry
                 )
-                telemetry_threat_score = float(telemetry.get("threat_score", 0.0))
+                telemetry_threat_score = float(telemetry_data.get("threat_score", 0.0))
             except (json.JSONDecodeError, TypeError, ValueError):
                 pass
+
+        # ── Extract vulnerable_code_loaded from telemetry_json → process_evidence.is_loaded ──
+        # Matches the pattern in compute_canonical_scores.py:parse_vulnerable_code_loaded()
+        vulnerable_code_loaded = None
+        if telemetry_data:
+            process_evidence = telemetry_data.get("process_evidence", {})
+            is_loaded = process_evidence.get("is_loaded")
+            if is_loaded is not None:
+                vulnerable_code_loaded = bool(is_loaded)
 
         # ── Parse network_context_json for blast_radius_score ──
         network_blast_radius = 0.0
@@ -138,6 +148,7 @@ def run_pipeline_and_get_scores() -> dict:
             substituted_epss=substituted_epss,
             telemetry_threat_score=telemetry_threat_score,
             network_blast_radius=network_blast_radius,
+            vulnerable_code_loaded=vulnerable_code_loaded,
         )
 
         scores[cve_id] = result["total"]

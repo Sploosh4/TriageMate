@@ -4,7 +4,9 @@ Exposes all TriageMate config values grouped by domain.
 No auth required — config values are not sensitive.
 """
 
+import json
 import logging
+from pathlib import Path
 from fastapi import APIRouter
 from pipeline.config import thresholds, scoring, feature_names
 
@@ -43,4 +45,18 @@ def get_config():
             "tabular_count": len(feature_names.TABULAR_FEATURE_ORDER),
             "tabular_names": feature_names.TABULAR_FEATURE_ORDER,
         },
+        "threshold_info": _load_threshold_info(),
     }
+
+
+def _load_threshold_info() -> dict:
+    """Read threshold_info.json and return contents, or unavailable status."""
+    path = Path(__file__).resolve().parent.parent / "ml" / "threshold_info.json"
+    if not path.exists():
+        return {"status": "unavailable"}
+    try:
+        with open(path) as f:
+            return json.load(f)
+    except (json.JSONDecodeError, OSError) as e:
+        logger.warning("Failed to read threshold_info.json: %s", e)
+        return {"status": "unavailable"}

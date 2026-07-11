@@ -83,6 +83,13 @@ def _row_to_case_view(r) -> CaseViewData:
 
     mitre_techniques = [MitreTechnique(**m) for m in mitre_data if isinstance(m, dict)]
     scoring_weights = [ScoringWeight(**s) for s in scoring_data if isinstance(s, dict)]
+
+    # Extract context_multiplier from scoring_weights_json if present
+    _cm_value = 1.0
+    for sw in scoring_weights:
+        if sw.name == "Context Multiplier":
+            _cm_value = sw.awarded if sw.awarded else 1.0
+            break
     asset_registry = [
         AssetRegistryEntry(**a) for a in asset_data if isinstance(a, dict)
     ]
@@ -111,7 +118,7 @@ def _row_to_case_view(r) -> CaseViewData:
         score_gauge_value=r["priority_score"],
         score_gauge_band=r["risk_band"],
         gauge_band_colour=_band_colour(r["risk_band"]),
-        context_multiplier=r.get("context_multiplier", 1.0) or 1.0,
+        context_multiplier=_cm_value,
         scoring_weights=scoring_weights,
         asset_registry=asset_registry,
         nvd_freshness=nvd_freshness,

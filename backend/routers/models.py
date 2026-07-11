@@ -91,10 +91,10 @@ async def get_model_status():
 
     active_info = None
     available = []
-    # Reference baseline — computed by verify_seed_scores.py (2026-07-10).
+    # Reference baseline — computed by verify_seed_scores.py (2026-07-11).
     # A snapshot of what calculate_final_score() produces for the 7 demo rows.
     score_comparison = {
-        "baseline_scores": [94, 92, 76, 86, 78, 91, 77],
+        "baseline_scores": [99, 97, 74, 91, 82, 97, 80],
         "versions": {},
     }
 

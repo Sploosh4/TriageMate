@@ -1,6 +1,6 @@
 # Comparison: Described System vs Current Implementation
 
-> **Status:** CURRENT · **Last updated:** 2026-07-10
+> **Status:** CURRENT · **Last updated:** 2026-07-11 (Sprint 23)
 > **Purpose:** Maps each of the 5 described system areas to the actual MVP code to identify what was simplified, added onto, or completely changed.
 
 ---
@@ -41,23 +41,23 @@ Nothing fundamentally — the high-level "ML routes, uncertain cases go to LLM" 
 
 | Item | Described | Implemented |
 |---|---|---|
-| Core equation | "Complex equation like in image_fdf740.png" | **Simple weighted sum** of 7 dimensions. `total = sum(dimensions.values())`, clamp to 0–100. Straight arithmetic. |
+| Core equation | "Complex equation like in image_fdf740.png" | **Simple weighted sum** of 6 dimensions + context multiplier. `total = round(sum(dimensions.values()) * multiplier)`, clamp to 0–100. Straight arithmetic. |
 | Multipliers | "Custom importance levels set by security team" | Hardcoded per-dimension max weights (CVSS=40, EPSS=20, etc.) — no runtime user configuration. *Simpler but less flexible.* |
 
 ### What was added onto
 
 | Addition | Where | Why |
 |---|---|---|
-| **7 dimensions** instead of 3 | `scoring.py` | CVSS (40), EPSS (20), Asset Criticality (20), Exposure (12), Patch (5), ML Exploitation (10), Security Context (5). More granular than the described 3-area model. |
+| **6 dimensions + context multiplier** instead of 3 | `scoring.py` | CVSS (40), EPSS (20), Asset Criticality (20), Exposure (12), Patch (5), ML Exploitation (10) plus proportional multiplier (0.70–1.20). More granular than the described 3-area model. |
 | **Tier 2 score adjustment** | `scoring.py:59–61` | LLM can adjust score by −20 to +20 before clamp. Not described. |
-| **Security Context dimension** | `scoring.py:38–40` | Sprint 17 addition combining telemetry threat score (×3) + network blast radius (×2) → max 5. Not described. |
+| **Security Context (replaced by context multiplier in Sprint 21)** | `scoring.py:38–40` | Sprint 17 addition combining telemetry threat score (×3) + network blast radius (×2) → max 5. Replaced in Sprint 21 by proportional multiplier (0.70–1.20). Not described. |
 | **EPSS substitution feeds into score** | `scoring.py:28` | Sector-adjusted EPSS replaces raw EPSS in the EPSS dimension. Not described. |
 | **Score bands** | `scoring.py:65–72` | Low (≤25), Medium (26–50), Critical (51–75), Very Critical (76–100). Not described. |
 | **Per-dimension breakdown** | Everywhere | The scoring engine returns full per-dimension breakdown for the frontend display. Not described. |
 
 ### What was completely changed
 
-The 3-area multiply-by-importance model was **replaced** by a 7-dimension weighted sum with hardcoded caps. The described system's "grade 3 areas × custom importance" is more flexible in theory but was never implemented — the actual code uses fixed-weight additive scoring.
+The 3-area multiply-by-importance model was **replaced** by a 6-dimension weighted sum plus context multiplier with hardcoded caps. The described system's "grade 3 areas × custom importance" is more flexible in theory but was never implemented — the actual code uses fixed-weight additive scoring with a proportional context multiplier.
 
 ---
 
@@ -153,7 +153,7 @@ The core concept matches: penalize the model more for missing rare positives tha
 | Area | Simplified | Added Onto | Completely Changed |
 |---|---|---|---|
 | **1. Routing & Uncertainty** | Uncertainty formula (→ ensemble_std) | Pre-Tier, Tier 0 rules, pre-model bypass, 3-tier pipeline, provider fallback | — (structure matches but is more elaborate) |
-| **2. Composite Risk Score** | Complex equation (→ weighted sum) | 7 dims (vs 3), Tier-2 adjustment, security context, score bands, breakdown | 3-area × multiplier model **replaced** by 7-dim weighted sum with hardcoded caps |
+| **2. Composite Risk Score** | Complex equation (→ weighted sum + context multiplier) | 6 dims + context multiplier (vs 3), Tier-2 adjustment, score bands, breakdown | 3-area × multiplier model **replaced** by 6-dim weighted sum + context multiplier with hardcoded caps |
 | **3. Text Data Simplification** | — | — | **Compression does not exist.** Full 384-dim SBERT + 35 tabular = 419-dim. PCA was removed. XGBoost regularization handles dimensionality. |
 | **4. Class Imbalance** | Complex penalty formula (→ `scale_pos_weight`) | Temporal bias correction, observation window, threshold tuning, Platt calibration, chronological split | — (concept matches, implementation is more thorough) |
 | **5. LLM Safety Guardrails** | Multi-step investigation (→ single shot), self-doubt check (→ unified prompt) | Provider fallback, cost tracking, JSON schema, RAG context, CWE context | **40-step agentic loop does not exist.** Single-shot stateless API call. Retry limit is for connectivity, not tool-locking. |

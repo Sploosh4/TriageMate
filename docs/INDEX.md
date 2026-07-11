@@ -15,7 +15,7 @@
 
 | # | File | Status | Description |
 |---|---|---|---|
-| 1 | `planning/ROADMAP.md` | CURRENT | **Master status.** What exists, what's broken, what's next. Sprints 17, 18, 19 & 20 complete ✅. Start here. |
+| 1 | `planning/ROADMAP.md` | CURRENT | **Master status.** What exists, what's broken, what's next. Sprints 17, 18, 19, 20, 21 & 22 complete ✅. Start here. |
 | 2 | `architecture/MVP_SCOPE.md` | OUTDATED | Sprint 1 scope boundaries. Many deferred items are now done. See caution banner. |
 | 3 | `reference/AI_PROBLEMS.md` | CURRENT | Bug tracker. All historical issues resolved. |
 | 4 | `archive/ml-implementation-plan.md` | ARCHIVED | → Replaced by `graphify_output/ml_inventory.md` (auto-generated, run `just graphify`) |
@@ -25,14 +25,14 @@
 | File | Status | Description |
 |---|---|---|
 | `architecture/MVP_SCOPE.md` | OUTDATED | Scope authority from Sprint 1. Many deferred items now implemented. ROC-AUC figure updated to 0.9459. |
-| `architecture/scoring-weights.md` | CURRENT | Scoring weight design — 7 dimensions (112-sum, clamped 0–100). Rationale, clamping, bands, demo CVE scores. Added Sprint 18. |
+| `architecture/scoring-weights.md` | CURRENT | Scoring weight design — 6 dimensions (107-sum, clamped 0–100), plus context multiplier. Rationale, clamping, bands, demo CVE scores. Added Sprint 18. |
 | `architecture/comparison-vs-described-system.md` | CURRENT | Maps each of 5 described system areas to actual implementation — identifies what was simplified, added onto, or completely changed. Generated 2026-07-10. |
 
 ## Planning
 
 | File | Status | Description |
 |---|---|---|
-| `planning/ROADMAP.md` | CURRENT | Forward-looking roadmap. Sprints 17, 18, 19 & 20 complete ✅. Sprint 19 added shared config module, scheduled retraining triggers, NPZ column names, concept drift monitoring, scoring property tests, and seed data freshness check. Sprint 20 added multi-step agentic LLM, customizable risk multipliers, and safe PCA. |
+| `planning/ROADMAP.md` | CURRENT | Forward-looking roadmap. Sprints 17, 18, 19, 20, 21 & 22 complete ✅. Sprint 19 added shared config module, scheduled retraining triggers, NPZ column names, concept drift monitoring, scoring property tests, and seed data freshness check. Sprint 20 added multi-step agentic LLM, customizable risk multipliers, and safe PCA. |
 | `planning/HANDOFF-2026-07-08.md` | CURRENT | Handoff document covering ML drift monitoring, Tier 2 LLM query coverage, network topology/Sentinel status, and stress testing status. Answers what was deferred post-MVP. |
 | `planning/ai-doc-strategy-2026-07-07.md` | CURRENT | This consolidation plan — how and why docs were restructured. |
 | `archive/file-consolidation-plan-2026-07-07.md` | ARCHIVED | Bookkeeper's consolidation proposals — superseded by current doc structure. See `docs/INDEX.md`. |
@@ -130,7 +130,7 @@
 | `backend/ml/model_registry_pre_tier.json` | Pre-Tier model version registry (drift tracking, rollback) |
 | `backend/ml/model_registry_epss.json` | EPSS model version registry (v1–v4 tracking, rollback) |
 
-**Total test count:** 412+ tests (up from 142) — includes 5 new test files for Pre-Tier and EPSS monitoring, plus 3 drift test files (XGBoost, EPSS, Pre-Tier) from Sprint 18, plus scoring property tests, seed verification, scheduler, NPZ metadata, and concept drift tests from Sprint 19, plus 65 new tests from Sprint 20 (agent tools, admin API, PCA).
+**Total test count:** 449+ tests (up from 142) — includes 5 new test files for Pre-Tier and EPSS monitoring, plus 3 drift test files (XGBoost, EPSS, Pre-Tier) from Sprint 18, plus scoring property tests, seed verification, scheduler, NPZ metadata, and concept drift tests from Sprint 19, plus 65 new tests from Sprint 20 (agent tools, admin API, PCA), plus multiplier tests, config API tests, drift webhook tests from Sprint 21, plus benchmark, rollback, and schema tests from Sprint 22.
 
 ## Sprint 17 — ✅ Complete (Security Telemetry, Network Context & Panel 5)
 
@@ -140,7 +140,7 @@
 | **Network Context** | `backend/integrations/network_context.py` | Produces network blast-radius scores and peer topology from `synthetic_assets` table. Ingest pipeline calls this to populate `network_context_json`. |
 | **Panel 5 Frontend** | `frontend/index.html`, `frontend/js/components/caseView.js`, `frontend/css/triagemate.css` | New case-view panel for security telemetry (Sentinel incidents, EDR alerts, process evidence) and network context (blast radius gauge, zone display, peer counts). |
 | **7th Scoring Dimension** | `backend/scoring.py` | "Security Context" (max 5): composite of telemetry threat score (×3) and network blast radius (×2), clamped to 0–5. |
-| **Score Contract** | `backend/routers/models.py` (baseline), `backend/tests/test_model_versions.py` (assertion) | Updated expected scores: **98/91/73/66/58/44/26** (Sprint 17+ recalculation, verified against `routers/models.py:89`). |
+| **Score Contract** | `backend/routers/models.py` (baseline), `backend/tests/test_model_versions.py` (assertion) | Updated expected scores: **99/97/74/91/82/97/80** (Sprint 23 canonical contract, verified against `routers/models.py:97`). |
 
 ## Sprint 18 — ✅ Complete (Quick Wins + Monitoring)
 
@@ -188,6 +188,38 @@
 - `backend/tests/test_tier2_agent.py` — Tool unit tests + agent loop tests (KEV, NVD, EPSS, step limit, cost budget, feature flag, fallback) — 633 lines
 - `backend/tests/test_admin.py` — Admin config API tests (GET/PUT/POST, validation, auth, persistence) — 356 lines
 - `backend/tests/test_ml_pipeline.py` — PCA tests added (fit on train only, save/load, transform consistency, no leakage) — 6 new test methods
+
+## Sprint 21 — ✅ Complete (Multiplier-Based Security Scoring + Quick Wins)
+
+| Component | Files | Purpose |
+|---|---|---|
+| **Multiplier-Based Security Scoring** | `backend/scoring.py`, `backend/pipeline/config/scoring.py` | Replaced additive Security Context (0–5 pts) with proportional multiplier (1.20/1.10/1.00/0.85/0.70). Scoring dimensions reduced from 7 to 6 (total weight 107). Frontend updated to show context multiplier. Backward-compat `security_context=0` field retained. |
+| **Config API (Bonus A)** | `backend/routers/config.py` | Read-only `GET /api/config` exposing thresholds, scoring weights, multiplier config, and feature names. |
+| **Drift Webhook (Bonus B)** | `backend/analysis/drift.py` | POST drift alerts to configured webhook URL when PSI ≥ 0.10. Rate-limited to once per 6 hours per model. |
+
+**Sprint 21 new test files:**
+- `backend/tests/test_scoring.py` — New multiplier tests (5 levels, order of operations, edge cases)
+- `backend/tests/test_config.py` — Config API endpoint tests
+- `backend/tests/test_drift_webhook.py` — Drift webhook integration and suppression tests
+
+**Sprint 21 documentation:**
+- `docs/architecture/scoring-weights.md` — Updated for 6 dimensions, 107 sum, context multiplier
+
+## Sprint 22 — ✅ Complete (Multi-Window KEV Labels + Infrastructure)
+
+| Component | Files | Purpose |
+|---|---|---|
+| **Multi-Window KEV Labels** | `backend/ml/train_xgboost.py`, `backend/ml/xgboost_predictor.py` | Replaced binary KEV label (0/1) with 5-class multi-window labels (0=not KEV, 1=≤30d, 2=31-90d, 3=91-365d, 4=>365d). XGBoost switched to `multi:softprob` with `num_class=5`. Predictor returns `exploitation_probability` + `window_probabilities`. |
+| **CI Benchmark Gates** | `justfile`, `.github/workflows/ci.yml`, `backend/tests/test_benchmark.py` | Added pytest-benchmark for scoring calculator (3 benchmarks). CI runs on main branch with 10% regression threshold. `just bench` and `just bench-check` recipes. |
+| **Alembic Migration 009** | `backend/alembic/versions/009_sprint22_schema_catchup.py` | Created migration 009 adding `pre_tier_features` and `epss_features` columns to both tables. |
+| **Model Registry Rollback API** | `backend/routers/models.py`, `backend/tests/test_rollback.py` | `POST /api/models/xgboost/rollback?version=<tag>` with lock mechanism, validation, cache invalidation. |
+
+**Sprint 22 new test files:**
+- `backend/tests/test_benchmark.py` — Scoring benchmark tests (3 benchmarks)
+- `backend/tests/test_rollback.py` — Model registry rollback API tests
+
+**Sprint 22 documentation:**
+- `.opencode/plans/2026-07-10-sprint-22.md` — Retroactive sprint plan
 
 ## Graphify — Auto-Generated Knowledge Artifacts
 

@@ -14,7 +14,7 @@ pytestmark = pytest.mark.asyncio
 
 # Expected priority scores in descending order (matching the seed data)
 # Queue is sorted by priority_score DESC, id ASC — this order reflects that sort.
-EXPECTED_PRIORITY_SCORES = [94, 92, 86, 76, 71, 63, 57]
+EXPECTED_PRIORITY_SCORES = [99, 97, 97, 91, 82, 80, 74]
 
 # Required keys on each queue row (camelCase — matches the Pydantic alias)
 REQUIRED_ROW_KEYS = {

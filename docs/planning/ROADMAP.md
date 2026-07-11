@@ -12,10 +12,10 @@
 |---|---|
 | Tests | 449 pass, 0 fail |
 | Open bugs | 0 (AI_PROBLEMS.md is clean) |
-| Sprints completed | 17, 18, 19, 20, 21, 22 |
+| Sprints completed | 17, 18, 19, 20, 21, 22 (Sprint 23 planned) |
 | Pipeline stages | Pre-Tier → Tier 0 → Tier 1 → Tier 2 → Tier 3 (Human Review) |
 | Enrichment sources | 14 integrations (NVD, OSV, OTX, ExploitDB, Metasploit, Tenable, GreyNoise [deprecated], CMDB [stub], Advisories [stub], MITRE, CWE classifier, Demo generator, **Synthetic Telemetry**, **Network Context**) |
-| Demo rows | 7 CVEs, scores 98/91/73/66/58/44/26 (±3 tolerance) |
+| Demo rows | 7 CVEs, scores 99/97/74/91/82/97/80 (±3 tolerance) |
 | Auth | JWT (disabled by default, env-var-gated) |
 | Database | SQLite (default), PostgreSQL (available via DATABASE_URL) |
 | CI/CD | `.github/workflows/ci.yml` — full pipeline (matrix test, coverage, lint, Docker) |
@@ -40,7 +40,7 @@
 | **3** | **Alembic Migration 008** | ✅ Done | Adds `telemetry_json`, `network_context_json` to both tables. |
 | **4** | **7th Scoring Dimension** | ✅ Done | "Security Context" (max 5, total weight 112). Composite: threat_score × 3 + blast_radius × 2. |
 | **5** | **Panel 5 Frontend** | ✅ Done | Full-width security context panel below scoring breakdown. Two-column telemetry grid + blast radius bar. |
-| **6** | **Seed data recalculated** | ✅ Done | New scores: 98/91/73/66/58/44/26. Synthetic assets populated. |
+| **6** | **Seed data recalculated** | ✅ Done | New scores: 99/97/74/91/82/97/80. Later refined in Sprint 23 (Score Reconciliation) to correct for pipeline discrepancies. Synthetic assets populated. |
 
 ---
 
@@ -111,6 +111,21 @@
 
 ---
 
+## Sprint 23 — 📋 Planned (Score Reconciliation + Bug Hunt)
+
+*Planned 11 July 2026. See `.opencode/plans/2026-07-11-sprint-23.md` for full detail.*
+
+| # | Item | Status | Description |
+|---|---|---|---|
+| **0** | **Discovery — Determine Canonical Scores** | 📋 Planned | Map 7 conflicting score locations, run live pipeline, identify root causes of discrepancies, establish canonical score contract. |
+| **1** | **Code Fixes** | 📋 Planned | Fix CI benchmark branch bug, expose threshold_info.json via API, correct seed_data scores, update models.py baseline, fix stale comments, update test assertions. |
+| **2** | **Gated Bug Hunt** | 📋 Planned | Automated audit suite + manual bug sweep in iterative loop (max 3 rounds). Fixes context multiplier edge cases, import hygiene, deprecated field safety, feature parity. |
+| **3** | **Documentation Cleanup** | 📋 Planned | Update INDEX.md (add Sprints 21/22), update ROADMAP.md, fix scoring-weights.md, fix comparison-vs-described-system.md, create Sprint 22 plan file. |
+| **4** | **Gated Bookkeeping** | 📋 Planned | Freshness verification loop (max 3 rounds). All 9 known issues verified fixed. |
+| **5** | **Final Quality Gate & Commit** | 📋 Planned | Full gate (lint → test → verify-seeds → graphify → audit-all), frontend verification, graphify diff review, git commit. |
+
+---
+
 ## Later — Medium-Term Engineering
 
 | # | Item | Effort | Description |
@@ -137,7 +152,7 @@
 | **21** | MLflow experiment tracking | Model versioning, A/B testing, experiment registry |
 | **22** | Email / Slack notifications | Webhook-driven alerting |
 | **23** | PostgreSQL default deployment | Switch default from SQLite to PostgreSQL |
-| **24** | `pytest-benchmark` + CI perf gates | Granular performance regression detection |
+| **24** | `pytest-benchmark` + CI perf gates | Granular performance regression detection | ✅ **Completed in Sprint 22** (Item 2) — `just bench` and `just bench-check` recipes, CI benchmark step with 10% regression threshold. |
 | **25** | DeepSeek V4 Flash Tier 2 provider | Additional LLM provider for fallback chain |
 
 ---

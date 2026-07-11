@@ -2,7 +2,7 @@
 
 > Canonical reference — read this before touching any ML code.
 
-> Generated: 2026-07-09 19:49:38
+> Generated: 2026-07-11 11:48:08
 
 ---
 
@@ -20,19 +20,21 @@
 | training_data | `backend/ml/training_data.npz` | 156 MB | numpy training data |
 | training_data_v2 | `backend/ml/training_data_v2.npz` | 341 MB | numpy training data |
 | enriched_cves | `backend/ml/enriched_cves.json` | 179 MB | JSON data |
-| model_registry | `backend/ml/model_registry.json` | 564 B | JSON data |
+| epss_reference_distributions | `backend/ml/epss_reference_distributions.json` | 9 KB | JSON data |
+| model_registry | `backend/ml/model_registry.json` | 595 B | JSON data |
 | model_registry_epss | `backend/ml/model_registry_epss.json` | 2 KB | JSON data |
 | model_registry_pre_tier | `backend/ml/model_registry_pre_tier.json` | 407 B | JSON data |
 | nvd_checkpoint | `backend/ml/nvd_checkpoint.json` | 72 B | JSON data |
 | nvd_cves_cached | `backend/ml/nvd_cves_cached.json` | 80 MB | JSON data |
 | pre_tier_metrics | `backend/ml/pre_tier_metrics.json` | 2 KB | JSON data |
+| pre_tier_reference_distributions | `backend/ml/pre_tier_reference_distributions.json` | 12 KB | JSON data |
 | pretier_supplemental | `backend/ml/pretier_supplemental.json` | 206 KB | JSON data |
 | pretier_training_data | `backend/ml/pretier_training_data.json` | 37 KB | JSON data |
 | reference_distributions | `backend/ml/reference_distributions.json` | 15 KB | JSON data |
 | synthetic_data_v2 | `backend/ml/synthetic_data_v2.json` | 1 MB | JSON data |
 | synthetic_findings_v4 | `backend/ml/synthetic_findings_v4.json` | 344 KB | JSON data |
 | synthetic_holdout_v2 | `backend/ml/synthetic_holdout_v2.json` | 233 KB | JSON data |
-| threshold_info | `backend/ml/threshold_info.json` | 78 B | JSON data |
+| threshold_info | `backend/ml/threshold_info.json` | 403 B | JSON data |
 
 ## Script Inventory
 
@@ -55,9 +57,14 @@
 | vector_store | `backend/ml/vector_store.py` | LanceDB embedded vector store for RAG document retrieval. |
 | xgboost_predictor | `backend/ml/xgboost_predictor.py` | Tier 1 XGBoost exploitation probability predictor. |
 | aggregate_tenable_sectors | `backend/scripts/aggregate_tenable_sectors.py` | Aggregate Tenable vulnerability scan findings by (CVE, sector) for EPSS |
+| bughunt_multiplier_check | `backend/scripts/bughunt_multiplier_check.py` | Bug Hunt: Context multiplier edge case verification. |
 | build_cwe_hierarchy | `backend/scripts/build_cwe_hierarchy.py` | Build CWE hierarchy JSON from MITRE CWE XML. |
 | build_training_corpus | `backend/scripts/build_training_corpus.py` | Unified training corpus builder — combines all data sources into |
 | build_vendor_index | `backend/scripts/build_vendor_index.py` | Build vendor_popularity.json from NVD corpus vendor frequency. |
+| check_benchmark_regression | `backend/scripts/check_benchmark_regression.py` | Called by CI pipeline after benchmarks run. |
+| compute_canonical_scores | `backend/scripts/compute_canonical_scores.py` | Compute canonical scores from seed data using the live scoring pipeline. |
+| compute_epss_reference | `backend/scripts/compute_epss_reference.py` | Compute EPSS reference distributions for drift monitoring. |
+| compute_pretier_reference | `backend/scripts/compute_pretier_reference.py` | Compute reference distributions for Pre-Tier drift monitoring. |
 | compute_reference_dists | `backend/scripts/compute_reference_dists.py` | Compute reference distributions for ML drift monitoring. |
 | fetch_nvd_corpus | `backend/scripts/fetch_nvd_corpus.py` | Bulk NVD API 2.0 corpus builder — fetch 200K+ CVEs with full metadata. |
 | ingest_synthetic_to_db | `backend/scripts/ingest_synthetic_to_db.py` | Ingest synthetic data from a JSON file into the TriageMate database. |
@@ -65,6 +72,7 @@
 | refresh_caches | `backend/scripts/refresh_caches.py` | Refresh demo data caches for TriageMate. |
 | stress_report | `backend/scripts/stress_report.py` | Stress test report generator for TriageMate. |
 | validate_synthetic_data | `backend/scripts/validate_synthetic_data.py` | Data Validation Toolkit for Synthetic WA Government Hostname Data. |
+| verify_seed_scores | `backend/scripts/verify_seed_scores.py` | Loads seed_data.py demo CVEs, runs the scoring pipeline, |
 | calibration_audit | `backend/analysis/calibration_audit.py` | Calibration audit for the Tier 1 XGBoost exploitation-probability model. |
 | drift | `backend/analysis/drift.py` | ML Drift Monitoring — PSI (Population Stability Index) computation. |
 | epss_eval | `backend/analysis/epss_eval.py` | EPSS as Standalone Predictor — Baseline Analysis |
@@ -82,19 +90,21 @@
 - `epss_model_v2.pkl`  (1 MB)
 - `epss_model_v3.pkl`  (1 MB)
 - `epss_model_v4.pkl`  (373 KB)
-- `epss_substitutor.py`  (22 KB)
+- `epss_reference_distributions.json`  (9 KB)
+- `epss_substitutor.py`  (24 KB)
 - `fetch_epss_data.py`  (4 KB)
 - `generate_supplemental_hostnames.py`  (14 KB)
 - `generate_synthetic_data_v2.py`  (29 KB)
 - `generate_synthetic_findings.py`  (17 KB)
 - `ingest_docs.py`  (7 KB)
-- `model_registry.json`  (564 B)
+- `model_registry.json`  (595 B)
 - `model_registry_epss.json`  (2 KB)
 - `model_registry_pre_tier.json`  (407 B)
 - `nvd_checkpoint.json`  (72 B)
 - `nvd_cves_cached.json`  (80 MB)
 - `pre_tier_metrics.json`  (2 KB)
 - `pre_tier_model.pkl`  (24 MB)
+- `pre_tier_reference_distributions.json`  (12 KB)
 - `pretier_features.py`  (18 KB)
 - `pretier_supplemental.json`  (206 KB)
 - `pretier_training_data.json`  (37 KB)
@@ -102,19 +112,19 @@
 - `synthetic_data_v2.json`  (1 MB)
 - `synthetic_findings_v4.json`  (344 KB)
 - `synthetic_holdout_v2.json`  (233 KB)
-- `threshold_info.json`  (78 B)
+- `threshold_info.json`  (403 B)
 - `train_epss_substitutor.py`  (10 KB)
 - `train_epss_v2.py`  (18 KB)
 - `train_epss_v3.py`  (12 KB)
 - `train_epss_v4.py`  (14 KB)
 - `train_pre_tier.py`  (22 KB)
-- `train_xgboost.py`  (44 KB)
+- `train_xgboost.py`  (50 KB)
 - `training_data.npz`  (156 MB)
 - `training_data_v2.npz`  (341 MB)
-- `vector_store.py`  (13 KB)
+- `vector_store.py`  (14 KB)
 - `xgboost_calibrator.pkl`  (827 B)
 - `xgboost_model.pkl`  (1 MB)
-- `xgboost_predictor.py`  (13 KB)
+- `xgboost_predictor.py`  (15 KB)
 
 ## Data Directory (`backend/data/`)
 
@@ -145,7 +155,7 @@
   3. Default fallback -> Support / Minimal, confidence 0.60
 - **Training script:** `backend/ml/train_pre_tier.py`
 - **Training data:** `backend/ml/pretier_training_data.json`
-- **Lines of code (predictor):** 202
+- **Lines of code (predictor):** 216
 - **Lines of code (feature extractor):** 647
 - **Notes:** Model loaded lazily via `threading.Lock` on first inference. Never retrained from the live app.
 
@@ -200,8 +210,8 @@
 - **Training data:** `backend/ml/training_data_v2.npz` (253,568 samples, 341 MB)
 - **Training script:** `backend/ml/train_xgboost.py` (two-phase: gather + train)
 - **Calibrator:** `backend/ml/xgboost_calibrator.pkl` (LogisticRegression, EXISTS)
-- **Lines of code (predictor):** 410
-- **Lines of code (training):** 1195
+- **Lines of code (predictor):** 438
+- **Lines of code (training):** 1353
 - **Status:** ✅ Retrained 2026-07-08 on 253,568 samples (v2 data)
   ⚠️ Dimension mismatch: model trained with 420 features, predictor sends 419
 

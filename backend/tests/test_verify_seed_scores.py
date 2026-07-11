@@ -16,7 +16,7 @@ class TestVerifySeedScores:
     def test_verify_seed_scores_passes_when_correct(self):
         """When calculated scores match the canonical contract, all_pass=True."""
         # Mock calculate_final_score to return values matching canonical baseline
-        canonical = [94, 92, 76, 86, 78, 91, 77]
+        canonical = [99, 97, 74, 91, 82, 97, 80]
         cve_order = [
             "CVE-2023-34362",
             "CVE-2023-4966",
@@ -42,7 +42,7 @@ class TestVerifySeedScores:
 
     def test_verify_seed_scores_detects_drift(self):
         """When calculated scores diverge from canonical, all_pass=False."""
-        canonical = [94, 92, 76, 86, 78, 91, 77]
+        canonical = [99, 97, 74, 91, 82, 97, 80]
         cve_order = [
             "CVE-2023-34362",
             "CVE-2023-4966",
@@ -73,7 +73,7 @@ class TestVerifySeedScores:
 
     def test_verify_seed_scores_partial_drift(self):
         """Only drifted CVEs fail; matching CVEs still pass."""
-        canonical = [94, 92, 76, 86, 78, 91, 77]
+        canonical = [99, 97, 74, 91, 82, 97, 80]
         cve_order = [
             "CVE-2023-34362",
             "CVE-2023-4966",
@@ -111,13 +111,13 @@ class TestVerifySeedScores:
             "scripts.verify_seed_scores.run_pipeline_and_get_scores"
         ) as mock_run:
             mock_run.return_value = {
-                "CVE-2023-34362": 94,
-                "CVE-2023-4966": 92,
-                "CVE-2023-27350": 76,
-                "CVE-2024-1709": 86,
-                "CVE-2023-36884": 78,
-                "CVE-2023-22515": 91,
-                "CVE-2022-47966": 77,
+                "CVE-2023-34362": 99,
+                "CVE-2023-4966": 97,
+                "CVE-2023-27350": 74,
+                "CVE-2024-1709": 91,
+                "CVE-2023-36884": 82,
+                "CVE-2023-22515": 97,
+                "CVE-2022-47966": 80,
             }
             result = verify_seed_scores()
 

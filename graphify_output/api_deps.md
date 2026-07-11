@@ -25,6 +25,7 @@
 **Stdlib**
 
 - `datetime`  (from(datetime), from(timedelta), from(timezone))
+- `logging`  (import)
 - `os`  (import)
 
 ## backend/database.py
@@ -243,11 +244,12 @@
 - `logging_config`  (from(setup_logging))
 - `middleware.rate_limit`  (from(clear_bucket), from(demo_bucket), from(ingest_bucket))
 - `ml.vector_store`  (from(DB_PATH), from(TABLE_NAME), from(_get_embedder), from(init_vector_store), from(seed_demo_documents))
-- `routers`  (from(auth), from(cases), from(ingest), from(models), from(queue))
-- `scheduler`  (from(recheck_low_severity))
+- `routers`  (from(admin), from(auth), from(cases), from(config), from(ingest), from(models), from(queue))
+- `scheduler`  (from(RETRAIN_DRIFT_THRESHOLD), from(RETRAIN_INTERVAL_HOURS), from(check_drift_and_retrain), from(recheck_low_severity))
 
 **External**
 
+- `apscheduler.schedulers.asyncio`  (from(AsyncIOScheduler))
 - `bcrypt`  (import)
 - `dotenv`  (from(load_dotenv))
 - `fastapi`  (from(Depends), from(FastAPI))
@@ -279,6 +281,10 @@
 - `threading`  (import)
 
 ## backend/ml/epss_substitutor.py
+
+**Project**
+
+- `pipeline.config.feature_names`  (from(EPSS_V1_FEATURE_NAMES), from(EPSS_V2_FEATURE_NAMES))
 
 **External**
 
@@ -463,14 +469,17 @@
 **Project**
 
 - `ml.encoder`  (from(encode_batch))
+- `pipeline.config.feature_names`  (from(TABULAR_FEATURE_ORDER), from(make_sbert_feature_names))
 
 **External**
 
 - `joblib`  (import)
 - `numpy`  (import)
 - `requests`  (import)
+- `sklearn.decomposition`  (from(PCA))
 - `sklearn.linear_model`  (from(LogisticRegression))
-- `sklearn.metrics`  (from(classification_report), from(f1_score), from(roc_auc_score))
+- `sklearn.metrics`  (from(accuracy_score), from(classification_report), from(f1_score), from(roc_auc_score))
+- `sklearn.utils.class_weight`  (from(compute_class_weight))
 - `xgboost`  (import)
 
 **Stdlib**
@@ -505,6 +514,8 @@
 **Project**
 
 - `ml.encoder`  (from(encode_description))
+- `pipeline.config.feature_names`  (from(TABULAR_FEATURE_ORDER))
+- `pipeline.config.thresholds`  (from(CWE_EPSS_THRESHOLDS), from(DEFAULT_EPSS_THRESHOLD), from(LOW_PROB_THRESHOLD), from(MID_PROB_THRESHOLD), from(UNCERTAINTY_THRESHOLD))
 
 **External**
 
@@ -515,6 +526,7 @@
 **Stdlib**
 
 - `json`  (import)
+- `logging`  (import)
 - `pathlib`  (from(Path))
 - `threading`  (import)
 
@@ -547,6 +559,10 @@
 
 ## backend/pipeline/tier_0.py
 
+**Project**
+
+- `pipeline.config.thresholds`  (from(CWE_EPSS_THRESHOLDS), from(KEV_CVSS_THRESHOLD), from(KEV_EPSS_THRESHOLD), from(LOW_CVSS_THRESHOLD), from(LOW_EPSS_THRESHOLD), from(NVD_REF_THRESHOLD))
+
 **Stdlib**
 
 - `logging`  (import)
@@ -561,26 +577,23 @@
 
 - `logging`  (import)
 
-## backend/pipeline/tier_2.py
+## backend/routers/admin.py
 
 **Project**
 
-- `models`  (from(TriageConflictResult))
+- `auth`  (from(get_current_user_if_enabled))
+- `pipeline.config.scoring`  (from(_MAX_WEIGHT), from(_MIN_TOTAL), from(_MIN_WEIGHT), from(reload_weights), from(reset_weights_to_defaults), import)
 
 **External**
 
-- `anthropic`  (from(APIConnectionError), from(APIStatusError), from(APITimeoutError), from(AsyncAnthropic), from(RateLimitError))
-- `dotenv`  (from(load_dotenv))
-- `httpx`  (import)
+- `fastapi`  (from(APIRouter), from(Depends), from(HTTPException))
+- `pydantic`  (from(BaseModel), from(Field))
 
 **Stdlib**
 
-- `asyncio`  (import)
 - `json`  (import)
 - `logging`  (import)
-- `os`  (import)
 - `pathlib`  (from(Path))
-- `threading`  (import)
 
 ## backend/routers/auth.py
 
@@ -617,6 +630,22 @@
 - `html`  (import)
 - `json`  (import)
 
+## backend/routers/config.py
+
+**Project**
+
+- `pipeline.config`  (from(feature_names), from(scoring), from(thresholds))
+
+**External**
+
+- `fastapi`  (from(APIRouter))
+
+**Stdlib**
+
+- `json`  (import)
+- `logging`  (import)
+- `pathlib`  (from(Path))
+
 ## backend/routers/ingest.py
 
 **Project**
@@ -630,12 +659,13 @@
 - `integrations.demo_generator`  (from(generate_random_wave), from(generate_scenario_findings), from(get_scenarios_list), from(inject_enrichment))
 - `integrations.mitre_mapping`  (from(lookup_mitre))
 - `integrations.network_context`  (from(get_network_context))
-- `integrations.nvd`  (from(get_cve_freshness))
+- `integrations.nvd`  (from(get_cve_freshness), from(get_nvd_data))
 - `integrations.synthetic_telemetry`  (from(get_telemetry_context))
 - `integrations.tenable`  (from(parse_tenable_batch), from(parse_tenable_webhook))
-- `ml.epss_substitutor`  (from(calculate_substitution))
+- `ml.epss_substitutor`  (from(calculate_substitution), from(get_last_feature_vector))
 - `models`  (from(CaseResponse), from(CaseViewData), from(IngestRequest), from(QueueRow), from(SubstitutionBlock))
 - `pipeline`  (from(pre_tier), from(tier_0), from(tier_1), from(tier_2))
+- `pipeline.pre_tier`  (from(extract_pre_tier_features))
 - `routers.cases`  (from(_band_colour))
 - `scoring`  (from(calculate_final_score))
 
@@ -646,6 +676,7 @@
 
 **Stdlib**
 
+- `html`  (import)
 - `json`  (import)
 - `logging`  (import)
 - `os`  (import)
@@ -659,12 +690,13 @@
 
 **External**
 
-- `fastapi`  (from(APIRouter), from(HTTPException))
+- `fastapi`  (from(APIRouter), from(HTTPException), from(Query))
 - `pydantic`  (from(BaseModel))
 
 **Stdlib**
 
 - `json`  (import)
+- `logging`  (import)
 - `os`  (import)
 - `pathlib`  (from(Path))
 
@@ -675,25 +707,52 @@
 - `analysis.drift`  (from(compute_drift))
 - `database`  (from(get_db))
 - `ingest_helpers`  (from(compliance_category))
-- `models`  (from(DriftMetricsResponse), from(MetricsResponse), from(MlDriftFeature), from(MlDriftResponse), from(QueueResponse), from(QueueRow))
+- `models`  (from(AccuracyResponse), from(ConceptDriftResponse), from(DailyTimeSeries), from(DistributionStats), from(DriftMetricsResponse), from(FeedbackResponse), from(FeedbackSubmission), from(MetricsResponse), from(MlDriftFeature), from(MlDriftResponse), from(PredictionDistribution), from(QueueResponse), from(QueueRow), from(RoutingCounts), from(TierRouting), from(TimeSeries), from(Window))
+- `scheduler`  (from(LOCK_FILE), from(RETRAIN_DRIFT_THRESHOLD), from(RETRAIN_INTERVAL_HOURS))
 
 **External**
 
-- `fastapi`  (from(APIRouter))
+- `fastapi`  (from(APIRouter), from(Query))
 
 **Stdlib**
 
 - `datetime`  (from(datetime), from(timedelta), from(timezone))
 - `json`  (import)
+- `logging`  (import)
 - `pathlib`  (from(Path))
 - `sqlite3`  (import)
+- `statistics`  (import)
 
 ## backend/scheduler.py
 
 **Project**
 
+- `analysis.drift`  (from(compute_drift))
 - `database`  (from(get_db))
-- `pipeline`  (from(tier_0))
+- `ml.pretier_features`  (from(get_feature_count))
+- `ml.train_epss_substitutor`  (from(main))
+- `ml.train_pre_tier`  (from(cross_validate), from(evaluate_holdout), from(export_model), from(load_holdout_data), from(load_training_data_from_db), from(save_metrics), from(train_model))
+- `ml.train_xgboost`  (from(TRAINING_DATA_FILE), from(load_training_data), from(phase_train))
+- `pipeline.config.thresholds`  (from(DRIFT_WARNING_PSI))
+
+**External**
+
+- `numpy`  (import)
+
+**Stdlib**
+
+- `asyncio`  (import)
+- `datetime`  (from(datetime), from(timezone))
+- `json`  (import)
+- `logging`  (import)
+- `os`  (import)
+- `pathlib`  (from(Path))
+
+## backend/scoring.py
+
+**Project**
+
+- `pipeline.config.scoring`  (from(CLAMP_MAX), from(CLAMP_MIN), from(CONTEXT_MULTIPLIER_VALUES), from(CRITICALITY_MAX), from(PATCH_MAX), from(SCORING_WEIGHTS), from(TELEMETRY_ACTIVE_THRESHOLD))
 
 ## backend/seed_data.py
 
@@ -709,8 +768,10 @@
 
 **Project**
 
+- `routers/admin.py`  (include_router)
 - `routers/auth.py`  (include_router)
 - `routers/cases.py`  (include_router)
+- `routers/config.py`  (include_router)
 - `routers/ingest.py`  (include_router)
 - `routers/models_router.py`  (include_router)
 - `routers/queue.py`  (include_router)

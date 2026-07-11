@@ -24,8 +24,8 @@ class MitreTechnique(BaseModelConfig):
 
 class ScoringWeight(BaseModelConfig):
     name: str
-    awarded: int
-    max: int
+    awarded: float
+    max: float
     justification: str
     is_substituted: bool = False
 

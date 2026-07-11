@@ -43,7 +43,13 @@ TriageMate MVP/
 │   │   ├── 2026-07-08-sprint-research-synthetic-data.md  Sprint Plan: Research & Synthetic Data Infrastructure
 │   │   ├── 2026-07-09-sprint-16.md  Sprint 16 — ML Monitoring Foundation
 │   │   ├── 2026-07-09-sprint-16b.md  Sprint 16b — Fix 4 Open Bugs + Doc Refresh
-│   │   └── 2026-07-09-sprint-17.md  Sprint 17 — Security Telemetry + Network Context
+│   │   ├── 2026-07-09-sprint-17.md  Sprint 17 — Security Telemetry + Network Context
+│   │   ├── 2026-07-10-sprint-18.md  Sprint 18 — Quick Wins + Monitoring
+│   │   ├── 2026-07-10-sprint-19.md  Sprint 19 — Config + Retraining + Closing the Loop
+│   │   ├── 2026-07-10-sprint-20-planning.md  Sprint 20 (Planned) — Agentic LLM + Customizable Weights + Safe PCA
+│   │   ├── 2026-07-10-sprint-21.md  Sprint 21 — Multiplier-Based Security Scoring + Quick Wins
+│   │   ├── 2026-07-10-sprint-22.md  Sprint 22 — Multi-Window KEV Labels + Infrastructure
+│   │   └── 2026-07-11-sprint-23.md  Sprint 23 — Score Reconciliation, Bug Hunt & Documentation Cleanup
 │   ├── skills/
 │   │   ├── audit-checklist/
 │   │   │   └── SKILL.md  Audit Checklist
@@ -77,6 +83,10 @@ TriageMate MVP/
 │   ├── DESIGN_RATIONALE.md  Agent & Skill Descriptions — Design Rationale
 │   └── RESTRUCTURE_HANDOFF.md  OpenCode Restructure — Handoff Note
 ├── backend/
+│   ├── .benchmarks/
+│   │   └── Linux-CPython-3.12-64bit/
+│   │       ├── 0001_baseline.json  9.6 KB
+│   │       └── 0002_baseline.json  9.6 KB
 │   ├── alembic/
 │   │   ├── versions/
 │   │   │   ├── 001_initial_schema.py  Initial schema for TriageMate
@@ -86,13 +96,14 @@ TriageMate MVP/
 │   │   │   ├── 005_add_ml_exploitation.py  Add ml_exploitation_contribution column
 │   │   │   ├── 006_add_tier_1_features_column.py  Add tier_1_features TEXT column to vulnerabilities
 │   │   │   ├── 007_add_tier_1_features_to_resolved.py  Add tier_1_features TEXT column to resolved_vulnerabilities
-│   │   │   └── 008_add_security_context_columns.py  Add security context columns — telemetry + network context
+│   │   │   ├── 008_add_security_context_columns.py  Add security context columns — telemetry + network context
+│   │   │   └── 009_sprint22_schema_catchup.py  Sprint 22 schema catchup — add pre_tier_features and epss_features columns
 │   │   ├── env.py  Override sqlalchemy.url with DATABASE_URL env var if set
 │   │   ├── README  38.0 B
 │   │   └── script.py.mako  """${message}
 │   ├── analysis/
 │   │   ├── calibration_audit.py  Expected Calibration Error — identical formula to train_xgboost.py.
-│   │   ├── drift.py  Compute Population Stability Index for one feature.
+│   │   ├── drift.py  ── Drift webhook configuration ─────────────────────────────────────────────
 │   │   ├── epss_eval.py  1. Load and Align Data
 │   │   ├── feature_parity_check.py  19.8 KB
 │   │   ├── stress_db.py  Create SQLite database at path with the stress test schema.
@@ -101,9 +112,9 @@ TriageMate MVP/
 │   │   ├── lancedb/
 │   │   │   ├── __manifest/  (LanceDB internal — 3 files, 1015.0 B)
 │   │   │   └── asset_documentation.lance/
-│   │   │       ├── _indices/  (LanceDB internal — 801 files, 2.1 MB)
-│   │   │       ├── _transactions/  (LanceDB internal — 204 files, 101.7 KB)
-│   │   │       ├── _versions/  (LanceDB internal — 205 files, 232.1 KB)
+│   │   │       ├── _indices/  (LanceDB internal — 1265 files, 3.5 MB)
+│   │   │       ├── _transactions/  (LanceDB internal — 320 files, 160.9 KB)
+│   │   │       ├── _versions/  (LanceDB internal — 321 files, 375.3 KB)
 │   │   │       └── data/  (LanceDB internal — 2 files, 38.6 KB)
 │   │   ├── demo_scenarios.json  3.6 KB
 │   │   ├── epss_cache.json  19.5 MB
@@ -136,18 +147,20 @@ TriageMate MVP/
 │   │   ├── __init__.py
 │   │   ├── encoder.py  Encode a single CVE description into a 384-dimensional vector.
 │   │   ├── enriched_cves.json  179.1 MB
+│   │   ├── epss_reference_distributions.json  8.6 KB
 │   │   ├── epss_substitutor.py  ── Constants used by both rule engine and ML fallback ────────────────────
 │   │   ├── fetch_epss_data.py  Download and parse the current EPSS data from FIRST.org.
 │   │   ├── generate_supplemental_hostnames.py  ─── AGENCIES AND THEIR DOMAINS ──────────────────────────────────────────────
 │   │   ├── generate_synthetic_data_v2.py  ═══════════════════════════════════════════════════════════════════════════
 │   │   ├── generate_synthetic_findings.py  Ensure backend is importable
 │   │   ├── ingest_docs.py  Size limits
-│   │   ├── model_registry.json  564.0 B
+│   │   ├── model_registry.json  595.0 B
 │   │   ├── model_registry_epss.json  2.0 KB
 │   │   ├── model_registry_pre_tier.json  407.0 B
 │   │   ├── nvd_checkpoint.json  72.0 B
 │   │   ├── nvd_cves_cached.json  79.6 MB
 │   │   ├── pre_tier_metrics.json  1.7 KB
+│   │   ├── pre_tier_reference_distributions.json  11.5 KB
 │   │   ├── pretier_features.py  ─── AGENCY DEFINITIONS ─────────────────────────────────────────────────────
 │   │   ├── pretier_supplemental.json  205.9 KB
 │   │   ├── pretier_training_data.json  37.0 KB
@@ -156,8 +169,8 @@ TriageMate MVP/
 │   │   ├── synthetic_data_v2.json  1.2 MB
 │   │   ├── synthetic_findings_v4.json  343.7 KB
 │   │   ├── synthetic_holdout_v2.json  232.8 KB
-│   │   ├── threshold_info.json  78.0 B
-│   │   ├── train_epss_substitutor.py  ── seed for reproducibility ──────────────────────────────────────────────
+│   │   ├── threshold_info.json  403.0 B
+│   │   ├── train_epss_substitutor.py  EPSS feature names available from config for drift monitoring alignment:
 │   │   ├── train_epss_v2.py  ── seed for reproducibility ──────────────────────────────────────────────
 │   │   ├── train_epss_v3.py  ── Constants (identical to v2 for drop-in compatibility) ──────────────────
 │   │   ├── train_epss_v4.py  Ensure backend is importable
@@ -166,41 +179,65 @@ TriageMate MVP/
 │   │   ├── vector_store.py
 │   │   └── xgboost_predictor.py  Default paths (fallbacks when registry is unavailable)
 │   ├── pipeline/
+│   │   ├── config/
+│   │   │   ├── __init__.py
+│   │   │   ├── feature_names.py  Tabular feature names in positional order — 35 features.
+│   │   │   ├── scoring.py  Hardcoded defaults
+│   │   │   └── thresholds.py  ── Tier 0 thresholds ───────────────────────────────────────────────────────
+│   │   ├── tier_2/
+│   │   │   ├── __init__.py  Re-export everything from the single-shot evaluator for backward compat
+│   │   │   ├── agent.py  ── Constants ─────────────────────────────────────────────────────────────
+│   │   │   ├── single.py  Provider configuration from environment
+│   │   │   └── tools.py  ── Tool Definitions (for LLM function/tool_use API) ──────────────────────
 │   │   ├── __init__.py
 │   │   ├── pre_tier.py  ─── PHASE 0: KNOWN HOSTS (Demo / Fallback) ────────────────────────────────
-│   │   ├── tier_0.py  Threshold constants
-│   │   ├── tier_1.py  Heuristic fallback when XGBoost model is not yet trained.
-│   │   └── tier_2.py  Provider configuration from environment
+│   │   ├── tier_0.py  Auto-resolve as Very Critical if NVD reference count >= 21
+│   │   └── tier_1.py  Heuristic fallback when XGBoost model is not yet trained.
 │   ├── routers/
 │   │   ├── __init__.py
+│   │   ├── admin.py  NOTE: We import the module (not its attrs) so that reload_weights() updates
 │   │   ├── auth.py  Authenticate with admin credentials.
 │   │   ├── cases.py
+│   │   ├── config.py  Return all config values grouped by domain.
 │   │   ├── ingest.py  Build template-based summary paragraphs matching demo row style.
-│   │   ├── models.py  Read the model registry JSON file.
-│   │   └── queue.py  )
+│   │   ├── models.py  Separate router for rollback endpoints (different path prefix)
+│   │   └── queue.py  Return current retraining system status.
 │   ├── scripts/
 │   │   ├── __init__.py
 │   │   ├── aggregate_tenable_sectors.py  ═════════════════════════════════════════════════════════════════════════════
+│   │   ├── bughunt_multiplier_check.py  Ensure backend is on the path
 │   │   ├── build_cwe_hierarchy.py  Download cwec_latest.xml.zip and return contents as bytes.
 │   │   ├── build_training_corpus.py  Bulletproof: find .env relative to this script, not CWD
 │   │   ├── build_vendor_index.py
+│   │   ├── check_benchmark_regression.py  Check benchmark regression against stored baseline.
+│   │   ├── compute_canonical_scores.py  14.7 KB
+│   │   ├── compute_epss_reference.py  Feature names matching V2_FEATURE_NAMES in epss_substitutor.py
+│   │   ├── compute_pretier_reference.py  Add backend dir to sys.path so we can import project modules
 │   │   ├── compute_reference_dists.py  Extract only the 35 tabular features
 │   │   ├── fetch_nvd_corpus.py  Bulletproof: find .env relative to this script, not CWD
 │   │   ├── ingest_synthetic_to_db.py  Return the intersection of data keys with actual table columns,
 │   │   ├── load_research_refs.py  Parse the pipe-delimited references table from Section 6.
 │   │   ├── refresh_caches.py  Bulletproof: find .env relative to this script, not CWD
 │   │   ├── stress_report.py  20.7 KB
-│   │   └── validate_synthetic_data.py  ── Path setup: make ``backend/`` importable from ``backend/scripts/`` ──
+│   │   ├── validate_synthetic_data.py  ── Path setup: make ``backend/`` importable from ``backend/scripts/`` ──
+│   │   └── verify_seed_scores.py  7.2 KB
 │   ├── tests/
 │   │   ├── load/
 │   │   │   └── locustfile.py  Ensure analysis/stress_db is importable
 │   │   ├── __init__.py
 │   │   ├── conftest.py  Disable LLM API key before any app imports to prevent real API calls
+│   │   ├── test_admin.py  Fixtures
 │   │   ├── test_aggregate_sectors.py  Test suite for aggregate_findings().
+│   │   ├── test_alembic.py  Tests for Alembic migration system.
 │   │   ├── test_audit.py  Direct tests of the should_audit() function with controlled randomness.
+│   │   ├── test_benchmark.py  Performance benchmarks for critical TriageMate code paths.
+│   │   ├── test_config.py  Tests for the read-only config API endpoint.
 │   │   ├── test_demo_generator.py  Structural Tests (6)
 │   │   ├── test_drift.py  GET /api/drift smoke tests.
+│   │   ├── test_drift_epss.py  Expected camelCase keys from the MlDriftResponse model
 │   │   ├── test_drift_ml.py  Expected camelCase keys from the MlDriftResponse model
+│   │   ├── test_drift_pretier.py  Expected camelCase keys from the MlDriftResponse model
+│   │   ├── test_drift_webhook.py  Tests for the drift webhook notification system.
 │   │   ├── test_epss_substitutor.py  Verify the module initialises without error and loads a model.
 │   │   ├── test_feature_parity.py  ── Tabular feature keys in the EXACT order xgboost_predictor.predict() builds th
 │   │   ├── test_feature_parity_epss.py  ── Test cases: (raw_epss, cvss_score, cisa_kev, cwe_class, agency,
@@ -209,17 +246,25 @@ TriageMate MVP/
 │   │   ├── test_health.py  Health endpoint smoke tests.
 │   │   ├── test_ingest.py  Remove any previously created test records before each ingest test.
 │   │   ├── test_integration.py  Test the full ingest pipeline end-to-end.
+│   │   ├── test_ml_pipeline.py  Ensure backend is on sys.path for imports
 │   │   ├── test_model_versions.py  ── Session-scoped save/restore to isolate tests ──────────────────────
+│   │   ├── test_npz_metadata.py  Load training_data.npz, skip if not present.
 │   │   ├── test_pre_tier.py  ── Helpers ──────────────────────────────────────────────────────────────────
 │   │   ├── test_pretier_features.py  Return only nonzero feature entries from an extract_features() dict.
 │   │   ├── test_queue.py  Expected priority scores in descending order (matching the seed data)
 │   │   ├── test_rate_limit.py  Delete CVE-TEST-RL-* records from the database.
 │   │   ├── test_review.py  Required keys for a review queue item (camelCase via ReviewQueueItem model)
+│   │   ├── test_rollback.py  Tests for model registry rollback API.
+│   │   ├── test_scheduler.py  Verify lock file prevents concurrent retrains.
 │   │   ├── test_scoring.py  Core Sanity Tests
-│   │   └── test_tier2.py  ── Shared test data ─────────────────────────────────────────────────────
+│   │   ├── test_tier0.py  Tests for Tier 0 deterministic routing rules.
+│   │   ├── test_tier2.py  ── Shared test data ─────────────────────────────────────────────────────
+│   │   ├── test_tier2_agent.py  ── Tool Tests ─────────────────────────────────────────────────────────────
+│   │   └── test_verify_seed_scores.py  Tests for verify_seed_scores() with mocked scoring.
 │   ├── .coverage  52.0 KB
 │   ├── .env  1009.0 B
 │   ├── .env.example  2.0 KB
+│   ├── =4.0.0  1.2 KB
 │   ├── __init__.py
 │   ├── alembic.ini
 │   ├── audit.py  Determine if a case should enter the audit pool.
@@ -231,8 +276,8 @@ TriageMate MVP/
 │   ├── main.py  ─── Resolve project root from this file's location ────────────────────
 │   ├── models.py  Convert snake_case to camelCase for API responses.
 │   ├── pytest.ini  47.0 B
-│   ├── requirements.txt  psycopg2-binary>=2.9.9
-│   ├── scheduler.py  ).fetchall()
+│   ├── requirements.txt  apscheduler>=3.10.4
+│   ├── scheduler.py  ─── Retraining configuration ─────────────────────────────────────────────────
 │   ├── scoring.py  Round to nearest int, .5 always rounds up (not banker's rounding).
 │   ├── seed_data.py  Row 1: CVE-2023-34362 — MOVEit Transfer SQL Injection
 │   ├── triagemate.db  840.0 KB
@@ -241,7 +286,9 @@ TriageMate MVP/
 │   └── TASK_STORE_COLUMNS_IN_NPZ.md  Task: Store Column Names in NPZ Metadata
 ├── docs/
 │   ├── architecture/
-│   │   └── MVP_SCOPE.md  TriageMate MVP — Scope Document
+│   │   ├── comparison-vs-described-system.md  Comparison: Described System vs Current Implementation
+│   │   ├── MVP_SCOPE.md  TriageMate MVP — Scope Document
+│   │   └── scoring-weights.md  Scoring Weight Design
 │   ├── archive/
 │   │   ├── handoffs/
 │   │   │   └── SPRINT_9_HANDOFF.md  Sprint 9 Handoff — Commander Briefing
@@ -286,6 +333,7 @@ TriageMate MVP/
 │   │   └── triagemate.css  :root {
 │   ├── js/
 │   │   ├── components/
+│   │   │   ├── adminSettings.js  /**
 │   │   │   ├── auth.js  // auth.js — Authentication for TriageMate
 │   │   │   ├── caseView.js  // caseView.js — Case view rendering
 │   │   │   ├── demoControls.js  // demoControls.js — Demo Data Generator UI controls
@@ -295,7 +343,7 @@ TriageMate MVP/
 │   │   │   └── reviewQueue.js  // reviewQueue.js — Tier 3 Human Review Queue
 │   │   ├── api.js  // api.js — Single responsibility: talk to the backend
 │   │   └── app.js  // app.js — Application state and initialization
-│   └── index.html  11.0 KB
+│   └── index.html  11.5 KB
 ├── graphify_output/
 │   ├── api_deps.md  TriageMate — API Dependency Map
 │   ├── feature_parity.md  TriageMate — Feature Parity Report
@@ -303,8 +351,8 @@ TriageMate MVP/
 │   ├── knowledge_graph.json  21.9 KB
 │   └── ml_inventory.md  TriageMate — ML Model Inventory
 ├── .dockerignore  328.0 B
-├── .env.example  1.8 KB
-├── .gitignore  587.0 B
+├── .env.example  2.2 KB
+├── .gitignore  612.0 B
 ├── .pre-commit-config.yaml  415.0 B
 ├── =2.2.0  1.0 KB
 ├── AGENTS.md  TriageMate Project Rules
@@ -313,10 +361,10 @@ TriageMate MVP/
 ├── docker-compose.yml  1.9 KB
 ├── Dockerfile  1.4 KB
 ├── index.html  119.4 KB
-├── justfile  7.6 KB
+├── justfile  8.1 KB
 ├── MVP_SCOPE.md  TriageMate MVP — Scope Document
 ├── opencode.jsonc  924.0 B
-├── requirements-dev.txt  130.0 B
+├── requirements-dev.txt  154.0 B
 ├── RESEARCH_FINDINGS.md  TriageMate — Sprint NEXT+2 Research Findings
 ├── ROADMAP.md  TriageMate — Roadmap
 ├── triagemate.db  840.0 KB

@@ -694,7 +694,12 @@ def build_tabular_features(cves: list[dict]) -> np.ndarray:
         X[i, 23] = cve.get("reference_count", 0)
         X[i, 24] = len(cve.get("description", ""))
         X[i, 25] = _compute_age_days(cve.get("published_date", ""))
-        X[i, 26] = 0.0  # vendor_popularity_index (no OS data during training)
+        X[i, 26] = (
+            0.0  # vendor_popularity_index — KNOWN LIMITATION: always 0 during training because
+        )
+        # no OS/hostname data is available in NVD corpus. In inference, it's also often
+        # 0 due to sparse vendor_popularity.json coverage. This is a pre-existing data
+        # quality issue (see docs/reference/AI_PROBLEMS.md Sprint 23 audit).
         X[i, 27] = cve.get("cvss_exploitability_sub", 0.0)
         X[i, 28] = cve.get("cvss_impact_sub", 0.0)
         X[i, 29] = int(cve.get("cwe_id", "") in MITRE_TOP_25_CWES)

@@ -209,7 +209,7 @@ What files does an AI subagent actually need, given a specific task? Below is th
 | Priority | File | Why |
 |----------|------|-----|
 | 1 | `backend/scoring.py` | The code itself (not docs, but the AI needs to read it) |
-| 2 | `docs/planning/ROADMAP.md` | Understand scoring architecture (7 dimensions, weights, bands) |
+| 2 | `docs/planning/ROADMAP.md` | Understand scoring architecture (6 dimensions + context multiplier, weights, bands) |
 | 3 | `docs/reference/AI_PROBLEMS.md` | Check if this bug is already tracked; see scoring-related fixes |
 | 4 | `docs/architecture/MVP_SCOPE.md` | §2.5 Scoring Engine — scope boundaries, dimension weights |
 

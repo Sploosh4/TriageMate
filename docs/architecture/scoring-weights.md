@@ -85,19 +85,19 @@ The raw sum of all 6 dimensions can reach 107, but the final score is clamped to
 | Critical | 51–75 |
 | Very Critical | 76–100 |
 
-## Demo CVE Scores (Sprint 21)
+## Demo CVE Scores (Sprint 23)
 
-As verified by `backend/tests/test_model_versions.py`:
+As verified by `backend/tests/test_model_versions.py` and `backend/seed_data.py`:
 
 | CVE | Score | Band |
 |-----|-------|------|
-| CVE-2023-27350 | 98 | Very Critical |
-| CVE-2023-34362 | 91 | Very Critical |
-| CVE-2024-1709 | 73 | Critical |
-| CVE-2021-44228 | 66 | Critical |
-| CVE-2024-6387 | 58 | Critical |
-| CVE-2023-3519 | 44 | Medium |
-| CVE-2023-22527 | 26 | Medium |
+| CVE-2023-34362 | 99 | Very Critical |
+| CVE-2023-4966 | 97 | Very Critical |
+| CVE-2023-27350 | 74 | Critical |
+| CVE-2024-1709 | 91 | Very Critical |
+| CVE-2023-36884 | 82 | Very Critical |
+| CVE-2023-22515 | 97 | Very Critical |
+| CVE-2022-47966 | 80 | Very Critical |
 
 ## Modification Rules
 

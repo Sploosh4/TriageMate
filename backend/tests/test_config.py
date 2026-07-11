@@ -46,3 +46,23 @@ class TestConfigEndpoint:
         weights = data["scoring"]["weights"]
         total = sum(weights.values())
         assert total == data["scoring"]["total_weight"]
+
+    def test_config_has_threshold_info(self):
+        resp = client.get("/api/config")
+        data = resp.json()
+        assert "threshold_info" in data
+        ti = data["threshold_info"]
+        # Should have expected keys from threshold_info.json
+        expected_keys = {
+            "classification_threshold",
+            "val_f1",
+            "cwe_stratified_thresholds",
+            "generated_at",
+        }
+        assert expected_keys.issubset(ti.keys()), (
+            f"threshold_info missing keys. Got {set(ti.keys())}, expected at least {expected_keys}"
+        )
+        assert isinstance(ti["classification_threshold"], (int, float))
+        assert isinstance(ti["val_f1"], (int, float))
+        assert isinstance(ti["cwe_stratified_thresholds"], dict)
+        assert "generated_at" in ti

@@ -39,7 +39,7 @@ jobs:
         run: ruff format --check backend/
 
       - name: Run performance benchmarks
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/master'
         run: |
           cd backend && python -m pytest tests/test_benchmark.py \
             --benchmark-compare=baseline \

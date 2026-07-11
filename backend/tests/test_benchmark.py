@@ -3,7 +3,21 @@ Run with: python -m pytest tests/test_benchmark.py --benchmark-save=baseline
 Compare with: python -m pytest tests/test_benchmark.py --benchmark-compare=baseline --benchmark-compare-fail=min:10%
 """
 
+import pytest
+
+try:
+    pytest.importorskip("pytest_benchmark")
+    _BENCHMARK_AVAILABLE = True
+except ImportError:
+    _BENCHMARK_AVAILABLE = False
+
 from scoring import calculate_final_score
+
+
+pytestmark = pytest.mark.skipif(
+    not _BENCHMARK_AVAILABLE,
+    reason="pytest-benchmark not installed — run: pip install pytest-benchmark",
+)
 
 
 class TestScoringBenchmarks:

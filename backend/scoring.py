@@ -203,7 +203,11 @@ def calculate_final_score(
         band = "Very Critical"
 
     # DEPRECATED: security_context was removed in Sprint 21 (replaced by multiplier).
-    # Keep field set to 0 for backward compatibility with API consumers.
+    # Keep field set to 0 for backward compatibility with existing API consumers
+    # (including routers/ingest.py line 427, 529 and database.py schema columns
+    # security_context_contribution INTEGER DEFAULT 0) that still read this field.
+    # Removing it would break API contracts — upstream dashboards may crash.
+    # See AGENTS.md guideline 6 for the canonical score contract.
     dimensions["security_context"] = 0
 
     return {
