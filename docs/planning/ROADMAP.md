@@ -1,6 +1,6 @@
 # TriageMate — Roadmap
 
-> **Status: CURRENT** (10 July 2026)
+> **Status: CURRENT** (11 July 2026)
 > 
 > Previous roadmap archived to `docs/archive/ROADMAP-2026-07-09.md` (Sprints 1–16b complete).
 
@@ -12,7 +12,7 @@
 |---|---|
 | Tests | 449 pass, 0 fail |
 | Open bugs | 0 (AI_PROBLEMS.md is clean) |
-| Sprints completed | 17, 18, 19, 20, 21, 22 (Sprint 23 planned) |
+| Sprints completed | 17, 18, 19, 20, 21, 22, 23 |
 | Pipeline stages | Pre-Tier → Tier 0 → Tier 1 → Tier 2 → Tier 3 (Human Review) |
 | Enrichment sources | 14 integrations (NVD, OSV, OTX, ExploitDB, Metasploit, Tenable, GreyNoise [deprecated], CMDB [stub], Advisories [stub], MITRE, CWE classifier, Demo generator, **Synthetic Telemetry**, **Network Context**) |
 | Demo rows | 7 CVEs, scores 99/97/74/91/82/97/80 (±3 tolerance) |
@@ -38,9 +38,9 @@
 | **1** | **Security Telemetry Module** | ✅ Done | `synthetic_telemetry.py` — Synthetic Sentinel incidents + EDR alerts + process evidence (is the vulnerable code loaded?). Adds `telemetry_json` to DB. |
 | **2** | **Network Context Panel** | ✅ Done | `network_context.py` — DB-first peer discovery from `synthetic_assets` (1,827 assets). Blast radius, zone display, peer counts. Adds `network_context_json` to DB. |
 | **3** | **Alembic Migration 008** | ✅ Done | Adds `telemetry_json`, `network_context_json` to both tables. |
-| **4** | **7th Scoring Dimension** | ✅ Done | "Security Context" (max 5, total weight 112). Composite: threat_score × 3 + blast_radius × 2. |
+| **4** | **7th Scoring Dimension** | ✅ Done | "Security Context" (max 5, total weight 112, later reduced to 107 in Sprint 21). Composite: threat_score × 3 + blast_radius × 2. |
 | **5** | **Panel 5 Frontend** | ✅ Done | Full-width security context panel below scoring breakdown. Two-column telemetry grid + blast radius bar. |
-| **6** | **Seed data recalculated** | ✅ Done | New scores: 99/97/74/91/82/97/80. Later refined in Sprint 23 (Score Reconciliation) to correct for pipeline discrepancies. Synthetic assets populated. |
+| **6** | **Seed data recalculated** | ✅ Done | New scores: 99/97/74/91/82/97/80. Further refined in Sprint 23 (Score Reconciliation) to correct for pipeline discrepancies. Synthetic assets populated. |
 
 ---
 
@@ -55,7 +55,7 @@
 | **—** | **Bonus A: CWE_EPSS_THRESHOLDS coverage** | 20 min | ✅ Done | Extended CWE-stratified thresholds to cover additional CWE families. |
 | **—** | **Bonus B: CWE-stratified KEV threshold** | 15 min | ✅ Done | KEV threshold now varies by CWE category instead of monolithic value. |
 | **—** | **Bonus C: threshold_info.json** | 15 min | ✅ Done | Published consolidated threshold documentation to API. |
-| **—** | **Bonus D: Scoring weight documentation** | 1 hr | ✅ Done | `docs/architecture/scoring-weights.md` — full weight design rationale, 112-sum, clamping. |
+| **—** | **Bonus D: Scoring weight documentation** | 1 hr | ✅ Done | `docs/architecture/scoring-weights.md` — full weight design rationale, 112-sum at the time (later 107-sum), clamping. |
 
 ---
 
@@ -111,18 +111,18 @@
 
 ---
 
-## Sprint 23 — 📋 Planned (Score Reconciliation + Bug Hunt)
+## Sprint 23 — ✅ Complete (Score Reconciliation + Bug Hunt)
 
-*Planned 11 July 2026. See `.opencode/plans/2026-07-11-sprint-23.md` for full detail.*
+*Executed 11 July 2026. See `.opencode/plans/2026-07-11-sprint-23.md` for full detail.*
 
 | # | Item | Status | Description |
 |---|---|---|---|
-| **0** | **Discovery — Determine Canonical Scores** | 📋 Planned | Map 7 conflicting score locations, run live pipeline, identify root causes of discrepancies, establish canonical score contract. |
-| **1** | **Code Fixes** | 📋 Planned | Fix CI benchmark branch bug, expose threshold_info.json via API, correct seed_data scores, update models.py baseline, fix stale comments, update test assertions. |
-| **2** | **Gated Bug Hunt** | 📋 Planned | Automated audit suite + manual bug sweep in iterative loop (max 3 rounds). Fixes context multiplier edge cases, import hygiene, deprecated field safety, feature parity. |
-| **3** | **Documentation Cleanup** | 📋 Planned | Update INDEX.md (add Sprints 21/22), update ROADMAP.md, fix scoring-weights.md, fix comparison-vs-described-system.md, create Sprint 22 plan file. |
-| **4** | **Gated Bookkeeping** | 📋 Planned | Freshness verification loop (max 3 rounds). All 9 known issues verified fixed. |
-| **5** | **Final Quality Gate & Commit** | 📋 Planned | Full gate (lint → test → verify-seeds → graphify → audit-all), frontend verification, graphify diff review, git commit. |
+| **0** | **Discovery — Determine Canonical Scores** | ✅ Done | Mapped 7 conflicting score locations, ran live pipeline, identified root causes (Sprint 21 multiplier not applied to seed data, verify script missing `vulnerable_code_loaded` param, rows 5–7 manually overridden). Established canonical contract: `[99, 97, 74, 91, 82, 97, 80]`. |
+| **1** | **Code Fixes** | ✅ Done | Fixed CI benchmark branch bug (`main`→`master`). Exposed `threshold_info.json` via `GET /api/config`. Corrected seed_data scores and restructured `scoring_weights_json`. Updated models.py baseline, verify script, and test assertions. |
+| **2** | **Gated Bug Hunt** | ✅ Done | 2 rounds of automated + manual bug sweep. 7 bugs fixed: seed score drift (HIGH), pytest-benchmark fixture, fuzzed test hang, import hygiene, multiplier edge cases, lint errors, dead feature documentation. |
+| **3** | **Documentation Cleanup** | ✅ Done | Updated INDEX.md (added Sprints 21/22), ROADMAP.md, scoring-weights.md, comparison-vs-described-system.md. Created retroactive Sprint 22 plan file. |
+| **4** | **Gated Bookkeeping** | ✅ Done | 2 rounds of freshness verification. All 9 known issues resolved. |
+| **5** | **Final Quality Gate & Commit** | ✅ Done | `just gate` passed (lint → test → verify-seeds → graphify → audit-all). 449 tests, 0 fail. API verified. 4 additional bugs caught and fixed during gate. Committed as `bb9a25e`. |
 
 ---
 

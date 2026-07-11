@@ -18,6 +18,14 @@
       "command": ["npx", "-y", "@modelcontextprotocol/server-filesystem", "."],
       "description": "Safe file operations"
     },
+    "github": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-github"],
+      "environment": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "{file:~/.config/opencode/github-token}"
+      },
+      "description": "GitHub access for Sploosh4/TriageMate"
+    },
     "think": {
       "type": "local",
       "command": ["npx", "-y", "@modelcontextprotocol/server-sequential-thinking"],
