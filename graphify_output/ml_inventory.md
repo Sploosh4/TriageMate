@@ -2,7 +2,7 @@
 
 > Canonical reference — read this before touching any ML code.
 
-> Generated: 2026-07-11 11:48:08
+> Generated: 2026-07-11 14:12:33
 
 ---
 
@@ -136,6 +136,7 @@
 - `mock_cmdb.json`  (28 KB)
 - `nvd_cache.json`  (118 KB)
 - `nvd_corpus.json`  (205 MB)
+- `triagemate.db`  (0 B)
 - `vendor_popularity.json`  (405 KB)
 
 ---

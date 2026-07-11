@@ -1,0 +1,5 @@
+# Sprint 24: Archived pre-migration sprint plans
+# These files are historical snapshots preserved for reference.
+# OpenCode .opencodeignore support is unverified — but the archive
+# is intentionally kept minimal (sprint plans only) to limit impact.
+archive/**

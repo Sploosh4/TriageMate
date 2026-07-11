@@ -13,6 +13,7 @@
 | Tests | 449 pass, 0 fail |
 | Open bugs | 0 (AI_PROBLEMS.md is clean) |
 | Sprints completed | 17, 18, 19, 20, 21, 22, 23 |
+| Current sprint | 24 — GitHub-Native Work Tracking (in progress) |
 | Pipeline stages | Pre-Tier → Tier 0 → Tier 1 → Tier 2 → Tier 3 (Human Review) |
 | Enrichment sources | 14 integrations (NVD, OSV, OTX, ExploitDB, Metasploit, Tenable, GreyNoise [deprecated], CMDB [stub], Advisories [stub], MITRE, CWE classifier, Demo generator, **Synthetic Telemetry**, **Network Context**) |
 | Demo rows | 7 CVEs, scores 99/97/74/91/82/97/80 (±3 tolerance) |
@@ -123,6 +124,21 @@
 | **3** | **Documentation Cleanup** | ✅ Done | Updated INDEX.md (added Sprints 21/22), ROADMAP.md, scoring-weights.md, comparison-vs-described-system.md. Created retroactive Sprint 22 plan file. |
 | **4** | **Gated Bookkeeping** | ✅ Done | 2 rounds of freshness verification. All 9 known issues resolved. |
 | **5** | **Final Quality Gate & Commit** | ✅ Done | `just gate` passed (lint → test → verify-seeds → graphify → audit-all). 449 tests, 0 fail. API verified. 4 additional bugs caught and fixed during gate. Committed as `bb9a25e`. |
+
+---
+
+## Sprint 24 — 📋 Planned (GitHub-Native Work Tracking for AI Workflow)
+
+*Planned 11 July 2026. See `.opencode/plans/2026-07-11-sprint-24.md` for full detail.*
+
+| # | Item | Status | Description |
+|---|---|---|---|
+| **0** | **Design** | 📋 Planned | Design label taxonomy (18 labels), 4 issue templates, milestone hierarchy (11 milestones), archive directory structure. No API calls in this phase. |
+| **1** | **GitHub Infrastructure** | 📋 Planned | Create 18 labels, 11 milestones, 4 issue templates + config.yml, set repo description + 6 topics. Wiki and Project Board deferred per AI-utility analysis. |
+| **2** | **Backfill** | 📋 Planned | Create closed Issues for all resolved AI_PROBLEMS.md entries (~20 bugs), backlog item, and Sprint 24 tracking issues. Past sprint vanity issues explicitly excluded. |
+| **3** | **Archive & Manifest** | 📋 Planned | Archive sprint plans to `archive/github-migration/` (no doc duplication), create migration manifest, create `.opencodeignore` to exclude archive from AI tooling, update INDEX.md and ROADMAP.md to reference Issues+Milestones. |
+| **4** | **Verification** | 📋 Planned | Gated verification loop (max 3 rounds). Verify all labels, milestones, issues, templates, archive, symlinks. Bookkeeper freshness pass. |
+| **5** | **Final Gate & Commit** | 📋 Planned | Full quality gate (lint → test → graphify → audit), git commit with descriptive message, push to remote. |
 
 ---
 

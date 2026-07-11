@@ -5,6 +5,12 @@
 ```
 TriageMate MVP/
 ├── .github/
+│   ├── ISSUE_TEMPLATE/
+│   │   ├── bug-report.md
+│   │   ├── config.yml  blank_issues_enabled: false
+│   │   ├── feature-request.md
+│   │   ├── research.md
+│   │   └── task.md
 │   └── workflows/
 │       └── ci.yml  name: TriageMate CI
 ├── .opencode/
@@ -49,7 +55,8 @@ TriageMate MVP/
 │   │   ├── 2026-07-10-sprint-20-planning.md  Sprint 20 (Planned) — Agentic LLM + Customizable Weights + Safe PCA
 │   │   ├── 2026-07-10-sprint-21.md  Sprint 21 — Multiplier-Based Security Scoring + Quick Wins
 │   │   ├── 2026-07-10-sprint-22.md  Sprint 22 — Multi-Window KEV Labels + Infrastructure
-│   │   └── 2026-07-11-sprint-23.md  Sprint 23 — Score Reconciliation, Bug Hunt & Documentation Cleanup
+│   │   ├── 2026-07-11-sprint-23.md  Sprint 23 — Score Reconciliation, Bug Hunt & Documentation Cleanup
+│   │   └── 2026-07-11-sprint-24.md  Sprint 24 — GitHub-Native Work Tracking for AI Workflow
 │   ├── skills/
 │   │   ├── audit-checklist/
 │   │   │   └── SKILL.md  Audit Checklist
@@ -81,7 +88,36 @@ TriageMate MVP/
 │   │       └── SKILL.md  WA Government Consulting
 │   ├── .gitignore  63.0 B
 │   ├── DESIGN_RATIONALE.md  Agent & Skill Descriptions — Design Rationale
+│   ├── package-lock.json  14.3 KB
+│   ├── package.json  65.0 B
 │   └── RESTRUCTURE_HANDOFF.md  OpenCode Restructure — Handoff Note
+├── archive/
+│   └── github-migration/
+│       ├── plans/
+│       │   ├── 2026-07-07-doc-cleanup-sprint.md  Sprint: Documentation Cleanup & Tool Audit
+│       │   ├── 2026-07-07-skill-system-consolidation.md  Plan: Skill System Consolidation
+│       │   ├── 2026-07-08-clean-corpus-sprint.md  Sprint: Clean Corpus
+│       │   ├── 2026-07-08-hygiene-plan.md  Hygiene & Cleanup Plan
+│       │   ├── 2026-07-08-sprint-11.md  Sprint 11: Model Governance + Ops Hardening
+│       │   ├── 2026-07-08-sprint-12.md  Sprint 12: Gap Hardening — Docs, Research, Bookkeeping
+│       │   ├── 2026-07-08-sprint-13.md  Sprint 13: EPSS Data Pipeline + Documentation
+│       │   ├── 2026-07-08-sprint-15-HALFWAY.md  Sprint 15 — Halfway Handoff
+│       │   ├── 2026-07-08-sprint-15.md  Sprint 15 — Production Confidence
+│       │   ├── 2026-07-08-sprint-exploitdb-fixes.md  Sprint Plan: ExploitDB/Metasploit Integration Fixes
+│       │   ├── 2026-07-08-sprint-operational-readiness.md  Sprint: Operational Readiness
+│       │   ├── 2026-07-08-sprint-parallel-polish.md  Sprint: Parallel Polish
+│       │   ├── 2026-07-08-sprint-research-synthetic-data.md  Sprint Plan: Research & Synthetic Data Infrastructure
+│       │   ├── 2026-07-09-sprint-16.md  Sprint 16 — ML Monitoring Foundation
+│       │   ├── 2026-07-09-sprint-16b.md  Sprint 16b — Fix 4 Open Bugs + Doc Refresh
+│       │   ├── 2026-07-09-sprint-17.md  Sprint 17 — Security Telemetry + Network Context
+│       │   ├── 2026-07-10-sprint-18.md  Sprint 18 — Quick Wins + Monitoring
+│       │   ├── 2026-07-10-sprint-19.md  Sprint 19 — Config + Retraining + Closing the Loop
+│       │   ├── 2026-07-10-sprint-20-planning.md  Sprint 20 (Planned) — Agentic LLM + Customizable Weights + Safe PCA
+│       │   ├── 2026-07-10-sprint-21.md  Sprint 21 — Multiplier-Based Security Scoring + Quick Wins
+│       │   ├── 2026-07-10-sprint-22.md  Sprint 22 — Multi-Window KEV Labels + Infrastructure
+│       │   ├── 2026-07-11-sprint-23.md  Sprint 23 — Score Reconciliation, Bug Hunt & Documentation Cleanup
+│       │   └── 2026-07-11-sprint-24.md  Sprint 24 — GitHub-Native Work Tracking for AI Workflow
+│       └── MIGRATION-MANIFEST.md  TriageMate Migration Manifest — Sprint 24
 ├── backend/
 │   ├── .benchmarks/
 │   │   └── Linux-CPython-3.12-64bit/
@@ -107,14 +143,14 @@ TriageMate MVP/
 │   │   ├── epss_eval.py  1. Load and Align Data
 │   │   ├── feature_parity_check.py  19.8 KB
 │   │   ├── stress_db.py  Create SQLite database at path with the stress test schema.
-│   │   └── validate_conversion.py  9.4 KB
+│   │   └── validate_conversion.py  9.8 KB
 │   ├── data/
 │   │   ├── lancedb/
 │   │   │   ├── __manifest/  (LanceDB internal — 3 files, 1015.0 B)
 │   │   │   └── asset_documentation.lance/
-│   │   │       ├── _indices/  (LanceDB internal — 1265 files, 3.5 MB)
-│   │   │       ├── _transactions/  (LanceDB internal — 320 files, 160.9 KB)
-│   │   │       ├── _versions/  (LanceDB internal — 321 files, 375.3 KB)
+│   │   │       ├── _indices/  (LanceDB internal — 1309 files, 3.6 MB)
+│   │   │       ├── _transactions/  (LanceDB internal — 331 files, 166.5 KB)
+│   │   │       ├── _versions/  (LanceDB internal — 332 files, 388.9 KB)
 │   │   │       └── data/  (LanceDB internal — 2 files, 38.6 KB)
 │   │   ├── demo_scenarios.json  3.6 KB
 │   │   ├── epss_cache.json  19.5 MB
@@ -123,6 +159,7 @@ TriageMate MVP/
 │   │   ├── mock_cmdb.json  27.8 KB
 │   │   ├── nvd_cache.json  117.7 KB
 │   │   ├── nvd_corpus.json  204.7 MB
+│   │   ├── triagemate.db
 │   │   └── vendor_popularity.json  405.3 KB
 │   ├── integrations/
 │   │   ├── __init__.py
@@ -319,6 +356,8 @@ TriageMate MVP/
 │   │   └── WINDOWS_SETUP.md  TriageMate — Windows Setup Guide
 │   ├── planning/
 │   │   ├── ai-doc-strategy-2026-07-07.md  AI Documentation Strategy Proposal
+│   │   ├── github-label-taxonomy.md  GitHub Label Taxonomy
+│   │   ├── github-manifest-20260711.json  953.0 B
 │   │   ├── HANDOFF-2026-07-08.md  Handoff Document — 2026-07-08
 │   │   └── ROADMAP.md  TriageMate — Roadmap
 │   ├── reference/
@@ -351,8 +390,9 @@ TriageMate MVP/
 │   ├── knowledge_graph.json  21.9 KB
 │   └── ml_inventory.md  TriageMate — ML Model Inventory
 ├── .dockerignore  328.0 B
-├── .env.example  2.2 KB
-├── .gitignore  612.0 B
+├── .env.example  2.3 KB
+├── .gitignore  786.0 B
+├── .opencodeignore  262.0 B
 ├── .pre-commit-config.yaml  415.0 B
 ├── =2.2.0  1.0 KB
 ├── AGENTS.md  TriageMate Project Rules
@@ -362,8 +402,10 @@ TriageMate MVP/
 ├── Dockerfile  1.4 KB
 ├── index.html  119.4 KB
 ├── justfile  8.1 KB
+├── LICENSE  422.0 B
 ├── MVP_SCOPE.md  TriageMate MVP — Scope Document
-├── opencode.jsonc  924.0 B
+├── opencode.jsonc  1.2 KB
+├── README.md  TriageMate
 ├── requirements-dev.txt  154.0 B
 ├── RESEARCH_FINDINGS.md  TriageMate — Sprint NEXT+2 Research Findings
 ├── ROADMAP.md  TriageMate — Roadmap
