@@ -13,7 +13,7 @@
 | Tests | 449 pass, 0 fail |
 | Open bugs | 0 (AI_PROBLEMS.md is clean) |
 | Sprints completed | 17, 18, 19, 20, 21, 22, 23, **24** |
-| Current sprint | Sprint 25 (TBD) — see GitHub Milestones |
+| Current sprint | Sprint 25 (GitHub-Native Workflow Operationalization) |
 | Pipeline stages | Pre-Tier → Tier 0 → Tier 1 → Tier 2 → Tier 3 (Human Review) |
 | Enrichment sources | 14 integrations (NVD, OSV, OTX, ExploitDB, Metasploit, Tenable, GreyNoise [deprecated], CMDB [stub], Advisories [stub], MITRE, CWE classifier, Demo generator, **Synthetic Telemetry**, **Network Context**) |
 | Demo rows | 7 CVEs, scores 99/97/74/91/82/97/80 (±3 tolerance) |
@@ -139,6 +139,22 @@
 | **3** | **Archive & Manifest** | ✅ Done | Archived sprint plans to `archive/github-migration/` (no doc duplication), created migration manifest, created `.opencodeignore` to exclude archive from AI tooling, updated INDEX.md and ROADMAP.md to reference Issues+Milestones. |
 | **4** | **Verification** | ✅ Done | Gated verification loop completed. All labels, milestones, issues, templates, archive, symlinks verified. Bookkeeper freshness pass clean. |
 | **5** | **Final Gate & Commit** | ✅ Done | Full quality gate (lint → test → graphify → audit), git commit `ed1821e` with descriptive message, pushed to remote. |
+
+---
+
+## Sprint 25 — 🏗️ In Progress (GitHub-Native Workflow Operationalization)
+
+*Executing 11 July 2026. See `.opencode/plans/2026-07-11-sprint-25.md` for full detail.*
+
+| # | Item | Status | Description |
+|---|---|---|---|
+| **0** | **Audit Current State** | ✅ Complete | Verified Sprint 24, tested subagent `gh` access (Level 5/5), inventoried 16 project + 2 global skills |
+| **1** | **Sprint 25 Infra** | ✅ Complete | Created 7 GitHub Issues (#40-#46), updated ROADMAP.md |
+| **2** | **Core Agent Updates** | ✅ Complete | Updated AGENTS.md + 5 agent files for GitHub-native conditional-access workflow |
+| **3** | **Skill File Updates** | ✅ Complete | Updated 14 of 15 project skills; updated github-basics and archived-files (under 25 words) |
+| **4** | **Capability Test** | ✅ Complete | Validated Level 5/5 branch/PR/merge workflow via PR #47 |
+| **5** | **Verification** | ⏳ Pending | Bookkeeper, cross-file checks |
+| **6** | **Quality Gate & Commit** | ⏳ Pending | `just gate`, commit, push |
 
 ---
 

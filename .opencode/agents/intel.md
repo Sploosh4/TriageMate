@@ -69,3 +69,4 @@ Save reports as `backend/reports/intel/YYYY-MM-DD-topic-brief.md` with this stru
 3. Cross-reference multiple sources when possible
 4. Reports should be self-contained — someone reading it later should understand the full context
 5. If you need something outside research (e.g., code changes), flag it to the commander — don't go rogue
+6. Reference relevant GitHub Issues in your reports when applicable — this helps link intelligence findings to tracked work items

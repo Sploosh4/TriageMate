@@ -5,6 +5,10 @@ description: Visual design, CSS architecture, layout, color palette, accessibili
 
 # TriageMate UX Design
 
+## GitHub Workflow
+
+Test `gh` access before relying on it. Use subagent operations when Level 4+ verified; otherwise route mutations through the commander.
+
 ## Visual Reference
 `demo-reference.html` is the canonical visual spec — all changes must match it exactly.
 

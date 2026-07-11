@@ -2,7 +2,7 @@
 
 > Canonical reference — read this before touching any ML code.
 
-> Generated: 2026-07-11 14:12:33
+> Generated: 2026-07-11 15:33:52
 
 ---
 

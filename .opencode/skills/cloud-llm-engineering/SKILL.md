@@ -5,6 +5,10 @@ description: Tier 2 cloud LLM integration, API call architecture, prompt enginee
 
 # TriageMate Cloud LLM Engineering
 
+## GitHub Workflow
+
+Test `gh` access before relying on it. Use subagent operations when Level 4+ verified; otherwise route mutations through the commander.
+
 ## Providers
 Primary → Backup → KNOWN_CONFLICTS fallback → neutral default
 - OpenAI (gpt-4o-mini)

@@ -5,6 +5,10 @@ description: Python, FastAPI, SQLite, database schema, pipeline logic, API endpo
 
 # TriageMate Backend Engineering
 
+## GitHub Workflow
+
+Test `gh` access before relying on it. Use subagent operations when Level 4+ verified; otherwise route mutations through the commander.
+
 ## Stack
 - Python 3.12 with type hints
 - FastAPI framework: routers, middleware, dependency injection, Pydantic v2 models
@@ -88,7 +92,7 @@ A local MCP server registered in `opencode.jsonc` that provides direct read-only
 Equivalent to `just db-shell` but callable inline by the LLM.
 
 ## Score Contract
-The 7 demo rows must score within ±3 of: 98, 91, 73, 66, 58, 44, 26
+The 7 demo rows must score within ±3 of: 99, 97, 74, 91, 82, 97, 80
 (Source: `routers/models.py:89`, verified by `tests/test_model_versions.py:134`)
 
 ## Database Tables (Sprint 14+)

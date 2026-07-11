@@ -1,0 +1,4 @@
+interface:
+  display_name: "GitHub Basics"
+  short_description: "Basic GitHub workflow guidance"
+  default_prompt: "Use $github-basics for basic GitHub workflow guidance."

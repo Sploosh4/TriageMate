@@ -1,0 +1,4 @@
+interface:
+  display_name: "Archived Files"
+  short_description: "Handle archived files safely"
+  default_prompt: "Use $archived-files when deciding how to handle archived files."

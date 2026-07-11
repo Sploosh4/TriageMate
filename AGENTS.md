@@ -3,6 +3,16 @@
 ## Documentation Freshness
 After completing every task, the commander MUST delegate to bookkeeper for a freshness pass. This is not optional — bookkeeper is the mechanical guarantee against .md drift.
 
+## GitHub Workflow Overview
+
+TriageMate uses a **conditional-access GitHub model**:
+
+- **Test first, use when verified:** Subagents with verified Level 4+ `gh` CLI access may handle GitHub operations (branches, commits, PRs, issues) directly. Access is tested via `gh auth status` at the start of a session.
+- **Fallback to commander:** If subagent `gh` access is not verified, remote GitHub mutations are routed through the commander's `github_*` MCP tools.
+- **Hybrid git model:** Small, low-risk changes commit directly to `main`. Substantial changes (feature work, refactors, structural modifications) use a branch-and-PR workflow: create a branch → push → open PR → merge after review.
+- **Canonical tracking:** GitHub Issues and Milestones serve as the canonical source of truth for task tracking and release planning.
+- **Execution reference:** Detailed sprint execution plans live in `.opencode/plans/` and reference their corresponding GitHub Issues and Milestones.
+
 ## Decision Framework
 All subagents load the `decision-framework` skill at the start of every task. It teaches when to flag assumptions vs. proceed, and how to report to the commander.
 

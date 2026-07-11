@@ -5,6 +5,10 @@ description: Australian privacy law, data handling compliance, demo data safety 
 
 # Privacy & Legal Advising
 
+## GitHub Workflow
+
+Test `gh` access before relying on it. Use subagent operations when Level 4+ verified; otherwise route mutations through the commander.
+
 ## Jurisdiction
 - Australian Privacy Act 1988: Australian Privacy Principles (APPs), notifiable data breaches scheme
 - WA-specific: WA Freedom of Information Act, State Records Act

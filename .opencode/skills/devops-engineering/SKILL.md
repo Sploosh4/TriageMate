@@ -5,6 +5,10 @@ description: Docker, docker-compose, CI/CD, environment variables, database migr
 
 # TriageMate DevOps Engineering
 
+## GitHub Workflow
+
+Test `gh` access before relying on it. Use subagent operations when Level 4+ verified; otherwise route mutations through the commander.
+
 ## Infrastructure
 - Docker compose: `db` (PostgreSQL 16-alpine) + `triagemate` (FastAPI app)
 - SQLite for dev (no DB_URL set), PostgreSQL for production

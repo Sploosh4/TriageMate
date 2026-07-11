@@ -5,6 +5,10 @@ description: Threat intelligence integration modules, data sources, cache files,
 
 # Intel Toolbox — Data Sources & Integrations
 
+## GitHub Workflow
+
+Test `gh` access before relying on it. Use subagent operations when Level 4+ verified; otherwise route mutations through the commander.
+
 ## Integration Modules (`backend/integrations/`)
 
 | Module | Data Source | What It Provides |

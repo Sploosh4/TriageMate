@@ -5,6 +5,10 @@ description: Project-level CLI commands, justfile, Docker, dev server, testing, 
 
 # TriageMate Project Toolbox
 
+## GitHub Workflow
+
+Test `gh` access before relying on it. Use subagent operations when Level 4+ verified; otherwise route mutations through the commander.
+
 **Primary interface: `just`** (34 recipes). Run `just --list` from the project root to see all available commands. The justfile lives at `./justfile`.
 
 ## Dev Loop (via just)

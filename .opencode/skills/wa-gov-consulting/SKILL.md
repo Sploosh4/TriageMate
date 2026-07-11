@@ -5,6 +5,10 @@ description: WA government SOC conventions, hostname plausibility, department na
 
 # WA Government Consulting
 
+## GitHub Workflow
+
+Test `gh` access before relying on it. Use subagent operations when Level 4+ verified; otherwise route mutations through the commander.
+
 ## Domain Expertise
 WA government department structure, IT conventions, and SOC workflow standards.
 

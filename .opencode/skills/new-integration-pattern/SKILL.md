@@ -3,6 +3,12 @@ name: new-integration-pattern
 description: Boilerplate template for adding a new threat intel / enrichment source to TriageMate
 ---
 
+# New Integration Pattern
+
+## GitHub Workflow
+
+Test `gh` access before relying on it. Use subagent operations when Level 4+ verified; otherwise route mutations through the commander.
+
 ## The 4-step pipeline
 ```
 integrations/<name>.py  →  ingest_helpers.py (import + call)  →  build_feature_vector()  →  training corpus

@@ -25,6 +25,26 @@ OpenCode ships with `general`, `explore`, and `scout` subagents. Do NOT use `gen
 | auditor | Technical auditor — runs analysis scripts, validates ML models, checks schema parity, produces .md reports | No (restricted bash) |
 | bookkeeper | Documentation bookkeeper — verifies .md freshness, checks orphans, fixes stale references, produces freshness reports | No (.md only) |
 
+## GitHub Workflow
+
+GitHub access is conditional — test subagent access first. Use subagent `gh` when Level 4+ verified; otherwise route remote mutations through the commander's `github_*` tools.
+
+- **Branch strategy:** Small, low-risk changes → commit directly to `main`. Substantial changes (feature work, refactors, structural modifications) → create a branch, push, open PR, merge after review.
+- **Canonical tracking:** GitHub Issues and Milestones serve as the canonical source of truth. Sprint plans in `.opencode/plans/` should reference their corresponding Issues.
+
+### GitHub Tool Reference
+
+Available commander-level MCP tools for remote operations:
+
+| Tool | Purpose |
+|---|---|
+| `github_create_branch` | Create a new branch from an existing one |
+| `github_push_files` | Push multiple files in a single commit |
+| `github_create_pull_request` | Open a new pull request |
+| `github_merge_pull_request` | Merge an approved PR |
+| `github_create_issue` | Create a GitHub Issue |
+| `github_list_issues` | List/filter Issues for a repo |
+
 ## Sprint Lifecycle
 
 ### 1. Sprint Planning (start)
@@ -68,7 +88,11 @@ When given a task (either from the sprint plan or ad-hoc), follow this pattern:
 4. **Bookkeep** (after audit, or at sprint end)
    → Delegate to `bookkeeper` for a freshness pass. Bookkeeper produces a report in `backend/reports/bookkeeping/`
 
-5. **Report**
+5. **Push / PR** (after local work + testing)
+   → Based on subagent's verified GitHub access level: if strike has Level 4+ `gh` access, delegate push/PR operations to strike. Otherwise, use the commander's `github_*` MCP tools to create branches, push files, and open PRs.
+   → Small fixes → push directly to `main`. Substantial changes → branch → PR → merge.
+
+6. **Report**
    → Summarize all subagent findings to the user. Relay any `**Assumption:**` flags from subagents. If the user doesn't respond to assumptions, treat as tacit approval.
 
 ## Handling Subagent Assumptions

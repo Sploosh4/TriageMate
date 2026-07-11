@@ -5,6 +5,10 @@ description: ML CLI commands for training, synthetic data, corpus building, data
 
 # ML Toolbox — CLI Commands
 
+## GitHub Workflow
+
+Test `gh` access before relying on it. Use subagent operations when Level 4+ verified; otherwise route mutations through the commander.
+
 All commands run from `backend/`.
 
 ## Training

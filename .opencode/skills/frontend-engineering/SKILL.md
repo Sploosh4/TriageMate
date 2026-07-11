@@ -5,6 +5,10 @@ description: HTML, CSS, JavaScript, DOM manipulation, Fetch API, vanilla JS SPA,
 
 # TriageMate Frontend Engineering
 
+## GitHub Workflow
+
+Test `gh` access before relying on it. Use subagent operations when Level 4+ verified; otherwise route mutations through the commander.
+
 ## Architecture
 - Vanilla JavaScript SPA (no framework, no npm, no bundler)
 - FastAPI serves `frontend/index.html` at root

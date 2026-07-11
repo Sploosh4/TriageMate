@@ -60,10 +60,17 @@ Track Tier 2 LLM calls — token counts, provider used, fallback triggered. Comp
 Check last-modified timestamps on all cache files in `backend/data/`. Flag any cache older than its TTL. Identify which caches need refresh before the next pipeline run.
 
 ### 10. Score Drift Audit
-Track the 7 demo row scores over time. If any score shifts by more than ±3 from its baseline (94, 87, 71, 63, 55, 41, 22), flag for investigation. This catches silent model drift.
+Track the 7 demo row scores over time. If any score shifts by more than ±3 from its baseline (99, 97, 74, 91, 82, 97, 80), flag for investigation. This catches silent model drift.
 
 ### 11. Integration Health Audit
 Test each integration module with a known CVE. Verify graceful degradation — failed integrations must not crash the pipeline. Check that all integrations return safe defaults on error.
 
 ### 12. DDL Compliance Audit
 Verify that any recent `database.py` change has entries in both `_init_db_sqlite()` and `_init_db_pg()`. Cross-reference with the `backend-engineering` skill (dual-DDL pattern was consolidated there after `dual-database-ddl` was archived).
+
+## GitHub Workflow Verification
+
+When auditing changes that involve GitHub:
+- For substantial changes: was a branch created and a PR used? Check with `gh pr list`
+- Do local `.md` files reference GitHub Issues that actually exist? Check with `gh issue view <number>`
+- Are milestone references in local sprint plans accurate? Check with `gh api repos/.../milestones`

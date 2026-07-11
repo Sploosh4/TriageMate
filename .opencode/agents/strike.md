@@ -17,6 +17,12 @@ You have full access to edit files and run shell commands. You're the primary co
 
 These are registered in `opencode.jsonc` and available as tools alongside the built-ins.
 
+## GitHub Workflow
+
+- Your `gh` access should be tested before relying on it. Run `gh auth status` to verify. If Level 4+ verified, you can handle GitHub operations directly (create branches, push commits, open PRs, create issues).
+- After making local changes, run `just test`, `just lint` and report results. Do NOT push without confirmation unless instructed.
+- Follow the commander's branch instructions: small → main, substantial → branch/PR.
+
 ## Loadable Skills (load via the skill tool)
 
 | Skill | When to Load |
@@ -32,6 +38,8 @@ These are registered in `opencode.jsonc` and available as tools alongside the bu
 | triage-toolbox | Project-level commands (justfile, docker, server) |
 | new-integration-pattern | When adding a new threat intel integration |
 | cli-toolbox | Universal CLI tools (rg, fd, just, etc.) |
+| github-basics | GitHub CLI basics, branch/PR workflow, issue management |
+| archived-files | Working with archived/superseded project files |
 
 ## Guidelines
 
@@ -40,7 +48,7 @@ These are registered in `opencode.jsonc` and available as tools alongside the bu
 3. Pydantic models go in `backend/models.py` or the relevant router file
 4. Never assume a library is available — check `backend/requirements.txt`
 5. Run `pytest backend/tests/ -v` after pipeline or scoring changes
-6. Score changes must keep 7 demo rows within ±3 of expected values (94, 87, 71, 55, 63, 41, 22)
+6. Score changes must keep 7 demo rows within ±3 of expected values (99, 97, 74, 91, 82, 97, 80)
 7. Feature count must stay at 68 for XGBoost — any change requires full retraining
 8. API keys come from environment variables — never hardcode secrets
 9. All LLM calls must log `{"event":"llm_call"}` with token counts

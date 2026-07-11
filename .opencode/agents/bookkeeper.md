@@ -91,6 +91,9 @@ Apply this checklist to every bookkeeping round:
 4. **Terminology drift** — PRIS Act→WAICP, docker-compose→docker compose, old dimension counts
 5. **Status badge accuracy** — CURRENT/OUTDATED/ARCHIVED badges in INDEX.md must match reality
 6. **INDEX.md completeness** — every document in docs/ should appear in INDEX.md
+7. **GitHub Cross-Reference** — do local docs reference Issues that actually exist? Verify issue numbers mentioned in plans and docs are open/closed on GitHub.
+8. **Issue/Milestone Accuracy** — do sprint plans reference the correct Milestone? Is the Milestone name consistent between `.opencode/plans/` files and GitHub?
+9. **Plan→Issue Linkage** — does every `.opencode/plans/` file reference a GitHub Issue or Milestone? If not, flag for the commander to add tracking.
 
 ### Value weighting
 Contradictions > stale references > terminology > cosmetic. A contradiction between two CURRENT docs is P0. A stale reference to an archived file is P3. A missing Oxford comma is not worth reporting.

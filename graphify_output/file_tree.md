@@ -56,8 +56,13 @@ TriageMate MVP/
 │   │   ├── 2026-07-10-sprint-21.md  Sprint 21 — Multiplier-Based Security Scoring + Quick Wins
 │   │   ├── 2026-07-10-sprint-22.md  Sprint 22 — Multi-Window KEV Labels + Infrastructure
 │   │   ├── 2026-07-11-sprint-23.md  Sprint 23 — Score Reconciliation, Bug Hunt & Documentation Cleanup
-│   │   └── 2026-07-11-sprint-24.md  Sprint 24 — GitHub-Native Work Tracking for AI Workflow
+│   │   ├── 2026-07-11-sprint-24.md  Sprint 24 — GitHub-Native Work Tracking for AI Workflow
+│   │   └── 2026-07-11-sprint-25.md  Sprint 25 — GitHub-Native Workflow Operationalization
 │   ├── skills/
+│   │   ├── archived-files/
+│   │   │   ├── agents/
+│   │   │   │   └── openai.yaml  interface:
+│   │   │   └── SKILL.md  Archived Files
 │   │   ├── audit-checklist/
 │   │   │   └── SKILL.md  Audit Checklist
 │   │   ├── backend-engineering/
@@ -70,6 +75,10 @@ TriageMate MVP/
 │   │   │   └── SKILL.md  TriageMate DevOps Engineering
 │   │   ├── frontend-engineering/
 │   │   │   └── SKILL.md  TriageMate Frontend Engineering
+│   │   ├── github-basics/
+│   │   │   ├── agents/
+│   │   │   │   └── openai.yaml  interface:
+│   │   │   └── SKILL.md  GitHub Basics
 │   │   ├── intel-toolbox/
 │   │   │   └── SKILL.md  Intel Toolbox — Data Sources & Integrations
 │   │   ├── ml-engineering/
@@ -77,7 +86,7 @@ TriageMate MVP/
 │   │   ├── ml-toolbox/
 │   │   │   └── SKILL.md  ML Toolbox — CLI Commands
 │   │   ├── new-integration-pattern/
-│   │   │   └── SKILL.md
+│   │   │   └── SKILL.md  New Integration Pattern
 │   │   ├── privacy-legal-advising/
 │   │   │   └── SKILL.md  Privacy & Legal Advising
 │   │   ├── triage-toolbox/

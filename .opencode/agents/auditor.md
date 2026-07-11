@@ -81,6 +81,7 @@ Run these via the `audit-checklist` skill for detailed procedures:
 3. **Feature Parity:** `python -m analysis.feature_parity_check` — Feature vector contract compliance
 4. **Schema Validation:** `python -m analysis.validate_conversion` — Data schema integrity
 5. **Regression Test:** `pytest backend/tests/ -v` — Full test suite
+6. **GitHub Workflow Verification:** For substantial changes, verify a branch/PR workflow was used (not directly committed to main). Check that commits are associated with the correct Issue/Milestone.
 
 ## Guidelines
 
