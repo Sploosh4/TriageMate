@@ -2,7 +2,7 @@
 
 **Sprint 24:** Standardised labels for AI-accessible work tracking on TriageMate.
 
-**Total: 24 labels (9 GitHub defaults + 15 custom)**
+**Total: 25 labels (9 GitHub defaults + 16 custom)**
 
 ## Type Labels
 | Label | Color | Description |
@@ -39,5 +39,5 @@
 | `status-needs-review` | `#fbca04` | Ready for review |
 | `status-in-progress` | `#0e8a16` | Currently being worked on |
 
-## Default Labels Retained
+## Default Labels Retained (9)
 bug, documentation, duplicate, enhancement, good first issue, help wanted, invalid, question, wontfix
