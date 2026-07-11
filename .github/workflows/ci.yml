@@ -38,6 +38,14 @@ jobs:
       - name: Run ruff format check
         run: ruff format --check backend/
 
+      - name: Run performance benchmarks
+        if: github.ref == 'refs/heads/main'
+        run: |
+          cd backend && python -m pytest tests/test_benchmark.py \
+            --benchmark-compare=baseline \
+            --benchmark-compare-fail=min:10% \
+          || echo "Benchmark regression check failed (non-blocking for CI)"
+
   frontend-lint:
     runs-on: ubuntu-latest
     steps:

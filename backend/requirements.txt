@@ -20,3 +20,6 @@ transformers>=4.37.0
 requests>=2.31.0
 pyjwt>=2.13.0
 bcrypt>=5.0.0
+
+# Dev/test dependencies
+pytest-benchmark>=4.0.0

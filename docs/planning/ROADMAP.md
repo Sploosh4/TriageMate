@@ -10,9 +10,9 @@
 
 | Metric | Value |
 |---|---|
-| Tests | 432 pass, 0 fail |
+| Tests | 449 pass, 0 fail |
 | Open bugs | 0 (AI_PROBLEMS.md is clean) |
-| Sprints completed | 17, 18, 19, 20, 21 |
+| Sprints completed | 17, 18, 19, 20, 21, 22 |
 | Pipeline stages | Pre-Tier → Tier 0 → Tier 1 → Tier 2 → Tier 3 (Human Review) |
 | Enrichment sources | 14 integrations (NVD, OSV, OTX, ExploitDB, Metasploit, Tenable, GreyNoise [deprecated], CMDB [stub], Advisories [stub], MITRE, CWE classifier, Demo generator, **Synthetic Telemetry**, **Network Context**) |
 | Demo rows | 7 CVEs, scores 98/91/73/66/58/44/26 (±3 tolerance) |
@@ -72,8 +72,6 @@
 | **—** | **Bonus A: Scoring Property Tests** | ✅ Done | Property-based tests for `backend/scoring.py` covering edge cases: all-zero, all-max, negative inputs, clamping, band boundaries. |
 | **—** | **Bonus F: Seed Data Freshness Check** | ✅ Done | `backend/scripts/verify_seed_scores.py` script that verifies seed data scores match the canonical contract from `test_model_versions.py`. Integrated via `just verify-seeds`. |
 
-> **Note:** Bonuses B–G from the original sprint plan were **deferred to Sprint 20**, but Sprint 20 focused on its own Items 1–3. Bonuses have been reorganized: Config API (Bonus B) → Sprint 21 Bonus A, Drift Webhook (Bonus C) → Sprint 21 Bonus B, CI benchmarks / Alembic / Rollback (Bonuses D/E/G) → Sprint 22.
-
 ---
 
 ## Sprint 20 — ✅ Complete (Agentic LLM + Customizable Weights + Safe PCA)
@@ -100,6 +98,19 @@
 
 ---
 
+## Sprint 22 — ✅ Complete (Multi-Window KEV Labels + Infrastructure)
+
+*Executed 10 July 2026.*
+
+| # | Item | Status | Description |
+|---|---|---|---|
+| **1** | **Multi-Window KEV Labels** | ✅ Done | Replaced binary KEV label (0/1) with 5-class multi-window labels (0=not KEV, 1=≤30d, 2=31-90d, 3=91-365d, 4=>365d). XGBoost switched to `multi:softprob` with `num_class=5`. Predictor returns `exploitation_probability` (any-KEV prob) + `window_probabilities` for transparency. Full backward compatibility with Tier 1 and scoring engine. |
+| **2** | **CI Benchmark Gates** | ✅ Done | Added pytest-benchmark for scoring calculator (3 benchmarks). CI runs on main branch with 10% regression threshold. `just bench` and `just bench-check` recipes. |
+| **3** | **Alembic Schema Catch-Up** | ✅ Done | Created migration 009 adding `pre_tier_features` and `epss_features` columns to both tables. |
+| **4** | **Model Registry Rollback API** | ✅ Done | `POST /api/models/xgboost/rollback?version=<tag>` with lock mechanism, validation, cache invalidation. |
+
+---
+
 ## Later — Medium-Term Engineering
 
 | # | Item | Effort | Description |
@@ -109,7 +120,7 @@
 | **11** | **Shared config module** | — | ✅ **Completed in Sprint 19** (Item 1) — `backend/pipeline/config/` package created. |
 | **12** | **Multiplier-based security scoring** | — | ✅ **Completed in Sprint 21** (Item 1) — Replaced additive Security Context with proportional multiplier (1.20/1.10/1.00/0.85/0.70). Total weight reduced to 107. |
 | **13** | **EPSS v4 retrain on real data** | 1–2 days | ⏸️ **Deferred to Post-MVP.** Retrain EPSS v4 on real (non-synthetic) Tenable scan aggregation data. Deferred per commander analysis. Requires real Tenable scan aggregation data. |
-| **14** | **Multi-window labels** | 6 hrs | 🟡 **Planned for Sprint 22.** Replace single binary KEV label with 30/90/365d observation windows. Deferred from Sprint 21 — scoring formula must be locked first before changing ML target variable. |
+| **14** | **Multi-window labels** | — | ✅ **Completed in Sprint 22** (Item 1) — Replaced binary KEV label with 5-class multi-window labels (0=not KEV, 1=≤30d, 2=31-90d, 3=91-365d, 4=>365d). |
 
 ---
 
@@ -142,7 +153,7 @@ uvicorn main:app --reload --host 0.0.0.0
 ### Verification
 
 ```bash
-just test   # 432 tests, 432 pass
+just test   # 449 tests, 449 pass
 just lint   # ruff check + format
 just gate   # Full quality gate: lint → test → audit-all
 ```

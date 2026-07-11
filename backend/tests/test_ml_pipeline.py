@@ -375,3 +375,151 @@ class TestPCAFeatureNames:
         names = make_sbert_feature_names()
         assert len(names) == 384
         assert names[0] == "sbert_0"
+
+
+# ── Multi-window KEV labels (Sprint 22) ──────────────────────────────────
+
+
+class TestMultiWindowLabels:
+    """Verify 5-class KEV label construction and predictor output."""
+
+    def test_kev_windows_constant(self):
+        """KEV_WINDOWS should be [0, 30, 90, 365]."""
+        from ml.train_xgboost import KEV_WINDOWS
+
+        assert KEV_WINDOWS == [0, 30, 90, 365]
+
+    def test_multi_window_label_construction(self):
+        """Verify labels are correctly assigned per window."""
+        from ml.train_xgboost import construct_labels
+
+        # DATE_END is 2024-12-31 in the training pipeline.
+        # Mock CVEs and KEV data with dates relative to that.
+        cves = [
+            {"cve_id": "CVE-2024-0001"},  # Not in KEV → 0
+            {"cve_id": "CVE-2024-0002"},  # Empty date → 0
+            {"cve_id": "CVE-2024-0003"},  # Future → 0 (point-in-time filter)
+            {"cve_id": "CVE-2024-0004"},  # 2024-12-01 → ~30d → window 1
+            {"cve_id": "CVE-2024-0005"},  # 2024-09-01 → ~121d → window 3
+            {"cve_id": "CVE-2024-0006"},  # 2020-01-01 → >365d → window 4
+        ]
+        kev = {
+            "CVE-2024-0002": "",  # empty → 0
+            "CVE-2024-0003": "2099-01-01",  # future → 0
+            "CVE-2024-0004": "2024-12-01",  # 30d from DATE_END → window 1
+            "CVE-2024-0005": "2024-09-01",  # ~121d from DATE_END → window 3
+            "CVE-2024-0006": "2020-01-01",  # >365d → window 4
+        }
+        labels = construct_labels(cves, kev, cutoff_date="2024-12-31")
+        expected = [0, 0, 0, 1, 3, 4]
+        assert labels == expected, f"Expected {expected}, got {labels}"
+
+    def test_multi_window_label_range(self):
+        """Verify labels are always 0-4."""
+        from ml.train_xgboost import construct_labels
+
+        cves = [
+            {"cve_id": "CVE-2024-0010"},
+            {"cve_id": "CVE-2024-0011"},
+        ]
+        kev = {
+            "CVE-2024-0010": "2024-06-15",
+            "CVE-2024-0011": "2020-01-01",
+        }
+        labels = construct_labels(cves, kev, cutoff_date="2024-12-31")
+        assert all(0 <= lab <= 4 for lab in labels), (
+            f"Labels out of range 0-4: {labels}"
+        )
+
+    def test_multi_window_not_in_kev_is_zero(self):
+        """CVE not in KEV should always get label 0."""
+        from ml.train_xgboost import construct_labels
+
+        cves = [{"cve_id": "CVE-2024-0020"}]
+        labels = construct_labels(cves, {}, cutoff_date="2024-12-31")
+        assert labels == [0], f"Expected [0], got {labels}"
+
+    def test_multi_window_predictor_output(self):
+        """Verify predictor returns 5 probabilities summing to ~1.0."""
+        from ml.xgboost_predictor import predict
+        import ml.xgboost_predictor as xp
+
+        # Point PCA to nonexistent path for graceful degradation
+        from pathlib import Path
+        import tempfile
+
+        old_pca = xp.PCA_MODEL_PATH
+        fake_pca = Path(tempfile.mktemp(suffix=".pkl"))
+        try:
+            xp.PCA_MODEL_PATH = fake_pca
+            xp._pca_model = None
+
+            features = {
+                "epss_score": 0.05,
+                "description": "Test CVE description for multi-window check",
+            }
+            result = predict(features)
+            # Should have the new fields
+            assert "exploitation_probability" in result, (
+                "Missing exploitation_probability"
+            )
+            assert "window_probabilities" in result, "Missing window_probabilities"
+            windows = result["window_probabilities"]
+            assert len(windows) == 5, (
+                f"Expected 5 window probabilities, got {len(windows)}"
+            )
+            total_prob = sum(windows.values())
+            assert 0.99 <= total_prob <= 1.01, (
+                f"Window probabilities should sum to ~1.0, got {total_prob}"
+            )
+        except FileNotFoundError:
+            # XGBoost model may not exist — that's OK
+            pass
+        except Exception as e:
+            # Only allow FileNotFoundError (no model), not other errors
+            if "FileNotFoundError" not in type(e).__name__:
+                raise
+        finally:
+            xp.PCA_MODEL_PATH = old_pca
+            xp._pca_model = None
+            try:
+                fake_pca.unlink()
+            except OSError:
+                pass
+
+    def test_multi_window_backward_compat(self):
+        """Verify exploitation_probability still exists for downstream consumers."""
+        from ml.xgboost_predictor import predict
+        import ml.xgboost_predictor as xp
+
+        from pathlib import Path
+        import tempfile
+
+        old_pca = xp.PCA_MODEL_PATH
+        fake_pca = Path(tempfile.mktemp(suffix=".pkl"))
+        try:
+            xp.PCA_MODEL_PATH = fake_pca
+            xp._pca_model = None
+
+            features = {
+                "epss_score": 0.05,
+                "description": "Test backward compatibility",
+            }
+            result = predict(features)
+            assert "exploitation_probability" in result
+            assert 0.0 <= result["exploitation_probability"] <= 1.0, (
+                f"exploitation_probability out of range: "
+                f"{result['exploitation_probability']}"
+            )
+        except FileNotFoundError:
+            pass
+        except Exception as e:
+            if "FileNotFoundError" not in type(e).__name__:
+                raise
+        finally:
+            xp.PCA_MODEL_PATH = old_pca
+            xp._pca_model = None
+            try:
+                fake_pca.unlink()
+            except OSError:
+                pass

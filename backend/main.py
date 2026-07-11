@@ -219,6 +219,9 @@ app.include_router(queue.router, dependencies=[Depends(get_current_user)])
 app.include_router(cases.router, dependencies=[Depends(get_current_user)])
 app.include_router(ingest.router, dependencies=[Depends(get_current_user)])
 app.include_router(models_router.router, dependencies=[Depends(get_current_user)])
+app.include_router(
+    models_router.rollback_router, dependencies=[Depends(get_current_user)]
+)
 
 
 @app.get("/")

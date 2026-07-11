@@ -294,6 +294,10 @@ def predict(features: dict) -> dict:
     """
     Predict exploitation probability for a vulnerability + asset combination.
 
+    Uses the multi-window KEV model (5-class softprob) to produce:
+    - exploitation_probability: probability of ANY KEV membership (0-1)
+    - window_probabilities: per-window breakdown for transparency
+
     Required features:
         epss_score, mission_prevalence, public_wellbeing_impact,
         internet_facing, description (CVE text, optional)
@@ -302,8 +306,9 @@ def predict(features: dict) -> dict:
     by the scoring engine (scoring.py), not by the XGBoost model.
 
     Returns:
-        exploitation_probability (0-1), confidence (0-1),
-        routing (auto_resolved|escalated), ensemble_std (float)
+        exploitation_probability (0-1), window_probabilities (dict),
+        confidence (0-1), routing (auto_resolved|escalated),
+        ensemble_std (float), tier (str)
     """
     # Tier-0: KEV + CWE-stratified EPSS before model inference
     tier0 = _tier_zero_check(features)
@@ -334,12 +339,50 @@ def predict(features: dict) -> dict:
 
     X = np.hstack([tabular, text_vec])
 
-    prob = float(model.predict_proba(X)[0, 1])
+    # predict_proba output shape depends on model version:
+    #   - Multi-class (v4+):  (1, 5) — per-window probabilities
+    #   - Binary (legacy):    (1, 2) — negative/positive class
+    raw_probs = model.predict_proba(X)[0]
+    n_classes = len(raw_probs)
 
-    # Calibrate probability if a Platt scaler exists
+    if n_classes == 5:
+        # Multi-window KEV model (5-class softprob)
+        probabilities = raw_probs
+        prob_any_kev = float(probabilities[1:].sum())
+        window_probs = {
+            "not_kev": float(probabilities[0]),
+            "window_30d": float(probabilities[1]),
+            "window_90d": float(probabilities[2]),
+            "window_365d": float(probabilities[3]),
+            "window_gt_365d": float(probabilities[4]),
+        }
+    elif n_classes == 2:
+        # Legacy binary model — prob[1] is the positive (KEV) class
+        prob_any_kev = float(raw_probs[1])
+        window_probs = {
+            "not_kev": float(raw_probs[0]),
+            "window_30d": 0.0,
+            "window_90d": 0.0,
+            "window_365d": 0.0,
+            "window_gt_365d": 0.0,
+        }
+    else:
+        # Fallback: unexpected number of classes
+        prob_any_kev = (
+            float(raw_probs[-1]) if len(raw_probs) > 1 else float(raw_probs[0])
+        )
+        window_probs = {
+            "not_kev": 1.0 - prob_any_kev,
+            "window_30d": 0.0,
+            "window_90d": 0.0,
+            "window_365d": 0.0,
+            "window_gt_365d": 0.0,
+        }
+
+    # Calibrate probability if a Platt scaler exists (applied to any-KEV prob)
     calibrator = _get_calibrator()
     if calibrator is not None:
-        prob = float(calibrator.predict_proba([[prob]])[0, 1])
+        prob_any_kev = float(calibrator.predict_proba([[prob_any_kev]])[0, 1])
 
     n_trees = xgb_model.n_estimators
     booster = xgb_model.get_booster()
@@ -355,9 +398,10 @@ def predict(features: dict) -> dict:
     ensemble_std = float(np.std(cumulative_probs))
 
     # Combined probability + uncertainty zoning routing.
-    if prob >= MID_PROB_THRESHOLD:
+    # Uses any-KEV probability for backward-compatible routing decisions.
+    if prob_any_kev >= MID_PROB_THRESHOLD:
         routing = "escalated"
-    elif prob >= LOW_PROB_THRESHOLD:
+    elif prob_any_kev >= LOW_PROB_THRESHOLD:
         if ensemble_std > UNCERTAINTY_THRESHOLD:
             routing = "escalated"
         else:
@@ -366,7 +410,8 @@ def predict(features: dict) -> dict:
         routing = "auto_resolved"
 
     return {
-        "exploitation_probability": round(prob, 3),
+        "exploitation_probability": round(prob_any_kev, 3),
+        "window_probabilities": window_probs,
         "confidence": round(1.0 - min(ensemble_std * 2, 1.0), 3),
         "routing": routing,
         "ensemble_std": round(ensemble_std, 4),

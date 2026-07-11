@@ -170,19 +170,22 @@ def load_training_data(path: Path) -> tuple:
 
 
 def print_quality_report(cves: list[dict], y: np.ndarray, dates: np.ndarray):
-    """Print a data-quality summary before training."""
+    """Print a data-quality summary before training (multi-class KEV labels)."""
     cve_ids_arr = np.array([c["cve_id"] for c in cves])
-    n_pos = int(sum(y == 1))
+    n_pos = int(sum(y > 0))  # Any KEV membership is "positive"
     n_total = len(y)
 
     print("\n" + "=" * 60)
-    print("DATA QUALITY REPORT")
+    print("DATA QUALITY REPORT (multi-window KEV)")
     print("=" * 60)
 
     print(f"\n  Total CVEs:           {n_total:,}")
-    print(f"  Exploited (label=1):  {n_pos:,}  ({n_pos / n_total:.3%})")
+    print(f"  In KEV (label>0):     {n_pos:,}  ({n_pos / n_total:.3%})")
+    for w in range(1, 5):
+        n_w = int(sum(y == w))
+        print(f"    Window {w} (label={w}):        {n_w:,}  ({n_w / n_total:.3%})")
     print(
-        f"  Not exploited:        {n_total - n_pos:,}  ({(n_total - n_pos) / n_total:.3%})"
+        f"  Not in KEV (label=0): {n_total - n_pos:,}  ({(n_total - n_pos) / n_total:.3%})"
     )
 
     train = dates <= TRAIN_CUTOFF
@@ -191,15 +194,15 @@ def print_quality_report(cves: list[dict], y: np.ndarray, dates: np.ndarray):
 
     for name, mask in [("Train", train), ("Val", val), ("Test", test)]:
         n = int(sum(mask))
-        n_p = int(sum(y[mask] == 1))
+        n_p = int(sum(y[mask] > 0))
         pct = n_p / n * 100 if n > 0 else 0
         print(f"  {name:>5} set:           {n:,} CVEs  (positives: {n_p} = {pct:.2f}%)")
 
-    pos_ids = cve_ids_arr[y == 1]
+    pos_ids = cve_ids_arr[y > 0]
     print(f"\n  Positive CVE IDs (first 20): {', '.join(pos_ids[:20].tolist())}")
 
     pos_cwes = Counter(
-        cve["cwe_id"] for cve, lab in zip(cves, y) if lab == 1 and cve["cwe_id"]
+        cve["cwe_id"] for cve, lab in zip(cves, y) if lab > 0 and cve["cwe_id"]
     )
     neg_cwes = Counter(
         cve["cwe_id"] for cve, lab in zip(cves, y) if lab == 0 and cve["cwe_id"]
@@ -216,13 +219,13 @@ def print_quality_report(cves: list[dict], y: np.ndarray, dates: np.ndarray):
             f"  Top CWE among non-exploited: {', '.join(f'{c} ({n})' for c, n in common_neg[:5])}"
         )
 
-    pos_cvss = [c["cvss_score"] for c, lab in zip(cves, y) if lab == 1]
+    pos_cvss = [c["cvss_score"] for c, lab in zip(cves, y) if lab > 0]
     neg_cvss = [c["cvss_score"] for c, lab in zip(cves, y) if lab == 0]
     if pos_cvss:
         print(f"\n  Mean CVSS (exploited):     {np.mean(pos_cvss):.1f}")
     print(f"  Mean CVSS (not exploited): {np.mean(neg_cvss):.1f}")
 
-    pos_epss = [c.get("epss_score", 0) for c, lab in zip(cves, y) if lab == 1]
+    pos_epss = [c.get("epss_score", 0) for c, lab in zip(cves, y) if lab > 0]
     if pos_epss:
         print(f"  Mean EPSS (exploited):     {np.mean(pos_epss):.4f}")
     neg_epss = [c.get("epss_score", 0) for c, lab in zip(cves, y) if lab == 0]
@@ -565,39 +568,86 @@ def compute_kev_lag_stats(
 # ────────────────────────────────────────────────────────────────────────────
 
 
+# KEV observation windows (in days): boundaries for label assignment
+KEV_WINDOWS = [0, 30, 90, 365]
+
+
 def construct_labels(
     cves: list[dict], kev_data: dict[str, str], cutoff_date: str = DATE_END
 ) -> list[int]:
-    """Point-in-time label construction.
+    """Construct multi-window KEV labels (0-4).
 
-    A CVE is labeled 1 (exploited) only if it appears in the KEV catalog AND
-    its dateAdded is at or before cutoff_date. This prevents future information
-    leakage from KEV additions that occurred after the training data freeze.
+    Label meanings:
+      0: Not in KEV
+      1: Added to KEV <= 30 days ago (recent exploitation)
+      2: Added to KEV 31-90 days ago
+      3: Added to KEV 91-365 days ago
+      4: Added to KEV > 365 days ago (historical exploitation)
 
-    CVEs whose dateAdded is after cutoff_date, or that are not in KEV at all,
-    are labeled 0.
+    Training date reference: cutoff_date (typically DATE_END).
+    Point-in-time: CVEs added to KEV *after* cutoff_date are labeled 0
+    to prevent future information leakage.
     """
+    from datetime import datetime, timezone
+
+    date_end = datetime.strptime(cutoff_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+
     labels = []
-    pos_count = 0
+    window_counts = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0}
     for cve in cves:
         cve_id = cve["cve_id"]
-        date_added = kev_data.get(cve_id, "")
-        if date_added and date_added <= cutoff_date:
-            labels.append(1)
-            pos_count += 1
-        else:
+        if cve_id not in kev_data:
             labels.append(0)
+            window_counts[0] += 1
+            continue
 
-    # Track how many current-KEV CVEs are excluded by dateAdded check
-    live_pos = sum(1 for c in cves if c["cve_id"] in kev_data)
-    lagged = live_pos - pos_count
+        date_added_str = kev_data[cve_id]
+        if not date_added_str:
+            labels.append(0)
+            window_counts[0] += 1
+            continue
+
+        # Point-in-time filter: skip KEV additions after cutoff
+        if date_added_str > cutoff_date:
+            labels.append(0)
+            window_counts[0] += 1
+            continue
+
+        try:
+            date_added = datetime.strptime(date_added_str, "%Y-%m-%d").replace(
+                tzinfo=timezone.utc
+            )
+            days_since_added = (date_end - date_added).days
+
+            if days_since_added <= 30:
+                label = 1
+            elif days_since_added <= 90:
+                label = 2
+            elif days_since_added <= 365:
+                label = 3
+            else:
+                label = 4
+            labels.append(label)
+            window_counts[label] += 1
+        except (ValueError, TypeError):
+            labels.append(0)  # Default to not-in-KEV on parse error
+            window_counts[0] += 1
+
+    total = len(labels)
     print(
-        f"  Labels: {pos_count} point-in-time positive "
-        f"(KEV with dateAdded <= {cutoff_date}) out of {len(labels)} "
-        f"({pos_count / len(labels):.1%})"
+        f"  Multi-window labels ({total} total): "
+        f"not_KEV={window_counts[0]}, "
+        f"<=30d={window_counts[1]}, "
+        f"31-90d={window_counts[2]}, "
+        f"91-365d={window_counts[3]}, "
+        f">365d={window_counts[4]}"
     )
-    if lagged > 0:
-        print(f"    ({lagged} KEV entries excluded — dateAdded after {cutoff_date})")
+    # Log point-in-time exclusions
+    live_in_kev = sum(1 for c in cves if c["cve_id"] in kev_data)
+    labelled_kev = sum(window_counts[i] for i in range(1, 5))
+    excluded = live_in_kev - labelled_kev
+    if excluded > 0:
+        print(f"    ({excluded} KEV entries excluded - dateAdded after {cutoff_date})")
     return labels
 
 
@@ -950,7 +1000,7 @@ def phase_gather() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     # Step 4: Labels + tabular features
     print("\n[4/6] Constructing labels and features...")
     y_arr = np.array(construct_labels(cves, kev), dtype=np.int32)
-    if int(sum(y_arr == 1)) == 0:
+    if int(sum(y_arr > 0)) == 0:
         print("  WARNING: No positive labels found. Model will not train meaningfully.")
         sys.exit(1)
     X_tab = build_tabular_features(cves)
@@ -983,7 +1033,7 @@ def phase_gather() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     obs_mask = ~(too_recent & (y_arr == 0))
     obs_dropped = int(sum(~obs_mask))
     obs_neg_dropped = int(sum(too_recent & (y_arr == 0)))
-    obs_pos_kept_in_window = int(sum(too_recent & (y_arr == 1)))
+    obs_pos_kept_in_window = int(sum(too_recent & (y_arr > 0)))
     obs_kept = int(sum(obs_mask))
     print(
         f"  KEV observation window: {obs_window_days} days "
@@ -1001,8 +1051,10 @@ def phase_gather() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     cve_ids_arr = cve_ids_arr[obs_mask]
     cves = [c for c, m in zip(cves, obs_mask) if m]
 
-    obs_pos = int(sum(y_arr == 1))
-    print(f"  Final positive rate: {obs_pos}/{obs_kept} ({obs_pos / obs_kept:.1%})")
+    obs_pos = int(sum(y_arr > 0))
+    print(
+        f"  Final positive rate (any KEV): {obs_pos}/{obs_kept} ({obs_pos / obs_kept:.1%})"
+    )
 
     # SAVE POINT 2: training data (X, y, dates, cve_ids)
     save_training_data(X, y_arr, dates_arr, cve_ids_arr, TRAINING_DATA_FILE)
@@ -1096,27 +1148,44 @@ def phase_train(X: np.ndarray, y: np.ndarray, dates: np.ndarray):
     else:
         print("  PCA disabled — using raw 384-dim SBERT embeddings")
 
-    n_neg = int(sum(y_train == 0))
-    n_pos = int(sum(y_train == 1))
-    sw = n_neg / n_pos if n_pos > 0 else 15.0
-    print(f"  scale_pos_weight = {sw:.1f} ({n_neg} neg / {n_pos} pos)")
+    # ── Multi-class sample weights ──────────────────────────────────
+    # scale_pos_weight is invalid for multi-class objectives, so we
+    # compute per-sample weights using inverse class frequency.
+    from sklearn.utils.class_weight import compute_class_weight
 
-    print("\n  Training XGBoost (binary:logistic)...")
+    all_classes = np.array([0, 1, 2, 3, 4])
+    class_weights = np.ones(5, dtype=np.float64)
+    try:
+        cw = compute_class_weight("balanced", classes=all_classes, y=y_train)
+        class_weights = np.array(cw, dtype=np.float64)
+    except ValueError:
+        # Some classes may have 0 samples — fall back to uniform weights
+        pass
+    sample_weight = np.array([class_weights[yi] for yi in y_train], dtype=np.float64)
+    n_samp = len(y_train)
+    print(f"  Class weights: {dict(zip(all_classes, class_weights.round(2)))}")
+    print(f"  Using per-sample weighted training ({n_samp} samples)")
+
+    print("\n  Training XGBoost (multi:softprob, 5-class)...")
     model = xgb.XGBClassifier(
+        objective="multi:softprob",
+        num_class=5,
         max_depth=4,
         learning_rate=0.03,
         n_estimators=800,
         subsample=0.8,
         colsample_bytree=0.8,
-        scale_pos_weight=sw,
         tree_method="hist",
         random_state=42,
     )
-    model.fit(X_train, y_train, verbose=False)
+    model.fit(X_train, y_train, sample_weight=sample_weight, verbose=False)
 
     # ── Calibration: Platt scaling on validation set ──────────────────
-    print("\n  Calibrating probabilities with Platt scaling...")
-    n_val_pos = int(sum(y_val == 1))
+    # Calibrate on "any KEV" probability (sum of windows 1–4) for
+    # backward-compatible binary decision threshold tuning.
+    print("\n  Calibrating probabilities with Platt scaling (any-KEV)...")
+    y_val_binary = (y_val > 0).astype(int)
+    n_val_pos = int(sum(y_val_binary))
     if n_val_pos < 2:
         print(
             f"  [WARN] Validation set has only {n_val_pos} positive(s). "
@@ -1125,17 +1194,18 @@ def phase_train(X: np.ndarray, y: np.ndarray, dates: np.ndarray):
         calibrator = None
         best_threshold = 0.5
     else:
-        val_raw = model.predict_proba(X_val)[:, 1].reshape(-1, 1)
+        val_raw_proba = model.predict_proba(X_val)
+        val_any_kev = val_raw_proba[:, 1:].sum(axis=1).reshape(-1, 1)
         calibrator = LogisticRegression(C=1e6, solver="lbfgs")
-        calibrator.fit(val_raw, y_val)
+        calibrator.fit(val_any_kev, y_val_binary)
 
-        # Tune decision threshold on calibrated validation probabilities
-        val_calibrated = calibrator.predict_proba(val_raw)[:, 1]
+        # Tune decision threshold on calibrated any-KEV probabilities
+        val_calibrated = calibrator.predict_proba(val_any_kev)[:, 1]
         best_threshold = 0.5
         best_f1 = 0
         for thresh in np.linspace(0.001, 0.50, 200):
             preds = (val_calibrated >= thresh).astype(int)
-            f1 = f1_score(y_val, preds, zero_division=0)
+            f1 = f1_score(y_val_binary, preds, zero_division=0)
             if f1 > best_f1:
                 best_f1 = f1
                 best_threshold = thresh
@@ -1151,19 +1221,20 @@ def phase_train(X: np.ndarray, y: np.ndarray, dates: np.ndarray):
         )
 
     # ── Evaluate on test set ──────────────────────────────────────────
-    y_prob = model.predict_proba(X_test)[:, 1]
+    y_pred_proba = model.predict_proba(X_test)
+    y_pred = model.predict(X_test)
+    y_test_binary = (y_test > 0).astype(int)
+    y_pred_any_kev = y_pred_proba[:, 1:].sum(axis=1)
 
     if calibrator is not None:
-        test_raw = y_prob.reshape(-1, 1)
+        test_raw = y_pred_any_kev.reshape(-1, 1)
         y_prob_calibrated = calibrator.predict_proba(test_raw)[:, 1]
-        y_pred_tuned = (y_prob_calibrated >= best_threshold).astype(int)
         print(f"  Applied calibration to test set (threshold={best_threshold:.4f}).")
     else:
-        y_prob_calibrated = y_prob
-        y_pred_tuned = (y_prob >= 0.5).astype(int)
-        print("  Using raw probabilities (no calibration applied).")
+        y_prob_calibrated = y_pred_any_kev
+        print("  Using raw any-KEV probabilities (no calibration applied).")
 
-    # Expected Calibration Error (ECE) — before vs after
+    # Expected Calibration Error (ECE) — on any-KEV probability
     def _ece(y_true, y_prob_arr, n_bins=10):
         """Compute Expected Calibration Error."""
         bins = np.linspace(0, 1, n_bins + 1)
@@ -1181,29 +1252,38 @@ def phase_train(X: np.ndarray, y: np.ndarray, dates: np.ndarray):
             ece += n_bin * abs(bin_acc - bin_conf)
         return ece / total
 
-    ece_raw = _ece(y_test, y_prob)
+    ece_raw = _ece(y_test_binary, y_pred_any_kev)
     if calibrator is not None:
-        ece_cal = _ece(y_test, y_prob_calibrated)
+        ece_cal = _ece(y_test_binary, y_prob_calibrated)
         impr = ((ece_raw - ece_cal) / ece_raw * 100) if ece_raw > 0 else 0.0
-        print(f"\n  ECE (raw):        {ece_raw:.4f}")
-        print(f"  ECE (calibrated): {ece_cal:.4f}")
-        print(f"  Calibration improvement: {impr:.1f}%")
+        print(f"\n  ECE (raw any-KEV):        {ece_raw:.4f}")
+        print(f"  ECE (calibrated any-KEV): {ece_cal:.4f}")
+        print(f"  Calibration improvement:  {impr:.1f}%")
 
-    print("\n" + "=" * 60)
-    print("TEST SET RESULTS")
-    print("=" * 60)
+    # Multi-class accuracy
+    from sklearn.metrics import accuracy_score
+
+    accuracy = accuracy_score(y_test, y_pred)
+    print(f"\n  Test accuracy (5-class): {accuracy:.4f}")
+
+    # Per-class metrics
+    print("\n  Classification report (multi-window):")
     print(
         classification_report(
             y_test,
-            y_pred_tuned,
-            target_names=["Not Exploited", "Exploited"],
+            y_pred,
+            target_names=["Not KEV", "<=30d", "31-90d", "91-365d", ">365d"],
             zero_division=0,
         )
     )
-    roc = roc_auc_score(y_test, y_prob_calibrated)
-    print(f"  ROC-AUC: {roc:.4f}")
+
+    # Backward-compatible any-KEV ROC-AUC
+    any_kev_auc = roc_auc_score(y_test_binary, y_prob_calibrated)
+    print(f"  Any-KEV ROC-AUC: {any_kev_auc:.4f}")
     if calibrator is not None:
-        print(f"  (using calibrated probabilities at threshold {best_threshold:.4f})")
+        print(
+            f"  (using calibrated any-KEV probabilities at threshold {best_threshold:.4f})"
+        )
 
     print(f"\n  Saving model to {MODEL_FILE.name} ... ", end="", flush=True)
     MODEL_FILE.parent.mkdir(parents=True, exist_ok=True)

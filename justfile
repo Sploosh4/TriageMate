@@ -26,6 +26,14 @@ test:
 test-file file:
     cd {{BACKEND}} && {{PYTEST}} tests/{{file}}.py -v
 
+# Capture benchmark baseline
+bench:
+    cd {{BACKEND}} && {{PY}} -m pytest tests/test_benchmark.py --benchmark-save=baseline --benchmark-autosave
+
+# Compare against saved baseline (fails on >=10% regression)
+bench-check:
+    cd {{BACKEND}} && {{PY}} -m pytest tests/test_benchmark.py --benchmark-compare=baseline --benchmark-compare-fail=min:10%
+
 # Run Tier 2 unit tests with coverage (must be >= 70%)
 verify-tier2:
     cd {{BACKEND}} && {{PY}} -m pytest tests/test_tier2.py -v --cov=pipeline.tier_2 --cov-report=term --cov-fail-under=70

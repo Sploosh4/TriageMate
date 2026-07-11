@@ -61,27 +61,26 @@ class TestModelVersions:
     """Model version listing and activation."""
 
     async def test_list_versions(self, client):
-        """GET /api/model/versions returns 1 version (v3), active is v3.
+        """GET /api/model/versions returns 1 version (v4), active is v4.
 
-        v1 and v2 model files were removed during hygiene cleanup,
-        so only v3 remains in the registry.
+        Only v4 remains in the registry after Sprint 22 multi-window KEV update.
         """
         response = await client.get("/api/model/versions")
         assert response.status_code == 200
         data = response.json()
 
-        assert data["active_version"] == "v3", (
-            f"Expected active_version v3, got {data['active_version']}"
+        assert data["active_version"] == "v4", (
+            f"Expected active_version v4, got {data['active_version']}"
         )
         assert len(data["versions"]) == 1, (
             f"Expected 1 version, got {len(data['versions'])}"
         )
 
         version_ids = [v["version"] for v in data["versions"]]
-        assert version_ids == ["v3"], f"Unexpected version order: {version_ids}"
+        assert version_ids == ["v4"], f"Unexpected version order: {version_ids}"
 
         for v in data["versions"]:
-            assert v["is_active"] is True, "v3 should be marked active"
+            assert v["is_active"] is True, "v4 should be marked active"
 
     async def test_activate_invalid_version(self, client):
         """Activating a nonexistent version returns 404."""
@@ -90,10 +89,10 @@ class TestModelVersions:
 
     async def test_activate_already_active(self, client):
         """Activating the already-active version returns 400."""
-        # Ensure v3 is active
-        await client.post("/api/model/activate", json={"version": "v3"})
+        # Ensure v4 is active
+        await client.post("/api/model/activate", json={"version": "v4"})
 
-        response = await client.post("/api/model/activate", json={"version": "v3"})
+        response = await client.post("/api/model/activate", json={"version": "v4"})
         assert response.status_code == 400
 
 
@@ -157,12 +156,12 @@ class TestModelStatus:
                 break
 
     async def test_model_status_score_comparison_has_all_versions(self, client):
-        """Score comparison contains v3 entry only (v1/v2 removed in hygiene)."""
+        """Score comparison contains v4 entry only (v3 replaced by Sprint 22)."""
         response = await client.get("/api/model/status")
         data = response.json()
         versions = data["score_comparison"]["versions"]
 
-        for expected_version in ["v3"]:
+        for expected_version in ["v4"]:
             assert expected_version in versions, (
                 f"Missing {expected_version} in score_comparison.versions"
             )
