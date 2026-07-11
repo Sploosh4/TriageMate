@@ -5,6 +5,21 @@ Opencode Error Logs/
 temp_opencode_config/
 Training Outcome Temp.txt
 
+# Local environment and secrets
+.env.*
+!.env.example
+*.log
+
+# Python tooling
+.python-version
+.mypy_cache/
+.pytype/
+
+# Frontend/dependency tooling
+node_modules/
+dist/
+build/
+
 backend/data/*.csv
 backend/data/*.json
 backend/data/lancedb/
