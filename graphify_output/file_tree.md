@@ -4,6 +4,7 @@
 
 ```
 TriageMate MVP/
+├── .benchmarks/
 ├── .github/
 │   ├── ISSUE_TEMPLATE/
 │   │   ├── bug-report.md
@@ -57,7 +58,8 @@ TriageMate MVP/
 │   │   ├── 2026-07-10-sprint-22.md  Sprint 22 — Multi-Window KEV Labels + Infrastructure
 │   │   ├── 2026-07-11-sprint-23.md  Sprint 23 — Score Reconciliation, Bug Hunt & Documentation Cleanup
 │   │   ├── 2026-07-11-sprint-24.md  Sprint 24 — GitHub-Native Work Tracking for AI Workflow
-│   │   └── 2026-07-11-sprint-25.md  Sprint 25 — GitHub-Native Workflow Operationalization
+│   │   ├── 2026-07-11-sprint-25.md  Sprint 25 — GitHub-Native Workflow Operationalization
+│   │   └── 2026-07-12-sprint-26.md  Sprint 26 — Feature Contract Enforcement
 │   ├── skills/
 │   │   ├── archived-files/
 │   │   │   ├── agents/
@@ -400,7 +402,7 @@ TriageMate MVP/
 │   └── ml_inventory.md  TriageMate — ML Model Inventory
 ├── .dockerignore  328.0 B
 ├── .env.example  2.3 KB
-├── .gitignore  786.0 B
+├── .gitignore  871.0 B
 ├── .opencodeignore  262.0 B
 ├── .pre-commit-config.yaml  415.0 B
 ├── =2.2.0  1.0 KB
@@ -410,7 +412,7 @@ TriageMate MVP/
 ├── docker-compose.yml  1.9 KB
 ├── Dockerfile  1.4 KB
 ├── index.html  119.4 KB
-├── justfile  8.1 KB
+├── justfile  9.2 KB
 ├── LICENSE  422.0 B
 ├── MVP_SCOPE.md  TriageMate MVP — Scope Document
 ├── opencode.jsonc  1.2 KB

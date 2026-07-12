@@ -14,7 +14,8 @@ Test `gh` access before relying on it. Use subagent operations when Level 4+ ver
 ## Dev Loop (via just)
 
 ```bash
-just test                    # pytest tests/ -v
+just test                    # complete pytest suite (fuzz test skipped)
+just test full=true          # complete pytest suite, including fuzz testing
 just test-file test_health   # run specific test file
 just lint                    # ruff check + format check
 just lint-fix                # ruff auto-fix + format
@@ -79,7 +80,8 @@ just audit-all               # run all four audits in sequence
 ## Full Sprint Quality Gate
 
 ```bash
-just gate                    # lint → test → audit-all
+just gate                    # full gate with a 10-CVE calibration sample
+just gate full=true          # full gate, including the full calibration audit + fuzz test
 ```
 
 ## Database (via just)

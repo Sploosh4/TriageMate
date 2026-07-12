@@ -52,3 +52,6 @@ htmlcov/
 .pytest_cache/
 .ruff_cache/
 Thumbs.db
+
+# Sprint 25: process artifacts (audit, intel, bookkeeping reports)
+backend/reports/

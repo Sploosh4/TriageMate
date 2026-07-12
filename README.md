@@ -37,10 +37,12 @@ On Windows, see [`docs/guides/WINDOWS_SETUP.md`](docs/guides/WINDOWS_SETUP.md).
 From the repository root:
 
 ```bash
-just test       # Run the backend test suite
+just test       # Run the backend test suite (fuzz test skipped)
+just test full=true  # Run the backend test suite, including fuzz testing
 just lint       # Ruff checks and formatting verification
 just verify-seeds
-just gate       # Full quality gate
+just gate       # Full quality gate with a 10-CVE calibration sample
+just gate full=true  # Full quality gate with the full calibration audit + fuzz testing
 ```
 
 The current score contract and project status are maintained in

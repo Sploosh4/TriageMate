@@ -6,6 +6,7 @@ that nothing crashes — no regression checks on exact score values.
 """
 
 import json
+import os
 import random
 from pathlib import Path
 
@@ -166,9 +167,10 @@ class TestFuzzedIngest:
     """Fuzzed ingest: 50 synthetic CVEs, crash detection only."""
 
     @pytest.mark.asyncio
-    @pytest.mark.skip(
-        reason="Hangs — likely ML model loading (XGBoost/SBERT) on first call. "
-        "Needs async lazy-loading investigation. See AI_PROBLEMS.md."
+    @pytest.mark.skipif(
+        os.getenv("TRIAGEMATE_RUN_FUZZ") != "1",
+        reason="Opt-in full fuzz test; set TRIAGEMATE_RUN_FUZZ=1 to run. "
+        "Previously hung during ML model loading; see AI_PROBLEMS.md.",
     )
     async def test_fuzzed_ingest_no_crashes(self):
         random.seed(_SEED)

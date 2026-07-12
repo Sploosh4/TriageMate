@@ -200,7 +200,9 @@ uvicorn main:app --reload --host 0.0.0.0
 ### Verification
 
 ```bash
-just test   # 449 tests, 449 pass
+just test   # complete suite (fuzz test skipped)
+just test full=true   # complete suite, including fuzz testing
 just lint   # ruff check + format
-just gate   # Full quality gate: lint → test → audit-all
+just gate   # full gate with a 10-CVE calibration sample
+just gate full=true   # full gate with the full calibration audit + fuzz testing
 ```

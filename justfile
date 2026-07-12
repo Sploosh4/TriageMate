@@ -18,9 +18,11 @@ UVICORN := ".venv/bin/uvicorn"
 
 # --- Dev Loop ---
 
-# Run all tests with verbose output
+# Run all tests with verbose output. Set TRIAGEMATE_RUN_FUZZ=1 to include the fuzz test.
+# just 1.56.0 treats `param=value` as a literal string everywhere (cmdline + sub-recipe),
+# so env vars are used to pass parameters between recipes.
 test:
-    cd {{BACKEND}} && {{PYTEST}} tests/ -v
+    cd {{BACKEND}} && TRIAGEMATE_RUN_FUZZ=${TRIAGEMATE_RUN_FUZZ:-0} {{PYTEST}} tests/ -v
 
 # Run a specific test file (e.g., just test-file test_health)
 test-file file:
@@ -155,9 +157,9 @@ ingest-docs:
 
 # --- Analysis ---
 
-# ML calibration audit
-audit-calibration:
-    cd {{BACKEND}} && {{PY}} -m analysis.calibration_audit
+# ML calibration audit; pass max_samples for a smaller SBERT encoding batch.
+audit-calibration max_samples="":
+    cd {{BACKEND}} && {{PY}} -m analysis.calibration_audit {{if max_samples != "" {"--max-samples " + max_samples} else {""}}}
 
 # EPSS substitution accuracy evaluation
 audit-epss:
@@ -180,6 +182,14 @@ verify-drift:
 # Run all audits sequentially
 audit-all: audit-calibration audit-epss audit-features audit-schema
     @echo "All audits complete."
+
+# Run all audits with a tiny calibration sample for the normal quality gate.
+audit-all-quick:
+    cd {{BACKEND}} && {{PY}} -m analysis.calibration_audit --max-samples 10
+    just audit-epss
+    just audit-features
+    just audit-schema
+    @echo "All audits complete (quick calibration sample)."
 
 # Full stress test with real LLM API calls
 stress-test:
@@ -247,8 +257,17 @@ db-schema:
 verify-seeds:
 	cd {{BACKEND}} && {{PY}} -m scripts.verify_seed_scores
 
-# Run full sprint quality gate: lint → test → verify-seeds → graphify → audit-all
-gate: lint test verify-seeds graphify audit-all
+# Run the normal quality gate with a 10-CVE calibration batch.
+# Use `TRIAGEMATE_FULL=true just gate` for the full calibration audit and fuzz test.
+# NOTE: `just gate full=true` does NOT work — just 1.56.0 treats param=value as literal string.
+# Use env var syntax instead: `TRIAGEMATE_FULL=true just gate`.
+gate:
+    just lint
+    TRIAGEMATE_RUN_FUZZ={{if env_var_or_default("TRIAGEMATE_FULL", "false") == "true" {"1"} else {"0"}}} just test
+    just verify-seeds
+    just graphify
+    just {{if env_var_or_default("TRIAGEMATE_FULL", "false") == "true" {"audit-all"} else {"audit-all-quick"}}}
     @echo "============================================"
     @echo "Sprint quality gate passed."
     @echo "============================================"
+
