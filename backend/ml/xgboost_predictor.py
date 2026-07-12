@@ -237,9 +237,9 @@ def _build_tabular_array(features: dict) -> np.ndarray:
         "cvss_pr": 2,
         "cvss_ui": 1,
         "cvss_s": 0,
-        "cvss_c": 2,
-        "cvss_i": 2,
-        "cvss_a": 2,
+        "cvss_c": 0,
+        "cvss_i": 0,
+        "cvss_a": 0,
         "epss_score": 0.0,
         "lateral_reachability": 0,
         "boundary_reachability": 0,
@@ -268,8 +268,8 @@ def _build_tabular_array(features: dict) -> np.ndarray:
         "is_traversal_signature",
     }
     _bool_defaults = {
-        "patch_available": True,
-        "domain_joined": True,
+        "patch_available": False,
+        "domain_joined": False,
     }
 
     row = []

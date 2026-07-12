@@ -16,48 +16,12 @@ from unittest.mock import patch, MagicMock
 import numpy as np
 import pytest
 
-# ── Tabular feature keys in the EXACT order xgboost_predictor.predict() builds them ──
-
-PREDICTOR_TABULAR_KEYS = [
-    "cvss_av",
-    "cvss_ac",
-    "cvss_pr",
-    "cvss_ui",
-    "cvss_s",
-    "cvss_c",
-    "cvss_i",
-    "cvss_a",
-    "epss_score",
-    "patch_available",
-    "patch_applied",
-    "internet_facing",
-    "domain_joined",
-    "data_classification",
-    "mission_prevalence",
-    "public_wellbeing_impact",
-    "lateral_reachability",
-    "boundary_reachability",
-    "downstream_assets",
-    "patch_lag_days",
-    "exploitdb_has_poc",
-    "metasploit_has_payload",
-    "threat_intel_pulses",
-    "nvd_reference_count",
-    "cve_desc_tokens",
-    "vulnerability_age_days",
-    "vendor_popularity_index",
-    "cvss_exploitability_sub",
-    "cvss_impact_sub",
-    "is_top_25_cwe",
-    "is_rce_signature",
-    "is_privesc_signature",
-    "is_bypass_signature",
-    "is_dos_signature",
-    "is_traversal_signature",
-]
+from pipeline.config.feature_names import (
+    TABULAR_FEATURE_ORDER as PREDICTOR_TABULAR_KEYS,
+    TABULAR_FEATURE_COUNT as NUM_TABULAR,
+)
 
 # Expected total feature dimensions
-NUM_TABULAR = 35
 NUM_SBERT = 384
 EXPECTED_TOTAL = 419  # 35 tabular + 384 SBERT (predictor)
 
@@ -196,44 +160,65 @@ class TestFeatureParity:
 
     # ── Part 2: Predictor builds the correct vector shape ──────────────────
 
-    def test_predictor_tabular_array_shape(self):
-        """Verify xgboost_predictor produces a 35-element tabular array."""
-        # Build a minimal feature dict with defaults for all 35 keys
-        features: dict = {k: 0 for k in PREDICTOR_TABULAR_KEYS}
-        features["description"] = "test vulnerability description"
+    def test_predictor_tabular_array_via_real_builder(self):
+        """Call the real _build_tabular_array() and verify shape & position.
 
-        # Inspect the model directly
-        from ml.xgboost_predictor import _get_model
+        This uses the actual predictor array builder, not a manual
+        comprehension over a key list — catches ordering drift that
+        a shape-only check would miss.
+        """
+        from ml.xgboost_predictor import _build_tabular_array
 
-        model = _get_model()
-        booster = model.get_booster()
-        n_model_features = booster.num_features()
+        features = {
+            "cvss_av": 3,
+            "cvss_ac": 1,
+            "cvss_pr": 2,
+            "cvss_ui": 1,
+            "cvss_s": 0,
+            "cvss_c": 2,
+            "cvss_i": 0,
+            "cvss_a": 1,
+            "epss_score": 0.5,
+            "patch_available": True,
+            "patch_applied": False,
+            "internet_facing": True,
+            "domain_joined": True,
+            "data_classification": "OFFICIAL",
+            "mission_prevalence": "Support",
+            "public_wellbeing_impact": "Minimal",
+            "lateral_reachability": 1,
+            "boundary_reachability": 0,
+            "downstream_assets": 5,
+            "patch_lag_days": 30,
+            "exploitdb_has_poc": True,
+            "metasploit_has_payload": False,
+            "threat_intel_pulses": 2,
+            "nvd_reference_count": 10,
+            "cve_desc_tokens": 200,
+            "vulnerability_age_days": 100,
+            "vendor_popularity_index": 0.5,
+            "cvss_exploitability_sub": 3.9,
+            "cvss_impact_sub": 5.9,
+            "is_top_25_cwe": True,
+            "is_rce_signature": True,
+            "is_privesc_signature": False,
+            "is_bypass_signature": False,
+            "is_dos_signature": False,
+            "is_traversal_signature": False,
+        }
 
-        # Build the tabular array the same way predict() does
-        tabular = np.array(
-            [[features.get(k, 0) for k in PREDICTOR_TABULAR_KEYS]],
-            dtype=np.float32,
+        arr = _build_tabular_array(features)
+        assert arr.shape == (1, NUM_TABULAR), (
+            f"Real _build_tabular_array() returned shape {arr.shape}, "
+            f"expected (1, {NUM_TABULAR})"
         )
-        assert tabular.shape[1] == NUM_TABULAR, (
-            f"Predictor tabular array has {tabular.shape[1]} columns, "
-            f"expected {NUM_TABULAR}"
-        )
 
-        # Build full feature vector
+        # Build full feature vector and verify with model
         text_vec = np.zeros((1, NUM_SBERT), dtype=np.float32)
-        X = np.hstack([tabular, text_vec])
+        X = np.hstack([arr, text_vec])
         assert X.shape[1] == EXPECTED_TOTAL, (
-            f"Predictor builds {X.shape[1]}-dim vector, expected {EXPECTED_TOTAL}"
+            f"Total feature vector has {X.shape[1]} columns, expected {EXPECTED_TOTAL}"
         )
-
-        # CRITICAL CHECK: model dimension vs predictor dimension
-        print(f"\n  Model features: {n_model_features}")
-        print(f"  Predictor builds: {X.shape[1]}")
-        if n_model_features != X.shape[1]:
-            print(
-                f"  ⚠️  DIMENSION MISMATCH: model expects {n_model_features} "
-                f"features, predictor builds {X.shape[1]}"
-            )
 
     # ── Part 3: Model actually accepts the vector without error ────────────
 
@@ -285,32 +270,17 @@ class TestFeatureParity:
             f"  Predictor: {PREDICTOR_TABULAR_KEYS}"
         )
 
-        # NPZ columns 35-418 should be SBERT embeddings
-        for i, name in enumerate(npz_names[35:], start=35):
-            assert name.startswith("text_sbert_"), (
-                f"NPZ column {i}: expected 'text_sbert_*', got '{name}'"
+        # SBERT column naming depends on the generator:
+        #   - train_xgboost.py save_training_data(): uses sbert_0..383
+        #   - build_training_corpus.py save_dataset(): uses text_sbert_0..383
+        # training_data_v2.npz uses text_sbert_* naming; training_data.npz uses sbert_*.
+        sbert_names = npz_names[35:]
+        for i, name in enumerate(sbert_names, start=35):
+            assert name.startswith("text_sbert_") or name.startswith("sbert_"), (
+                f"NPZ column {i}: expected 'sbert_*' or 'text_sbert_*', got '{name}'"
             )
-        assert len(npz_names[35:]) == NUM_SBERT, (
-            f"Expected {NUM_SBERT} SBERT columns, got {len(npz_names[35:])}"
+        assert len(sbert_names) == NUM_SBERT, (
+            f"Expected {NUM_SBERT} SBERT columns, got {len(sbert_names)}"
         )
 
         data.close()
-
-    # ── Part 5: Drift detection (negative test) ────────────────────────────
-
-    def test_drift_detection_renamed_feature(self):
-        """Simulate a renamed feature key and verify the test would catch it."""
-        # If a feature were renamed, it would NOT match PREDICTOR_TABULAR_KEYS
-        # This is a meta-test to show the drift-detection mechanism works.
-        drifted_keys = list(PREDICTOR_TABULAR_KEYS)
-        # Simulate a rename: change 'epss_score' to 'epss_score_v2'
-        drifted_keys[8] = "epss_score_v2"
-
-        assert drifted_keys != PREDICTOR_TABULAR_KEYS, (
-            "Drift simulation failed: keys should differ after rename"
-        )
-
-        # The real check: verify the current keys match expectations
-        assert PREDICTOR_TABULAR_KEYS[8] == "epss_score", (
-            "Expected predictor key at index 8 to be 'epss_score'"
-        )

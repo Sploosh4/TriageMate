@@ -111,6 +111,10 @@ build-cwe:
 build-vendor-index:
     cd {{BACKEND}} && {{PY}} -m scripts.build_vendor_index
 
+# Run feature contract tests (deterministic, no model artifact needed)
+check-feature-contract:
+    cd {{BACKEND}} && {{PYTEST}} tests/test_feature_contract.py tests/test_feature_parity.py -v
+
 # --- ML Training ---
 
 # Full XGBoost training pipeline (gather + train)
@@ -263,6 +267,7 @@ verify-seeds:
 # Use env var syntax instead: `TRIAGEMATE_FULL=true just gate`.
 gate:
     just lint
+    just check-feature-contract
     TRIAGEMATE_RUN_FUZZ={{if env_var_or_default("TRIAGEMATE_FULL", "false") == "true" {"1"} else {"0"}}} just test
     just verify-seeds
     just graphify

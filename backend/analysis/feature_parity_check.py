@@ -12,49 +12,14 @@ import argparse
 import json
 import random
 import re
+import sys
 from pathlib import Path
 
 import numpy as np
 
 # ─── Constants ──────────────────────────────────────────────────────────────
 
-FEATURE_NAMES = [
-    "cvss_av",
-    "cvss_ac",
-    "cvss_pr",
-    "cvss_ui",
-    "cvss_s",
-    "cvss_c",
-    "cvss_i",
-    "cvss_a",
-    "epss_score",
-    "patch_available",
-    "patch_applied",
-    "internet_facing",
-    "domain_joined",
-    "data_classification",
-    "mission_prevalence",
-    "public_wellbeing_impact",
-    "lateral_reachability",
-    "boundary_reachability",
-    "downstream_assets",
-    "patch_lag_days",
-    "exploitdb_has_poc",
-    "metasploit_has_payload",
-    "threat_intel_pulses",
-    "nvd_reference_count",
-    "cve_desc_tokens",
-    "vulnerability_age_days",
-    "vendor_popularity_index",
-    "cvss_exploitability_sub",
-    "cvss_impact_sub",
-    "is_top_25_cwe",
-    "is_rce_signature",
-    "is_privesc_signature",
-    "is_bypass_signature",
-    "is_dos_signature",
-    "is_traversal_signature",
-]
+from pipeline.config.feature_names import TABULAR_FEATURE_ORDER as FEATURE_NAMES
 
 STOCHASTIC_FEATURE_INDICES = {
     10,  # patch_applied
@@ -141,7 +106,7 @@ def _cvss_s(v):
 
 
 def _cvss_cia(v):
-    return {"H": 2, "L": 1, "N": 0}.get(str(v), 2)
+    return {"H": 2, "L": 1, "N": 0}.get(str(v), 0)
 
 
 # ─── Encoders (training-side — build_training_corpus.py versions) ────────────
@@ -410,10 +375,10 @@ def build_inference_vector(
         float(cvss_i),
         float(cvss_a),
         float(epss_score) if epss_score else 0.0,
-        float(entry.get("patch_available", True)),
+        float(entry.get("patch_available", False)),
         0.0,  # patch_applied — inference default False
         0.0,  # internet_facing — inference default False
-        1.0,  # domain_joined — inference default True
+        0.0,  # domain_joined — inference default False
         float(_infer_encode_classification("OFFICIAL")),  # data_classification default
         float(_infer_encode_mission("Support")),  # mission_prevalence default
         float(_infer_encode_wellbeing("Minimal")),  # public_wellbeing_impact default
@@ -461,23 +426,26 @@ def _describe_drift(feature_idx: int, train_val, infer_val, cve_id: str) -> str:
     """Generate a human-readable drift explanation."""
     name = FEATURE_NAMES[feature_idx]
 
-    if feature_idx in (5, 6, 7):  # cvss_c, cvss_i, cvss_a — defaults now aligned (0)
+    if feature_idx in (5, 6, 7):  # cvss_c, cvss_i, cvss_a
         return (
-            "Defaults aligned (both use _cvss_cia('N') = 0). "
-            "Unexpected drift — investigate further."
+            "Defaults now aligned (both use _cvss_cia('N') = 0). "
+            "Unexpected deterministic drift — investigate further."
+        )
+    if feature_idx == 9:  # patch_available
+        return (
+            "Defaults now aligned: both use False when unavailable. "
+            "Unexpected deterministic drift — investigate further."
         )
     if feature_idx == 12:  # domain_joined
-        return "Default mismatch: training defaults to 0 (inference defaults True→1)"
-    if feature_idx == 9:  # patch_available
-        if train_val == 0.0 and infer_val == 1.0:
-            return (
-                "Default mismatch: training defaults to False/0, "
-                "inference defaults to True/1"
-            )
+        return (
+            "Defaults now aligned: both use False when unavailable. "
+            "Unexpected deterministic drift — investigate further."
+        )
     if feature_idx in (13, 14, 15):  # classification, mission, wellbeing
         return (
-            "Encoding difference: training _encode_classification defaults to 1, "
-            "inference defaults to 2 (OFFICIAL)"
+            "Training uses random sampling (build_training_corpus), "
+            "inference uses string defaults ('OFFICIAL', 'Support', 'Minimal'). "
+            "Expected stochastic drift from sampling, not a deterministic mismatch."
         )
     if feature_idx in STOCHASTIC_FEATURE_INDICES:
         return (
@@ -493,7 +461,7 @@ def run_parity_check(
     epss_cache: dict,
     sample_size: int = 100,
     seed: int = 42,
-) -> None:
+) -> str:
     items = list(nvd_corpus.items())
     if sample_size < len(items):
         rng_sampler = random.Random(seed)
@@ -586,6 +554,8 @@ def run_parity_check(
     print(f"  Overall verdict: {verdict}")
     print(f"{'=' * 60}\n")
 
+    return verdict
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -616,7 +586,20 @@ def main():
     epss_cache = load_epss_cache(str(epss_path))
     print(f"{len(epss_cache)} entries loaded.")
 
-    run_parity_check(nvd_corpus, epss_cache, args.sample, args.seed)
+    verdict = run_parity_check(nvd_corpus, epss_cache, args.sample, args.seed)
+
+    # Exit non-zero only for genuine deterministic violations
+    # Stochastic drift is expected and should not block CI
+    if verdict == "FAIL":
+        sys.exit(1)
+    elif verdict == "WARN":
+        print(
+            "[audit-features] WARN: only stochastic drift detected — "
+            "expected differences from training random sampling, not a contract violation."
+        )
+        sys.exit(0)
+    else:
+        sys.exit(0)
 
 
 if __name__ == "__main__":

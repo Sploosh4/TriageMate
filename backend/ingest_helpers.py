@@ -17,6 +17,7 @@ from integrations.nvd import get_nvd_data
 from integrations.exploitdb import has_poc as _has_exploitdb_poc
 from integrations.metasploit import has_payload as _has_metasploit_payload
 from integrations.otx import query_otx_pulses
+from pipeline.config.feature_names import TABULAR_FEATURE_ORDER
 
 
 def lookup_data_classification(hostname: str) -> str:
@@ -75,7 +76,7 @@ def _cvss_s(v):
 
 
 def _cvss_cia(v):
-    return {"H": 2, "L": 1, "N": 0}.get(str(v), 2)
+    return {"H": 2, "L": 1, "N": 0}.get(str(v), 0)
 
 
 def _encode_classification(klass: str) -> int:
@@ -396,14 +397,23 @@ def build_feature_vector(
     telemetry: dict | None = None,
     network_ctx: dict | None = None,
 ) -> dict:
-    """Build the full 42-key feature dict for the Tier 1 XGBoost model.
-    35 keys feed the tabular model input, 6 are metadata/enrichment fields
+    """Build the full 46-key feature dict for the Tier 1 XGBoost model.
+
+    35 tabular keys feed the model input (matching TABULAR_FEATURE_ORDER),
+    10 are metadata/enrichment fields
     (`cvss_score`, `osv_fixed_versions`, `osv_package`, `osv_ecosystem`,
-    `threat_intel_status`, `osv_lead_days`), and 1 (`description`) provides text
-    for the 384-dim SBERT embedding. Combined model input: 419 dims (35 tabular + 384 SBERT).
+    `threat_intel_status`, `internet_scan_detected`, `cisa_kev`,
+    `cwe_class`, `telemetry_threat_score`, `network_blast_radius`),
+    and 1 (`description`) provides text for the 384-dim SBERT embedding.
+    Combined model input: 419 dims (35 tabular + 384 SBERT).
 
     Matches feature order in ml/xgboost_predictor.predict() and
     ml/train_xgboost.build_tabular_features().
+
+    The counts are derived from contract constants:
+    - Tabular: TABULAR_FEATURE_COUNT (35)
+    - Metadata: len(TABULAR_METADATA_KEYS) (10)
+    - Text: 1 ("description")
 
     Args:
         payload: The IngestRequest Pydantic model
@@ -450,7 +460,7 @@ def build_feature_vector(
         "cvss_a": _cvss_cia(cvss_vec.get("A", "N")),
         "cvss_score": payload.cvss_score,
         "epss_score": payload.epss_score,
-        "patch_available": nvd.get("patch_available", True),
+        "patch_available": nvd.get("patch_available", False),
         "osv_fixed_versions": nvd.get("osv_fixed_versions", []),
         "osv_package": nvd.get("osv_package", ""),
         "osv_ecosystem": nvd.get("osv_ecosystem", ""),
@@ -513,47 +523,6 @@ def build_feature_vector(
         else 0.0,
         "description": payload.raw_description or "",
     }
-
-
-# Tabular feature order (35 features) — must match xgboost_predictor.TABULAR_FEATURE_ORDER
-# and build_training_corpus._FEATURE_NAMES
-TABULAR_FEATURE_ORDER = [
-    "cvss_av",
-    "cvss_ac",
-    "cvss_pr",
-    "cvss_ui",
-    "cvss_s",
-    "cvss_c",
-    "cvss_i",
-    "cvss_a",
-    "epss_score",
-    "patch_available",
-    "patch_applied",
-    "internet_facing",
-    "domain_joined",
-    "data_classification",
-    "mission_prevalence",
-    "public_wellbeing_impact",
-    "lateral_reachability",
-    "boundary_reachability",
-    "downstream_assets",
-    "patch_lag_days",
-    "exploitdb_has_poc",
-    "metasploit_has_payload",
-    "threat_intel_pulses",
-    "nvd_reference_count",
-    "cve_desc_tokens",
-    "vulnerability_age_days",
-    "vendor_popularity_index",
-    "cvss_exploitability_sub",
-    "cvss_impact_sub",
-    "is_top_25_cwe",
-    "is_rce_signature",
-    "is_privesc_signature",
-    "is_bypass_signature",
-    "is_dos_signature",
-    "is_traversal_signature",
-]
 
 
 def serialize_tabular_features(features_dict: dict) -> str:

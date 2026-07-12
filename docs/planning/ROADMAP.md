@@ -10,10 +10,10 @@
 
 | Metric | Value |
 |---|---|
-| Tests | 449 pass, 0 fail |
+| Tests | 457 pass, 0 fail, 1 skipped |
 | Open bugs | 0 (AI_PROBLEMS.md is clean) |
-| Sprints completed | 17, 18, 19, 20, 21, 22, 23, **24** |
-| Current sprint | Sprint 25 (GitHub-Native Workflow Operationalization) |
+| Sprints completed | 17, 18, 19, 20, 21, 22, 23, **24**, **25** |
+| Current sprint | Sprint 26 (Feature Contract Enforcement) — 🏗️ In progress, not yet pushed/merged |
 | Pipeline stages | Pre-Tier → Tier 0 → Tier 1 → Tier 2 → Tier 3 (Human Review) |
 | Enrichment sources | 14 integrations (NVD, OSV, OTX, ExploitDB, Metasploit, Tenable, GreyNoise [deprecated], CMDB [stub], Advisories [stub], MITRE, CWE classifier, Demo generator, **Synthetic Telemetry**, **Network Context**) |
 | Demo rows | 7 CVEs, scores 99/97/74/91/82/97/80 (±3 tolerance) |
@@ -142,9 +142,9 @@
 
 ---
 
-## Sprint 25 — 🏗️ In Progress (GitHub-Native Workflow Operationalization)
+## Sprint 25 — ✅ Complete (GitHub-Native Workflow Operationalization)
 
-*Executing 11 July 2026. See `.opencode/plans/2026-07-11-sprint-25.md` for full detail.*
+*Executed 11 July 2026. See `.opencode/plans/2026-07-11-sprint-25.md` for full detail.*
 
 | # | Item | Status | Description |
 |---|---|---|---|
@@ -153,8 +153,22 @@
 | **2** | **Core Agent Updates** | ✅ Complete | Updated AGENTS.md + 5 agent files for GitHub-native conditional-access workflow |
 | **3** | **Skill File Updates** | ✅ Complete | Updated 14 of 15 project skills; updated github-basics and archived-files (under 25 words) |
 | **4** | **Capability Test** | ✅ Complete | Validated Level 5/5 branch/PR/merge workflow via PR #47 |
-| **5** | **Verification** | ⏳ Pending | Bookkeeper, cross-file checks |
-| **6** | **Quality Gate & Commit** | ⏳ Pending | `just gate`, commit, push |
+| **5** | **Verification** | ✅ Complete | Bookkeeper, cross-file checks |
+| **6** | **Quality Gate & Commit** | ✅ Complete | `just gate`, commit, push |
+
+---
+
+## Sprint 26 — 🏗️ In Progress (Feature Contract Enforcement)
+
+*See `.opencode/plans/2026-07-12-sprint-26.md` for full detail.*
+
+| # | Item | Status | Description |
+|---|---|---|---|
+| **0** | **Pre-Flight Diagnostics** | ✅ Complete | Established exact baseline — run graphify, audit-features, inventoried all feature-defining files |
+| **1** | **Fix Existing Discrepancies** | ✅ Complete | Fixed 5 real bugs: CIA defaults (predictor + ingest_helpers + parity_check), patch_available, domain_joined, reference_count→nvd_reference_count, docstring stale count, parity_check hardcoded defaults sync; rebuilt corpus + retrain |
+| **2** | **Feature Contract Test** | ✅ Complete | Created `test_feature_contract.py` with 6 tests: canonical registry completeness, training compliance, inference compliance, default value consistency, NPZ column match, extra keys documentation |
+| **3** | **CI Integration** | ✅ Complete | Added `just check-feature-contract` recipe, wired into `just gate`; CI runs contract tests via existing `pytest tests/` suite |
+| **4** | **Verification** | ✅ Complete | Full test suite, quality gate, graphify parity 0 mismatches, seed verification, bookkeeper pass |
 
 ---
 
