@@ -1,5 +1,7 @@
 """Tests for Alembic migration system."""
 
+from pathlib import Path
+import pytest
 from database import get_db
 
 
@@ -38,11 +40,16 @@ class TestAlembicMigration:
         import subprocess
         import sys
 
+        test_dir = Path(__file__).resolve().parent.parent  # points to backend/
+        alembic_ini = test_dir / "alembic.ini"
+        if not alembic_ini.exists():
+            pytest.skip("Alembic config not available in this environment")
+
         result = subprocess.run(
             [sys.executable, "-m", "alembic", "current"],
             capture_output=True,
             text=True,
-            cwd="/home/jpc/Documents/Cybersecurity (Temp)/TriageMate/TriageMate MVP/backend",
+            cwd=str(test_dir),
         )
         assert result.returncode == 0
         assert "009" in result.stdout

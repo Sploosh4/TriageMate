@@ -27,6 +27,8 @@ backend/*.db
 backend/*.db.pre_retrain
 backend/ml/enriched_cves.json
 backend/ml/*.json
+!backend/ml/model_registry.json
+!backend/ml/threshold_info.json
 backend/ml/*.npz
 backend/ml/nvd_checkpoint.json
 backend/ml/nvd_cves_cached.json

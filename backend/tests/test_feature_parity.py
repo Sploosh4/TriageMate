@@ -224,9 +224,12 @@ class TestFeatureParity:
 
     def test_model_accepts_feature_vector(self):
         """Feed a correctly-shaped vector to the model and verify no error."""
-        from ml.xgboost_predictor import _get_model
+        try:
+            from ml.xgboost_predictor import _get_model
 
-        model = _get_model()
+            model = _get_model()
+        except FileNotFoundError:
+            pytest.skip("XGBoost model artifact not available in this environment")
         booster = model.get_booster()
         expected_features = booster.num_features()
 

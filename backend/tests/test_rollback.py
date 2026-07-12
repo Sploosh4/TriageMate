@@ -46,6 +46,7 @@ def test_rollback_same_version():
 def test_rollback_to_previous_version():
     """Requires at least 2 versions in registry. Adds a temp version if needed."""
     registry = json.loads(REGISTRY_PATH.read_text())
+    original_active = registry["active_version"]
     versions = registry.get("versions", [])
 
     if len(versions) < 2:
@@ -72,4 +73,5 @@ def test_rollback_to_previous_version():
     registry["versions"] = [
         v for v in registry["versions"] if v["version"] != "test_rollback_v0"
     ]
+    registry["active_version"] = original_active  # RESTORE pre-test value
     REGISTRY_PATH.write_text(json.dumps(registry, indent=2))
