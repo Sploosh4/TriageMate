@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, triagemate]
     strategy:
       matrix:
         python-version: ["3.11", "3.12"]
@@ -47,7 +47,7 @@ jobs:
           || echo "Benchmark regression check failed (non-blocking for CI)"
 
   frontend-lint:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, triagemate]
     steps:
       - uses: actions/checkout@v4
       - name: Set up Node
@@ -58,7 +58,7 @@ jobs:
         run: node --check frontend/js/*.js && node --check frontend/js/components/*.js
 
   lint-only:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, triagemate]
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/ruff-action@v3
@@ -67,7 +67,7 @@ jobs:
 
   docker-build:
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/sprint-'))
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, triagemate]
     steps:
       - uses: actions/checkout@v4
       - name: Build Docker image
