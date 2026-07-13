@@ -203,6 +203,19 @@
 
 ---
 
+## File Placement Policy
+
+| Subagent output | Destination |
+|---|---|
+| Sprint plan | `.opencode/plans/YYYY-MM-DD-sprint-N.md` |
+| Audit report | `backend/reports/audits/<name>.md` |
+| Bookkeeping report | `backend/reports/bookkeeping/<name>.md` |
+| Intel/research report | `backend/reports/intel/<name>.md` |
+| Permanent documentation | `docs/<category>/<name>.md` |
+| Everything else | Ask the commander |
+
+---
+
 ## Quick Start
 
 ```bash

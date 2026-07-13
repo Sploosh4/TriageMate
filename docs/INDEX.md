@@ -50,6 +50,7 @@
 |---|---|---|
 | `reference/AI_PROBLEMS.md` | CURRENT | Bug tracker — all historical issues resolved. |
 | `reference/xgboost-investigation-report.md` | CURRENT | Root cause analysis of XGBoost false-negative rate. ✅ All 8 fixes applied, model retrained 2026-07-08. |
+| `reference/graphify-output-reliability-report.md` | CURRENT | Audit and remediation specification for factual accuracy, provenance, and reproducibility of Graphify outputs. |
 | `archive/ml-implementation-plan.md` | ARCHIVED | → Replaced by `graphify_output/ml_inventory.md` (auto-generated, run `just graphify`) |
 | `reference/hostname-standards.md` | CURRENT | WA government hostname conventions, data classification, department naming. |
 | `backend/ml/README.md` | CURRENT | ML artifact index — lists active and pending ML components, lives with code. |
@@ -230,15 +231,19 @@
 
 ## Graphify — Auto-Generated Knowledge Artifacts
 
-These files are regenerated on demand with `just graphify`. They are always current with the codebase.
+These files are regenerated on demand with `just graphify`, but regeneration
+does not currently guarantee factual accuracy or reproducibility. Treat them as
+discovery aids and verify behavioural claims against code and tests. See
+`reference/graphify-output-reliability-report.md` for confirmed limitations and
+the remediation specification.
 
 | File | Description |
 |---|---|
-| `graphify_output/file_tree.md` | Complete annotated directory tree (299 entries, auto-generated) |
-| `graphify_output/api_deps.md` | Python import dependency map (421 dependencies, auto-generated) |
-| `graphify_output/ml_inventory.md` | Canonical ML model and script inventory |
-| `graphify_output/knowledge_graph.json` | Structured CVE↔hostname↔CWE knowledge graph |
-| `graphify_output/feature_parity.md` | Tabular feature parity check (inference vs training vs inventory) |
+| `graphify_output/file_tree.md` | Local filesystem snapshot; may include machine-specific content |
+| `graphify_output/api_deps.md` | Python import dependency map; not a function call graph |
+| `graphify_output/ml_inventory.md` | Generated ML discovery inventory; currently contains known hardcoded stale claims |
+| `graphify_output/knowledge_graph.json` | Mixed-source CVE↔hostname↔CWE graph; per-record provenance remediation pending |
+| `graphify_output/feature_parity.md` | Feature-count overview; deterministic contract tests remain authoritative |
 
 ---
 
@@ -246,6 +251,6 @@ These files are regenerated on demand with `just graphify`. They are always curr
 
 **Archive files:** Files under `docs/archive/` (sprint handoffs S1–S6, superseded plans) are preserved for historical context but are not listed in this index. They are **ARCHIVED** — do not use as reference for current state.
 
-**Root-level `.md` symlinks:** Files like `ROADMAP.md`, `AI_PROBLEMS.md`, etc. at the project root are symlinks into `docs/`. Always read the canonical copy under `docs/`.
-
-**Auto-generated files:** Files under `graphify_output/` are regenerated with `just graphify`. Their freshness depends on the last run. If they look stale, run `just graphify` to regenerate.
+**Auto-generated files:** Files under `graphify_output/` are regenerated with
+`just graphify`. A recent generation timestamp proves only that the generators
+ran; it does not prove every embedded claim was derived from current code.
