@@ -1,0 +1,4 @@
+interface:
+  display_name: "TriageMate Runner Operations"
+  short_description: "Diagnose and operate the local CI runner"
+  default_prompt: "Use $triagemate-runner-ops to diagnose the TriageMate self-hosted CI runner."
