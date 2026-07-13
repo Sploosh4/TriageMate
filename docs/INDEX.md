@@ -67,6 +67,7 @@
 | File | Status | Description |
 |---|---|---|
 | `guides/WINDOWS_SETUP.md` | CURRENT | Windows 10/11 setup guide with troubleshooting. |
+| `guides/SELF_HOSTED_RUNNER.md` | CURRENT | Local KVM/libvirt GitHub Actions runner topology, operation, validation, security, and recovery. |
 
 ## Archive
 
