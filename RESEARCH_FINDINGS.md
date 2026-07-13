@@ -1,1 +1,0 @@
-docs/research/RESEARCH_FINDINGS.md

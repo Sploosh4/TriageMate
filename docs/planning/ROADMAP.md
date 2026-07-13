@@ -13,7 +13,7 @@
 | Tests | 457 pass, 0 fail, 1 skipped |
 | Open bugs | 0 (AI_PROBLEMS.md is clean) |
 | Sprints completed | 17, 18, 19, 20, 21, 22, 23, **24**, **25** |
-| Current sprint | Sprint 26 (Feature Contract Enforcement) — 🏗️ In progress, not yet pushed/merged |
+| Current sprint | Sprint 26 (Feature Contract Enforcement) — 🏗️ In progress (PR #48 open on GitHub, CI re-running) |
 | Pipeline stages | Pre-Tier → Tier 0 → Tier 1 → Tier 2 → Tier 3 (Human Review) |
 | Enrichment sources | 14 integrations (NVD, OSV, OTX, ExploitDB, Metasploit, Tenable, GreyNoise [deprecated], CMDB [stub], Advisories [stub], MITRE, CWE classifier, Demo generator, **Synthetic Telemetry**, **Network Context**) |
 | Demo rows | 7 CVEs, scores 99/97/74/91/82/97/80 (±3 tolerance) |

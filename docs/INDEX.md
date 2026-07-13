@@ -42,6 +42,7 @@
 | `planning/ROADMAP.md` | CURRENT | Forward-looking roadmap. Sprints 17–25 complete ✅. Sprint 19 added shared config module, scheduled retraining triggers, NPZ column names, concept drift monitoring, scoring property tests, and seed data freshness check. Sprint 20 added multi-step agentic LLM, customizable risk multipliers, and safe PCA. |
 | `planning/HANDOFF-2026-07-08.md` | CURRENT | Handoff document covering ML drift monitoring, Tier 2 LLM query coverage, network topology/Sentinel status, and stress testing status. Answers what was deferred post-MVP. |
 | `planning/ai-doc-strategy-2026-07-07.md` | CURRENT | This consolidation plan — how and why docs were restructured. |
+| `planning/github-label-taxonomy.md` | CURRENT | Sprint 24 label taxonomy — 25 labels (9 defaults + 16 custom), colors, descriptions. |
 | `archive/file-consolidation-plan-2026-07-07.md` | ARCHIVED | Bookkeeper's consolidation proposals — superseded by current doc structure. See `docs/INDEX.md`. |
 
 ## Reference
