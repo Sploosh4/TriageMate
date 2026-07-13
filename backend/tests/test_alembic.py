@@ -36,7 +36,11 @@ class TestAlembicMigration:
         db.close()
 
     def test_alembic_head_applied(self):
-        """Verify Alembic reports 009 as the current head."""
+        """Verify Alembic reports 009 as the current head.
+
+        Runs `alembic upgrade head` first so the test is self-contained
+        regardless of whether migrations were already applied (CI) or not.
+        """
         import subprocess
         import sys
 
@@ -45,11 +49,28 @@ class TestAlembicMigration:
         if not alembic_ini.exists():
             pytest.skip("Alembic config not available in this environment")
 
+        # Ensure migrations are applied so alembic current returns a version.
+        # This may fail (e.g., fresh checkout, no DB) — that's fine; alembic
+        # current will still report the head from the migration files.
+        subprocess.run(
+            [sys.executable, "-m", "alembic", "upgrade", "head"],
+            capture_output=True,
+            text=True,
+            cwd=str(test_dir),
+        )
+
         result = subprocess.run(
             [sys.executable, "-m", "alembic", "current"],
             capture_output=True,
             text=True,
             cwd=str(test_dir),
         )
-        assert result.returncode == 0
-        assert "009" in result.stdout
+        assert result.returncode == 0, (
+            f"alembic current failed: rc={result.returncode}, "
+            f"stderr={result.stderr.strip()}"
+        )
+        assert "009" in result.stdout, (
+            f"Expected '009' in alembic current output, "
+            f"got stdout={result.stdout!r} stderr={result.stderr!r}. "
+            f"Run 'alembic upgrade head' locally to apply migrations."
+        )
