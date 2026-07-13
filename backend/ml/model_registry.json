@@ -1,0 +1,28 @@
+{
+  "active_version": "v4",
+  "versions": [
+    {
+      "version": "v4",
+      "label": "Multi-window KEV (5-class, 30/90/365d windows)",
+      "model_file": "xgboost_model.pkl",
+      "calibrator_file": "xgboost_calibrator.pkl",
+      "pca_file": "pca_model.pkl",
+      "threshold_file": "threshold_info.json",
+      "metrics": {
+        "roc_auc_any_kev": 0.9459,
+        "accuracy": 0.88,
+        "n_classes": 5
+      },
+      "created_at": "2026-07-10T00:00:00",
+      "score_baseline": [
+        99,
+        97,
+        74,
+        91,
+        82,
+        97,
+        80
+      ]
+    }
+  ]
+}

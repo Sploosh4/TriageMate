@@ -27,6 +27,7 @@ from pathlib import Path
 
 import numpy as np
 from dotenv import load_dotenv
+from pipeline.config.feature_names import TABULAR_FEATURE_ORDER as _FEATURE_NAMES
 
 # Bulletproof: find .env relative to this script, not CWD
 _env_path = Path(__file__).resolve().parent.parent / ".env"
@@ -79,44 +80,6 @@ MITRE_TOP_25_CWES = {
     "CWE-863",
     "CWE-276",
 }
-
-_FEATURE_NAMES = [
-    "cvss_av",
-    "cvss_ac",
-    "cvss_pr",
-    "cvss_ui",
-    "cvss_s",
-    "cvss_c",
-    "cvss_i",
-    "cvss_a",
-    "epss_score",
-    "patch_available",
-    "patch_applied",
-    "internet_facing",
-    "domain_joined",
-    "data_classification",
-    "mission_prevalence",
-    "public_wellbeing_impact",
-    "lateral_reachability",
-    "boundary_reachability",
-    "downstream_assets",
-    "patch_lag_days",
-    "exploitdb_has_poc",
-    "metasploit_has_payload",
-    "threat_intel_pulses",
-    "nvd_reference_count",
-    "cve_desc_tokens",
-    "vulnerability_age_days",
-    "vendor_popularity_index",
-    "cvss_exploitability_sub",
-    "cvss_impact_sub",
-    "is_top_25_cwe",
-    "is_rce_signature",
-    "is_privesc_signature",
-    "is_bypass_signature",
-    "is_dos_signature",
-    "is_traversal_signature",
-]
 
 _VENDOR_POPULARITY_CACHE: dict[str, float] | None = None
 

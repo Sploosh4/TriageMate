@@ -7,6 +7,8 @@ Consumers import from here instead of maintaining duplicate copies.
 
 # Tabular feature names in positional order — 35 features.
 # Used by xgboost_predictor.py (inference) and train_xgboost.py (training).
+# This is the SINGLE source of truth for Tier 1 tabular feature order.
+# Any consumer iterating over or building 35 tabular features MUST import this list.
 TABULAR_FEATURE_ORDER = [
     "cvss_av",
     "cvss_ac",
@@ -44,6 +46,30 @@ TABULAR_FEATURE_ORDER = [
     "is_dos_signature",
     "is_traversal_signature",
 ]
+
+# Contract constants — single source of truth for feature dimensions
+TABULAR_FEATURE_COUNT = len(TABULAR_FEATURE_ORDER)
+"""Number of Tier 1 tabular features (int)."""
+
+# Metadata/enrichment keys returned by build_feature_vector() alongside tabular features.
+# These are NOT passed as model inputs but are stored/returned for diagnostics,
+# routing, or downstream processing. This set exists so contract tests can assert
+# the exact shape of the runtime feature dict.
+TABULAR_METADATA_KEYS = frozenset(
+    {
+        "cvss_score",
+        "osv_fixed_versions",
+        "osv_package",
+        "osv_ecosystem",
+        "threat_intel_status",
+        "internet_scan_detected",
+        "cisa_kev",
+        "cwe_class",
+        "telemetry_threat_score",
+        "network_blast_radius",
+    }
+)
+"""Non-model keys returned by build_feature_vector()."""
 
 # Pre-Tier feature names (60-dim) — populated from pre_tier.py
 PRE_TIER_FEATURE_NAMES: list[str] = []
@@ -140,6 +166,8 @@ def make_sbert_feature_names(n: int = 384) -> list[str]:
 
 __all__ = [
     "TABULAR_FEATURE_ORDER",
+    "TABULAR_FEATURE_COUNT",
+    "TABULAR_METADATA_KEYS",
     "PRE_TIER_FEATURE_NAMES",
     "EPSS_V2_FEATURE_NAMES",
     "EPSS_V1_FEATURE_NAMES",

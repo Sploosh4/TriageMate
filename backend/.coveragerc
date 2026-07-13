@@ -1,0 +1,23 @@
+[run]
+source =
+    audit
+    auth
+    database
+    ingest_cwe
+    ingest_helpers
+    logging_config
+    main
+    models
+    scoring
+    scheduler
+    seed_data
+    ml
+    routers
+    pipeline
+    integrations
+    middleware
+omit =
+    */train_*.py
+    */fetch_*.py
+    */generate_*.py
+    */ingest_docs.py

@@ -21,7 +21,7 @@ The commander plans sprints, executes them via subagent delegation, and triggers
 
 ## Documentation Structure
 
-All project documentation lives under `docs/` in subdirectories by category. Root-level `.md` files (except `AGENTS.md`) are symlinks into `docs/` for backward compatibility.
+All project documentation lives under `docs/` in subdirectories by category.
 
 > **For AI agents:** Start at `docs/INDEX.md` — it lists every document with its status (CURRENT/OUTDATED/ARCHIVED) and tells you which file to read for common questions.
 

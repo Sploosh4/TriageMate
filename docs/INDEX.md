@@ -22,7 +22,7 @@
 
 | # | File | Status | Description |
 |---|---|---|---|
-| 1 | `planning/ROADMAP.md` | CURRENT | **Master status.** What exists, what's broken, what's next. Sprints 17–24 complete ✅. Start here. |
+| 1 | `planning/ROADMAP.md` | CURRENT | **Master status.** What exists, what's broken, what's next. Sprints 17–25 complete ✅. Start here. |
 | 2 | `architecture/MVP_SCOPE.md` | OUTDATED | Sprint 1 scope boundaries. Many deferred items are now done. See caution banner. |
 | 3 | `reference/AI_PROBLEMS.md` | CURRENT | Bug tracker. All historical issues resolved. |
 | 4 | `archive/ml-implementation-plan.md` | ARCHIVED | → Replaced by `graphify_output/ml_inventory.md` (auto-generated, run `just graphify`) |
@@ -39,7 +39,7 @@
 
 | File | Status | Description |
 |---|---|---|
-| `planning/ROADMAP.md` | CURRENT | Forward-looking roadmap. Sprints 17–24 complete ✅. Sprint 19 added shared config module, scheduled retraining triggers, NPZ column names, concept drift monitoring, scoring property tests, and seed data freshness check. Sprint 20 added multi-step agentic LLM, customizable risk multipliers, and safe PCA. |
+| `planning/ROADMAP.md` | CURRENT | Forward-looking roadmap. Sprints 17–25 complete ✅. Sprint 19 added shared config module, scheduled retraining triggers, NPZ column names, concept drift monitoring, scoring property tests, and seed data freshness check. Sprint 20 added multi-step agentic LLM, customizable risk multipliers, and safe PCA. |
 | `planning/HANDOFF-2026-07-08.md` | CURRENT | Handoff document covering ML drift monitoring, Tier 2 LLM query coverage, network topology/Sentinel status, and stress testing status. Answers what was deferred post-MVP. |
 | `planning/ai-doc-strategy-2026-07-07.md` | CURRENT | This consolidation plan — how and why docs were restructured. |
 | `archive/file-consolidation-plan-2026-07-07.md` | ARCHIVED | Bookkeeper's consolidation proposals — superseded by current doc structure. See `docs/INDEX.md`. |
@@ -50,6 +50,7 @@
 |---|---|---|
 | `reference/AI_PROBLEMS.md` | CURRENT | Bug tracker — all historical issues resolved. |
 | `reference/xgboost-investigation-report.md` | CURRENT | Root cause analysis of XGBoost false-negative rate. ✅ All 8 fixes applied, model retrained 2026-07-08. |
+| `reference/graphify-output-reliability-report.md` | CURRENT | Audit and remediation specification for factual accuracy, provenance, and reproducibility of Graphify outputs. |
 | `archive/ml-implementation-plan.md` | ARCHIVED | → Replaced by `graphify_output/ml_inventory.md` (auto-generated, run `just graphify`) |
 | `reference/hostname-standards.md` | CURRENT | WA government hostname conventions, data classification, department naming. |
 | `backend/ml/README.md` | CURRENT | ML artifact index — lists active and pending ML components, lives with code. |
@@ -66,6 +67,7 @@
 | File | Status | Description |
 |---|---|---|
 | `guides/WINDOWS_SETUP.md` | CURRENT | Windows 10/11 setup guide with troubleshooting. |
+| `guides/SELF_HOSTED_RUNNER.md` | CURRENT | Local KVM/libvirt GitHub Actions runner topology, operation, validation, security, and recovery. |
 
 ## Archive
 
@@ -137,7 +139,7 @@
 | `backend/ml/model_registry_pre_tier.json` | Pre-Tier model version registry (drift tracking, rollback) |
 | `backend/ml/model_registry_epss.json` | EPSS model version registry (v1–v4 tracking, rollback) |
 
-**Total test count:** 449+ tests (up from 142) — includes 5 new test files for Pre-Tier and EPSS monitoring, plus 3 drift test files (XGBoost, EPSS, Pre-Tier) from Sprint 18, plus scoring property tests, seed verification, scheduler, NPZ metadata, and concept drift tests from Sprint 19, plus 65 new tests from Sprint 20 (agent tools, admin API, PCA), plus multiplier tests, config API tests, drift webhook tests from Sprint 21, plus benchmark, rollback, and schema tests from Sprint 22.
+**Total test count:** 457+ tests (up from 142) — includes 5 new test files for Pre-Tier and EPSS monitoring, plus 3 drift test files (XGBoost, EPSS, Pre-Tier) from Sprint 18, plus scoring property tests, seed verification, scheduler, NPZ metadata, and concept drift tests from Sprint 19, plus 65 new tests from Sprint 20 (agent tools, admin API, PCA), plus multiplier tests, config API tests, drift webhook tests from Sprint 21, plus benchmark, rollback, and schema tests from Sprint 22, plus feature contract tests from Sprint 26.
 
 ## Sprint 17 — ✅ Complete (Security Telemetry, Network Context & Panel 5)
 
@@ -230,15 +232,19 @@
 
 ## Graphify — Auto-Generated Knowledge Artifacts
 
-These files are regenerated on demand with `just graphify`. They are always current with the codebase.
+These files are regenerated on demand with `just graphify`, but regeneration
+does not currently guarantee factual accuracy or reproducibility. Treat them as
+discovery aids and verify behavioural claims against code and tests. See
+`reference/graphify-output-reliability-report.md` for confirmed limitations and
+the remediation specification.
 
 | File | Description |
 |---|---|
-| `graphify_output/file_tree.md` | Complete annotated directory tree (299 entries, auto-generated) |
-| `graphify_output/api_deps.md` | Python import dependency map (421 dependencies, auto-generated) |
-| `graphify_output/ml_inventory.md` | Canonical ML model and script inventory |
-| `graphify_output/knowledge_graph.json` | Structured CVE↔hostname↔CWE knowledge graph |
-| `graphify_output/feature_parity.md` | Tabular feature parity check (inference vs training vs inventory) |
+| `graphify_output/file_tree.md` | Local filesystem snapshot; may include machine-specific content |
+| `graphify_output/api_deps.md` | Python import dependency map; not a function call graph |
+| `graphify_output/ml_inventory.md` | Generated ML discovery inventory; currently contains known hardcoded stale claims |
+| `graphify_output/knowledge_graph.json` | Mixed-source CVE↔hostname↔CWE graph; per-record provenance remediation pending |
+| `graphify_output/feature_parity.md` | Feature-count overview; deterministic contract tests remain authoritative |
 
 ---
 
@@ -246,6 +252,6 @@ These files are regenerated on demand with `just graphify`. They are always curr
 
 **Archive files:** Files under `docs/archive/` (sprint handoffs S1–S6, superseded plans) are preserved for historical context but are not listed in this index. They are **ARCHIVED** — do not use as reference for current state.
 
-**Root-level `.md` symlinks:** Files like `ROADMAP.md`, `AI_PROBLEMS.md`, etc. at the project root are symlinks into `docs/`. Always read the canonical copy under `docs/`.
-
-**Auto-generated files:** Files under `graphify_output/` are regenerated with `just graphify`. Their freshness depends on the last run. If they look stale, run `just graphify` to regenerate.
+**Auto-generated files:** Files under `graphify_output/` are regenerated with
+`just graphify`. A recent generation timestamp proves only that the generators
+ran; it does not prove every embedded claim was derived from current code.

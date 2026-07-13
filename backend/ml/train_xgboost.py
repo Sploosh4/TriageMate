@@ -369,7 +369,7 @@ def fetch_nvd_cves(start_date: str, end_date: str) -> list[dict]:
                         "cvss_vector": cvss_v31["vectorString"],
                         "published_date": cve.get("published", "")[:10],
                         "cwe_id": _extract_cwe(cve),
-                        "reference_count": len(cve.get("references", [])),
+                        "nvd_reference_count": len(cve.get("references", [])),
                         "cvss_exploitability_sub": cvss_v31.get(
                             "exploitabilityScore", 0
                         ),
@@ -691,7 +691,7 @@ def build_tabular_features(cves: list[dict]) -> np.ndarray:
         X[i, 22] = _compute_threat_intel_pulses(cve, rng)
         # === end of formerly-hardcoded block ===
 
-        X[i, 23] = cve.get("reference_count", 0)
+        X[i, 23] = cve.get("nvd_reference_count", cve.get("reference_count", 0))
         X[i, 24] = len(cve.get("description", ""))
         X[i, 25] = _compute_age_days(cve.get("published_date", ""))
         X[i, 26] = (
