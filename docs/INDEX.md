@@ -22,7 +22,7 @@
 
 | # | File | Status | Description |
 |---|---|---|---|
-| 1 | `planning/ROADMAP.md` | CURRENT | **Master status.** What exists, what's broken, what's next. Sprints 17–25 complete ✅. Start here. |
+| 1 | `planning/ROADMAP.md` | CURRENT | **Master status.** What exists, what's broken, what's next. Sprints 17–28 complete/in progress ✅. Start here. |
 | 2 | `architecture/MVP_SCOPE.md` | OUTDATED | Sprint 1 scope boundaries. Many deferred items are now done. See caution banner. |
 | 3 | `reference/AI_PROBLEMS.md` | CURRENT | Bug tracker. All historical issues resolved. |
 | 4 | `archive/ml-implementation-plan.md` | ARCHIVED | → Replaced by `graphify_output/ml_inventory.md` (auto-generated, run `just graphify`) |
@@ -33,13 +33,14 @@
 |---|---|---|
 | `architecture/MVP_SCOPE.md` | OUTDATED | Scope authority from Sprint 1. Many deferred items now implemented. ROC-AUC figure updated to 0.9459. |
 | `architecture/scoring-weights.md` | CURRENT | Scoring weight design — 6 dimensions (107-sum, clamped 0–100), plus context multiplier. Rationale, clamping, bands, demo CVE scores. Added Sprint 18. |
-| `architecture/comparison-vs-described-system.md` | CURRENT | Maps each of 5 described system areas to actual implementation — identifies what was simplified, added onto, or completely changed. Generated 2026-07-10. |
+| `architecture/comparison-vs-described-system.md` | OUTDATED | Maps each of 5 described system areas to actual implementation. **Stale** — predates Sprint 20 (PCA restored, Tier 2 agentic). See caution banner in file. |
+| `architecture/weight-zero-decision.md` | CURRENT | Scoring weight zero policy — zero NOT supported, minimum of 1 retained as intentional design. Sprint 28 (2026-07-14). |
 
 ## Planning
 
 | File | Status | Description |
 |---|---|---|
-| `planning/ROADMAP.md` | CURRENT | Forward-looking roadmap. Sprints 17–25 complete ✅. Sprint 19 added shared config module, scheduled retraining triggers, NPZ column names, concept drift monitoring, scoring property tests, and seed data freshness check. Sprint 20 added multi-step agentic LLM, customizable risk multipliers, and safe PCA. |
+| `planning/ROADMAP.md` | CURRENT | Forward-looking roadmap. Sprints 17–27 complete ✅, Sprint 28 active. Sprint 27: bug fix sprint (security, ML correctness, schema integrity). Sprint 28: evidence investigations and ML readiness. |
 | `planning/HANDOFF-2026-07-08.md` | OUTDATED | Handoff from pre-Sprint-18 era. Drift monitoring, retraining, concept drift, and benchmark sections superseded by Sprints 18–22. Still accurate for network topology/Sentinel gaps and post-MVP items. |
 | `planning/ai-doc-strategy-2026-07-07.md` | CURRENT | This consolidation plan — how and why docs were restructured. |
 | `planning/github-label-taxonomy.md` | CURRENT | Sprint 24 label taxonomy — 25 labels (9 defaults + 16 custom), colors, descriptions. |

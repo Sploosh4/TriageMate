@@ -1,6 +1,10 @@
 # Comparison: Described System vs Current Implementation
 
-> **Status:** CURRENT · **Last updated:** 2026-07-11 (Sprint 23)
+> **Status:** OUTDATED · **Last updated:** 2026-07-11 (Sprint 23)
+> **⚠️ Warning:** This document predates Sprint 20. PCA has been re-introduced
+> with correct train/test hygiene (Sprint 20), and Tier 2 is now a multi-step
+> agentic evaluation loop with 12 tools (Sprint 20), not single-shot. See
+> ROADMAP.md and INDEX.md for current Sprint 20+ descriptions.
 > **Purpose:** Maps each of the 5 described system areas to the actual MVP code to identify what was simplified, added onto, or completely changed.
 
 ---
@@ -80,7 +84,7 @@ Nothing — the described compression step does not exist.
 | **Embedding size** | "Massive lists" → compressed small | **Full 384-dim SBERT** (`all-MiniLM-L6-v2`), no compression. |
 | **Combination strategy** | Compress embeddings before combining with tabular data | **Concatenate** 35 tabular + 384 SBERT = **419-dim total**. No compression step. |
 | **Dimensionality handling** | Compression to avoid "confusing the system" | **XGBoost regularization** (colsample_bytree=0.8, max_depth=4, subsample=0.8) handles the full 419-dim space. |
-| **PCA** | Not mentioned | **Was present, then removed in v2.5** — commit message: "PCA removed to eliminate data leakage" (PCA was fitted on entire dataset before train/test split). |
+| **PCA** | Not mentioned | **Was removed in v2.5, then re-introduced in Sprint 20 with correct train/test hygiene.** PCA is now fitted on the training split only and saved as `pca_model.pkl`. 384 SBERT dims reduced via `n_components=0.95`. Graceful fallback to full 384-dim if PCA model missing. |
 
 **This is the most divergent area.** The described system's central claim — that massive lists need compression to be usable — is handled by the opposite approach in the actual code: throw the full 384-dim SBERT at a regularized XGBoost and let it learn feature importance naturally.
 
@@ -124,7 +128,7 @@ The core concept matches: penalize the model more for missing rare positives tha
 | Item | Described | Implemented |
 |---|---|---|
 | Self-doubt check | Two-step: (1) assess, (2) verify | **Single force-reflection prompt** — the LLM performs steps A (primary assessment), B (counter-argument), and C (final determination) in one response. Same logic, less infrastructure. |
-| Multi-step investigation | Up to 40 steps | **Single-shot call**. The entire Tier 2 is one LLM API call, not a loop. Drastically simpler. |
+| Multi-step investigation | Up to 40 steps | **Multi-step agentic loop (Sprint 20+).** Tier 2 was upgraded from single-shot to a multi-step agent with 12 tools, 15-step limit, and $0.50 cost budget. Feature-flag gated (`TRIAGEMATE_AGENT_ENABLED=false`). Graceful fallback to single-shot path. The described 40-step limit was reduced to 15. |
 
 ### What was added onto
 
@@ -140,11 +144,11 @@ The core concept matches: penalize the model more for missing rare positives tha
 
 | Aspect | Described | Implemented |
 |---|---|---|
-| **Step limit (40)** | Multi-turn investigation loop | **Not implemented.** The LLM gets one shot per vulnerability. No step counter, no loop logic. |
+| **Step limit (40)** | Multi-turn investigation loop | **Implemented with 15-step limit (Sprint 20+).** Agentic evaluator with tool dispatch, step tracking, and cost budget enforcement. Original 40-step design reduced to 15. |
 | **Retry limit as "tool lock"** | Per-action retries, tool locked after 3 failures | **`_MAX_RETRIES = 3` per provider** — for API connectivity errors, not per-tool. On total failure, falls through provider chain to known conflicts cache, not a "locked tool." No tool-locking mechanism exists. |
-| **Investigation architecture** | Agentic loop with tool use | **Stateless prompt + response.** The LLM doesn't have tools to call; it receives all context (CVE, RAG, scores) in a single prompt and returns a JSON decision. |
+| **Investigation architecture** | Agentic loop with tool use | **Agentic loop with 12 tools (Sprint 20+).** The LLM can call tools (KEV, NVD, EPSS, CWE, MITRE, network, telemetry, advisories, ExploitDB, Metasploit, CMDB, RAG) in a multi-step loop. Single-shot path retained as fallback. |
 
-**This area is the most architecturally divergent after text compression.** The described system envisions an agentic LLM that can take multiple investigative steps (search databases, check records, etc.), while the implemented system is a single-shot structured-output classifier. Both produce a decision, but the mechanism is fundamentally different.
+**This area was the most architecturally divergent until Sprint 20.** The described system envisions an agentic LLM that can take multiple investigative steps, and the implemented system now matches that vision with a 12-tool multi-step agent. The single-shot classifier remains as fallback when the agent feature flag is disabled.
 
 ---
 
@@ -162,7 +166,7 @@ The core concept matches: penalize the model more for missing rare positives tha
 
 1. **The largest gap is in #3 (Text Compression)** — the entire premise of the described system is contradicted by the actual implementation. This would be the first thing to correct in any design document based on this description.
 
-2. **The second-largest gap is in #5 (LLM Guardrails)** — the described system envisions an agentic multi-step LLM, while the implementation is a single-shot classifier. The guardrails that exist (retries, force-reflection prompt) are shadows of what was described.
+2. **The second-largest gap was in #5 (LLM Guardrails)** — Sprint 20 closed this gap by implementing the agentic multi-step LLM with 12 tools, 15-step limit, and $0.50 cost budget. The guardrails (force-reflection prompt, retries, provider fallback) now complement an agent architecture closer to the described system.
 
 3. **The described system omitted entire subsystems** — Pre-Tier classifier, Tier 0 deterministic rules, EPSS substitution engine, RAG vector store, temporal bias correction, and the provider fallback chain are all absent from the description but critical in the actual code.
 
