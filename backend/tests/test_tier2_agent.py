@@ -234,10 +234,125 @@ class TestTools:
             "rag_context": "Test RAG context",
             "status": "ok",
         }
-        result = _rag_query("test-asset")
+        result = _rag_query(hostname="test-asset")
         assert result["success"] is True
         assert result["data"]["results_count"] == 1
         assert result["data"]["context"] == "Test RAG context"
+
+    # ── RAG Hostname Binding Tests ──────────────────────────────────────────
+
+    @patch("ingest_helpers.query_rag")
+    def test_rag_hostname_no_supplied_hostname_with_case_hostname_succeeds(
+        self, mock_rag
+    ):
+        """No caller-supplied hostname + valid case_hostname → succeeds."""
+        from pipeline.tier_2.tools import execute_tool
+
+        mock_rag.return_value = {
+            "documents": [{"id": "1", "text": "Test doc"}],
+            "rag_context": "Test context",
+            "status": "ok",
+        }
+        result = execute_tool(
+            "rag_query",
+            {"cwe_class": "CWE-79"},
+            case_hostname="demo.host.wa.gov.au",
+        )
+        assert result["success"] is True
+
+    @patch("ingest_helpers.query_rag")
+    def test_rag_hostname_missing_case_hostname_handled_gracefully(self, mock_rag):
+        """Missing case_hostname → tool handles absent hostname gracefully."""
+        from pipeline.tier_2.tools import execute_tool
+
+        # Mock query_rag to handle hostname=None gracefully (empty results)
+        mock_rag.return_value = {
+            "documents": [],
+            "rag_context": "",
+            "status": "NO_MATCHES",
+        }
+        result = execute_tool(
+            "rag_query",
+            {"cwe_class": "CWE-79"},
+            case_hostname=None,
+        )
+        # No case_hostname means injection doesn't fire; tool falls
+        # through to _rag_query with hostname=None. Expect graceful handling.
+        assert result["success"] is True
+        assert result["data"]["results_count"] == 0
+
+    @patch("ingest_helpers.query_rag")
+    def test_rag_hostname_mismatched_hostname_rejected(self, mock_rag):
+        """Any caller-supplied hostname differing from case_hostname → rejected."""
+        from pipeline.tier_2.tools import execute_tool
+
+        mock_rag.return_value = {
+            "documents": [],
+            "rag_context": "",
+            "status": "ok",
+        }
+        result = execute_tool(
+            "rag_query",
+            {"hostname": "evil.host.wa.gov.au", "cwe_class": "CWE-79"},
+            case_hostname="demo.host.wa.gov.au",
+        )
+        assert result["success"] is False
+        assert "not the case under investigation" in result["error"]
+
+    @patch("ingest_helpers.query_rag")
+    def test_rag_hostname_legacy_query_text_ignored(self, mock_rag):
+        """Free-form/unknown asset-selector params must not alter queried hostname.
+
+        Legacy params (like query_text) that are not in the _rag_query signature
+        cause a parameter error — this is "fail closed": the unknown param cannot
+        alter the hostname because the tool rejects the unexpected keyword.
+        """
+        from pipeline.tier_2.tools import execute_tool
+
+        mock_rag.return_value = {
+            "documents": [{"id": "1", "text": "Test doc"}],
+            "rag_context": "Test context",
+            "status": "ok",
+        }
+        # Legacy query_text param is NOT in the new rag_query tool definition
+        # and NOT in the _rag_query signature. It will be rejected as an
+        # unexpected keyword, which is the correct fail-closed behaviour.
+        result = execute_tool(
+            "rag_query",
+            {"query_text": "some-legacy-value", "cwe_class": "CWE-79"},
+            case_hostname="demo.host.wa.gov.au",
+        )
+        # Fail closed: unknown params cannot alter the queried hostname
+        assert result["success"] is False
+        assert "Parameter error" in result["error"]
+        assert "unexpected keyword" in result["error"]
+
+    @patch("ingest_helpers.query_rag")
+    def test_rag_hostname_arbitrary_params_no_effect(self, mock_rag):
+        """Arbitrary unknown parameters must not affect the queried hostname.
+
+        Fail-closed: unexpected keyword args are rejected, preventing any
+        parameter from altering the asset hostname under investigation.
+        """
+        from pipeline.tier_2.tools import execute_tool
+
+        mock_rag.return_value = {
+            "documents": [{"id": "1", "text": "Test doc"}],
+            "rag_context": "Test context",
+            "status": "ok",
+        }
+        result = execute_tool(
+            "rag_query",
+            {"cwe_class": "CWE-79", "unknown_param": "should-be-ignored"},
+            case_hostname="demo.host.wa.gov.au",
+        )
+        # Extra unknown params that aren't in _rag_query signature
+        # cause TypeError -> tool returns success=False
+        # This is the expected fail-closed behaviour — unknown params
+        # cannot alter the hostname because they're rejected.
+        assert result["success"] is False
+        assert "Parameter error" in result["error"]
+        assert "unexpected keyword" in result["error"]
 
     def test_all_twelve_tool_definitions_exist(self):
         from pipeline.tier_2.tools import TOOL_DEFINITIONS, get_tool_names
@@ -261,7 +376,9 @@ class TestTools:
         for name in expected:
             assert name in names, f"Missing tool: {name}"
 
-        # Verify each definition has the required fields
+        # Verify each definition has the required fields.
+        # rag_query is the exception — it exposes only optional cwe_class
+        # (hostname is server-injected), so it has an empty required list.
         for t in TOOL_DEFINITIONS:
             assert "name" in t
             assert "description" in t
@@ -269,9 +386,10 @@ class TestTools:
             assert "type" in t["parameters"]
             assert "properties" in t["parameters"]
             assert "required" in t["parameters"]
-            assert len(t["parameters"]["required"]) > 0, (
-                f"Tool {t['name']} has no required params"
-            )
+            if t["name"] != "rag_query":
+                assert len(t["parameters"]["required"]) > 0, (
+                    f"Tool {t['name']} has no required params"
+                )
 
     def test_execute_tool_dispatch(self):
         from pipeline.tier_2.tools import execute_tool

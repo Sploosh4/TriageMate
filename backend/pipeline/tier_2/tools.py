@@ -195,16 +195,16 @@ TOOL_DEFINITIONS = [
     },
     {
         "name": "rag_query",
-        "description": "Query the RAG (Retrieval Augmented Generation) vector store for asset context and documentation",
+        "description": "Query the RAG vector store for asset context and documentation for the case under investigation",
         "parameters": {
             "type": "object",
             "properties": {
-                "query_text": {
+                "cwe_class": {
                     "type": "string",
-                    "description": "Search query text, typically a hostname or CWE class",
-                }
+                    "description": "Optional CWE class to narrow the RAG search context",
+                },
             },
-            "required": ["query_text"],
+            "required": [],
         },
     },
 ]
@@ -643,22 +643,26 @@ def _search_cmdb(hostname: str) -> dict:
         return {"success": False, "data": None, "error": str(e)}
 
 
-def _rag_query(query_text: str) -> dict:
-    """Query the RAG vector store for asset context."""
+def _rag_query(hostname: str | None = None, cwe_class: str | None = None) -> dict:
+    """Query the RAG vector store for asset context.
+
+    The hostname is supplied by the server (execute_tool injects case_hostname).
+    No model-controlled parameter can choose the asset hostname.
+    """
     logger.info(
-        "Tool rag_query called for '%s'",
-        query_text,
+        "Tool rag_query called for hostname='%s', cwe_class='%s'",
+        hostname,
+        cwe_class,
         extra={
             "event": "agent_tool_call",
             "tool": "rag_query",
-            "params": {"query_text": query_text},
+            "params": {"hostname": hostname, "cwe_class": cwe_class},
         },
     )
     try:
         from ingest_helpers import query_rag
 
-        # The existing query_rag takes a hostname and optional cwe_class
-        result = query_rag(query_text)
+        result = query_rag(hostname, cwe_class=cwe_class)
         rag_context = result.get("rag_context", "")
         documents = result.get("documents", [])
         return {
@@ -720,9 +724,9 @@ def execute_tool(
         }
 
     # ── Hostname binding check ──────────────────────────────────────────────
-    # If the tool accepts a hostname parameter, verify it matches the case
-    # hostname. This is a server-side guard against prompt injection that
-    # could trick the LLM into probing infrastructure beyond the current case.
+    # Bind check runs FIRST: if the attacker supplied a mismatched hostname,
+    # reject before injection can mask it. Then injection sets the correct
+    # hostname for tools that use server-enforced asset scope.
     if case_hostname and params.get("hostname") and params["hostname"] != case_hostname:
         logger.warning(
             "Hostname mismatch on tool '%s': requested '%s' != case '%s'",
@@ -744,6 +748,12 @@ def execute_tool(
                 f"'{params['hostname']}': not the case under investigation"
             ),
         }
+
+    # ── Hostname injection for rag_query (server-enforced asset scope) ──────
+    # After the bind check passes (or no hostname was supplied), inject the
+    # case hostname so the tool queries only the asset under investigation.
+    if tool_name == "rag_query" and case_hostname:
+        params = {**params, "hostname": case_hostname}
 
     logger.info(
         "Executing tool %s with params: %s",
