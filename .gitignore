@@ -55,5 +55,8 @@ htmlcov/
 .ruff_cache/
 Thumbs.db
 
-# Sprint 25: process artifacts (audit, intel, bookkeeping reports)
-backend/reports/
+# Sprint 28+: investigation and bookkeeping reports are tracked; only exclude ephemeral process artifacts
+backend/reports/audits/
+backend/reports/intel/
+backend/reports/stress/
+backend/reports/seed-data-ml-dimension.md
