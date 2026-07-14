@@ -1,0 +1,9 @@
+{
+  "private": true,
+  "devDependencies": {
+    "jsdom": "^29.1.1"
+  },
+  "scripts": {
+    "test:keydown": "node backend/tests/test_keydown_listeners.js"
+  }
+}
