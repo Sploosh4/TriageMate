@@ -207,9 +207,9 @@
 | # | Item | Status | Description |
 |---|---|---|---|
 | **1** | **Product/Security Decisions** | ⏳ Planned | rag_query hostname binding (PIPE-HIGH-5) + /api/config exposure (ROUTER-LOW-1) |
-| **2a** | **Webhook malformed-JSON handling** | ⏳ Planned | ROUTER-LOW-5 — wrap json.loads() in try/except |
-| **2b** | **Test isolation / shared-state races** | ⏳ Planned | 5 test infrastructure fixes (TEST-CRIT-1, TEST-MED-1/2, TEST-LOW-3/4/6) |
-| **2c** | **Seed-data idempotency** | ⏳ Planned | INFRA-HIGH-2 — cross-database UNIQUE constraint + conflict-safe insert |
+| **2a** | **Webhook malformed-JSON handling** | ✅ Done | ROUTER-LOW-5 — malformed Tenable JSON now returns HTTP 400 with regression coverage (`060df23`). |
+| **2b** | **Test isolation / shared-state races** | ✅ Done | TEST-CRIT-1, TEST-MED-1/2, and TEST-LOW-3/4/6 isolation fixes merged in PR #65; the complete Python test matrix passed. |
+| **2c** | **Seed-data idempotency** | ✅ Done | INFRA-HIGH-2 — cross-database unique constraint, conflict-safe insert, migration 013, and regression coverage (`88a4d0c`). |
 | **2d** | **OTX throttling handling** | ✅ Done | INT-MED-3 — Retry 429 responses with `Retry-After` support and exponential backoff; safe fallback after retry exhaustion. |
 | **2e** | **Rate-limit policy and implementation** | ✅ Done | CORE-MED-5 and ROUTER-LOW-8 — slowapi per-route limits, CI-installed dependency, and threshold-file status distinction. Merged in PR #66. |
 | **3** | **ML Data-Readiness Work** | 🟡 In Progress | Fresh gather (3a) confirmed a degenerate split; the mid-2023 drop is diagnosed (3b) and registry metadata corrected (3c). Split-policy implementation and a representative baseline (3d) remain blocked; do **not** retrain. |
