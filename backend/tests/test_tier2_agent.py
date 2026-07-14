@@ -261,25 +261,18 @@ class TestTools:
         assert result["success"] is True
 
     @patch("ingest_helpers.query_rag")
-    def test_rag_hostname_missing_case_hostname_handled_gracefully(self, mock_rag):
-        """Missing case_hostname → tool handles absent hostname gracefully."""
+    def test_rag_hostname_missing_case_hostname_fails_closed(self, mock_rag):
+        """Missing case_hostname rejects the call before querying RAG."""
         from pipeline.tier_2.tools import execute_tool
 
-        # Mock query_rag to handle hostname=None gracefully (empty results)
-        mock_rag.return_value = {
-            "documents": [],
-            "rag_context": "",
-            "status": "NO_MATCHES",
-        }
         result = execute_tool(
             "rag_query",
             {"cwe_class": "CWE-79"},
             case_hostname=None,
         )
-        # No case_hostname means injection doesn't fire; tool falls
-        # through to _rag_query with hostname=None. Expect graceful handling.
-        assert result["success"] is True
-        assert result["data"]["results_count"] == 0
+        assert result["success"] is False
+        assert "without a case hostname" in result["error"]
+        mock_rag.assert_not_called()
 
     @patch("ingest_helpers.query_rag")
     def test_rag_hostname_mismatched_hostname_rejected(self, mock_rag):

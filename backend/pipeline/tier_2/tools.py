@@ -723,6 +723,19 @@ def execute_tool(
             "error": f"Unknown tool: {tool_name}",
         }
 
+    # RAG asset access must always be scoped by the server-owned case hostname.
+    # Without it, a model-controlled call has no trustworthy asset boundary.
+    if tool_name == "rag_query" and not case_hostname:
+        logger.warning(
+            "RAG query rejected because no case hostname was provided",
+            extra={"event": "missing_case_hostname", "tool": tool_name},
+        )
+        return {
+            "success": False,
+            "data": None,
+            "error": "Cannot query RAG without a case hostname",
+        }
+
     # ── Hostname binding check ──────────────────────────────────────────────
     # Bind check runs FIRST: if the attacker supplied a mismatched hostname,
     # reject before injection can mask it. Then injection sets the correct
@@ -752,7 +765,7 @@ def execute_tool(
     # ── Hostname injection for rag_query (server-enforced asset scope) ──────
     # After the bind check passes (or no hostname was supplied), inject the
     # case hostname so the tool queries only the asset under investigation.
-    if tool_name == "rag_query" and case_hostname:
+    if tool_name == "rag_query":
         params = {**params, "hostname": case_hostname}
 
     logger.info(
