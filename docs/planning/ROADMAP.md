@@ -210,9 +210,9 @@
 | **2a** | **Webhook malformed-JSON handling** | ⏳ Planned | ROUTER-LOW-5 — wrap json.loads() in try/except |
 | **2b** | **Test isolation / shared-state races** | ⏳ Planned | 5 test infrastructure fixes (TEST-CRIT-1, TEST-MED-1/2, TEST-LOW-3/4/6) |
 | **2c** | **Seed-data idempotency** | ⏳ Planned | INFRA-HIGH-2 — cross-database UNIQUE constraint + conflict-safe insert |
-| **2d** | **OTX throttling handling** | ⏳ Planned | INT-MED-3 — exponential backoff retry for 429s |
-| **2e** | **Rate-limit policy and implementation** | ⏳ Planned | CORE-MED-5 — slowapi middleware with per-route limits |
-| **3** | **ML Data-Readiness Work** | ⏳ Planned | Fresh --gather, diagnose mid-2023 drop, fix registry mismatch, establish baseline. Do NOT retrain. |
+| **2d** | **OTX throttling handling** | ✅ Done | INT-MED-3 — Retry 429 responses with `Retry-After` support and exponential backoff; safe fallback after retry exhaustion. |
+| **2e** | **Rate-limit policy and implementation** | ✅ Done | CORE-MED-5 and ROUTER-LOW-8 — slowapi per-route limits, CI-installed dependency, and threshold-file status distinction. Merged in PR #66. |
+| **3** | **ML Data-Readiness Work** | 🟡 In Progress | Fresh gather (3a) confirmed a degenerate split; the mid-2023 drop is diagnosed (3b) and registry metadata corrected (3c). Split-policy implementation and a representative baseline (3d) remain blocked; do **not** retrain. |
 
 ---
 

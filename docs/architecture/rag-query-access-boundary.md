@@ -1,7 +1,7 @@
 # RAG Query Hostname Binding
 
 **Date:** 2026-07-14
-**Status:** FINAL
+**Status:** IMPLEMENTED — product-owner decision still to be recorded in Issue #58
 
 ## Decision
 

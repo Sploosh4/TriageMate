@@ -35,6 +35,8 @@
 | `architecture/scoring-weights.md` | CURRENT | Scoring weight design — 6 dimensions (107-sum, clamped 0–100), plus context multiplier. Rationale, clamping, bands, demo CVE scores. Added Sprint 18. |
 | `architecture/comparison-vs-described-system.md` | OUTDATED | Maps each of 5 described system areas to actual implementation. **Stale** — predates Sprint 20 (PCA restored, Tier 2 agentic). See caution banner in file. |
 | `architecture/weight-zero-decision.md` | CURRENT | Scoring weight zero policy — zero NOT supported, minimum of 1 retained as intentional design. Sprint 28 (2026-07-14). |
+| `architecture/rag-query-access-boundary.md` | CURRENT | Implemented hostname-binding boundary for the Tier 2 `rag_query` tool. Sprint 29 (2026-07-14); product-owner decision record remains open in Issue #58. |
+| `architecture/config-api-exposure.md` | CURRENT | Implemented removal of ML feature names from `GET /api/config`. Sprint 29 (2026-07-14); product-owner decision record remains open in Issue #58. |
 
 ## Planning
 
