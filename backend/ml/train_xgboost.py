@@ -53,8 +53,12 @@ NVD_API_KEY = os.getenv("NVD_API_KEY", "")
 
 DATE_START = "2019-01-01"
 DATE_END = "2024-12-31"
-TRAIN_CUTOFF = "2023-06-30"
-VAL_CUTOFF = "2023-12-31"
+# Primary evaluation cohorts must end before the observation cutoff.  With
+# DATE_END fixed at 2024-12-31 and the observed KEV lag, 2022 is the latest
+# complete calendar-year holdout with reliable negatives.  Newer records are
+# retained only as a prospective cohort, never as primary evaluation data.
+TRAIN_CUTOFF = "2020-12-31"
+VAL_CUTOFF = "2021-12-31"
 DEFAULT_OBS_WINDOW_DAYS = 227  # median KEV lag, fallback if unable to compute
 BATCH_SIZE = 200
 SLEEP_INTERVAL = 6.2
@@ -1043,8 +1047,9 @@ def phase_gather() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         train_cutoff=TRAIN_CUTOFF,
         val_cutoff=VAL_CUTOFF,
     )
-    eligible = split_result["is_fully_observed"]
+    primary = split_result["primary_mask"]
     censored = split_result["censored_mask"]
+    prospective = split_result["prospective_mask"]
 
     censored_count = int(np.sum(censored))
 
@@ -1058,20 +1063,43 @@ def phase_gather() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         f"These are excluded from ALL splits uniformly."
     )
     print(
-        f"  Eligible: {int(np.sum(eligible)):,} CVEs "
-        f"({int(np.sum(eligible)) / len(X):.1%} of pre-filter)."
+        f"  Primary cohort: {int(np.sum(primary)):,} CVEs "
+        f"({int(np.sum(primary)) / len(X):.1%} of pre-filter)."
+    )
+    print(
+        f"  Prospective cohort: {int(np.sum(prospective)):,} CVEs "
+        "(newer than the observation cutoff; excluded from primary metrics)."
     )
 
-    X = X[eligible]
-    y_arr = y_arr[eligible]
-    dates_arr = dates_arr[eligible]
-    cve_ids_arr = cve_ids_arr[eligible]
-    cves = [c for c, m in zip(cves, eligible) if m]
+    for split_name, split_mask in (
+        ("Train", split_result["train_mask"]),
+        ("Val", split_result["val_mask"]),
+        ("Test", split_result["test_mask"]),
+    ):
+        split_labels = y_arr[split_mask]
+        split_total = int(np.sum(split_mask))
+        split_positive = int(np.sum(split_labels > 0))
+        if split_total == 0 or split_positive == 0 or split_positive == split_total:
+            raise RuntimeError(
+                f"{split_name} primary cohort is degenerate: "
+                f"{split_total} records, {split_positive} KEV-positive. "
+                "Adjust primary split boundaries before training."
+            )
+        print(
+            f"  {split_name} set: {split_total:,} records, "
+            f"{split_positive:,} KEV-positive ({split_positive / split_total:.2%})"
+        )
+
+    X = X[primary]
+    y_arr = y_arr[primary]
+    dates_arr = dates_arr[primary]
+    cve_ids_arr = cve_ids_arr[primary]
+    cves = [c for c, m in zip(cves, primary) if m]
 
     obs_pos = int(sum(y_arr > 0))
     print(
-        f"  Final positive rate (any KEV): {obs_pos}/{int(np.sum(eligible))} "
-        f"({obs_pos / int(np.sum(eligible)):.1%})"
+        f"  Final positive rate (any KEV): {obs_pos}/{int(np.sum(primary))} "
+        f"({obs_pos / int(np.sum(primary)):.1%})"
     )
 
     # SAVE POINT 2: training data (X, y, dates, cve_ids)
@@ -1099,33 +1127,6 @@ def phase_train(X: np.ndarray, y: np.ndarray, dates: np.ndarray):
         test_mask = dates > VAL_CUTOFF
         print("  Using chronological split")
 
-        # ── Defensive uniform eligibility filter ────────────────────────
-        # Re-apply the observation-window filter uniformly to all splits.
-        # This is a safety net: in normal operation the data was already
-        # filtered by phase_gather, but if old unfiltered training data is
-        # loaded, this ensures censored negatives are excluded from every
-        # split equally.
-        from datetime import timedelta
-
-        obs_cutoff = datetime.strptime(DATE_END, "%Y-%m-%d") - timedelta(
-            days=DEFAULT_OBS_WINDOW_DAYS
-        )
-        obs_cutoff_str = obs_cutoff.strftime("%Y-%m-%d")
-        too_recent = dates > obs_cutoff_str
-        censored_mask = too_recent & (y == 0)
-        n_censored = int(np.sum(censored_mask))
-        if n_censored > 0:
-            print(
-                f"  [Defensive] Censored negatives found in phase_train: "
-                f"{n_censored:,} (removing from all splits)"
-            )
-        else:
-            print(
-                "  [Defensive] No censored negatives in phase_train (data was pre-filtered)."
-            )
-        train_mask = train_mask & ~censored_mask
-        val_mask = val_mask & ~censored_mask
-        test_mask = test_mask & ~censored_mask
     else:
         n = len(X)
         indices = np.random.permutation(n)
