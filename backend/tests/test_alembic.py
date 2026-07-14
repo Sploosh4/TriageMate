@@ -1,12 +1,15 @@
 """Tests for Alembic migration system."""
 
+import os
 from pathlib import Path
 import subprocess
 import sys
 import pytest
+import database
 from database import get_db
 
 
+@pytest.mark.xdist_group(name="serial-db")
 class TestAlembicMigration:
     def test_pre_tier_features_column_exists(self):
         db = get_db()
@@ -70,6 +73,11 @@ class TestAlembicMigration:
         if rev_match:
             expected_revision = rev_match.group(1)
 
+        # Build env with DATABASE_URL pointing to the test temp DB so the
+        # subprocess uses the isolated database, not the real triagemate.db.
+        subprocess_env = os.environ.copy()
+        subprocess_env["DATABASE_URL"] = f"sqlite:///{database.DB_PATH}"
+
         # Ensure migrations are applied. Use check=True so a failed upgrade
         # (e.g. SQLite-incompatible DDL) raises immediately.
         upgrade_result = subprocess.run(
@@ -77,6 +85,7 @@ class TestAlembicMigration:
             capture_output=True,
             text=True,
             cwd=str(test_dir),
+            env=subprocess_env,
         )
         assert upgrade_result.returncode == 0, (
             f"alembic upgrade head failed: rc={upgrade_result.returncode}\n"
@@ -89,6 +98,7 @@ class TestAlembicMigration:
             capture_output=True,
             text=True,
             cwd=str(test_dir),
+            env=subprocess_env,
         )
         assert result.returncode == 0, (
             f"alembic current failed: rc={result.returncode}, "

@@ -4,9 +4,14 @@ Tests for model version management (read-write: list + activate).
 Covers:
 - GET  /api/model/versions  — listing with correct active version
 - POST /api/model/activate — error cases (only v3 remains after hygiene cleanup)
+
+Uses the ``isolated_registry`` conftest fixture so registry file access is
+redirected to a ``tmp_path`` copy, preventing shared-state races with
+parallel test files (e.g. ``test_rollback.py``).
 """
 
 import json
+import sys
 import pytest
 from pathlib import Path
 
@@ -15,13 +20,15 @@ pytestmark = pytest.mark.asyncio
 REGISTRY_PATH = Path(__file__).resolve().parent.parent / "ml" / "model_registry.json"
 
 
-def _read_registry() -> dict:
-    with open(REGISTRY_PATH) as f:
+def _read_registry(isolated_path: Path | None = None) -> dict:
+    target = isolated_path or REGISTRY_PATH
+    with open(target) as f:
         return json.load(f)
 
 
-def _write_registry(registry: dict):
-    with open(REGISTRY_PATH, "w") as f:
+def _write_registry(registry: dict, isolated_path: Path | None = None):
+    target = isolated_path or REGISTRY_PATH
+    with open(target, "w") as f:
         json.dump(registry, f, indent=2)
 
 
@@ -59,6 +66,13 @@ def _save_and_restore_registry():
 
 class TestModelVersions:
     """Model version listing and activation."""
+
+    @pytest.fixture(autouse=True)
+    def _inject_registry(self, isolated_registry, monkeypatch):
+        """Patch this module's REGISTRY_PATH to the isolated temp copy."""
+        monkeypatch.setattr(
+            sys.modules[__name__], "REGISTRY_PATH", Path(isolated_registry)
+        )
 
     async def test_list_versions(self, client):
         """GET /api/model/versions returns 1 version (v4), active is v4.
@@ -99,6 +113,13 @@ class TestModelVersions:
 class TestModelStatus:
     """Model status endpoint: GET /api/model/status."""
 
+    @pytest.fixture(autouse=True)
+    def _inject_registry(self, isolated_registry, monkeypatch):
+        """Patch this module's REGISTRY_PATH to the isolated temp copy."""
+        monkeypatch.setattr(
+            sys.modules[__name__], "REGISTRY_PATH", Path(isolated_registry)
+        )
+
     async def test_model_status_shape(self, client):
         """GET /api/model/status returns expected top-level keys."""
         response = await client.get("/api/model/status")
@@ -134,9 +155,11 @@ class TestModelStatus:
             f"Unexpected baseline_scores: {sc['baseline_scores']}"
         )
 
-    async def test_model_status_active_matches_registry(self, client):
+    async def test_model_status_active_matches_registry(
+        self, client, isolated_registry
+    ):
         """Active version info matches the active version in the registry."""
-        registry = _read_registry()
+        registry = _read_registry(isolated_path=Path(isolated_registry))
         expected_active = registry["active_version"]
 
         response = await client.get("/api/model/status")
