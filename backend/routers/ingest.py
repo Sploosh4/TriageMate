@@ -3,8 +3,9 @@ import json
 import logging
 import os as _os
 import time
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
+from auth import get_current_user_if_enabled
 from database import get_db
 from models import (
     IngestRequest,
@@ -82,7 +83,11 @@ def _demo_only():
 @router.post(
     "/api/ingest", response_model=CaseResponse, response_model_exclude_none=True
 )
-async def ingest_vulnerability(payload: IngestRequest, request: Request = None):
+async def ingest_vulnerability(
+    payload: IngestRequest,
+    request: Request = None,
+    user: dict = Depends(get_current_user_if_enabled),
+):
     _t_start = time.monotonic()
     _verbose = False
     if request is not None:
@@ -235,6 +240,7 @@ async def ingest_vulnerability(payload: IngestRequest, request: Request = None):
             _t3 = time.monotonic()
             t2_result = await tier_2.evaluate_tier_2(
                 cve_id=payload.vulnerability_id,
+                hostname=payload.hostname,
                 cvss_score=payload.cvss_score,
                 description=payload.raw_description or "",
                 rag_context=rag_context,
@@ -255,8 +261,8 @@ async def ingest_vulnerability(payload: IngestRequest, request: Request = None):
         public_wellbeing=mission_tags["public_wellbeing_impact"],
         data_classification=data_classification,
         internet_facing=internet_facing,
-        patch_available=True,
-        patch_applied=False,
+        patch_available=nvd_data.get("patch_available", True),
+        patch_applied=nvd_data.get("patch_applied", False),
         tier_1_result=t1_result,
         tier_2_result=t2_result,
         substituted_epss=effective_epss if epss_sub["substituted"] else None,
@@ -681,7 +687,9 @@ async def ingest_vulnerability(payload: IngestRequest, request: Request = None):
     response_model_exclude_none=True,
 )
 async def ingest_vulnerability_batch(
-    payloads: list[IngestRequest], request: Request = None
+    payloads: list[IngestRequest],
+    request: Request = None,
+    user: dict = Depends(get_current_user_if_enabled),
 ):
     """Bulk ingest: accepts a list of IngestRequest, returns a list of CaseResponse.
 
@@ -698,7 +706,9 @@ async def ingest_vulnerability_batch(
 
 
 @router.post("/api/ingest/tenable")
-async def ingest_tenable(request: Request):
+async def ingest_tenable(
+    request: Request, user: dict = Depends(get_current_user_if_enabled)
+):
     """Accept Tenable.io export JSON (single finding, webhook envelope, or batch list).
 
     Detection logic:
@@ -754,7 +764,7 @@ async def ingest_tenable(request: Request):
 
 
 @router.get("/api/demo/scenarios")
-async def list_demo_scenarios():
+async def list_demo_scenarios(user: dict = Depends(get_current_user_if_enabled)):
     """Return list of available demo scenarios (DEMO_MODE only)."""
     gate = _demo_only()
     if gate:
@@ -770,7 +780,9 @@ async def list_demo_scenarios():
 
 
 @router.post("/api/demo/generate")
-async def generate_demo_findings(request: Request):
+async def generate_demo_findings(
+    request: Request, user: dict = Depends(get_current_user_if_enabled)
+):
     """Generate demo findings from a scenario or random wave (DEMO_MODE only)."""
     gate = _demo_only()
     if gate:
@@ -826,93 +838,97 @@ async def generate_demo_findings(request: Request):
 
 
 @router.post("/api/ingest/clear")
-async def clear_all_findings():
-    """Archive all current findings and clear the queue (DEMO_MODE only)."""
+async def clear_all_findings(user: dict = Depends(get_current_user_if_enabled)):
+    """Archive all current findings and clear the queue (DEMO_MODE only).
+    Destructive admin-only action.
+    """
     gate = _demo_only()
     if gate:
         return gate
 
     conn = get_db()
+    try:
+        with conn:
+            cursor = conn.cursor()
+            # Archive: copy all from vulnerabilities to resolved_vulnerabilities
+            cursor.execute("""
+                INSERT INTO resolved_vulnerabilities (
+                    original_id, vulnerability_id, hostname, cvss_score, cvss_vector,
+                    cisa_kev, epss_score,
+                    mission_prevalence, mission_prevalence_conf,
+                    public_wellbeing_impact, public_wellbeing_conf,
+                    tier_0_routing, tier_0_resolution,
+                    tier_1_confidence, tier_1_exploitation_prob, tier_1_routing,
+                    tier_2_text_conflict, tier_2_conflict_note, tier_2_rag_result,
+                    tier_2_confidence, tier_2_resolution_summary,
+                    priority_score, risk_band,
+                    cvss_contribution, epss_contribution,
+                    asset_criticality_contribution, exposure_contribution,
+                    patch_remediation_contribution, ml_exploitation_contribution,
+                    security_context_contribution,
+                    tier_1_features,
+                    pre_tier_features,
+                    epss_features,
+                    epss_substituted, epss_substituted_value,
+                    epss_substitution_confidence, epss_substitution_reason,
+                    data_classification, network_zone, interface_type,
+                    patch_cycle, last_patch_date, last_scan_date,
+                    operating_system, role, business_owner, technical_owner,
+                    registered_applications, dependent_assets, service_account,
+                    detection_tier, detection_reason,
+                    scanner_output_raw, weakness_template_raw,
+                    advisory_ref_id, advisory_quote, investigation_notes,
+                    mitre_techniques_json, scoring_weights_json,
+                    asset_registry_json, summary_paragraphs_json,
+                    telemetry_json, network_context_json,
+                    created_at, updated_at, last_recheck_date,
+                    audit_selected, audit_result, audit_date,
+                    resolved_at,
+                    resolution_reason
+                )
+                SELECT id, vulnerability_id, hostname, cvss_score, cvss_vector,
+                       cisa_kev, epss_score,
+                       mission_prevalence, mission_prevalence_conf,
+                       public_wellbeing_impact, public_wellbeing_conf,
+                       tier_0_routing, tier_0_resolution,
+                       tier_1_confidence, tier_1_exploitation_prob, tier_1_routing,
+                       tier_2_text_conflict, tier_2_conflict_note, tier_2_rag_result,
+                       tier_2_confidence, tier_2_resolution_summary,
+                       priority_score, risk_band,
+                       cvss_contribution, epss_contribution,
+                       asset_criticality_contribution, exposure_contribution,
+                       patch_remediation_contribution, ml_exploitation_contribution, security_context_contribution,
+                       tier_1_features,
+                       pre_tier_features,
+                       epss_features,
+                       epss_substituted, epss_substituted_value,
+                       epss_substitution_confidence, epss_substitution_reason,
+                       data_classification, network_zone, interface_type,
+                       patch_cycle, last_patch_date, last_scan_date,
+                       operating_system, role, business_owner, technical_owner,
+                       registered_applications, dependent_assets, service_account,
+                       detection_tier, detection_reason,
+                       scanner_output_raw, weakness_template_raw,
+                       advisory_ref_id, advisory_quote, investigation_notes,
+                       mitre_techniques_json, scoring_weights_json,
+                       asset_registry_json, summary_paragraphs_json,
+                       telemetry_json, network_context_json,
+                       created_at, updated_at, last_recheck_date,
+                       audit_selected, audit_result, audit_date,
+                       CURRENT_TIMESTAMP AS resolved_at,
+                       'demo_clear'
+                FROM vulnerabilities
+            """)
+            archived_count = cursor.rowcount
+            cursor.execute("DELETE FROM vulnerabilities")
+            deleted_count = cursor.rowcount
 
-    with conn:
-        cursor = conn.cursor()
-        # Archive: copy all from vulnerabilities to resolved_vulnerabilities
-        cursor.execute("""
-            INSERT INTO resolved_vulnerabilities (
-                original_id, vulnerability_id, hostname, cvss_score, cvss_vector,
-                cisa_kev, epss_score,
-                mission_prevalence, mission_prevalence_conf,
-                public_wellbeing_impact, public_wellbeing_conf,
-                tier_0_routing, tier_0_resolution,
-                tier_1_confidence, tier_1_exploitation_prob, tier_1_routing,
-                tier_2_text_conflict, tier_2_conflict_note, tier_2_rag_result,
-                tier_2_confidence, tier_2_resolution_summary,
-                priority_score, risk_band,
-                cvss_contribution, epss_contribution,
-                asset_criticality_contribution, exposure_contribution,
-                patch_remediation_contribution, ml_exploitation_contribution,
-                security_context_contribution,
-                tier_1_features,
-                pre_tier_features,
-                epss_features,
-                epss_substituted, epss_substituted_value,
-                epss_substitution_confidence, epss_substitution_reason,
-                data_classification, network_zone, interface_type,
-                patch_cycle, last_patch_date, last_scan_date,
-                operating_system, role, business_owner, technical_owner,
-                registered_applications, dependent_assets, service_account,
-                detection_tier, detection_reason,
-                scanner_output_raw, weakness_template_raw,
-                advisory_ref_id, advisory_quote, investigation_notes,
-                mitre_techniques_json, scoring_weights_json,
-                asset_registry_json, summary_paragraphs_json,
-                telemetry_json, network_context_json,
-                created_at, updated_at, last_recheck_date,
-                audit_selected, audit_result, audit_date,
-                resolution_reason
-            )
-            SELECT id, vulnerability_id, hostname, cvss_score, cvss_vector,
-                   cisa_kev, epss_score,
-                   mission_prevalence, mission_prevalence_conf,
-                   public_wellbeing_impact, public_wellbeing_conf,
-                   tier_0_routing, tier_0_resolution,
-                   tier_1_confidence, tier_1_exploitation_prob, tier_1_routing,
-                   tier_2_text_conflict, tier_2_conflict_note, tier_2_rag_result,
-                   tier_2_confidence, tier_2_resolution_summary,
-                   priority_score, risk_band,
-                   cvss_contribution, epss_contribution,
-                   asset_criticality_contribution, exposure_contribution,
-                   patch_remediation_contribution, ml_exploitation_contribution, security_context_contribution,
-                   tier_1_features,
-                   pre_tier_features,
-                   epss_features,
-                   epss_substituted, epss_substituted_value,
-                   epss_substitution_confidence, epss_substitution_reason,
-                   data_classification, network_zone, interface_type,
-                   patch_cycle, last_patch_date, last_scan_date,
-                   operating_system, role, business_owner, technical_owner,
-                   registered_applications, dependent_assets, service_account,
-                   detection_tier, detection_reason,
-                   scanner_output_raw, weakness_template_raw,
-                   advisory_ref_id, advisory_quote, investigation_notes,
-                   mitre_techniques_json, scoring_weights_json,
-                   asset_registry_json, summary_paragraphs_json,
-                   telemetry_json, network_context_json,
-                   created_at, updated_at, last_recheck_date,
-                   audit_selected, audit_result, audit_date,
-                   'demo_clear'
-            FROM vulnerabilities
-        """)
-        archived_count = cursor.rowcount
-        cursor.execute("DELETE FROM vulnerabilities")
-        deleted_count = cursor.rowcount
-
-        if archived_count != deleted_count:
-            raise RuntimeError(
-                f"Clear mismatch: archived {archived_count} but deleted {deleted_count}"
-            )
-
-    conn.close()
+            if archived_count != deleted_count:
+                raise RuntimeError(
+                    f"Clear mismatch: archived {archived_count} but deleted {deleted_count}"
+                )
+    finally:
+        conn.close()
 
     return {
         "status": "ok",

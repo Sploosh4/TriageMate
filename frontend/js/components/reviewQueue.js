@@ -303,19 +303,18 @@ async function submitReview() {
   setReviewStatus('Submitting...', '');
 
   try {
-    const res = await _authFetch('/api/case/' + reviewState.expandedId + '/review', {
+    await _authFetch('/api/case/' + reviewState.expandedId + '/review', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
-    if (!res.ok) throw new Error('Submit failed: ' + res.status);
     setReviewStatus('Review submitted successfully!', 'success');
     reviewState.expandedId = null;
     reviewState.caseData = null;
     setTimeout(function() {
       initReviewQueue();
       fetchQueue().then(function(rows) {
-        appState.queueData = rows;
+        appState.queueData = rows.rows;
         refreshQueue();
       });
     }, 800);

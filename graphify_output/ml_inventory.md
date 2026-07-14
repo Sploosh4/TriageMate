@@ -2,7 +2,7 @@
 
 > Canonical reference — read this before touching any ML code.
 
-> Generated: 2026-07-12 16:55:38
+> Generated: 2026-07-13 12:10:10
 
 ---
 
@@ -185,12 +185,17 @@
   - boundary_reachability, downstream_assets
   - patch_lag_days
   - exploitdb_has_poc, metasploit_has_payload
-  - internet_scan_detected, threat_intel_pulses
+  - threat_intel_pulses
   - nvd_reference_count, cve_desc_tokens
   - vulnerability_age_days, vendor_popularity_index
   - cvss_exploitability_sub, cvss_impact_sub
   - is_top_25_cwe
   - is_rce, is_privesc, is_bypass, is_dos, is_traversal signatures
+
+  **Metadata-only fields** (returned by `build_feature_vector()` but NOT model inputs):
+  - cvss_score, internet_scan_detected, cisa_kev, cwe_class
+  - telemetry_threat_score, network_blast_radius
+  - osv_fixed_versions, osv_package, osv_ecosystem, threat_intel_status
 
   **384 SBERT embedding** from `ml/encoder.py`:
   - Model: `all-MiniLM-L6-v2`
@@ -214,7 +219,6 @@
 - **Lines of code (predictor):** 438
 - **Lines of code (training):** 1353
 - **Status:** ✅ Retrained 2026-07-08 on 253,568 samples (v2 data)
-  ⚠️ Dimension mismatch: model trained with 420 features, predictor sends 419
 
 ## EPSS Substitution Models
 

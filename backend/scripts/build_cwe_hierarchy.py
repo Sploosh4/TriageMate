@@ -89,9 +89,8 @@ def parse_cwe_xml(xml_path: str) -> dict:
     return weaknesses
 
 
-def extract_zip_in_temp(zip_data: bytes) -> str:
-    """Extract CWE XML ZIP to a temp directory and return path to XML file."""
-    tmp_dir = tempfile.mkdtemp(prefix="cwe_")
+def extract_zip_in_temp(zip_data: bytes, tmp_dir: str) -> str:
+    """Extract CWE XML ZIP to the given temp directory and return path to XML file."""
     zip_path = os.path.join(tmp_dir, "cwec.zip")
     with open(zip_path, "wb") as f:
         f.write(zip_data)
@@ -113,19 +112,22 @@ def main():
 
     if args.download:
         zip_data = download_zip()
-        xml_path = extract_zip_in_temp(zip_data)
+        with tempfile.TemporaryDirectory(prefix="cwe_") as tmp_dir:
+            xml_path = extract_zip_in_temp(zip_data, tmp_dir)
+            weaknesses = parse_cwe_xml(xml_path)
     else:
         local_path = DATA_DIR / "cwec_latest.xml"
         if local_path.exists():
             xml_path = str(local_path)
+            weaknesses = parse_cwe_xml(xml_path)
         else:
             logger.warning(
                 "No local CWE XML found at %s. Use --download to fetch it.", local_path
             )
             zip_data = download_zip()
-            xml_path = extract_zip_in_temp(zip_data)
-
-    weaknesses = parse_cwe_xml(xml_path)
+            with tempfile.TemporaryDirectory(prefix="cwe_") as tmp_dir:
+                xml_path = extract_zip_in_temp(zip_data, tmp_dir)
+                weaknesses = parse_cwe_xml(xml_path)
 
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     with open(CWE_FILE, "w") as f:

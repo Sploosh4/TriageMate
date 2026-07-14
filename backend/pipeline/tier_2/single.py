@@ -68,7 +68,7 @@ KNOWN_CONFLICTS = {
             "blocks attack vector. RAG search returned conflicting GPO deployment "
             "records — ASR rule may or may not be active on this endpoint."
         ),
-        "rag_result": "UNCERTAIN — CMDB records conflict",
+        "rag_result": "UNCERTAIN",
         "resolution": "Exploitability signal dominates. Mitigation status unverifiable. "
         "Assign score 63 — Critical band. Flag for manual ASR verification.",
         "confidence": 0.72,
@@ -83,7 +83,7 @@ KNOWN_CONFLICTS = {
             "upgrade to 8.5.2, but scanner still fingerprints 8.5.1. RAG search "
             "revealed hostname alias confusion with staging server PRD-WIKI-CORE02."
         ),
-        "rag_result": "UNCERTAIN — hostname alias confusion",
+        "rag_result": "UNCERTAIN",
         "resolution": "Scanner evidence carries more weight than change record. "
         "Assign score 41 — Medium band. ICT team demonstrated awareness "
         "within 14 days, reducing urgency.",
@@ -100,7 +100,7 @@ KNOWN_CONFLICTS = {
             "(saml.sso.enabled=false) with LDAP-only authentication. "
             "/SamlResponseServlet returns 404."
         ),
-        "rag_result": "CONFIRMED — SAML disabled since 2021 deployment",
+        "rag_result": "CONFIRMED",
         "resolution": "SAML-disabled configuration eliminates attack surface. "
         "Assign score 22 — Low band. Persistent flag to alert if "
         "SAML is ever enabled. Recommend patching to remove vulnerable libraries.",
@@ -674,6 +674,7 @@ def _neutral_default(cve_id: str, error_msg: str) -> dict:
 
 async def evaluate_tier_2(
     cve_id: str,
+    hostname: str,
     cvss_score: float,
     description: str,
     rag_context: str,
@@ -704,8 +705,7 @@ async def evaluate_tier_2(
                 max_steps=AGENT_MAX_STEPS,
                 cost_budget_usd=AGENT_COST_BUDGET,
             )
-            # Extract hostname from rag_context (first token, typically the hostname)
-            hostname = rag_context.split()[0] if rag_context else "unknown"
+            # hostname is passed directly from the ingest caller, not derived from rag_context
             result = await agent.evaluate(
                 cve_id=cve_id,
                 hostname=hostname,

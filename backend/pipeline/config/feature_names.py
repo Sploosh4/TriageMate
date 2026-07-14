@@ -5,6 +5,8 @@ Each list is the single source of truth for its model's feature order.
 Consumers import from here instead of maintaining duplicate copies.
 """
 
+from ml.pretier_features import get_feature_names as _get_pretier_feature_names
+
 # Tabular feature names in positional order — 35 features.
 # Used by xgboost_predictor.py (inference) and train_xgboost.py (training).
 # This is the SINGLE source of truth for Tier 1 tabular feature order.
@@ -71,8 +73,8 @@ TABULAR_METADATA_KEYS = frozenset(
 )
 """Non-model keys returned by build_feature_vector()."""
 
-# Pre-Tier feature names (60-dim) — populated from pre_tier.py
-PRE_TIER_FEATURE_NAMES: list[str] = []
+# Pre-Tier feature names (60-dim) — populated from pretier_features.py
+PRE_TIER_FEATURE_NAMES: list[str] = _get_pretier_feature_names()
 
 # EPSS v4/v3/v2 feature names (37-dim) — from epss_substitutor.py
 EPSS_V2_FEATURE_NAMES: list[str] = [

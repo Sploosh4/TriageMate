@@ -131,7 +131,7 @@ def _train_encode_wellbeing(wellbeing: str) -> int:
 
 def _infer_encode_classification(klass: str) -> int:
     return {"OFFICIAL Sensitive": 4, "OFFICIAL": 2, "Category 1": 1}.get(
-        klass, 2
+        klass, 1
     )  # WAICP: OFFICIAL (was PRIS Act Category 1)
 
 

@@ -30,23 +30,6 @@ logger = logging.getLogger("triagemate")
 _scheduler: AsyncIOScheduler | None = None
 
 
-# Auth startup logic — hash plain-text password if needed
-def _check_admin_password():
-    import bcrypt
-
-    admin_pass = os.getenv("TRIAGEMATE_ADMIN_PASS", "")
-    admin_pass_hash = os.getenv("TRIAGEMATE_ADMIN_PASS_HASH", "")
-    if admin_pass and not admin_pass_hash:
-        hashed = bcrypt.hashpw(admin_pass.encode("utf-8"), bcrypt.gensalt()).decode(
-            "utf-8"
-        )
-        logger.warning(
-            "TRIAGEMATE_ADMIN_PASS is set as plain text. "
-            "Set TRIAGEMATE_ADMIN_PASS_HASH=%s instead for better security.",
-            hashed,
-        )
-
-
 async def _background_recheck_loop():
     """Run low-severity re-checks once per day."""
     while True:
@@ -62,7 +45,6 @@ async def _background_recheck_loop():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     setup_logging()
-    _check_admin_password()
     init_db()
 
     # Pre-load SentenceTransformer embedder for RAG

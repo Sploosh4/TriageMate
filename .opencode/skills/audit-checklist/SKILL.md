@@ -1,6 +1,6 @@
 ---
 name: audit-checklist
-description: Technical audit procedures, ML calibration checks, schema parity validation, feature vector compliance, EPSS evaluation, regression testing. Use when running audits, verifying changes, validating deployment readiness, or performing sprint quality gates.
+description: Technical audit procedures, ML calibration checks, schema parity validation, feature vector compliance, regression testing, and self-hosted GitHub Actions evidence. Use when running audits, verifying changes, validating deployment readiness, or performing sprint quality gates.
 ---
 
 # Audit Checklist
@@ -43,29 +43,67 @@ This skill grows over time as audit patterns emerge. Add new sections when an ag
 **What it checks:** All tests — ingest, queue, health, demo generator, integration, fuzzed ingest
 **When:** Before any deployment or sprint completion
 
+## 6. Self-Hosted CI Verification — required for sprint completion
+
+Local tests establish fast feedback. GitHub Actions establishes that the
+committed revision succeeds in a clean checkout on the repository's isolated
+`triagemate-vm` runner. Do both for any code-changing sprint.
+
+1. Run the relevant local checks first (`just test`, `just lint`, and focused
+   checks for the changed subsystem).
+2. Confirm runner health without changing infrastructure:
+
+   ```bash
+   bash .opencode/skills/triagemate-runner-ops/scripts/runner-doctor.sh
+   gh api repos/Sploosh4/TriageMate/actions/runners
+   ```
+
+3. After an authorized push or PR update, wait for the exact PR checks:
+
+   ```bash
+   gh pr checks <pr-number> --watch
+   ```
+
+4. Record the run URL(s), commit SHA, and result. Every required job must
+   succeed. A skipped job is acceptable only when its workflow condition
+   intentionally excludes the event; report why it was skipped.
+5. Do not claim CI verification from a direct SSH test in the VM. That is a
+   useful diagnostic, but GitHub Actions validates the actual workflow,
+   checkout, action setup, and runner-label routing.
+
+The intended runner selector is:
+
+```yaml
+runs-on: [self-hosted, Linux, X64, triagemate]
+```
+
+Do not start, stop, re-register, or rebuild the VM merely to satisfy this
+gate. For an offline or queued runner, use `triagemate-runner-ops` and obtain
+approval for state-changing recovery actions.
+
 ---
 
 ## Placeholder Audits (to be implemented)
 
-### 6. Schema Parity Audit
+### 7. Schema Parity Audit
 Verify SQLite and PostgreSQL table schemas match exactly. Compare `_init_db_sqlite()` and `_init_db_pg()` in `database.py`. Every column in one must exist in the other with correct type mapping.
 
-### 7. Demo Data Plausibility Audit
+### 8. Demo Data Plausibility Audit
 Check all demo scenarios against `wa-gov-consulting` rules. No real WA government hostnames, IPs, or department identifiers. Hostnames must follow PRD-APP-SERVER01.dept.wa.gov.au pattern. OS-to-department mappings must be realistic.
 
-### 8. LLM Cost-Per-Case Audit
+### 9. LLM Cost-Per-Case Audit
 Track Tier 2 LLM calls — token counts, provider used, fallback triggered. Compare actual costs to the $0.0004/case target. Flag cases that hit the expensive provider or exceeded token budget.
 
-### 9. Cache Freshness Audit
+### 10. Cache Freshness Audit
 Check last-modified timestamps on all cache files in `backend/data/`. Flag any cache older than its TTL. Identify which caches need refresh before the next pipeline run.
 
-### 10. Score Drift Audit
+### 11. Score Drift Audit
 Track the 7 demo row scores over time. If any score shifts by more than ±3 from its baseline (99, 97, 74, 91, 82, 97, 80), flag for investigation. This catches silent model drift.
 
-### 11. Integration Health Audit
+### 12. Integration Health Audit
 Test each integration module with a known CVE. Verify graceful degradation — failed integrations must not crash the pipeline. Check that all integrations return safe defaults on error.
 
-### 12. DDL Compliance Audit
+### 13. DDL Compliance Audit
 Verify that any recent `database.py` change has entries in both `_init_db_sqlite()` and `_init_db_pg()`. Cross-reference with the `backend-engineering` skill (dual-DDL pattern was consolidated there after `dual-database-ddl` was archived).
 
 ## GitHub Workflow Verification

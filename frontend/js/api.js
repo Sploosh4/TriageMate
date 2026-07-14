@@ -4,6 +4,15 @@
 const API_BASE = '/api';
 
 // ---------------------------------------------------------------------------
+// Helper: safely parse JSON — handles 204 No Content (returns {})
+// ---------------------------------------------------------------------------
+
+async function _safeJson(res) {
+  const text = await res.text();
+  return text ? JSON.parse(text) : {};
+}
+
+// ---------------------------------------------------------------------------
 // Helper: fetch with automatic Bearer token + 401 refresh + retry
 // ---------------------------------------------------------------------------
 
@@ -54,17 +63,17 @@ async function _authFetch(url, options) {
 
 async function fetchQueue() {
   const res = await _authFetch(API_BASE + '/queue');
-  return res.json();
+  return _safeJson(res);
 }
 
 async function fetchCase(rowId) {
   const res = await _authFetch(API_BASE + '/case/' + rowId);
-  return res.json();
+  return _safeJson(res);
 }
 
 async function fetchMetrics() {
   const res = await _authFetch(API_BASE + '/metrics');
-  return res.json();
+  return _safeJson(res);
 }
 
 async function saveNotes(caseId, notes) {
@@ -73,19 +82,19 @@ async function saveNotes(caseId, notes) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ notes: notes })
   });
-  return res.json();
+  return _safeJson(res);
 }
 
 async function fetchReviewQueue() {
   const res = await _authFetch(API_BASE + '/review/queue');
-  return res.json();
+  return _safeJson(res);
 }
 
 async function flagForReview(caseId) {
   const res = await _authFetch(API_BASE + '/review/flag/' + caseId, {
     method: 'POST'
   });
-  return res.json();
+  return _safeJson(res);
 }
 
 async function submitCaseReview(caseId, body) {
@@ -94,17 +103,17 @@ async function submitCaseReview(caseId, body) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body)
   });
-  return res.json();
+  return _safeJson(res);
 }
 
 async function fetchCaseHistory(caseId) {
   const res = await _authFetch(API_BASE + '/case/' + caseId + '/history');
-  return res.json();
+  return _safeJson(res);
 }
 
 async function fetchDriftMetrics() {
   const res = await _authFetch(API_BASE + '/drift');
-  return res.json();
+  return _safeJson(res);
 }
 
 // ---------------------------------------------------------------------------
@@ -113,7 +122,7 @@ async function fetchDriftMetrics() {
 
 async function apiGet(path) {
   const res = await _authFetch(API_BASE + path);
-  return res.json();
+  return _safeJson(res);
 }
 
 async function apiPut(path, body) {
@@ -122,7 +131,7 @@ async function apiPut(path, body) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body)
   });
-  return res.json();
+  return _safeJson(res);
 }
 
 async function apiPost(path, body) {
@@ -131,5 +140,5 @@ async function apiPost(path, body) {
     headers: { 'Content-Type': 'application/json' },
     body: body ? JSON.stringify(body) : undefined
   });
-  return res.json();
+  return _safeJson(res);
 }

@@ -127,7 +127,7 @@ function renderQueue(rows, filter, activeMetricFilter, searchQuery) {
       '<td data-label="Risk"><span class="queue-risk-text" style="color:' + colour + '">' + escHtml(r.riskBand) + '</span></td>' +
       '<td data-label="Tier"><span class="' + getTierBadgeClass(r.tier) + '">' + escHtml(r.tier) + '</span></td>' +
       '<td data-label="Reason"><span class="queue-reason" title="' + escHtml(r.detectionReason) + '">' + escHtml(reasonStripped) + '</span></td>' +
-      '<td data-label="Compliance"><span class="compliance-badge ' + getComplianceClass(r.complianceCategory) + '">' + r.compliance.replace('Category ', 'CAT ') + '</span></td>' +
+      '<td data-label="Compliance"><span class="compliance-badge ' + getComplianceClass(r.complianceCategory) + '">' + escHtml(r.compliance.replace('Category ', 'CAT ')) + '</span></td>' +
       '<td data-label="Since"><span class="queue-time">' + escHtml(r.createdAt || '') + '</span></td>' +
     '</tr>';
   }).join('');

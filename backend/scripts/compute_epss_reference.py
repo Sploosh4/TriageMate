@@ -13,6 +13,7 @@ Output:
 
 import json
 import logging
+import zlib
 from datetime import datetime, timezone
 from itertools import product
 from pathlib import Path
@@ -144,11 +145,15 @@ def generate_sample_vectors() -> list[dict]:
             vector[f"cwe_{cwe}"] = 0.0
 
         # Distribute across agencies evenly — each sample gets one agency
-        agency_idx = hash((raw_epss, cvss, maturity, kev, poc, patch)) % len(AGENCIES)
+        agency_idx = zlib.crc32(
+            str((raw_epss, cvss, maturity, kev, poc, patch)).encode()
+        ) % len(AGENCIES)
         vector[f"agency_{AGENCIES[agency_idx]}"] = 1.0
 
         # Distribute across CWEs evenly
-        cwe_idx = hash((raw_epss, cvss, maturity, kev, poc, patch, "cwe")) % len(CWES)
+        cwe_idx = zlib.crc32(
+            str((raw_epss, cvss, maturity, kev, poc, patch, "cwe")).encode()
+        ) % len(CWES)
         vector[f"cwe_{CWES[cwe_idx]}"] = 1.0
 
         samples.append(vector)

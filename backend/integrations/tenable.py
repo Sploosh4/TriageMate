@@ -50,7 +50,7 @@ def _extract_hostname(asset: dict) -> str:
     if hostname:
         return hostname
     ipv4 = asset.get("ipv4", "")
-    if isinstance(ipv4, list):
+    if isinstance(ipv4, list) and ipv4:
         return ipv4[0]
     return ipv4 or "unknown-host"
 

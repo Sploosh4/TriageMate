@@ -4,7 +4,6 @@
 
 ```
 TriageMate MVP/
-├── .benchmarks/
 ├── .github/
 │   ├── ISSUE_TEMPLATE/
 │   │   ├── bug-report.md
@@ -59,7 +58,8 @@ TriageMate MVP/
 │   │   ├── 2026-07-11-sprint-23.md  Sprint 23 — Score Reconciliation, Bug Hunt & Documentation Cleanup
 │   │   ├── 2026-07-11-sprint-24.md  Sprint 24 — GitHub-Native Work Tracking for AI Workflow
 │   │   ├── 2026-07-11-sprint-25.md  Sprint 25 — GitHub-Native Workflow Operationalization
-│   │   └── 2026-07-12-sprint-26.md  Sprint 26 — Feature Contract Enforcement
+│   │   ├── 2026-07-12-sprint-26.md  Sprint 26 — Feature Contract Enforcement
+│   │   └── 2026-07-12-sprint-26b.md  Sprint 26b — CI Fix & Unblock PR #48
 │   ├── skills/
 │   │   ├── archived-files/
 │   │   │   ├── agents/
@@ -93,6 +93,12 @@ TriageMate MVP/
 │   │   │   └── SKILL.md  Privacy & Legal Advising
 │   │   ├── triage-toolbox/
 │   │   │   └── SKILL.md  TriageMate Project Toolbox
+│   │   ├── triagemate-runner-ops/
+│   │   │   ├── agents/
+│   │   │   │   └── openai.yaml  interface:
+│   │   │   ├── scripts/
+│   │   │   │   └── runner-doctor.sh  2.0 KB
+│   │   │   └── SKILL.md  TriageMate runner operations
 │   │   ├── ux-designing/
 │   │   │   └── SKILL.md  TriageMate UX Design
 │   │   └── wa-gov-consulting/
@@ -100,8 +106,7 @@ TriageMate MVP/
 │   ├── .gitignore  63.0 B
 │   ├── DESIGN_RATIONALE.md  Agent & Skill Descriptions — Design Rationale
 │   ├── package-lock.json  14.3 KB
-│   ├── package.json  65.0 B
-│   └── RESTRUCTURE_HANDOFF.md  OpenCode Restructure — Handoff Note
+│   └── package.json  65.0 B
 ├── archive/
 │   └── github-migration/
 │       ├── plans/
@@ -152,7 +157,7 @@ TriageMate MVP/
 │   │   ├── calibration_audit.py  Expected Calibration Error — identical formula to train_xgboost.py.
 │   │   ├── drift.py  ── Drift webhook configuration ─────────────────────────────────────────────
 │   │   ├── epss_eval.py  1. Load and Align Data
-│   │   ├── feature_parity_check.py  19.8 KB
+│   │   ├── feature_parity_check.py  19.7 KB
 │   │   ├── stress_db.py  Create SQLite database at path with the stress test schema.
 │   │   └── validate_conversion.py  9.8 KB
 │   ├── data/
@@ -287,7 +292,8 @@ TriageMate MVP/
 │   │   ├── test_drift_pretier.py  Expected camelCase keys from the MlDriftResponse model
 │   │   ├── test_drift_webhook.py  Tests for the drift webhook notification system.
 │   │   ├── test_epss_substitutor.py  Verify the module initialises without error and loads a model.
-│   │   ├── test_feature_parity.py  ── Tabular feature keys in the EXACT order xgboost_predictor.predict() builds th
+│   │   ├── test_feature_contract.py  Canonical feature-name registry integrity.
+│   │   ├── test_feature_parity.py  Expected total feature dimensions
 │   │   ├── test_feature_parity_epss.py  ── Test cases: (raw_epss, cvss_score, cisa_kev, cwe_class, agency,
 │   │   ├── test_feature_parity_pretier.py  ── Expected contract ────────────────────────────────────────────────────────
 │   │   ├── test_fuzzed_ingest.py  ── Mock responses for network-dependent pipeline functions ─────────────
@@ -309,7 +315,8 @@ TriageMate MVP/
 │   │   ├── test_tier2.py  ── Shared test data ─────────────────────────────────────────────────────
 │   │   ├── test_tier2_agent.py  ── Tool Tests ─────────────────────────────────────────────────────────────
 │   │   └── test_verify_seed_scores.py  Tests for verify_seed_scores() with mocked scoring.
-│   ├── .coverage  52.0 KB
+│   ├── .coverage  68.0 KB
+│   ├── .coveragerc  306.0 B
 │   ├── .env  1009.0 B
 │   ├── .env.example  2.0 KB
 │   ├── =4.0.0  1.2 KB
@@ -364,6 +371,7 @@ TriageMate MVP/
 │   │   ├── TriageMate ML Research.md  ARCHIVED — Machine Learning Architecture and Implementation Roadmap
 │   │   └── TriageMate MVP Transformation.md  SUPERSEDED — TriageMate MVP Transformation Plan
 │   ├── guides/
+│   │   ├── SELF_HOSTED_RUNNER.md  TriageMate self-hosted GitHub Actions runner
 │   │   └── WINDOWS_SETUP.md  TriageMate — Windows Setup Guide
 │   ├── planning/
 │   │   ├── ai-doc-strategy-2026-07-07.md  AI Documentation Strategy Proposal
@@ -373,6 +381,7 @@ TriageMate MVP/
 │   │   └── ROADMAP.md  TriageMate — Roadmap
 │   ├── reference/
 │   │   ├── AI_PROBLEMS.md  AI Problems — Discrepancies Found During Development
+│   │   ├── graphify-output-reliability-report.md  Graphify Output Reliability — Findings and Remediation Specification
 │   │   ├── hostname-standards.md  **Technical Reference Architecture for Hostname Nomenclature and Information Gov
 │   │   └── xgboost-investigation-report.md  XGBoost Exploitation Model — Investigation Report
 │   ├── research/
@@ -402,25 +411,18 @@ TriageMate MVP/
 │   └── ml_inventory.md  TriageMate — ML Model Inventory
 ├── .dockerignore  328.0 B
 ├── .env.example  2.3 KB
-├── .gitignore  871.0 B
+├── .gitignore  935.0 B
 ├── .opencodeignore  262.0 B
 ├── .pre-commit-config.yaml  415.0 B
-├── =2.2.0  1.0 KB
 ├── AGENTS.md  TriageMate Project Rules
-├── AI_PROBLEMS.md  AI Problems — Discrepancies Found During Development
 ├── demo-reference.html  <!--
 ├── docker-compose.yml  1.9 KB
 ├── Dockerfile  1.4 KB
 ├── index.html  119.4 KB
-├── justfile  9.2 KB
+├── justfile  9.4 KB
 ├── LICENSE  422.0 B
-├── MVP_SCOPE.md  TriageMate MVP — Scope Document
 ├── opencode.jsonc  1.2 KB
 ├── README.md  TriageMate
 ├── requirements-dev.txt  154.0 B
-├── RESEARCH_FINDINGS.md  TriageMate — Sprint NEXT+2 Research Findings
-├── ROADMAP.md  TriageMate — Roadmap
-├── triagemate.db  840.0 KB
-├── WINDOWS_SETUP.md  TriageMate — Windows Setup Guide
-└── XGBOOST_INVESTIGATION_REPORT.md  XGBoost Exploitation Model — Investigation Report
+└── triagemate.db
 ```

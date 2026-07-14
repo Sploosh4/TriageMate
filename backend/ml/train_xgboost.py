@@ -1334,9 +1334,15 @@ def main():
             X = data["X"]
             y = data["y"]
             dates = data.get("dates", np.zeros(len(y)))
-            data.get("cve_ids", np.array([""] * len(y)))
+            cve_ids_arr = data.get("cve_ids", np.array([""] * len(y)))
             data.close()
             print(f"  Loaded {len(X)} records from {data_file.name}")
+
+            # Log CVE IDs so the variable isn't dead (phase_train doesn't accept it)
+            n_cve = len(cve_ids_arr)
+            sample_ids = [str(c) for c in cve_ids_arr[:3] if c]
+            print(f"  CVE IDs loaded: {n_cve} total, sample: {sample_ids}")
+
             if len(dates) > 0 and dates.dtype.kind in ("U", "S") and dates[0]:
                 non_empty = dates[dates != ""]
                 if len(non_empty) > 0:

@@ -1,7 +1,8 @@
 import logging
 import statistics
 from datetime import datetime, timedelta, timezone
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
+from auth import get_current_user_if_enabled
 from database import get_db
 import json
 from pathlib import Path
@@ -32,7 +33,7 @@ router = APIRouter(tags=["Queue"])
 
 
 @router.get("/api/system/retrain-status")
-def get_retrain_status():
+def get_retrain_status(user: dict = Depends(get_current_user_if_enabled)):
     """Return current retraining system status.
 
     Reports lock state, interval configuration, and drift threshold.
@@ -82,7 +83,7 @@ def _relative_time(ts_str: str | None) -> str:
 
 
 @router.get("/api/queue", response_model=QueueResponse)
-def get_queue():
+def get_queue(user: dict = Depends(get_current_user_if_enabled)):
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("""
@@ -118,7 +119,7 @@ def get_queue():
 
 
 @router.get("/api/metrics", response_model=MetricsResponse)
-def get_metrics():
+def get_metrics(user: dict = Depends(get_current_user_if_enabled)):
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("""
@@ -142,7 +143,7 @@ def get_metrics():
 
 
 @router.get("/api/drift", response_model=DriftMetricsResponse)
-def get_drift_metrics():
+def get_drift_metrics(user: dict = Depends(get_current_user_if_enabled)):
     conn = get_db()
     cursor = conn.cursor()
 
@@ -262,7 +263,7 @@ def _load_reference_dists() -> dict:
 
 
 @router.get("/api/drift/ml", response_model=MlDriftResponse)
-def get_ml_drift():
+def get_ml_drift(user: dict = Depends(get_current_user_if_enabled)):
     """Compute ML drift (PSI) for all ingested tier_1_features.
 
     Returns per-feature PSI values and a composite score comparing
@@ -320,7 +321,7 @@ _EPSS_REFERENCE_PATH = (
 
 
 @router.get("/api/drift/epss", response_model=MlDriftResponse)
-def get_epss_drift():
+def get_epss_drift(user: dict = Depends(get_current_user_if_enabled)):
     """Compute ML drift (PSI) for EPSS substitution model features.
 
     Returns per-feature PSI values and a composite score comparing
@@ -383,7 +384,7 @@ _PRETIER_REFERENCE_PATH = (
 
 
 @router.get("/api/drift/pre-tier", response_model=MlDriftResponse)
-def get_pretier_drift():
+def get_pretier_drift(user: dict = Depends(get_current_user_if_enabled)):
     """Compute ML drift (PSI) for Pre-Tier 60-dim features.
 
     Returns per-feature PSI values and a composite score comparing
@@ -440,7 +441,10 @@ def get_pretier_drift():
 
 
 @router.get("/api/drift/concept", response_model=ConceptDriftResponse)
-def get_concept_drift(days: int = Query(30, ge=1, le=365)):
+def get_concept_drift(
+    days: int = Query(30, ge=1, le=365),
+    user: dict = Depends(get_current_user_if_enabled),
+):
     """Return prediction distribution metrics over a rolling window.
 
     Queries resolved_vulnerabilities for records within the time window
@@ -574,7 +578,11 @@ def get_concept_drift(days: int = Query(30, ge=1, le=365)):
 
 
 @router.post("/api/feedback/{vulnerability_id}")
-def submit_feedback(vulnerability_id: str, feedback: FeedbackSubmission):
+def submit_feedback(
+    vulnerability_id: str,
+    feedback: FeedbackSubmission,
+    user: dict = Depends(get_current_user_if_enabled),
+):
     """Submit ground-truth feedback for a prediction.
 
     NOTE: Schema migration for persistent storage is planned Sprint 20.
@@ -594,7 +602,7 @@ def submit_feedback(vulnerability_id: str, feedback: FeedbackSubmission):
 
 
 @router.get("/api/drift/accuracy")
-def get_accuracy():
+def get_accuracy(user: dict = Depends(get_current_user_if_enabled)):
     """Return accuracy metrics where ground truth is available.
 
     Stub — returns zero-data until ground truth schema migration in Sprint 20.

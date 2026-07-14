@@ -37,7 +37,7 @@ function loadModelStatusPanel() {
       var rocAuc = (v.metrics && v.metrics.roc_auc != null) ? v.metrics.roc_auc : 'N/A';
       var trainedDate = v.created_at ? new Date(v.created_at).toLocaleDateString() : 'N/A';
       var html = '<div class="model-info-bar">';
-      html += '<div class="model-info-item"><span class="model-info-label">Deployed Model</span><span class="model-info-value">' + v.label + '</span></div>';
+      html += '<div class="model-info-item"><span class="model-info-label">Deployed Model</span><span class="model-info-value">' + escHtml(v.label) + '</span></div>';
       html += '<div class="model-info-item"><span class="model-info-label">ROC-AUC</span><span class="model-info-value">' + rocAuc + '</span></div>';
       html += '<div class="model-info-item"><span class="model-info-label">Samples</span><span class="model-info-value">' + samples + '</span></div>';
       html += '<div class="model-info-item"><span class="model-info-label">Trained</span><span class="model-info-value">' + trainedDate + '</span></div>';
@@ -158,7 +158,7 @@ function renderDriftDashboard(data, mlDriftData) {
       hasFeatures = true;
       var fColour = feat.status === 'critical' ? '#EF4444' : feat.status === 'warning' ? '#F97316' : '#22C55E';
       html += '<div class="drift-feature-row">';
-      html += '<span class="drift-feature-label" title="' + fname + '">' + fname + '</span>';
+      html += '<span class="drift-feature-label" title="' + escHtml(fname) + '">' + escHtml(fname) + '</span>';
       html += '<span class="drift-feature-value" style="color:' + fColour + ';">' + feat.psi.toFixed(4) + ' <span style="font-size:11px;opacity:0.7;">(' + feat.status + ')</span></span>';
       html += '</div>';
     }

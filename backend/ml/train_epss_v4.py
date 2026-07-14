@@ -82,6 +82,7 @@ CWES = [
 ]
 
 RANDOM_SEED = 42
+_rng = np.random.default_rng(RANDOM_SEED)
 
 
 def _build_feature_vector_v4(sample: dict) -> list:
@@ -278,7 +279,7 @@ def _compute_exploitation_rate(
         + poc_boost
         - patch_penalty
     )
-    target += np.random.default_rng(RANDOM_SEED).normal(0, 0.02)
+    target += _rng.normal(0, 0.02)
     return round(max(0.001, min(0.99, target)), 4)
 
 
