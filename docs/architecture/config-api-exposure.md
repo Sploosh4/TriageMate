@@ -1,7 +1,7 @@
 # Config API Exposure — Feature Names Removal
 
 **Date:** 2026-07-14
-**Status:** IMPLEMENTED — product-owner decision still to be recorded in Issue #58
+**Status:** Design/code pending — product-owner decision not yet recorded (Issue #58 remains open)
 
 ## Decision
 

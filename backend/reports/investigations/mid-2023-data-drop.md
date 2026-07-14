@@ -6,6 +6,8 @@
 
 ---
 
+> **⚠️ CURRENT STATUS:** This investigation accurately diagnosed the root cause of degenerate val/test splits. However, **Fix 1 ("Apply observation window to training split only")** in the Potential Fixes section below is **SUPERSEDED** by the point-in-time split policy implemented in Sprint 30 (PR #68). The actual fix that was applied used a different approach — **split-before-filter with primary/prospective/censored cohorts** — rather than the simple train-only filter window proposed in Fix 1. See ROADMAP.md §Sprint 29 Item 3 for details.
+
 ## Executive Summary
 
 The `phase_gather()` pipeline in `backend/ml/train_xgboost.py` applies a **dynamic KEV observation window filter** that removes all label-0 (not-in-KEV) CVEs published within 706 days of `DATE_END` (2024-12-31). This produces a cutoff date of **2023-01-25**. The filter is applied globally **before** the chronological train/val/test split. Since the validation period (2023-07-01 to 2023-12-31) and test period (2024-01-01+) fall entirely after this cutoff, **every single negative example is stripped from those splits**. The validation and test sets become degenerate: 81 records (100% positive) and 125 records (100% positive) respectively. The model cannot be properly evaluated — it sees only positives in the held-out sets, making metrics like ROC-AUC and F1 unreliable.
@@ -137,7 +139,7 @@ The median KEV lag is computed from 1,088 KEV entries (those with `dateAdded <= 
 
 ## Potential Fixes
 
-### Fix 1: Apply observation window to training split only (Recommended)
+### Fix 1: Apply observation window to training split only ⚠️ SUPERSEDED (see banner above)
 
 **Strategy:** Apply the unreliable-negative filter only to the training set. Keep val/test untouched.
 

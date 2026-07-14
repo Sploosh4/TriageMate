@@ -22,7 +22,7 @@
 
 | # | File | Status | Description |
 |---|---|---|---|
-| 1 | `planning/ROADMAP.md` | CURRENT | **Master status.** What exists, what's broken, what's next. Sprints 17–28 complete; Sprint 29 in progress. Start here. |
+| 1 | `planning/ROADMAP.md` | CURRENT | **Master status.** What exists, what's broken, what's next. Sprints 17–29 complete; Sprint 30 in progress. Start here. |
 | 2 | `architecture/MVP_SCOPE.md` | OUTDATED | Sprint 1 scope boundaries. Many deferred items are now done. See caution banner. |
 | 3 | `reference/AI_PROBLEMS.md` | CURRENT | Bug tracker. All historical issues resolved. |
 | 4 | `archive/ml-implementation-plan.md` | ARCHIVED | → Replaced by `graphify_output/ml_inventory.md` (auto-generated, run `just graphify`) |
@@ -35,17 +35,18 @@
 | `architecture/scoring-weights.md` | CURRENT | Scoring weight design — 6 dimensions (107-sum, clamped 0–100), plus context multiplier. Rationale, clamping, bands, demo CVE scores. Added Sprint 18. |
 | `architecture/comparison-vs-described-system.md` | OUTDATED | Maps each of 5 described system areas to actual implementation. **Stale** — predates Sprint 20 (PCA restored, Tier 2 agentic). See caution banner in file. |
 | `architecture/weight-zero-decision.md` | CURRENT | Scoring weight zero policy — zero NOT supported, minimum of 1 retained as intentional design. Sprint 28 (2026-07-14). |
-| `architecture/rag-query-access-boundary.md` | CURRENT | Implemented hostname-binding boundary for the Tier 2 `rag_query` tool. Sprint 29 (2026-07-14); product-owner decision record remains open in Issue #58. |
-| `architecture/config-api-exposure.md` | CURRENT | Implemented removal of ML feature names from `GET /api/config`. Sprint 29 (2026-07-14); product-owner decision record remains open in Issue #58. |
+| `architecture/rag-query-access-boundary.md` | CURRENT | Design/code pending — PO decision not yet recorded (Issue #58). Sprint 29 (2026-07-14). |
+| `architecture/config-api-exposure.md` | CURRENT | Design/code pending — PO decision not yet recorded (Issue #58). Sprint 29 (2026-07-14). |
 
 ## Planning
 
 | File | Status | Description |
 |---|---|---|
-| `planning/ROADMAP.md` | CURRENT | Forward-looking roadmap. Sprints 17–28 complete ✅, Sprint 29 in progress. Sprint 28: evidence investigations and ML readiness. Sprint 29: investigation findings remediation. |
+| `planning/ROADMAP.md` | CURRENT | Forward-looking roadmap. Sprints 17–29 complete ✅, Sprint 30 in progress. Sprint 29: investigation findings remediation (split-policy resolved via PR #68). Sprint 30: documentation cleanup. |
 | `planning/HANDOFF-2026-07-08.md` | OUTDATED | Handoff from pre-Sprint-18 era. Drift monitoring, retraining, concept drift, and benchmark sections superseded by Sprints 18–22. Still accurate for network topology/Sentinel gaps and post-MVP items. |
 | `planning/ai-doc-strategy-2026-07-07.md` | CURRENT | This consolidation plan — how and why docs were restructured. |
 | `planning/github-label-taxonomy.md` | CURRENT | Sprint 24 label taxonomy — 25 labels (9 defaults + 16 custom), colors, descriptions. |
+| `.opencode/plans/2026-07-14-sprint-30.md` | CURRENT | Sprint 30 plan — documentation cleanup and status corrections. |
 | `archive/file-consolidation-plan-2026-07-07.md` | ARCHIVED | Bookkeeper's consolidation proposals — superseded by current doc structure. See `docs/INDEX.md`. |
 
 ## Reference
@@ -109,6 +110,7 @@
 | What are the 3 new Sprint 14 DB tables? | `docs/INDEX.md` §New Database Tables (Sprint 14 detail preserved here) |
 | What is EPSS v4 and where does it fit? | Fallback model in Tier 1: v4 → v3 → v2 → v1 → heuristic rule engine. See ROADMAP.md §Current State (ML Models table: EPSS v4). |
 | What is system name embedding? | Feature index 59: `system_category` (ordinal 0-8) replaces binary `has_known_system` in Pre-Tier. See `archive/ROADMAP-2026-07-09.md` §Sprint 14 for original detail. |
+| What is the point-in-time split policy? | Point-in-time split policy (split-before-filter with primary/prospective/censored cohorts) implemented via PR #68, Sprint 29. Resolved degenerate val/test splits. See ROADMAP.md §Sprint 29 Item 3. |
 
 ## New Database Tables (Sprint 14)
 

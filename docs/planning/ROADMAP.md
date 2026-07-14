@@ -13,7 +13,7 @@
 | Tests | 457 pass, 0 fail, 1 skipped |
 | Open remediation work | 7 Sprint 29 issues (#58–#64) |
 | Sprints completed | 17, 18, 19, 20, 21, 22, 23, **24**, **25**, **26**, **27**, **28** |
-| Current sprint | **Sprint 29 — Investigation Findings Remediation** 🔴 In Progress |
+| Current sprint | **Sprint 30 — Documentation Cleanup** 🔴 In Progress |
 | Pipeline stages | Pre-Tier → Tier 0 → Tier 1 → Tier 2 → Tier 3 (Human Review) |
 | Enrichment sources | 14 integrations (NVD, OSV, OTX, ExploitDB, Metasploit, Tenable, GreyNoise [deprecated], CMDB [stub], Advisories [stub], MITRE, CWE classifier, Demo generator, **Synthetic Telemetry**, **Network Context**) |
 | Demo rows | 7 CVEs, scores 99/97/74/91/82/97/80 (±3 tolerance) |
@@ -198,9 +198,9 @@
 | **2** | **Phase 7.6 — Scoring Weight Zero Decision** | ✅ Complete | Zero NOT supported; minimum of 1 retained as intentional design; decision record at `docs/architecture/weight-zero-decision.md` |
 | **3** | **Phase 8 — Evidence-Needed Investigation Pass** | ✅ Complete | All 23 items investigated; 7 tracked reports in `backend/reports/investigations/` |
 | **4** | **Documentation & Tracking Update** | ✅ Complete | ROADMAP updated, Sprint 27 recorded complete, INDEX.md fixed, comparison doc marked OUTDATED |
-| **5** | **ML Retraining Decision Gate** | ✅ Complete | Decision: DO NOT RETRAIN — three blocking issues identified (degenerate val/test splits, binary-vs-multi-class registry mismatch, unreliable baseline metrics) |
+| **5** | **ML Retraining Decision Gate** | ✅ Complete | Decision: DO NOT RETRAIN — three blocking issues identified (degenerate val/test splits, binary-vs-multi-class registry mismatch, unreliable baseline metrics). As of Sprint 30, **2 of 3 blocking issues resolved**: degenerate splits fixed by the point-in-time split policy (PR #68) and registry metadata corrected (3c). Only establishing a reliable baseline (3d) remains pending authorization. |
 
-## Sprint 29 — 🔴 In Progress (Investigation Findings Remediation)
+## Sprint 29 — ✅ Complete (Investigation Findings Remediation)
 
 *Started 14 July 2026. See `.opencode/plans/2026-07-14-sprint-29.md` and GitHub Issues #58–#64 for full detail.*
 
@@ -212,7 +212,7 @@
 | **2c** | **Seed-data idempotency** | ✅ Done | INFRA-HIGH-2 — cross-database unique constraint, conflict-safe insert, migration 013, and regression coverage (`88a4d0c`). |
 | **2d** | **OTX throttling handling** | ✅ Done | INT-MED-3 — Retry 429 responses with `Retry-After` support and exponential backoff; safe fallback after retry exhaustion. |
 | **2e** | **Rate-limit policy and implementation** | ✅ Done | CORE-MED-5 and ROUTER-LOW-8 — slowapi per-route limits, CI-installed dependency, and threshold-file status distinction. Merged in PR #66. |
-| **3** | **ML Data-Readiness Work** | 🟡 In Progress | Fresh gather (3a) confirmed a degenerate split; the mid-2023 drop is diagnosed (3b) and registry metadata corrected (3c). Split-policy implementation and a representative baseline (3d) remain blocked; do **not** retrain. |
+| **3** | **ML Data-Readiness Work** | ✅ Complete | Point-in-time split policy implemented via PR #68 (split-before-filter with primary/prospective/censored cohorts). Fresh gather validated healthy splits: Train 69,223 (0.93% KEV), Val 20,144 (0.99% KEV), Test 26,766 (0.49% KEV). Split degeneracy (3a) resolved; registry metadata mismatch (3c) resolved. Baseline (3d) remains pending a deliberate authorization — not blocked, deferred. Do **not** retrain until baseline is established. |
 
 ---
 
