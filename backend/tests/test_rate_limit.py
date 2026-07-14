@@ -1,125 +1,139 @@
 """
-Rate limit middleware tests.
+Rate limit tests for slowapi-decorated routes.
 
-Verifies that the TokenBucket rate limiter at the middleware layer
-correctly blocks excess requests for the ingest and clear endpoints.
-
-Uses a tiny burst bucket for ingest to keep test runs fast — the
-production defaults (burst 50) would require 51+ concurrent pipeline
-runs, which is too heavyweight for a unit test.
+Verifies:
+1. A standalone route with a low limit correctly returns 429 when exceeded
+2. The shared limiter is properly configured
+3. Rate-limited endpoints behave correctly (429 format)
 """
 
-import asyncio
-
 import pytest
+from fastapi import FastAPI, Request
+from fastapi.testclient import TestClient
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
 
-from middleware.rate_limit import TokenBucket, ingest_bucket
-
-pytestmark = pytest.mark.asyncio
-
-INGEST_PAYLOAD = {
-    "vulnerability_id": "CVE-TEST-RL-0001",
-    "hostname": "per-PRD-PATIENT-EMR01.health.wa.gov.au",
-    "target_ip": "10.1.1.100",
-    "cvss_score": 9.8,
-    "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
-    "epss_score": 0.95,
-    "raw_description": "Rate limit test",
-}
-
-INGEST_PAYLOAD_2 = {
-    "vulnerability_id": "CVE-TEST-RL-0002",
-    "hostname": "per-PRD-PATIENT-EMR01.health.wa.gov.au",
-    "target_ip": "10.1.1.100",
-    "cvss_score": 9.8,
-    "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
-    "epss_score": 0.95,
-    "raw_description": "Rate limit test 2",
-}
-
-INGEST_PAYLOAD_3 = {
-    "vulnerability_id": "CVE-TEST-RL-0003",
-    "hostname": "per-PRD-PATIENT-EMR01.health.wa.gov.au",
-    "target_ip": "10.1.1.100",
-    "cvss_score": 9.8,
-    "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
-    "epss_score": 0.95,
-    "raw_description": "Rate limit test 3",
-}
+from middleware.rate_limit import limiter
 
 
-def _cleanup_rl_records():
-    """Delete CVE-TEST-RL-* records from the database."""
-    from database import get_db
+class TestSlowapiUnit:
+    """Unit tests for the slowapi limiter."""
 
-    conn = get_db()
-    conn.execute(
-        "DELETE FROM vulnerabilities WHERE vulnerability_id LIKE 'CVE-TEST-RL-%'"
-    )
-    conn.commit()
-    conn.close()
+    def test_limiter_is_configured(self):
+        """The shared limiter should have a _key_func set."""
+        assert limiter is not None
+        assert callable(limiter._key_func)
+        assert limiter._key_func is get_remote_address
 
+    def test_rate_limit_constants_are_valid(self):
+        """Each rate limit constant should be a valid slowapi string."""
+        from middleware.rate_limit import (
+            RATE_LIMIT_INGEST,
+            RATE_LIMIT_ADMIN,
+            RATE_LIMIT_NOTES,
+            RATE_LIMIT_DEFAULT,
+        )
 
-class TestRateLimitIngest:
-    """Rate limit tests for POST /api/ingest."""
-
-    async def test_ingest_rate_limit_blocks_excess(self, client):
-        """Send 5 rapid POST requests — at least 1 must return 429.
-
-        The ingest bucket is temporarily replaced with a tiny bucket
-        (burst=2, rate=1/min) so we can trigger rate limiting with
-        just a few rapid requests instead of 50+.
-        """
-        tiny_bucket = TokenBucket(rate_per_minute=1, burst_size=2)
-        import middleware.rate_limit as rl
-
-        rl.ingest_bucket = tiny_bucket
-        try:
-            _cleanup_rl_records()
-            responses = []
-            for _ in range(5):
-                responses.append(await client.post("/api/ingest", json=INGEST_PAYLOAD))
-
-            n_429 = sum(1 for r in responses if r.status_code == 429)
-            assert n_429 >= 1, (
-                f"Expected at least 1 rate-limit block (429), got 0. "
-                f"Status codes: {[r.status_code for r in responses]}"
-            )
-        finally:
-            rl.ingest_bucket = ingest_bucket
-
-    async def test_ingest_rate_limit_allows_normal_rate(self, client):
-        """Send 3 requests spaced ~0.5s apart — all must return 200.
-
-        Normal traffic well within the 30/min rate with burst 50.
-        Uses unique IDs to avoid duplicate-key conflicts.
-        """
-        _cleanup_rl_records()
-        payloads = [INGEST_PAYLOAD, INGEST_PAYLOAD_2, INGEST_PAYLOAD_3]
-
-        for payload in payloads:
-            resp = await client.post("/api/ingest", json=payload)
-            assert resp.status_code == 200, (
-                f"Expected 200, got {resp.status_code}: {resp.text[:200]}"
-            )
-            await asyncio.sleep(0.5)
+        for name, val in [
+            ("RATE_LIMIT_INGEST", RATE_LIMIT_INGEST),
+            ("RATE_LIMIT_ADMIN", RATE_LIMIT_ADMIN),
+            ("RATE_LIMIT_NOTES", RATE_LIMIT_NOTES),
+            ("RATE_LIMIT_DEFAULT", RATE_LIMIT_DEFAULT),
+        ]:
+            assert isinstance(val, str), f"{name} should be a string, got {type(val)}"
+            assert "/" in val, f"{name} should contain '/' (e.g. '10/minute')"
 
 
-class TestRateLimitClear:
-    """Rate limit tests for POST /api/ingest/clear."""
+class TestSlowapiIntegration:
+    """Integration tests with a standalone FastAPI app to verify 429 behavior."""
 
-    async def test_clear_rate_limit_blocks_rapid(self, client):
-        """Send 5 rapid POST requests to /api/ingest/clear — at least 1 must return 429.
+    @pytest.fixture
+    def low_limit_app(self):
+        """Create a fresh FastAPI app with a very low rate limit for testing."""
+        _limiter = Limiter(key_func=get_remote_address)
+        app = FastAPI()
+        app.state.limiter = _limiter
+        app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-        Default rate is 2/min with burst 3.  With 5 rapid requests,
-        the 4th and 5th should be blocked.
-        """
-        responses = []
-        for _ in range(5):
-            responses.append(await client.post("/api/ingest/clear"))
+        @app.get("/test-rate-limit")
+        @_limiter.limit("2/minute")
+        async def test_route(request: Request):
+            return {"ok": True}
 
-        n_429 = sum(1 for r in responses if r.status_code == 429)
-        assert n_429 >= 1, (
-            f"Expected at least 1 rate-limit block (429), got 0. "
-            f"Status codes: {[r.status_code for r in responses]}"
+        return app
+
+    def test_blocks_excess_requests(self, low_limit_app):
+        """3 rapid requests to a 2/minute endpoint — the 3rd must return 429."""
+        client = TestClient(low_limit_app)
+        resp1 = client.get("/test-rate-limit")
+        assert resp1.status_code == 200, f"Expected 200, got {resp1.status_code}"
+
+        resp2 = client.get("/test-rate-limit")
+        assert resp2.status_code == 200, f"Expected 200, got {resp2.status_code}"
+
+        resp3 = client.get("/test-rate-limit")
+        assert resp3.status_code == 429, (
+            f"Expected 429 (rate limited), got {resp3.status_code}. Body: {resp3.text}"
+        )
+
+    def test_429_response_format(self, low_limit_app):
+        """The 429 response should include an error message."""
+        client = TestClient(low_limit_app)
+        # Exhaust the limit
+        for _ in range(2):
+            client.get("/test-rate-limit")
+        resp = client.get("/test-rate-limit")
+        assert resp.status_code == 429
+        data = resp.json()
+        assert "error" in data, f"429 response must contain 'error' key. Got: {data}"
+        assert "Rate limit exceeded" in data["error"], (
+            f"Error message should mention rate limit. Got: {data['error']}"
+        )
+
+
+class TestLimiterRegistration:
+    """Tests that routes are correctly registered with the limiter.
+
+    Note: _route_limits populates only after router modules are imported
+    (since @limiter.limit runs at decoration time).
+    """
+
+    @pytest.fixture(autouse=True)
+    def _ensure_routes_imported(self):
+        """Import key routers to trigger @limiter.limit decoration."""
+        import routers.ingest  # noqa: F401
+        import routers.admin  # noqa: F401
+        import routers.cases  # noqa: F401
+        import routers.auth  # noqa: F401
+        import routers.queue  # noqa: F401
+        import routers.models  # noqa: F401
+        import routers.config  # noqa: F401
+
+    def test_limiter_has_route_registrations(self):
+        """The shared limiter should have route registrations after imports."""
+        assert len(limiter._route_limits) > 0, (
+            "Limiter has no route limits registered. "
+            "Routes with @limiter.limit should populate _route_limits."
+        )
+
+    def test_ingest_route_in_limiter(self):
+        """The ingest route should be registered in the limiter."""
+        from routers.ingest import ingest_vulnerability
+
+        name = f"{ingest_vulnerability.__module__}.{ingest_vulnerability.__name__}"
+        registered = list(limiter._route_limits.keys())
+        assert any(name in key for key in registered), (
+            f"Ingest route '{name}' not found in registrations. "
+            f"Registered (first 10): {registered[:10]}"
+        )
+
+    def test_admin_route_in_limiter(self):
+        """The admin route should be registered."""
+        from routers.admin import update_scoring_config
+
+        name = f"{update_scoring_config.__module__}.{update_scoring_config.__name__}"
+        registered = list(limiter._route_limits.keys())
+        assert any(name in key for key in registered), (
+            f"Admin route '{name}' not found. Registered (first 10): {registered[:10]}"
         )

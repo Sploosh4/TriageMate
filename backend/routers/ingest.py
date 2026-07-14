@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
 from auth import get_current_user_if_enabled
 from database import get_db
+from middleware.rate_limit import limiter, RATE_LIMIT_INGEST, RATE_LIMIT_DEFAULT
 from models import (
     IngestRequest,
     CaseResponse,
@@ -83,6 +84,7 @@ def _demo_only():
 @router.post(
     "/api/ingest", response_model=CaseResponse, response_model_exclude_none=True
 )
+@limiter.limit(RATE_LIMIT_INGEST)
 async def ingest_vulnerability(
     payload: IngestRequest,
     request: Request = None,
@@ -686,6 +688,7 @@ async def ingest_vulnerability(
     response_model=list[CaseResponse],
     response_model_exclude_none=True,
 )
+@limiter.limit(RATE_LIMIT_INGEST)
 async def ingest_vulnerability_batch(
     payloads: list[IngestRequest],
     request: Request = None,
@@ -706,6 +709,7 @@ async def ingest_vulnerability_batch(
 
 
 @router.post("/api/ingest/tenable")
+@limiter.limit(RATE_LIMIT_INGEST)
 async def ingest_tenable(
     request: Request, user: dict = Depends(get_current_user_if_enabled)
 ):
@@ -764,7 +768,10 @@ async def ingest_tenable(
 
 
 @router.get("/api/demo/scenarios")
-async def list_demo_scenarios(user: dict = Depends(get_current_user_if_enabled)):
+@limiter.limit(RATE_LIMIT_DEFAULT)
+async def list_demo_scenarios(
+    request: Request, user: dict = Depends(get_current_user_if_enabled)
+):
     """Return list of available demo scenarios (DEMO_MODE only)."""
     gate = _demo_only()
     if gate:
@@ -780,6 +787,7 @@ async def list_demo_scenarios(user: dict = Depends(get_current_user_if_enabled))
 
 
 @router.post("/api/demo/generate")
+@limiter.limit(RATE_LIMIT_INGEST)
 async def generate_demo_findings(
     request: Request, user: dict = Depends(get_current_user_if_enabled)
 ):
@@ -838,7 +846,10 @@ async def generate_demo_findings(
 
 
 @router.post("/api/ingest/clear")
-async def clear_all_findings(user: dict = Depends(get_current_user_if_enabled)):
+@limiter.limit(RATE_LIMIT_INGEST)
+async def clear_all_findings(
+    request: Request, user: dict = Depends(get_current_user_if_enabled)
+):
     """Archive all current findings and clear the queue (DEMO_MODE only).
     Destructive admin-only action.
     """

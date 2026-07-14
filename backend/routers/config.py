@@ -7,8 +7,9 @@ No auth required — config values are not sensitive.
 import json
 import logging
 from pathlib import Path
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from auth import get_current_user_if_enabled
+from middleware.rate_limit import limiter, RATE_LIMIT_DEFAULT
 from pipeline.config import thresholds, scoring, feature_names
 
 logger = logging.getLogger("triagemate.config")
@@ -16,7 +17,8 @@ router = APIRouter(tags=["Config"])
 
 
 @router.get("/api/config")
-def get_config(user: dict = Depends(get_current_user_if_enabled)):
+@limiter.limit(RATE_LIMIT_DEFAULT)
+def get_config(request: Request, user: dict = Depends(get_current_user_if_enabled)):
     """Return all config values grouped by domain."""
     return {
         "thresholds": {
@@ -51,13 +53,21 @@ def get_config(user: dict = Depends(get_current_user_if_enabled)):
 
 
 def _load_threshold_info() -> dict:
-    """Read threshold_info.json and return contents, or unavailable status."""
+    """Read threshold_info.json and return contents, or status info.
+
+    Returns distinct statuses for missing vs. corrupt files:
+      - File missing  → {"status": "not_found"}
+      - File corrupt  → {"status": "corrupt", "error": "JSON decode failed: ..."}
+    """
     path = Path(__file__).resolve().parent.parent / "ml" / "threshold_info.json"
     if not path.exists():
-        return {"status": "unavailable"}
+        return {"status": "not_found"}
     try:
         with open(path) as f:
             return json.load(f)
-    except (json.JSONDecodeError, OSError) as e:
+    except json.JSONDecodeError as e:
         logger.warning("Failed to read threshold_info.json: %s", e)
-        return {"status": "unavailable"}
+        return {"status": "corrupt", "error": f"JSON decode failed: {e}"}
+    except OSError as e:
+        logger.warning("Failed to read threshold_info.json: %s", e)
+        return {"status": "corrupt", "error": f"File read error: {e}"}

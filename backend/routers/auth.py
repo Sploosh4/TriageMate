@@ -7,7 +7,7 @@ Endpoints:
 """
 
 import logging
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Request, status
 
 from auth import (
     AUTH_DISABLED,
@@ -18,6 +18,7 @@ from auth import (
     create_refresh_token,
     verify_token,
 )
+from middleware.rate_limit import limiter, RATE_LIMIT_DEFAULT
 from models import LoginRequest, RefreshRequest, TokenResponse
 
 logger = logging.getLogger("triagemate.auth")
@@ -25,7 +26,8 @@ router = APIRouter(tags=["Auth"])
 
 
 @router.post("/api/auth/login", response_model=TokenResponse)
-def login(body: LoginRequest):
+@limiter.limit(RATE_LIMIT_DEFAULT)
+def login(request: Request, body: LoginRequest):
     """Authenticate with admin credentials.
 
     Returns a short-lived access token + longer-lived refresh token.
@@ -64,7 +66,8 @@ def login(body: LoginRequest):
 
 
 @router.post("/api/auth/refresh", response_model=TokenResponse)
-def refresh(body: RefreshRequest):
+@limiter.limit(RATE_LIMIT_DEFAULT)
+def refresh(request: Request, body: RefreshRequest):
     """Exchange a valid refresh token for a new access token.
 
     The refresh token itself is returned unchanged — the client keeps it
