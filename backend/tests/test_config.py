@@ -27,6 +27,12 @@ class TestConfigEndpoint:
         assert "total_weight" in data["scoring"]
         assert "context_multiplier" in data["scoring"]
 
+    def test_config_does_not_expose_feature_names(self):
+        """The public config contract must not expose the ML feature order."""
+        resp = client.get("/api/config")
+        assert resp.status_code == 200
+        assert "feature_names" not in resp.json()
+
     def test_config_scoring_weights_match_module(self):
         from pipeline.config.scoring import SCORING_WEIGHTS
 

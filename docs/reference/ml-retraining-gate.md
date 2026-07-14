@@ -1,19 +1,32 @@
 # ML Retraining Gates — Process Description
 
-This document describes the three gates that govern ML retraining in
-TriageMate. Each gate must pass before the next phase begins.
+This document describes the required human review process for ML retraining in
+TriageMate. Each gate must pass before the next phase is authorized.
+
+> **Runtime enforcement gap:** The current application scheduler can still call
+> model training automatically after a drift threshold is crossed. Issue #79
+> tracks the default-off/explicit-opt-in guard. Until that issue is resolved,
+> these gates are mandatory operating policy but are not a complete technical
+> control. Do not leave an application instance running with automatic
+> retraining assumptions you have not reviewed.
 
 ## Gate A: Gather Evidence and Integrity
 
 After a `--gather` has finished, run:
 
 ```bash
-just ml-gate-a <npz-path> <gather-log-path> <output-json-path>
+just ml-gate-a ml/training_data.npz /tmp/sprint29-post-policy-gather.log /tmp/ml-gate-a.json
 ```
 
 This command reads the saved NPZ and the matching gather log, reports the
-primary, prospective, censored, and split statistics, and writes a
-reproducible JSON evidence record.
+primary, prospective, censored, and split statistics, and writes a versioned
+evidence summary.
+
+The `just` recipe changes into `backend/`, so relative NPZ paths are
+backend-relative; absolute paths also work. The first gather log remained in
+`/tmp` and the current evidence JSON does not contain a log hash. The versioned
+JSON therefore preserves the parsed evidence and NPZ fingerprint, not a fully
+reproducible copy of the source log.
 
 It also validates all required NPZ arrays, row alignment, feature-name width,
 artifact SHA-256, and agreement between NPZ row/label counts and the gather
@@ -38,17 +51,20 @@ this first post-policy evidence. No thresholds are predefined.
 The first post-policy gather passed Gate A on 14 July 2026. Its versioned
 evidence is `backend/reports/investigations/ml-gate-a-2026-07-14.json`.
 
-## Gate B: Baseline Metrics
+## Gate B: Authorized Baseline Training and Metrics
 
 After Gate A passes and the reviewer approves its evidence:
 
 1. Review the per-split class distributions from the gather metadata.
 2. Ensure each split contains both positive and negative examples.
 3. Verify the temporal coverage is sufficient for evaluation.
-4. Authorize a baseline run separately.
+4. Obtain explicit user authorization for a baseline `--train` run.
+5. Run it in a dedicated branch/workspace and preserve the pre-run artifact
+   fingerprints so the candidate can be compared or discarded safely.
 
 `--train` is never implicit in a Gate A command. Baseline metrics are
-collected before any retraining occurs.
+produced by a candidate training run that requires separate future user authorization; passing Gate A
+alone does not permit that run or model-artifact replacement.
 
 ## Gate C: Post-Training Validation (post-`--train`)
 

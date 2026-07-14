@@ -22,7 +22,7 @@
 
 | # | File | Status | Description |
 |---|---|---|---|
-| 1 | `planning/ROADMAP.md` | CURRENT | **Master status.** What exists, what's broken, what's next. Sprints 17–28 complete; Sprint 29 in progress. Start here. |
+| 1 | `planning/ROADMAP.md` | CURRENT | **Master status.** What exists, what's broken, and what's next. Sprint 29 Gate A is complete; Sprint 30 is finalizing repository reconciliation. Start here. |
 | 2 | `architecture/MVP_SCOPE.md` | OUTDATED | Sprint 1 scope boundaries. Many deferred items are now done. See caution banner. |
 | 3 | `reference/AI_PROBLEMS.md` | CURRENT | Bug tracker. All historical issues resolved. |
 | 4 | `archive/ml-implementation-plan.md` | ARCHIVED | → Replaced by `graphify_output/ml_inventory.md` (auto-generated, run `just graphify`) |
@@ -35,14 +35,15 @@
 | `architecture/scoring-weights.md` | CURRENT | Scoring weight design — 6 dimensions (107-sum, clamped 0–100), plus context multiplier. Rationale, clamping, bands, demo CVE scores. Added Sprint 18. |
 | `architecture/comparison-vs-described-system.md` | OUTDATED | Maps each of 5 described system areas to actual implementation. **Stale** — predates Sprint 20 (PCA restored, Tier 2 agentic). See caution banner in file. |
 | `architecture/weight-zero-decision.md` | CURRENT | Scoring weight zero policy — zero NOT supported, minimum of 1 retained as intentional design. Sprint 28 (2026-07-14). |
-| `architecture/rag-query-access-boundary.md` | CURRENT | Implemented hostname-binding boundary for the Tier 2 `rag_query` tool. Sprint 29 (2026-07-14); product-owner decision record remains open in Issue #58. |
-| `architecture/config-api-exposure.md` | CURRENT | Implemented removal of ML feature names from `GET /api/config`. Sprint 29 (2026-07-14); product-owner decision record remains open in Issue #58. |
+| `architecture/rag-query-access-boundary.md` | CURRENT | Approved server-owned hostname boundary for Tier 2 `rag_query`; missing case context fails closed. Issue #58, PRs #75/#76. |
+| `architecture/config-api-exposure.md` | CURRENT | Approved removal of ML feature names from `GET /api/config`; operational config and the conditional auth guard remain. Issue #58, PR #75. |
+| `architecture/point-in-time-label-policy.md` | CURRENT | Implemented mature primary/prospective cohort policy. PR #68; validated by the post-policy gather and ML Gate A. |
 
 ## Planning
 
 | File | Status | Description |
 |---|---|---|
-| `planning/ROADMAP.md` | CURRENT | Forward-looking roadmap. Sprints 17–28 complete ✅, Sprint 29 in progress. Sprint 28: evidence investigations and ML readiness. Sprint 29: investigation findings remediation. |
+| `planning/ROADMAP.md` | CURRENT | Forward-looking roadmap. Sprint 29 implementation and Gate A are complete; baseline training requires separate future authorization. Sprint 30 reconciles Git and documentation. |
 | `planning/HANDOFF-2026-07-08.md` | OUTDATED | Handoff from pre-Sprint-18 era. Drift monitoring, retraining, concept drift, and benchmark sections superseded by Sprints 18–22. Still accurate for network topology/Sentinel gaps and post-MVP items. |
 | `planning/ai-doc-strategy-2026-07-07.md` | CURRENT | This consolidation plan — how and why docs were restructured. |
 | `planning/github-label-taxonomy.md` | CURRENT | Sprint 24 label taxonomy — 25 labels (9 defaults + 16 custom), colors, descriptions. |
@@ -56,6 +57,10 @@
 | `reference/BUG_HUNT_2026-07-13.md` | CURRENT | **162 bugs found across all areas** (19 CRITICAL, 38 HIGH, 49 MEDIUM, 56 LOW). Full bug hunt report from 2026-07-13. Pipeline audit in section 9. |
 | `reference/xgboost-investigation-report.md` | CURRENT | Root cause analysis of XGBoost false-negative rate. ✅ All 8 fixes applied, model retrained 2026-07-08. |
 | `reference/graphify-output-reliability-report.md` | CURRENT | Audit and remediation specification for factual accuracy, provenance, and reproducibility of Graphify outputs. |
+| `reference/ml-retraining-gate.md` | CURRENT | Authoritative review workflow: Gate A evidence, Gate B baseline training requiring separate future authorization, and Gate C validation. Issue #79 tracks runtime enforcement. |
+| `../backend/reports/investigations/ml-gate-a-2026-07-14.json` | CURRENT | Versioned evidence from the first post-policy gather: artifact/schema fingerprints and coherent train/validation/test counts. |
+| `../backend/reports/investigations/mid-2023-data-drop.md` | OUTDATED | Historical diagnosis of the positive-only split. Root cause remains useful; its proposed fix was superseded by PR #68. |
+| `../backend/reports/investigations/ml-retraining-decision-gate.md` | OUTDATED | Historical Sprint 28 decision report. Current operational guidance is `reference/ml-retraining-gate.md`. |
 | `archive/ml-implementation-plan.md` | ARCHIVED | → Replaced by `graphify_output/ml_inventory.md` (auto-generated, run `just graphify`) |
 | `reference/hostname-standards.md` | CURRENT | WA government hostname conventions, data classification, department naming. |
 | `backend/ml/README.md` | CURRENT | ML artifact index — lists active and pending ML components, lives with code. |
@@ -93,8 +98,8 @@
 | What's the current state of the project? | `planning/ROADMAP.md` |
 | What's broken? | `reference/BUG_HUNT_2026-07-13.md` (162 bugs found, 58 confirmed actionable) + `reference/AI_PROBLEMS.md` (all historical issues resolved) |
 | What ML models exist and how do they work? | `graphify_output/ml_inventory.md` (auto-generated) |
-| How do I train the model? | `planning/ROADMAP.md` §ML Models table or `backend/ml/` scripts |
-| How do I retrain all ML models from scratch? | Use `just retrain-all` — see ROADMAP.md §Current State (ML Models table) |
+| How do I train the XGBoost model? | Read `reference/ml-retraining-gate.md`; `--train` requires a separate Gate B authorization. |
+| How do I retrain the Pre-Tier and EPSS fallback models? | `just retrain-all` covers only Pre-Tier + EPSS v4; it does **not** train Tier-1 XGBoost. |
 | How do I set up on Windows? | `guides/WINDOWS_SETUP.md` |
 | What WA gov conventions apply? | `reference/hostname-standards.md` |
 | What data does the corpus contain? | `planning/ROADMAP.md` §Current State (Enrichment sources: 14 integrations) |
@@ -131,7 +136,7 @@
 
 | Command | Purpose |
 |---|---|
-| `just retrain-all` | Retrains all ML models from scratch: synthetic data → pre-tier → EPSS v4 |
+| `just retrain-all` | Retrains Pre-Tier + EPSS v4; it does **not** train Tier-1 XGBoost. |
 
 ## New ML Test Files (Sprint 16 — ML Monitoring Foundation)
 
@@ -145,7 +150,7 @@
 | `backend/ml/model_registry_pre_tier.json` | Pre-Tier model version registry (drift tracking, rollback) |
 | `backend/ml/model_registry_epss.json` | EPSS model version registry (v1–v4 tracking, rollback) |
 
-**Total test count:** 457+ tests (up from 142) — includes 5 new test files for Pre-Tier and EPSS monitoring, plus 3 drift test files (XGBoost, EPSS, Pre-Tier) from Sprint 18, plus scoring property tests, seed verification, scheduler, NPZ metadata, and concept drift tests from Sprint 19, plus 65 new tests from Sprint 20 (agent tools, admin API, PCA), plus multiplier tests, config API tests, drift webhook tests from Sprint 21, plus benchmark, rollback, and schema tests from Sprint 22, plus feature contract tests from Sprint 26.
+**Test status:** The GitHub Actions Python 3.11/3.12 matrix is the authority. The Sprint 30 final local full-suite verification recorded 498 passed and 1 skipped; avoid hardcoding this as a permanent inventory because collection changes over time.
 
 ## Sprint 17 — ✅ Complete (Security Telemetry, Network Context & Panel 5)
 
@@ -209,7 +214,7 @@
 | Component | Files | Purpose |
 |---|---|---|
 | **Multiplier-Based Security Scoring** | `backend/scoring.py`, `backend/pipeline/config/scoring.py` | Replaced additive Security Context (0–5 pts) with proportional multiplier (1.20/1.10/1.00/0.85/0.70). Scoring dimensions reduced from 7 to 6 (total weight 107). Frontend updated to show context multiplier. Backward-compat `security_context=0` field retained. |
-| **Config API (Bonus A)** | `backend/routers/config.py` | Read-only `GET /api/config` exposing thresholds, scoring weights, multiplier config, and feature names. |
+| **Config API (Bonus A)** | `backend/routers/config.py` | Added read-only `GET /api/config`; feature names were later removed from its response in Sprint 29 PR #75. |
 | **Drift Webhook (Bonus B)** | `backend/analysis/drift.py` | POST drift alerts to configured webhook URL when PSI ≥ 0.10. Rate-limited to once per 6 hours per model. |
 
 **Sprint 21 new test files:**
@@ -224,7 +229,7 @@
 
 | Component | Files | Purpose |
 |---|---|---|
-| **Multi-Window KEV Labels** | `backend/ml/train_xgboost.py`, `backend/ml/xgboost_predictor.py` | Replaced binary KEV label (0/1) with 5-class multi-window labels (0=not KEV, 1=≤30d, 2=31-90d, 3=91-365d, 4=>365d). XGBoost switched to `multi:softprob` with `num_class=5`. Predictor returns `exploitation_probability` + `window_probabilities`. |
+| **Multi-Window KEV Labels** | `backend/ml/train_xgboost.py`, `backend/ml/xgboost_predictor.py` | Added 5-class label construction and compatible multi-class inference. The persisted active v4 artifact remains binary; future replacement follows `reference/ml-retraining-gate.md`. |
 | **CI Benchmark Gates** | `justfile`, `.github/workflows/ci.yml`, `backend/tests/test_benchmark.py` | Added pytest-benchmark for scoring calculator (3 benchmarks). CI runs on main branch with 10% regression threshold. `just bench` and `just bench-check` recipes. |
 | **Alembic Migration 009** | `backend/alembic/versions/009_sprint22_schema_catchup.py` | Created migration 009 adding `pre_tier_features` and `epss_features` columns to both tables. |
 | **Model Registry Rollback API** | `backend/routers/models.py`, `backend/tests/test_rollback.py` | `POST /api/models/xgboost/rollback?version=<tag>` with lock mechanism, validation, cache invalidation. |

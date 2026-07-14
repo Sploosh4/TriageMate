@@ -3,13 +3,19 @@
 **Date:** 2026-07-14
 **Author:** Strike Team (automated)
 **Task:** Sprint 28 ML Retraining Decision Gate
+**Status:** HISTORICAL — superseded by the implemented split policy and ML
+Gate A evidence
 
-> **⚠️ Corrected 2026-07-14:** Previous version said "RETRAIN WITH CAVEATS" — this was too permissive.
-> Safe operational decision is DO NOT RETRAIN until prerequisites are met.
+> **Current operational state (2026-07-14):** The degenerate split and registry
+> description were corrected. A new gather produced mixed-class train,
+> validation, and test cohorts, and Gate A passed. No `--train` run has been
+> authorized or executed. Do not follow the historical gather/training commands
+> later in this report; use `docs/reference/ml-retraining-gate.md`. The next
+> decision is whether to authorize a separate Gate B baseline training run.
 
 ---
 
-## Decision: DO NOT RETRAIN
+## Historical Decision: DO NOT RETRAIN
 
 The assessment identified three blocking issues that prevent a responsible retraining decision:
 
@@ -59,7 +65,8 @@ After the observation window filter (which only removes label-0 CVEs published a
 
 **Implication:** The current model's reported metrics (ROC-AUC 0.9459, Accuracy 0.88) are **unreliable** because val/test sets are tiny and non-representative.
 
-**Recommendation:** Before retraining, run a clean `--gather --train` with logging to trace the mid-2023→training_data count mismatch.
+**Historical recommendation:** Superseded. The gather has been rerun and Gate A
+has passed. Training still requires a separate Gate B authorization.
 
 ---
 
@@ -119,7 +126,9 @@ The val/test splits are **not reliable for evaluation** due to:
 
 The observation window filter should only remove label-0 CVEs after ~2024-06-24, not the entire mid-2023 period. The imbalance suggests a data pipeline issue that needs investigation before a meaningful split can be achieved.
 
-**Recommendation:** Fix the mid-2023 data pipeline issue first, then re-evaluate the split quality. A fresh `--gather --train` run should naturally produce a better-distributed split if the enriched_cves.json is complete.
+**Historical recommendation:** Completed through PR #68 and the post-policy
+gather. See the current gate document rather than combining `--gather` and
+`--train`.
 
 ---
 
@@ -178,79 +187,22 @@ If no PCA model is found, inference falls back to raw 384-dim embeddings (lines 
 
 ---
 
-## Prerequisites for Retraining (Future Sprint)
+## Resolution Map (current as of 2026-07-14)
 
-Before any retraining can proceed, these prerequisites must be met in order:
-
-### P1 — Fresh `--gather` Run with Debug Logging
-Run a fresh `--gather` with detailed logging to trace the mid-2023 data volume anomaly (14,763 enriched CVEs → 81 training records in the validation period).
-
-**Command:**
-```bash
-cd /home/jpc/Documents/Cybersecurity (Temp)/TriageMate/TriageMate MVP
-source backend/.venv/bin/activate
-python -m ml.train_xgboost --gather 2>&1 | tee /tmp/retrain-gather.log
-```
-
-**Check:**
-```
-grep -E 'Multi-window labels|Excluding|Keeping|Val set|Test set' /tmp/retrain-gather.log
-```
-
-The val set should contain ~14,000+ records with ~0.6% positive rate, not 81 records at 100%.
-
-### P2 — Verify Val/Test Class Distributions
-After a clean gather, verify the split produces val/test sets with both positive and negative samples. The KEV % should fall in a realistic range (0.3%–2.0%).
-
-### P3 — Establish Baseline with Stratified Temporal Cross-Validation
-Run a proper evaluation using stratified temporal cross-validation to establish a trustworthy baseline ROC-AUC. Only then can we define acceptance criteria for improvement.
-
-### P4 — Only Then Run `--train` Against Defined Acceptance Criteria
-Once P1–P3 are satisfactory, run `--train` and verify against defined acceptance criteria.
-
----
-
-## Retraining Commands (Post-Prerequisites)
-
-Once P1–P4 are resolved:
-
-```bash
-# Step 1: Fresh gather (fetch NVD/EPSS/KEV, build features, encode)
-cd /home/jpc/Documents/Cybersecurity (Temp)/TriageMate/TriageMate MVP
-source backend/.venv/bin/activate
-python -m ml.train_xgboost --gather --train
-
-# Step 2: Verify 7 demo scores
-python backend/scripts/verify_seed_scores.py
-
-# Step 3: Run full test suite
-python -m pytest backend/tests/ -v
-
-# Step 4: Update registry
-# (edit backend/ml/model_registry.json with new metrics)
-```
-
-### Acceptance Criteria
-| Criterion | Target |
+| Original blocker | Current state |
 |---|---|
-| ROC-AUC (any-KEV) | ≥ 0.92 |
-| Test set negative count | > 1,000 records |
-| Test set KEV % | 0.3% - 2.0% (realistic range) |
-| Val set F1 | ≥ 0.70 |
-| 7 demo scores | Within ±3 of [99, 97, 74, 91, 82, 97, 80] |
-| Feature count | 419 (35 + 384) |
-| All feature contract tests | PASS |
+| Positive-only validation/test cohorts | Resolved by the mature primary/prospective cohort policy in PR #68 |
+| Registry described a five-class artifact while v4 was binary | Resolved; `model_registry.json` describes the persisted binary artifact |
+| No trustworthy representative evaluation cohort | Gate A passed on mixed-class train/validation/test cohorts; Gate B baseline metrics are not yet authorized or recorded |
 
----
+The post-policy gather contains 69,223 train, 20,144 validation, and 26,766
+test records. Versioned Gate A evidence is in
+`backend/reports/investigations/ml-gate-a-2026-07-14.json`.
 
-## Summary
+The current decision is therefore not the original “blocked by broken data”
+state. It is: **do not run `--train`; Gate B requires separate future user
+authorization**. In addition, Issue #79 tracks an automatic scheduler path that is not yet
+technically gated by this review process.
 
-| Criterion | Verdict | Key Issue |
-|---|---|---|
-| 1. Training Data Quality | **WARNING** | mid-2023 pipeline gap (14,763→81 records) needs investigation |
-| 2. Feature Contract Parity | **PASS** | 35+384=419, all 9 tests pass |
-| 3. Split Strategy | **WARNING** | Chronological OK, but val/test sets are tiny and degenerate |
-| 4. Evaluation Baseline | **WARNING** | Metrics unreliable; registry claims 5-class but model is binary |
-| 5. Legacy Compatibility | **PASS** | Old checkpoints load, migration code works |
-
-**Overall: DO NOT RETRAIN** — The assessment identified three blocking issues: degenerate val/test splits, binary-vs-multi-class registry mismatch, and unreliable baseline metrics. A responsible retraining decision requires completing the prerequisites first (fresh `--gather` run, verify class distributions, establish stratified temporal baseline). See "Prerequisites for Retraining (Future Sprint)" above.
+This historical report intentionally contains no runnable training procedure.
+Use `docs/reference/ml-retraining-gate.md` for the current process.

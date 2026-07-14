@@ -10,22 +10,22 @@
 
 | Metric | Value |
 |---|---|
-| Tests | 457 pass, 0 fail, 1 skipped |
-| Open remediation work | 7 Sprint 29 issues (#58–#64) |
-| Sprints completed | 17, 18, 19, 20, 21, 22, 23, **24**, **25**, **26**, **27**, **28** |
-| Current sprint | **Sprint 29 — Investigation Findings Remediation** 🔴 In Progress |
+| Tests | GitHub Actions test matrix passing on `main`; local Sprint 30 finalization: 498 passed, 1 skipped |
+| Open remediation work | Issue #64: baseline pending Gate B authorization; Issue #67: PostgreSQL compatibility; Issue #79: automatic-retraining opt-in guard |
+| Sprints completed | 17 through **28**; Sprint 29 implementation complete with its baseline decision still open |
+| Current sprint | **Sprint 30 — Repository Reconciliation and Gate A Finalization** 🟡 Finalizing |
 | Pipeline stages | Pre-Tier → Tier 0 → Tier 1 → Tier 2 → Tier 3 (Human Review) |
 | Enrichment sources | 14 integrations (NVD, OSV, OTX, ExploitDB, Metasploit, Tenable, GreyNoise [deprecated], CMDB [stub], Advisories [stub], MITRE, CWE classifier, Demo generator, **Synthetic Telemetry**, **Network Context**) |
 | Demo rows | 7 CVEs, scores 99/97/74/91/82/97/80 (±3 tolerance) |
 | Auth | JWT (disabled by default, env-var-gated) |
-| Database | SQLite (default), PostgreSQL (available via DATABASE_URL) |
+| Database | SQLite default; PostgreSQL via `DATABASE_URL` has open compatibility work in Issue #67 |
 | CI/CD | `.github/workflows/ci.yml` — full pipeline (matrix test, coverage, lint, Docker) |
 
 ### ML Models
 
 | Model | Type | Status | Monitoring |
 |---|---|---|---|
-| XGBoost (Tier 1) | 419-dim, ROC-AUC 0.9459 | ✅ Active | Tests ✅, Parity ✅, Registry ✅, Calibration ✅, Drift ✅ |
+| XGBoost (Tier 1) | 419-dim binary KEV model; registry-reported ROC-AUC 0.9459 is historical and a representative baseline is pending Gate B | ✅ Active | Tests ✅, Parity ✅, Registry ✅, Calibration ✅, Drift ✅ |
 | Pre-Tier RF | 60-dim RandomForest, ~38% holdout acc | ✅ Active | Tests ✅, Parity ✅, Registry ✅, Calibration ❌, Drift ✅ |
 | EPSS v4 | 37-dim XGBRegressor, R² 0.99 | ✅ Active (fallback #1) | Tests ✅, Parity ✅, Registry ✅, Calibration ❌, Drift ✅ |
 | EPSS v1–v3 | XGBRegressor | Fallback #2–#4 | Tests ✅, Parity ✅, Registry ✅, Calibration ❌, Drift ❌ |
@@ -94,7 +94,7 @@
 | # | Item | Status | Description |
 |---|---|---|---|
 | **1** | **Multiplier-Based Security Scoring** | ✅ Done | Replaced additive Security Context (0-5 pts) with proportional multiplier (1.20/1.10/1.00/0.85/0.70). Scoring weights reduced from 7 to 6 dimensions (total 107). Frontend updated to show context multiplier. Backward-compat `security_context=0` field retained. |
-| **—** | **Bonus A: Config API** | ✅ Done | Read-only `GET /api/config` exposing thresholds, scoring weights, multiplier config, and feature names. |
+| **—** | **Bonus A: Config API** | ✅ Done | Added read-only `GET /api/config` for thresholds, scoring weights, multiplier config, and feature names; feature names were later removed from the response in Sprint 29 PR #75. |
 | **—** | **Bonus B: Drift Webhook** | ✅ Done | POST drift alerts to configured webhook URL when PSI ≥ 0.10. Rate-limited to once per 6 hours per model. |
 
 ---
@@ -105,7 +105,7 @@
 
 | # | Item | Status | Description |
 |---|---|---|---|
-| **1** | **Multi-Window KEV Labels** | ✅ Done | Replaced binary KEV label (0/1) with 5-class multi-window labels (0=not KEV, 1=≤30d, 2=31-90d, 3=91-365d, 4=>365d). XGBoost switched to `multi:softprob` with `num_class=5`. Predictor returns `exploitation_probability` (any-KEV prob) + `window_probabilities` for transparency. Full backward compatibility with Tier 1 and scoring engine. |
+| **1** | **Multi-Window KEV Labels** | ✅ Done | Added 5-class multi-window label construction (0=not KEV, 1=≤30d, 2=31-90d, 3=91-365d, 4=>365d) and inference compatibility for multi-class output. The persisted active v4 artifact is currently binary and is described as such in `model_registry.json`; future model replacement is governed by the ML gates. |
 | **2** | **CI Benchmark Gates** | ✅ Done | Added pytest-benchmark for scoring calculator (3 benchmarks). CI runs on main branch with 10% regression threshold. `just bench` and `just bench-check` recipes. |
 | **3** | **Alembic Schema Catch-Up** | ✅ Done | Created migration 009 adding `pre_tier_features` and `epss_features` columns to both tables. |
 | **4** | **Model Registry Rollback API** | ✅ Done | `POST /api/models/xgboost/rollback?version=<tag>` with lock mechanism, validation, cache invalidation. |
@@ -200,19 +200,32 @@
 | **4** | **Documentation & Tracking Update** | ✅ Complete | ROADMAP updated, Sprint 27 recorded complete, INDEX.md fixed, comparison doc marked OUTDATED |
 | **5** | **ML Retraining Decision Gate** | ✅ Complete | Decision: DO NOT RETRAIN — three blocking issues identified (degenerate val/test splits, binary-vs-multi-class registry mismatch, unreliable baseline metrics) |
 
-## Sprint 29 — 🔴 In Progress (Investigation Findings Remediation)
+## Sprint 29 — 🟡 Implementation Complete; Baseline Decision Open
 
 *Started 14 July 2026. See `.opencode/plans/2026-07-14-sprint-29.md` and GitHub Issues #58–#64 for full detail.*
 
 | # | Item | Status | Description |
 |---|---|---|---|
-| **1** | **Product/Security Decisions** | ⏳ Planned | rag_query hostname binding (PIPE-HIGH-5) + /api/config exposure (ROUTER-LOW-1) |
+| **1** | **Product/Security Decisions** | ✅ Done | Issue #58 approved both decisions. PR #75 implemented server-owned RAG hostname scope and removed `feature_names` from `/api/config`; PR #76 made a missing RAG case hostname fail closed. |
 | **2a** | **Webhook malformed-JSON handling** | ✅ Done | ROUTER-LOW-5 — malformed Tenable JSON now returns HTTP 400 with regression coverage (`060df23`). |
 | **2b** | **Test isolation / shared-state races** | ✅ Done | TEST-CRIT-1, TEST-MED-1/2, and TEST-LOW-3/4/6 isolation fixes merged in PR #65; the complete Python test matrix passed. |
 | **2c** | **Seed-data idempotency** | ✅ Done | INFRA-HIGH-2 — cross-database unique constraint, conflict-safe insert, migration 013, and regression coverage (`88a4d0c`). |
 | **2d** | **OTX throttling handling** | ✅ Done | INT-MED-3 — Retry 429 responses with `Retry-After` support and exponential backoff; safe fallback after retry exhaustion. |
 | **2e** | **Rate-limit policy and implementation** | ✅ Done | CORE-MED-5 and ROUTER-LOW-8 — slowapi per-route limits, CI-installed dependency, and threshold-file status distinction. Merged in PR #66. |
-| **3** | **ML Data-Readiness Work** | 🟡 In Progress | Fresh gather (3a) confirmed a degenerate split; the mid-2023 drop is diagnosed (3b) and registry metadata corrected (3c). Split-policy implementation and a representative baseline (3d) remain blocked; do **not** retrain. |
+| **3** | **ML Data-Readiness Work** | 🟡 Gate A Complete | PR #68 implemented mature primary/prospective cohorts. The post-policy gather produced 69,223/20,144/26,766 train/validation/test records with both classes, and Gate A passed in PR #77. Issue #64 remains open because a baseline `--train` run requires separate user authorization. |
+
+## Sprint 30 — 🟡 Finalizing (Repository Reconciliation and Gate A)
+
+*Started 14 July 2026. See `.opencode/plans/2026-07-14-sprint-30.md`, GitHub Milestone #14, and Issue #78.*
+
+| # | Item | Status | Description |
+|---|---|---|---|
+| **1** | **Test-suite hardening** | ✅ Done | Applied to `main` at `3efee7a`; redundant PR #69 closed. |
+| **2** | **CI category reporting** | ✅ Done | PR #71 merged at `58e18ed`; duplicate PR #72 closed. The single strict test gate remains authoritative. |
+| **3** | **Security decision implementation** | ✅ Done | PRs #75 and #76 merged; Issue #58 closed. RAG is server-scoped and fail-closed; `/api/config` omits feature names. |
+| **4** | **ML Gate A** | ✅ Done | PR #77 added strict NPZ/log coherence checks, synthetic tests, and versioned evidence from the real post-policy gather. No training was run. |
+| **5** | **Git and documentation reconciliation** | 🟡 Finalizing | Superseded PRs #69/#72/#73/#74 closed; obsolete worktrees and branches pruned; authoritative docs and tracking reconciled in Issue #78. |
+| **6** | **Automatic-retraining enforcement gap** | 🔴 Tracked | Issue #79 records that the runtime scheduler can currently bypass the review gates. Default-off/explicit-opt-in enforcement is required before the gates can be described as a technical control. |
 
 ---
 
