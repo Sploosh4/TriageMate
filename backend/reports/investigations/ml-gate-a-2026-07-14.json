@@ -1,0 +1,49 @@
+{
+  "script_version": "1.1.0",
+  "timestamp": "2026-07-14T14:15:59.997656+00:00",
+  "npz_path": "backend/ml/training_data.npz",
+  "gather_log_path": "/tmp/sprint29-post-policy-gather.log",
+  "errors": [],
+  "npz_metadata": {
+    "file_size_bytes": 163059537,
+    "last_modified_iso": "2026-07-14T13:39:32.624803+00:00",
+    "artifact_sha256": "c0ac18d02220c33b2e462003b710130937af2780fb82e507828dbb041f497ec9",
+    "num_records": 116133,
+    "positive_count": 973,
+    "feature_dimension": 419,
+    "date_range_min": "1990-05-01",
+    "date_range_max": "2023-01-25",
+    "feature_name_count": 419,
+    "feature_name_fingerprint": "20830745aeb74c334f8f048d7f5a452a0196276541b943a24beb1c5c5c46823e"
+  },
+  "gather_log_parsed": {
+    "observation_window_days": 706,
+    "primary_cohort_count": 116133,
+    "prospective_cohort_count": 144503,
+    "censored_negatives_count": 144237,
+    "splits": [
+      {
+        "name": "Train",
+        "records": 69223,
+        "kev_positive": 641,
+        "pct": 0.93
+      },
+      {
+        "name": "Val",
+        "records": 20144,
+        "kev_positive": 200,
+        "pct": 0.99
+      },
+      {
+        "name": "Test",
+        "records": 26766,
+        "kev_positive": 132,
+        "pct": 0.49
+      }
+    ],
+    "final_positive_rate_numerator": 973,
+    "final_positive_rate_denominator": 116133
+  },
+  "warnings": [],
+  "exit_code": 0
+}
