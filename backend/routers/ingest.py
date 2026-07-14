@@ -725,7 +725,12 @@ async def ingest_tenable(
     body_raw = await request.body()
     if len(body_raw) > 10_000_000:
         raise HTTPException(status_code=413, detail="Payload too large")
-    body = json.loads(body_raw)
+    try:
+        body = json.loads(body_raw)
+    except json.JSONDecodeError as exc:
+        raise HTTPException(
+            status_code=400, detail="Invalid JSON in request body"
+        ) from exc
 
     if isinstance(body, list):
         requests = parse_tenable_batch(body)
