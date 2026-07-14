@@ -27,10 +27,18 @@ jobs:
           pip install -r backend/requirements.txt
           pip install -r requirements-dev.txt
 
-      - name: Run tests with coverage
+      - name: Run full test suite (strict gate)
         run: |
           cd backend
           python -m pytest tests/ -v --cov --cov-config=.coveragerc --cov-report=term-missing --cov-fail-under=30
+
+      - name: Report marked test-category collection totals
+        run: |
+          cd backend
+          for marker in artifact integration benchmark fuzz; do
+            echo "--- $marker ---"
+            python -m pytest tests/ --collect-only -q -m "$marker"
+          done
 
       - name: Run ruff check
         run: ruff check backend/
