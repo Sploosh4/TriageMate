@@ -56,6 +56,10 @@ jobs:
           node-version: '20'
       - name: Check JS syntax
         run: node --check frontend/js/*.js && node --check frontend/js/components/*.js
+      - name: Run frontend regression tests
+        run: |
+          npm ci
+          npm run test:keydown
 
   lint-only:
     runs-on: [self-hosted, Linux, X64, triagemate]

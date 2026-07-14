@@ -2,11 +2,12 @@
 /**
  * Regression test: FE-MED-5 — _eventListenersWired guard
  *
- * Verifies that calling init() twice (simulating auth re-init flow) does NOT
- * re-register keydown listeners on document, preventing listener accumulation.
+ * Verifies the auth-required lifecycle: unauthenticated init wires no app
+ * handlers, the post-login init wires them once, and a later re-init does not
+ * duplicate them.
  *
  * Uses JSDOM to simulate the frontend environment and counts keydown listener
- * registrations by wrapping Document.prototype.addEventListener.
+ * registrations by wrapping EventTarget.prototype.addEventListener.
  */
 
 const assert = require('assert');
@@ -52,8 +53,11 @@ const HTML_TEMPLATE = `
 `;
 
 function main() {
-  // Track document-level keydown listener registrations
+  // Track the four app keyboard handler targets. JSDOM itself may install a
+  // window-level keyboard listener, which is outside app.js and irrelevant to
+  // this regression.
   let keydownListenerCount = 0;
+  const keydownTargets = [];
 
   // Create JSDOM instance
   const dom = new JSDOM(HTML_TEMPLATE, {
@@ -78,10 +82,12 @@ function main() {
   win.updateMetricBoxes = () => {};
   win.sortState = { column: null, direction: 'asc' };
 
-  // Auth mocks (auth disabled by default)
-  win.initAuth = async () => {};
-  win.isAuthenticated = () => false;
-  win.AUTH_REQUIRED = false;
+  // Auth-required flow: the first init stops at the login modal; a successful
+  // login changes the authentication state before app.js re-runs init().
+  let authenticated = false;
+  win.initAuth = async () => { win.AUTH_REQUIRED = true; };
+  win.isAuthenticated = () => authenticated;
+  win.AUTH_REQUIRED = true;
 
   // UI component mocks
   win.wireDemoEventListeners = () => {};
@@ -89,13 +95,17 @@ function main() {
   win.initDriftDashboard = () => {};
   win.renderAdminSettings = () => {};
 
-  // Patch document.addEventListener to count keydown registrations
-  const origAddEventListener = doc.addEventListener.bind(doc);
-  doc.addEventListener = function (type, listener, options) {
-    if (type === 'keydown') {
+  // Patch EventTarget so document-level and element-level keyboard handlers
+  // are both covered.
+  const origAddEventListener = win.EventTarget.prototype.addEventListener;
+  win.EventTarget.prototype.addEventListener = function (type, listener, options) {
+    if (type === 'keydown' && (
+      this === doc || this.id === 'queue-body' || this.id === 'metric-boxes-row'
+    )) {
       keydownListenerCount++;
+      keydownTargets.push(this === win ? 'window' : (this.id || this.nodeName || 'unknown'));
     }
-    return origAddEventListener(type, listener, options);
+    return origAddEventListener.call(this, type, listener, options);
   };
 
   // Load and evaluate app.js in the JSDOM window context
@@ -107,40 +117,47 @@ function main() {
   const appJsCode = fs.readFileSync(appJsPath, 'utf8');
   win.eval(appJsCode);
 
-  // === First init() call ===
+  // === Initial unauthenticated init ===
   keydownListenerCount = 0;
 
   return win
     .init()
     .then(() => {
-      const afterFirstInit = keydownListenerCount;
-      console.log(`After 1st init(): ${afterFirstInit} keydown listeners`);
+      assert.strictEqual(keydownListenerCount, 0, 'Unauthenticated init must not wire app listeners');
 
-      // === Second init() call (simulating auth re-init flow) ===
+      // === Successful login triggers the real re-init path ===
+      authenticated = true;
+      return win.init();
+    })
+    .then(() => {
+      const afterLoginInit = keydownListenerCount;
+      console.log(`After post-login init(): ${afterLoginInit} keydown listeners (${keydownTargets.join(', ')})`);
+
+      // A later re-init must remain idempotent.
       return win.init().then(() => {
-        const afterSecondInit = keydownListenerCount;
-        console.log(`After 2nd init(): ${afterSecondInit} keydown listeners`);
+        const afterRepeatInit = keydownListenerCount;
+        console.log(`After repeated authenticated init(): ${afterRepeatInit} keydown listeners`);
 
         // === Assertions ===
         // 1. Count MUST NOT increase after second init
         assert.strictEqual(
-          afterFirstInit,
-          afterSecondInit,
-          `GUARD FAILED: keydown listener count increased from ${afterFirstInit} to ${afterSecondInit}. ` +
+          afterLoginInit,
+          afterRepeatInit,
+          `GUARD FAILED: keydown listener count increased from ${afterLoginInit} to ${afterRepeatInit}. ` +
             'The _eventListenersWired guard is not preventing re-registration of listeners on init(). ' +
             'Check that frontend/js/app.js wraps wireEventListeners in if (!_eventListenersWired) { ... }.'
         );
 
-        // 2. Exactly two keydown listeners should be registered by wireEventListeners
-        //    (lines 249 and 257 of app.js: Ctrl+S save shortcut, Escape to go back)
+        // 2. Four app keyboard handlers are registered: two on document and
+        //    two on persistent UI elements.
         assert.strictEqual(
-          afterFirstInit,
-          2,
-          `Expected exactly 2 keydown listeners on document, got ${afterFirstInit}`
+          afterLoginInit,
+          4,
+          `Expected exactly 4 app keydown listeners after login, got ${afterLoginInit}`
         );
 
         console.log(
-          `PASS: init() called twice; keydown listeners stayed at ${afterSecondInit} (expected 2)`
+          `PASS: auth-required init then re-init kept ${afterRepeatInit} keydown listeners (expected 4)`
         );
       });
     })

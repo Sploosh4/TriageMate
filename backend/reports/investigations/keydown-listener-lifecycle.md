@@ -1,6 +1,6 @@
 # FE-MED-5: Keydown Listener Accumulation Investigation
 
-**Status:** Reproduced — accumulation confirmed under auth-enabled flow
+**Status:** Corrected — the reported accumulation was not reproducible in the actual auth lifecycle
 
 **Date:** 2026-07-14
 
@@ -10,9 +10,15 @@
 
 ## Executive Summary
 
-Keydown event listeners **do accumulate** when authentication is enabled and the user logs in. The root cause is `auth.js:_handleLogin()` calling `init()` after successful authentication, which re-executes `wireEventListeners()` without removing previously registered listeners. All listeners in `wireEventListeners()` use anonymous functions, making them unreachable for removal.
+The original report incorrectly treated the post-login `init()` call as a second
+listener registration. In the real auth-required flow, the initial call returns
+before `wireEventListeners()` because no user is authenticated. The post-login
+call is therefore the first registration. Logout reloads the page, clearing the
+DOM and its listeners.
 
-In the default (auth-disabled) flow, listeners are registered exactly once and do not leak.
+The `_eventListenersWired` guard remains a safe defence-in-depth measure. A
+tracked JSDOM regression test now verifies the unauthenticated → post-login →
+re-init sequence and all four app keydown handlers.
 
 ---
 
@@ -79,10 +85,10 @@ Called when switching between screens (queue, case, review, drift, admin).
   - On re-init after successful login, `initAuth()` sees `isAuthenticated() === true` and skips `_wireLoginUI()`.
   - **These 2 keydown listeners do NOT accumulate** on re-init.
 
-- `_handleLogin()` (line 152): **Root cause of accumulation** — after successful login, calls `init()` on line 173.
-  - `init()` calls `wireEventListeners()` on line 94.
-  - All listeners in `wireEventListeners()` are re-registered without removal.
-  - On every subsequent login (e.g., token expiry → re-login), duplication compounds.
+- `_handleLogin()` calls `init()` after successful login. This is not a second
+  app-listener registration: the initial unauthenticated `init()` returned
+  before reaching `wireEventListeners()`. Logout reloads the document, so a
+  later login also starts from a clean listener set.
 
 ---
 
@@ -99,7 +105,7 @@ All listeners registered exactly once.
 DOMContentLoaded → init() → initAuth() → authenticated → wireEventListeners()      [1 registration]
 ```
 
-### Flow C: Auth enabled, user logs in — LEAK (2x duplication)
+### Flow C: Auth enabled, user logs in — NO accumulation
 ```
 DOMContentLoaded → init() → initAuth() → NOT authenticated
   → _wireLoginUI() (2 keydown listeners on login form)
@@ -110,32 +116,27 @@ DOMContentLoaded → init() → initAuth() → NOT authenticated
   _handleLogin() → login successful → init()
   → initAuth() → IS authenticated now → proceeds
   → wireEventListeners()                                ← [1st registration]
-    ALL 28 listeners registered (including 4 keydown)
+    ALL 28 listeners registered (including 4 keydown)  [first registration]
 
   User navigates to review/drift/admin →
     navigateToScreen() → no wireEventListeners           [no further leak from navigation]
 
-  // If user logs out and re-logs in:
-  _handleLogin() → init() → wireEventListeners()         ← [2nd registration]
-    SAME 28 listeners registered AGAIN on SAME elements
-    → 8 keydown listeners now on document/elements
-    → 56 total listeners instead of 28
+  Logout → location.reload() → new document
+  // A subsequent login starts with a fresh DOM and no old listeners.
 ```
 
-### Demonstrable Impact
+### Result
 
-On each re-authentication cycle:
-- `document` keydown listeners: 2 → 4 → 6 → 8 (compounds)
-- `#queue-body` keydown listeners: 1 → 2 → 3 → 4 (compounds)
-- `#metric-boxes-row` keydown listeners: 1 → 2 → 3 → 4 (compounds)
-- All other listeners compound similarly
-- **Potential double-firing**: Ctrl+S in case view would call `notes-save-btn.click()` twice per keypress, potentially submitting duplicate note saves.
+No production listener accumulation was reproduced. The guard nevertheless
+makes a future in-place re-initialisation safe, and the regression test asserts
+that it cannot duplicate the four keydown handlers.
 
 ---
 
 ## Proposed Fix
 
-**Decision:** The accumulation is confirmed. Fix is warranted.
+**Decision:** No production defect was confirmed. Retain the guard as a small,
+low-risk defence against future in-place re-initialisation.
 
 **Approach:** Add a guard in `init()` to prevent `wireEventListeners()` from being called more than once.
 
@@ -164,7 +165,9 @@ async function init() {
 
 **Alternative approach** (more thorough but riskier for a bugfix): Refactor `wireEventListeners()` to use named functions and call `removeEventListener` before adding — matching the pattern used in `reviewQueue.js`. This is more complex and touches 28 listener registrations.
 
-**Recommended approach:** The guard flag — minimal change, zero risk of breaking existing behavior, and solves the accumulation. The data-fetching in `init()` should still run on re-init (so the queue refreshes after login), which the proposed fix preserves.
+**Recommended approach:** The guard flag is minimal, preserves queue refreshes,
+and protects against a future code path that re-runs `init()` after listeners
+have already been wired.
 
 ---
 
@@ -179,10 +182,9 @@ async function init() {
 To verify the fix:
 1. Enable auth on the backend (`auth_required: true` in health response)
 2. Clear localStorage tokens
-3. Load the app → login modal appears
+3. Load the app → login modal appears and app listeners are not yet wired
 4. Log in → observe `wireEventListeners()` called once
-5. Navigate to review, drift, admin screens
-6. Log out (via console: `logout()`), log in again
-7. Verify keydown listeners on `document` remain at 2 (not 4+)
+5. Verify four app keydown handlers exist (two document-level, two element-level)
+6. Re-run `init()` only in a controlled test and verify the count stays at four
 
 Without auth enabled, the current code is already clean (single registration).

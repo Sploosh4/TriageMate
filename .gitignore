@@ -60,3 +60,9 @@ backend/reports/audits/
 backend/reports/intel/
 backend/reports/stress/
 backend/reports/seed-data-ml-dimension.md
+
+# Historical local bookkeeping reports that predate the tracked-report policy.
+backend/reports/bookkeeping/2026-07-13-*.md
+backend/reports/bookkeeping/closed-issues-audit.md
+backend/reports/bookkeeping/sprint-26-*.md
+backend/reports/bookkeeping/sprint26b-*.md
