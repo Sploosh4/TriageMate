@@ -12,6 +12,8 @@ import pytest
 
 from pipeline.config.feature_names import TABULAR_FEATURE_ORDER
 
+pytestmark = pytest.mark.artifact
+
 NPZ_PATH = Path(__file__).resolve().parent.parent / "ml" / "training_data.npz"
 
 

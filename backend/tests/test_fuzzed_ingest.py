@@ -15,6 +15,8 @@ from unittest.mock import patch, AsyncMock
 
 from models import IngestRequest
 
+pytestmark = pytest.mark.fuzz
+
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
 # ── Mock responses for network-dependent pipeline functions ─────────────

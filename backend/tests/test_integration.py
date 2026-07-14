@@ -10,6 +10,7 @@ from httpx import ASGITransport, AsyncClient
 from main import app
 
 
+@pytest.mark.integration
 @pytest.mark.asyncio
 async def test_full_pipeline_ingest():
     """Test the full ingest pipeline end-to-end."""
