@@ -53,8 +53,12 @@ NVD_API_KEY = os.getenv("NVD_API_KEY", "")
 
 DATE_START = "2019-01-01"
 DATE_END = "2024-12-31"
-TRAIN_CUTOFF = "2023-06-30"
-VAL_CUTOFF = "2023-12-31"
+# Primary evaluation cohorts must end before the observation cutoff.  With
+# DATE_END fixed at 2024-12-31 and the observed KEV lag, 2022 is the latest
+# complete calendar-year holdout with reliable negatives.  Newer records are
+# retained only as a prospective cohort, never as primary evaluation data.
+TRAIN_CUTOFF = "2020-12-31"
+VAL_CUTOFF = "2021-12-31"
 DEFAULT_OBS_WINDOW_DAYS = 227  # median KEV lag, fallback if unable to compute
 BATCH_SIZE = 200
 SLEEP_INTERVAL = 6.2
@@ -1019,11 +1023,8 @@ def phase_gather() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     dates_arr = np.array([c["published_date"] for c in cves])
     cve_ids_arr = np.array([c["cve_id"] for c in cves])
 
-    # ── KEV Temporal Bias: Dynamic Observation Window ─────────────────────
+    # ── KEV Temporal Bias: Point-in-Time Split Policy ─────────────────────
     # Compute median KEV addition lag from our CVE set (point-in-time).
-    # Use this as the observation window: CVEs published within this many
-    # days before DATE_END cannot be reliably labeled negative, because KEV
-    # likely hasn't catalogued exploitation yet.
     kev_lag_stats = compute_kev_lag_stats(cves, kev)
     obs_window_days = kev_lag_stats["median"]
     obs_cutoff = datetime.strptime(DATE_END, "%Y-%m-%d") - timedelta(
@@ -1031,34 +1032,74 @@ def phase_gather() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     )
     obs_cutoff_str = obs_cutoff.strftime("%Y-%m-%d")
 
-    # Selective exclusion: remove only label-0 CVEs in the observation window.
-    # Label-1 CVEs (rapid exploitation cases with dateAdded before cutoff) are
-    # kept — they are genuine positives with reliable labels.
-    too_recent = dates_arr > obs_cutoff_str
-    obs_mask = ~(too_recent & (y_arr == 0))
-    obs_dropped = int(sum(~obs_mask))
-    obs_neg_dropped = int(sum(too_recent & (y_arr == 0)))
-    obs_pos_kept_in_window = int(sum(too_recent & (y_arr > 0)))
-    obs_kept = int(sum(obs_mask))
+    # The chronological split is applied FIRST (inside apply_point_in_time_split),
+    # THEN the eligibility filter removes censored negatives uniformly from all splits.
+    # This fixes the degenerate val/test issue where all negatives were stripped
+    # before the split (see backend/reports/investigations/mid-2023-data-drop.md).
+    from ml.split_policy import apply_point_in_time_split
+
+    split_result = apply_point_in_time_split(
+        dates=dates_arr,
+        labels=y_arr,
+        kev_dates=np.array([kev.get(c, "") for c in cve_ids_arr]),
+        obs_window_days=obs_window_days,
+        date_end=DATE_END,
+        train_cutoff=TRAIN_CUTOFF,
+        val_cutoff=VAL_CUTOFF,
+    )
+    primary = split_result["primary_mask"]
+    censored = split_result["censored_mask"]
+    prospective = split_result["prospective_mask"]
+
+    censored_count = int(np.sum(censored))
+
     print(
         f"  KEV observation window: {obs_window_days} days "
         f"(median lag from {kev_lag_stats['count']} KEV entries)"
     )
     print(
-        f"  Excluding {obs_dropped:,} unreliable negatives "
-        f"(all {obs_neg_dropped} label-0 CVEs published after {obs_cutoff_str}). "
-        f"Keeping {obs_pos_kept_in_window:,} rapid-exploitation positives in window."
+        f"  Censored negatives: {censored_count:,} "
+        f"(label-0 CVEs published after {obs_cutoff_str}). "
+        f"These are excluded from ALL splits uniformly."
     )
-    print(f"  Keeping {obs_kept:,} CVEs ({obs_kept / len(X):.1%} of pre-filter).")
-    X = X[obs_mask]
-    y_arr = y_arr[obs_mask]
-    dates_arr = dates_arr[obs_mask]
-    cve_ids_arr = cve_ids_arr[obs_mask]
-    cves = [c for c, m in zip(cves, obs_mask) if m]
+    print(
+        f"  Primary cohort: {int(np.sum(primary)):,} CVEs "
+        f"({int(np.sum(primary)) / len(X):.1%} of pre-filter)."
+    )
+    print(
+        f"  Prospective cohort: {int(np.sum(prospective)):,} CVEs "
+        "(newer than the observation cutoff; excluded from primary metrics)."
+    )
+
+    for split_name, split_mask in (
+        ("Train", split_result["train_mask"]),
+        ("Val", split_result["val_mask"]),
+        ("Test", split_result["test_mask"]),
+    ):
+        split_labels = y_arr[split_mask]
+        split_total = int(np.sum(split_mask))
+        split_positive = int(np.sum(split_labels > 0))
+        if split_total == 0 or split_positive == 0 or split_positive == split_total:
+            raise RuntimeError(
+                f"{split_name} primary cohort is degenerate: "
+                f"{split_total} records, {split_positive} KEV-positive. "
+                "Adjust primary split boundaries before training."
+            )
+        print(
+            f"  {split_name} set: {split_total:,} records, "
+            f"{split_positive:,} KEV-positive ({split_positive / split_total:.2%})"
+        )
+
+    X = X[primary]
+    y_arr = y_arr[primary]
+    dates_arr = dates_arr[primary]
+    cve_ids_arr = cve_ids_arr[primary]
+    cves = [c for c, m in zip(cves, primary) if m]
 
     obs_pos = int(sum(y_arr > 0))
     print(
-        f"  Final positive rate (any KEV): {obs_pos}/{obs_kept} ({obs_pos / obs_kept:.1%})"
+        f"  Final positive rate (any KEV): {obs_pos}/{int(np.sum(primary))} "
+        f"({obs_pos / int(np.sum(primary)):.1%})"
     )
 
     # SAVE POINT 2: training data (X, y, dates, cve_ids)
@@ -1085,6 +1126,7 @@ def phase_train(X: np.ndarray, y: np.ndarray, dates: np.ndarray):
         val_mask = (dates > TRAIN_CUTOFF) & (dates <= VAL_CUTOFF)
         test_mask = dates > VAL_CUTOFF
         print("  Using chronological split")
+
     else:
         n = len(X)
         indices = np.random.permutation(n)
