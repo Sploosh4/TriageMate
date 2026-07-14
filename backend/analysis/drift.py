@@ -18,11 +18,20 @@ from pipeline.config.thresholds import DRIFT_WARNING_PSI, DRIFT_CRITICAL_PSI
 logger = logging.getLogger("triagemate.drift")
 
 # ── Drift webhook configuration ─────────────────────────────────────────────
+# TRIAGEMATE_DRIFT_WEBHOOK_URL is read lazily inside send_drift_webhook()
+# so tests can patch os.environ without re-importing the module.  The module-level
+# constant DRIFT_WEBHOOK_URL is maintained for backward compatibility but will be
+# removed in a future sprint.
 DRIFT_WEBHOOK_URL = os.getenv("TRIAGEMATE_DRIFT_WEBHOOK_URL", "")
 
 # Rate limiting: suppress duplicate notifications within 6 hours per model
 _last_webhook: dict[str, datetime] = {}
 _WEBHOOK_SUPPRESSION_HOURS = 6
+
+
+def _get_webhook_url() -> str:
+    """Return the configured webhook URL, reading from env lazily."""
+    return os.getenv("TRIAGEMATE_DRIFT_WEBHOOK_URL", "")
 
 
 async def send_drift_webhook(
@@ -36,7 +45,8 @@ async def send_drift_webhook(
     Returns True if webhook was sent, False if suppressed or no URL configured.
     Rate-limited: same model + same severity level suppressed for 6 hours.
     """
-    if not DRIFT_WEBHOOK_URL:
+    webhook_url = _get_webhook_url()
+    if not webhook_url:
         return False
 
     # Rate limiting suppression
@@ -68,7 +78,7 @@ async def send_drift_webhook(
         import httpx
 
         async with httpx.AsyncClient(timeout=10.0) as client:
-            resp = await client.post(DRIFT_WEBHOOK_URL, json=payload)
+            resp = await client.post(webhook_url, json=payload)
             resp.raise_for_status()
 
         _last_webhook[key] = now

@@ -179,3 +179,35 @@ async def client():
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac
+
+
+@pytest.fixture
+def isolated_registry(monkeypatch, tmp_path):
+    """Redirect all model registry paths to a temp copy for test isolation.
+
+    Copies the real ``model_registry.json`` to a ``tmp_path``-backed location
+    and patches ``routers.models.REGISTRY_PATH``, ``scheduler.XGBOOST_REGISTRY``,
+    and ``ml.xgboost_predictor.REGISTRY_PATH`` so API calls and direct file
+    access both use the isolated copy.
+    """
+    import shutil
+    from pathlib import Path
+
+    import routers.models
+    import scheduler
+    import ml.xgboost_predictor
+
+    _backend_dir = Path(__file__).resolve().parent.parent
+    real_reg = _backend_dir / "ml" / "model_registry.json"
+    temp_reg = tmp_path / "model_registry.json"
+    if real_reg.exists():
+        shutil.copy2(str(real_reg), str(temp_reg))
+    else:
+        # Write a minimal empty registry so downstream code doesn't break
+        temp_reg.write_text('{"active_version": null, "versions": []}')
+
+    monkeypatch.setattr(routers.models, "REGISTRY_PATH", temp_reg)
+    monkeypatch.setattr(scheduler, "XGBOOST_REGISTRY", temp_reg)
+    monkeypatch.setattr(ml.xgboost_predictor, "REGISTRY_PATH", temp_reg)
+
+    return temp_reg

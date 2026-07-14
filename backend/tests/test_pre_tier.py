@@ -7,9 +7,13 @@ Tests cover:
   - ML fallback path (mocked model data)
   - Default fallback when both KNOWN_TAGS and ML fail
   - Confidence values are always in [0, 1]
+
+Uses ``unittest.mock.patch.object`` instead of direct module-level state
+assignment (``pt._model_data = None``) to avoid shared-state races when
+tests are run in parallel.
 """
 
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pytest
@@ -19,6 +23,8 @@ from pipeline.pre_tier import (
     DEFAULT_RESPONSE,
     predict_mission_tags,
 )
+
+import pipeline.pre_tier as pt  # noqa: E402 — used by mock targets
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
@@ -51,30 +57,6 @@ def _assert_valid_response(result: dict):
         f"public_wellbeing_confidence {result['public_wellbeing_confidence']} "
         f"outside [0, 1]"
     )
-
-
-def _force_model_unavailable():
-    """Reset the lazy-loaded model state so ML path returns None."""
-    import pipeline.pre_tier as pt
-
-    pt._model_data = None
-    pt._model_attempted = True
-
-
-def _force_model_available():
-    """Reset the lazy-load flag so the real model can be loaded."""
-    import pipeline.pre_tier as pt
-
-    pt._model_data = None
-    pt._model_attempted = False
-
-
-def _set_mock_model(mock_data: dict):
-    """Inject a mock model dict directly into the module's lazy cache."""
-    import pipeline.pre_tier as pt
-
-    pt._model_data = mock_data
-    pt._model_attempted = True
 
 
 # ── Tests ────────────────────────────────────────────────────────────────────
@@ -118,15 +100,20 @@ class TestPredictMissionTagsResponseShape:
 
 
 class TestDefaultFallback:
-    """Phase 3 fallback when both KNOWN_TAGS and ML fail."""
+    """Phase 3 fallback when both KNOWN_TAGS and ML fail.
 
-    def setup_method(self):
-        """Force model unavailable before each default-fallback test."""
-        _force_model_unavailable()
+    Uses ``mock.patch.object`` to simulate an unavailable model without
+    mutating module-level state (avoids shared-state races).
+    """
 
-    def teardown_method(self):
-        """Restore model loading after default-fallback test."""
-        _force_model_available()
+    @pytest.fixture(autouse=True)
+    def _force_model_unavailable(self):
+        """Force the model to appear unavailable for every test in this class."""
+        with (
+            patch.object(pt, "_model_data", None),
+            patch.object(pt, "_model_attempted", True),
+        ):
+            yield
 
     def test_unknown_host_returns_default_when_model_unavailable(self):
         """Unknown host with no model loaded returns Support/Minimal @ 0.60."""
@@ -145,18 +132,11 @@ class TestDefaultFallback:
 
 
 class TestMLFallback:
-    """Phase 2 ML model path (mocked)."""
+    """Phase 2 ML model path (mocked).
 
-    def setup_method(self):
-        """Clean model state before each ML test."""
-        _force_model_available()
-
-    def teardown_method(self):
-        """Restore model loading after ML test."""
-        import pipeline.pre_tier as pt
-
-        pt._model_data = None
-        pt._model_attempted = False
+    Uses ``mock.patch.object`` to inject a mock model without mutating
+    module-level state (avoids shared-state races).
+    """
 
     def test_ml_model_returns_correct_structure(self):
         """Mock a successful model prediction and verify the return structure."""
@@ -181,16 +161,21 @@ class TestMLFallback:
             },
             "n_features": 60,
         }
-        _set_mock_model(mock_data)
 
-        result = predict_mission_tags("per-PRD-UNKNOWN-HOST01.health.wa.gov.au")
-        _assert_valid_response(result)
+        with (
+            patch.object(pt, "_model_data", mock_data),
+            patch.object(pt, "_model_attempted", True),
+        ):
+            result = predict_mission_tags("per-PRD-UNKNOWN-HOST01.health.wa.gov.au")
+            _assert_valid_response(result)
 
-        # Ensure the model was used (not KNOWN_TAGS nor default)
-        assert result["mission_prevalence"] == "Support"
-        assert result["mission_prevalence_confidence"] == pytest.approx(0.8, abs=1e-4)
-        assert result["public_wellbeing_impact"] == "Severe"
-        assert result["public_wellbeing_confidence"] == pytest.approx(0.8, abs=1e-4)
+            # Ensure the model was used (not KNOWN_TAGS nor default)
+            assert result["mission_prevalence"] == "Support"
+            assert result["mission_prevalence_confidence"] == pytest.approx(
+                0.8, abs=1e-4
+            )
+            assert result["public_wellbeing_impact"] == "Severe"
+            assert result["public_wellbeing_confidence"] == pytest.approx(0.8, abs=1e-4)
 
     def test_ml_model_fallback_on_prediction_failure(self):
         """When ML model raises during predict(), fall back to default."""
@@ -204,10 +189,13 @@ class TestMLFallback:
                 "wellbeing": ["Minimal", "Moderate", "Severe"],
             },
         }
-        _set_mock_model(mock_data)
 
-        result = predict_mission_tags("per-PRD-UNKNOWN-HOST01.health.wa.gov.au")
-        assert result == DEFAULT_RESPONSE
+        with (
+            patch.object(pt, "_model_data", mock_data),
+            patch.object(pt, "_model_attempted", True),
+        ):
+            result = predict_mission_tags("per-PRD-UNKNOWN-HOST01.health.wa.gov.au")
+            assert result == DEFAULT_RESPONSE
 
 
 class TestKnownTagsContents:

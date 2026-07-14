@@ -64,8 +64,27 @@ class TestReviewQueueEndpoint:
         )
 
 
+@pytest.mark.xdist_group(name="serial-db")
 class TestFlagForReviewEndpoint:
-    """POST /api/review/flag/{case_id} tests."""
+    """POST /api/review/flag/{case_id} tests.
+
+    Uses an autouse fixture to reset ``flagged_for_review`` and clear
+    ``review_history`` before each test, preventing shared-state side
+    effects from earlier tests in this class.
+    """
+
+    @pytest.fixture(autouse=True)
+    async def _reset_review_state(self):
+        """Reset flagged_for_review and clear review_history before each test."""
+        from database import get_db
+
+        db = get_db()
+        try:
+            db.execute("UPDATE vulnerabilities SET flagged_for_review = 0")
+            db.execute("DELETE FROM reviews")
+            db.commit()
+        finally:
+            db.close()
 
     async def _get_first_case_id(self, client) -> int:
         """Helper: get the first case ID from the queue."""
@@ -95,6 +114,7 @@ class TestFlagForReviewEndpoint:
         assert response.status_code == 404
 
 
+@pytest.mark.xdist_group(name="serial-db")
 class TestSubmitReviewEndpoint:
     """POST /api/case/{case_id}/review tests."""
 
@@ -146,6 +166,7 @@ class TestSubmitReviewEndpoint:
         assert response.status_code == 404
 
 
+@pytest.mark.xdist_group(name="serial-db")
 class TestCaseHistoryEndpoint:
     """GET /api/case/{case_id}/history tests.
 

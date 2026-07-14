@@ -6,6 +6,9 @@ Covers:
   - Drift polling structure
   - Retrain status endpoint
   - No-drift no-action behavior
+
+Uses ``tmp_path``-based lock file isolation and ``unittest.mock.patch``
+to avoid shared-state races with parallel test execution.
 """
 
 import json
@@ -17,8 +20,23 @@ from unittest.mock import patch, MagicMock, AsyncMock
 import pytest
 
 
+# ── Fixture: isolate lock file to tmp_path ─────────────────────────────
+
+
+@pytest.fixture
+def _isolated_lock(monkeypatch, tmp_path):
+    """Redirect ``scheduler.LOCK_FILE`` to a ``tmp_path``-backed location."""
+    import scheduler
+
+    monkeypatch.setattr(scheduler, "LOCK_FILE", tmp_path / ".retrain.lock")
+
+
 class TestRetrainLockMechanism:
     """Verify lock file prevents concurrent retrains."""
+
+    @pytest.fixture(autouse=True)
+    def _use_isolated_lock(self, _isolated_lock):
+        pass
 
     def test_retrain_lock_acquire_release(self):
         """Lock file is created on acquire and removed on release."""
