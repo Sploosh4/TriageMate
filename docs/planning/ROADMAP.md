@@ -11,7 +11,7 @@
 | Metric | Value |
 |---|---|
 | Tests | GitHub Actions test matrix passing on `main`; local Sprint 30 finalization: 498 passed, 1 skipped |
-| Open remediation work | Issue #64: baseline pending Gate B authorization; Issue #67: PostgreSQL compatibility; Issue #79: automatic-retraining opt-in guard |
+| Open remediation work | #64 Gate B baseline decision; #67 PostgreSQL compatibility; #79 automatic-retraining guard; #81 CI benchmark/action maintenance |
 | Sprints completed | 17 through **28**; Sprint 29 implementation complete with its baseline decision still open |
 | Current sprint | **Sprint 30 — Repository Reconciliation and Gate A Finalization** 🟡 Finalizing |
 | Pipeline stages | Pre-Tier → Tier 0 → Tier 1 → Tier 2 → Tier 3 (Human Review) |
