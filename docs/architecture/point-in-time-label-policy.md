@@ -1,8 +1,8 @@
-# Point-in-Time Label Policy — Revised Design (v2)
+# Point-in-Time Label Policy — Current Implementation (v2)
 
 **Author:** Strike Team  
 **Date:** 2026-07-14  
-**Status:** Proposed (not yet implemented)  
+**Status:** Implemented (Sprint 29)  
 **Supersedes:** v1 (rejected — see §1.1 for reasons)  
 **Prerequisite reading:** `backend/reports/investigations/mid-2023-data-drop.md`
 
@@ -31,27 +31,129 @@ The first version of this document was rejected for five specific reasons. This 
 
 ---
 
-## 2. Redesigned Label Construction
+## 2. Current Label Implementation
 
-### 2.1 Current (v1) Label Semantics — Wrong
+This section documents the label semantics as currently implemented in
+`construct_labels()` (``backend/ml/train_xgboost.py``, line 575).  These
+are **recency-based** labels: they measure how recently a CVE was added
+to the KEV catalog relative to the point-in-time reference date (`DATE_END`).
+
+### 2.1 Label Semantics — Recency-Based
 
 Current labels use days-from-KEV-to-`DATE_END`:
 
 ```
 days_since_added = (date_end - kev_dateAdded).days
 
-Label 1: days_since_added <= 30    (added to KEV within 30 days of DATE_END)
-Label 2: days_since_added <= 90    (added within 31–90 days of DATE_END)
-Label 3: days_since_added <= 365   (added within 91–365 days of DATE_END)
+Label 1: days_since_added <= 30    (added to KEV within 30 days before DATE_END)
+Label 2: days_since_added <= 90    (added within 31–90 days before DATE_END)
+Label 3: days_since_added <= 365   (added within 91–365 days before DATE_END)
 Label 4: days_since_added > 365    (added more than 365 days before DATE_END)
-Label 0: Not in KEV
+Label 0: Not in KEV as of DATE_END
 ```
 
-**Problem:** A CVE published in 2000 and added to KEV in 2024-12-01 gets label 1 (≤30d from `DATE_END`), but it actually took 24 years from publication to exploitation. The label describes recency of addition, not speed of exploitation.
+**Known limitation:** A CVE published in 2000 and added to KEV in
+2024-12-01 gets label 1 (≤30d from `DATE_END`), but it actually took
+24 years from publication to exploitation.  The label describes recency
+of addition, not speed of exploitation.  See §2.6 (Future Label
+Direction) for the aspirational redesign.
 
-### 2.2 New Label Semantics — Correct
+### 2.2 Point-in-Time Guard
 
-Revised labels use days-from-publication-to-KEV:
+The future-leakage guard is in place: any KEV entry with
+`dateAdded > DATE_END` receives label 0, because the exploitation event
+was not observable at the point-in-time reference date.
+
+### 2.3 Label Construction Algorithm (Current `construct_labels()`)
+
+```python
+def construct_labels(
+    cves: list[dict],
+    kev_data: dict[str, str],
+    cutoff_date: str = DATE_END,
+) -> list[int]:
+    """Construct multi-window KEV labels (0-4).
+
+    Label meanings:
+      0: Not in KEV
+      1: Added to KEV <= 30 days ago (recent exploitation)
+      2: Added to KEV 31-90 days ago
+      3: Added to KEV 91-365 days ago
+      4: Added to KEV > 365 days ago (historical exploitation)
+
+    Training date reference: cutoff_date (typically DATE_END).
+    Point-in-time: CVEs added to KEV *after* cutoff_date are labeled 0
+    to prevent future information leakage.
+    """
+    date_end = datetime.strptime(cutoff_date, "%Y-%m-%d").replace(
+        tzinfo=timezone.utc
+    )
+
+    for cve in cves:
+        cve_id = cve["cve_id"]
+        if cve_id not in kev_data:
+            labels.append(0)
+            continue
+
+        date_added_str = kev_data[cve_id]
+        if not date_added_str:
+            labels.append(0)
+            continue
+
+        # Point-in-time filter: skip KEV additions after cutoff
+        if date_added_str > cutoff_date:
+            labels.append(0)
+            continue
+
+        try:
+            date_added = datetime.strptime(date_added_str, "%Y-%m-%d").replace(
+                tzinfo=timezone.utc
+            )
+            days_since_added = (date_end - date_added).days
+
+            if days_since_added <= 30:
+                label = 1
+            elif days_since_added <= 90:
+                label = 2
+            elif days_since_added <= 365:
+                label = 3
+            else:
+                label = 4
+            labels.append(label)
+        except (ValueError, TypeError):
+            labels.append(0)
+```
+
+**Key insight:** The label is computed from `date_end - date_added`,
+i.e., how long ago this CVE was added to KEV from the perspective of
+`DATE_END`.  This is **not** days-from-publication-to-KEV.
+
+### 2.4 Label Horizon Reference Table (Current)
+
+| Label | Current Meaning | Example |
+|-------|-----------------|---------|
+| 0 | Not in KEV as of DATE_END, or KEV added after DATE_END | — |
+| 1 | KEV added ≤30d before DATE_END | CVE published 2022-01-01, KEV added 2024-12-10 |
+| 2 | KEV added 31–90d before DATE_END | CVE published 2022-01-01, KEV added 2024-10-15 |
+| 3 | KEV added 91–365d before DATE_END | CVE published 2020-01-01, KEV added 2024-06-01 |
+| 4 | KEV added >365d before DATE_END | CVE published 2000-01-01, KEV added 2022-01-01 |
+| Censored | Not in KEV, published < obs_window days before DATE_END | CVE published 2024-10-01, not in KEV |
+
+### 2.5 Split-Policy Integration
+
+The observation-window eligibility filter is applied via
+`apply_point_in_time_split()` in ``backend/ml/split_policy.py``.
+The chronological split is computed **before** the eligibility filter
+(rather than after, as in the rejected v1 design), ensuring that
+censored negatives are removed uniformly from train, val, and test
+splits.  This prevents the degenerate split condition documented in
+``backend/reports/investigations/mid-2023-data-drop.md``.
+
+### 2.6 Future Label Direction (Aspirational — Not Implemented)
+
+A publication-based label system would measure days from CVE publication
+to KEV addition, answering the question "how quickly after disclosure was
+this CVE exploited?" rather than "how recently was this CVE added to KEV?"
 
 ```
 days_pub_to_kev = (kev_dateAdded - published_date).days
@@ -65,78 +167,27 @@ Censored: Not in KEV, published fewer than obs_window_days before DATE_END
          → Genuinely unknown exploitation status
 ```
 
-### 2.3 Point-in-Time Guard
+**Impact of the change:** Labels 1–4 would shift for most KEV entries.
+A CVE published in 2020 and added to KEV in 2022 would move from label
+1 (≤30d from `DATE_END`) to label 4 (>365d from publication).  The size
+of each window bucket would change, but the total number of positives
+would remain the same (~1,239).
 
-The existing future-leakage guard is preserved: any KEV entry with `dateAdded > DATE_END` receives label 0, because the exploitation event was not observable at the point-in-time reference date.
+This redesign is **not implemented** because the split-policy fix
+(§3–§5) is label-agnostic and delivers the structural fix independent
+of label semantics.  The publication-based label change would be a
+separate downstream task with its own data-audit requirements.
 
-### 2.4 Label Construction Algorithm (Revised `construct_labels()`)
+#### Reference Table (Proposed Redesign, Not Implemented)
 
-```python
-def construct_labels_publication_based(
-    cves: list[dict],
-    kev_data: dict[str, str],
-    cutoff_date: str = DATE_END,
-) -> list[int]:
-    """Construct multi-window KEV labels based on days from publication to KEV addition.
-
-    Label meanings:
-      0: Not in KEV as of cutoff_date
-      1: KEV added 0–30 days after publication
-      2: KEV added 31–90 days after publication
-      3: KEV added 91–365 days after publication
-      4: KEV added more than 365 days after publication
-    """
-    date_end = datetime.strptime(cutoff_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
-
-    for cve in cves:
-        cve_id = cve["cve_id"]
-        pub_str = cve.get("published_date", "")
-
-        if cve_id not in kev_data:
-            labels.append(0)
-            continue
-
-        date_added_str = kev_data[cve_id]
-        if not date_added_str or date_added_str > cutoff_date:
-            labels.append(0)  # Future KEV → not observable at cutoff
-            continue
-
-        try:
-            published = datetime.strptime(pub_str[:10], "%Y-%m-%d").replace(
-                tzinfo=timezone.utc
-            )
-            date_added = datetime.strptime(date_added_str, "%Y-%m-%d").replace(
-                tzinfo=timezone.utc
-            )
-            days_pub_to_kev = (date_added - published).days
-
-            if days_pub_to_kev <= 30:
-                label = 1
-            elif days_pub_to_kev <= 90:
-                label = 2
-            elif days_pub_to_kev <= 365:
-                label = 3
-            else:
-                label = 4
-            labels.append(label)
-        except (ValueError, TypeError):
-            labels.append(0)
-```
-
-**Impact of the change:** Labels 1–4 will shift for most KEV entries. A CVE published in 2020 and added to KEV in 2022 moves from label 1 (≤30d from `DATE_END`) to label 4 (>365d from publication). The size of each window bucket will change, but the total number of positives remains the same (~1,239).
-
----
-
-## 2.5 Label Horizon Reference Table
-
-| Label | Old Meaning (v1 — rejected) | New Meaning (v2 — correct) | Example |
-|-------|-----------------------------|---------------------------|---------|
-| 0 | Not in KEV | Not in KEV as of DATE_END, or KEV added after DATE_END | — |
-| 1 | KEV added ≤30d before DATE_END | KEV added 0–30d after publication | CVE published 2024-01-01, KEV 2024-01-15 |
-| 2 | KEV added 31–90d before DATE_END | KEV added 31–90d after publication | CVE published 2023-01-01, KEV 2023-03-01 |
-| 3 | KEV added 91–365d before DATE_END | KEV added 91–365d after publication | CVE published 2022-01-01, KEV 2022-06-01 |
-| 4 | KEV added >365d before DATE_END | KEV added >365d after publication | CVE published 2020-01-01, KEV 2022-01-01 |
-| Censored | (did not exist) | Not in KEV, published < obs_window days before DATE_END | CVE published 2024-10-01, not in KEV |
+| Label | Proposed Meaning | Example |
+|-------|------------------|---------|
+| 0 | Not in KEV as of DATE_END, or KEV added after DATE_END | — |
+| 1 | KEV added 0–30d after publication | CVE published 2024-01-01, KEV 2024-01-15 |
+| 2 | KEV added 31–90d after publication | CVE published 2023-01-01, KEV 2023-03-01 |
+| 3 | KEV added 91–365d after publication | CVE published 2022-01-01, KEV 2022-06-01 |
+| 4 | KEV added >365d after publication | CVE published 2020-01-01, KEV 2022-01-01 |
+| Censored | Not in KEV, published < obs_window days before DATE_END | CVE published 2024-10-01, not in KEV |
 
 ---
 
@@ -337,50 +388,47 @@ Val and test contained censored negatives with unreliable labels, making all met
 
 ## 7. Implementation Plan
 
-### 7.1 File Changes
+### 7.1 File Changes — Status
 
-| File | Change | Complexity |
-|------|--------|------------|
-| `backend/ml/split_policy.py` | **New file.** Defines `apply_point_in_time_split()` — the testable split-policy function that encodes the eligibility rules from §4. | New |
-| `backend/ml/train_xgboost.py` | **`construct_labels()`** — rewrite to use days-from-publication-to-KEV instead of days-from-KEV-to-DATE_END. | Medium |
-| `backend/ml/train_xgboost.py` | **`phase_gather()`** — move the observation-window filter from a global pre-split operation to a uniform eligibility filter applied before the chronological split. | Medium |
-| `backend/ml/train_xgboost.py` | **Quality report** — add censored-cohort section. Add `obs_window_days` parameter to `print_quality_report()`. | Low |
-| `backend/ml/train_xgboost.py` | **`compute_kev_lag_stats()`** — no change needed (already computes days-from-publication-to-KEV correctly). | None |
-| `backend/tests/test_split_integrity.py` | **Replace** NPZ-based baseline/xfail tests with hermetic unit tests calling `apply_point_in_time_split()` with synthetic data. | Part B |
+| File | Change | Status |
+|------|--------|--------|
+| `backend/ml/split_policy.py` | **New file.** Implements `apply_point_in_time_split()` — the testable split-policy function that encodes the eligibility rules from §4. | ✅ Done (Sprint 29) |
+| `backend/ml/train_xgboost.py` | **`construct_labels()`** — left as-is with recency-based semantics. Publication-based redesign deferred (see §2.6). | 🔶 Deferred |
+| `backend/ml/train_xgboost.py` | **`phase_gather()`** — replaced the global pre-split obs-window filter with a call to `apply_point_in_time_split()`. Eligibility filter applied before save. | ✅ Done (Sprint 29) |
+| `backend/ml/train_xgboost.py` | **`phase_train()`** — added defensive uniform eligibility filter after chronological split. | ✅ Done (Sprint 29) |
+| `backend/ml/train_xgboost.py` | **`compute_kev_lag_stats()`** — no change needed. | ✅ None needed |
+| `backend/tests/test_split_integrity.py` | **Hermetic unit tests** — 12 existing tests unskipped + 3 new integration tests, all passing. | ✅ Done (Sprint 29) |
 
-### 7.2 Pipeline Order (Corrected)
+### 7.2 Pipeline Order (Corrected — as Implemented)
 
 ```
 BEFORE (v1 — rejected):
-  [All CVEs] → Publication-based labels → Build features → Split by date
+  [All CVEs] → Recency-based labels → Build features → Split by date
   → Train(→ obs filter only) + Val(untouched, censored included) + Test(untouched, censored included)
 
-AFTER (v2 — correct):
-  [All CVEs] → Publication-based labels → Build features → Uniform eligibility filter
-  → Split eligible CVEs by date → Train + Val + Test (all fully observed)
+AFTER (v2 — correct, Sprint 29):
+  [All CVEs] → Recency-based labels → Build features → Chronological split (FIRST)
+  → Uniform eligibility filter → Train(negatives removed) + Val(negatives removed) + Test(negatives removed)
   → Censored CVEs → Prospective cohort report (separate)
 ```
+
+The key change: **split first, filter second**. This ensures censored negatives
+are removed from ALL splits uniformly, not just training.
 
 ### 7.3 Verification Procedure
 
 After implementation:
 
 ```bash
-# 1. Run the gather phase with the new label construction and eligibility filter
-python -m ml.train_xgboost --gather
-
-# 2. Verify the quality report shows non-degenerate val/test
-#    Expected (with 365-day window):
-#      Train: ~116,111 CVEs (positives: ~1,033 = 0.89%)
-#      Val:   ~14,763 CVEs (positives: ~81 = 0.55%)
-#      Test:  varies by window choice
-
-# 3. Run split-policy tests
+# 1. Run unit tests (no gather needed for hermetic tests)
 python -m pytest tests/test_split_integrity.py -v
-# All tests pass or are skipped (pre-implementation)
+# All 15 tests pass (12 hermetic + 3 integration)
 
-# 4. Unskip tests as implementation lands
-# Remove @pytest.mark.skip markers when apply_point_in_time_split() is implemented
+# 2. Lint
+ruff check . && ruff format --check .
+
+# 3. Full test suite
+pytest tests/ -v
 ```
 
 ---

@@ -14,6 +14,7 @@ docs/architecture/point-in-time-label-policy.md (v2).
 """
 
 import numpy as np
+from datetime import datetime, timedelta
 
 
 def apply_point_in_time_split(
@@ -26,6 +27,12 @@ def apply_point_in_time_split(
     val_cutoff: str = "2023-12-31",
 ) -> dict[str, np.ndarray]:
     """Apply point-in-time label policy and chronological split.
+
+    The chronological split (train/val/test) is computed FIRST based on
+    publication dates, then the observation-window eligibility filter is
+    applied uniformly to ALL splits.  This ensures that censored negatives
+    are removed from every split identically, preventing degenerate
+    val/test sets that would otherwise be 100% positive.
 
     Every CVE is classified into exactly one of three categories:
 
@@ -55,12 +62,14 @@ def apply_point_in_time_split(
     dates : np.ndarray
         Publication dates as strings (``YYYY-MM-DD``).
     labels : np.ndarray
-        Multi-window KEV labels (0-4).  Labels 1-4 indicate days from
-        **publication** to KEV addition (not from KEV addition to date_end).
-        0 indicates not in KEV as of date_end.
+        Multi-window KEV labels (0-4).  Labels > 0 indicate KEV membership.
+        0 indicates not in KEV as of date_end.  Labels are recency-based
+        (days from KEV addition to date_end) per the current ``construct_labels()``
+        implementation.
     kev_dates : np.ndarray
         KEV addition dates as strings (``YYYY-MM-DD``), empty string if
-        not in KEV.
+        not in KEV.  (Used only for interface compatibility; ``labels``
+        is the authoritative source for KEV membership.)
     obs_window_days : int
         Observation window in days.  A non-KEV CVE must be published at
         least this many days before ``date_end`` to be considered a fully
@@ -96,14 +105,46 @@ def apply_point_in_time_split(
     The four primary masks (train, val, test, censored) are mutually
     exclusive and exhaustive.  ``is_fully_observed`` is a convenience
     alias for the union of train/val/test.
-
-    Raises
-    ------
-    NotImplementedError
-        This function documents the interface specification only.
-        Implementation is pending.
     """
-    raise NotImplementedError(
-        "Point-in-time split policy not yet implemented. "
-        "See docs/architecture/point-in-time-label-policy.md for design."
+    # 1. Parse reference date and compute observation cutoff
+    date_end_dt = datetime.strptime(date_end, "%Y-%m-%d")
+    obs_cutoff_dt = date_end_dt - timedelta(days=obs_window_days)
+    obs_cutoff_str = obs_cutoff_dt.strftime("%Y-%m-%d")
+
+    # 2. Chronological split FIRST (before any eligibility filtering)
+    train_mask = dates <= train_cutoff
+    val_mask = (dates > train_cutoff) & (dates <= val_cutoff)
+    test_mask = dates > val_cutoff
+
+    # 3. Eligibility filter: censored = label-0 AND published within obs window
+    # KEV positives (labels 1-4) are always fully observed regardless of publication date.
+    # Only label-0 CVEs that are too recent are considered censored.
+    too_recent = dates > obs_cutoff_str
+    is_positive = labels > 0
+    is_fully_observed_negative = ~too_recent & ~is_positive
+    is_censored = too_recent & ~is_positive
+
+    # 4. Eligible = all positives + fully observed negatives
+    eligible_mask = is_positive | is_fully_observed_negative
+
+    # 5. Censored CVEs are removed from ALL splits uniformly
+    train_mask = train_mask & eligible_mask
+    val_mask = val_mask & eligible_mask
+    test_mask = test_mask & eligible_mask
+
+    # 6. Verify masks are mutually exclusive
+    combined = (
+        train_mask.astype(int)
+        + val_mask.astype(int)
+        + test_mask.astype(int)
+        + is_censored.astype(int)
     )
+    assert np.all(combined <= 1), "Split masks overlap!"
+
+    return {
+        "train_mask": train_mask,
+        "val_mask": val_mask,
+        "test_mask": test_mask,
+        "censored_mask": is_censored,
+        "is_fully_observed": eligible_mask,
+    }

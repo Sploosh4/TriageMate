@@ -1019,11 +1019,8 @@ def phase_gather() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     dates_arr = np.array([c["published_date"] for c in cves])
     cve_ids_arr = np.array([c["cve_id"] for c in cves])
 
-    # ── KEV Temporal Bias: Dynamic Observation Window ─────────────────────
+    # ── KEV Temporal Bias: Point-in-Time Split Policy ─────────────────────
     # Compute median KEV addition lag from our CVE set (point-in-time).
-    # Use this as the observation window: CVEs published within this many
-    # days before DATE_END cannot be reliably labeled negative, because KEV
-    # likely hasn't catalogued exploitation yet.
     kev_lag_stats = compute_kev_lag_stats(cves, kev)
     obs_window_days = kev_lag_stats["median"]
     obs_cutoff = datetime.strptime(DATE_END, "%Y-%m-%d") - timedelta(
@@ -1031,34 +1028,50 @@ def phase_gather() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     )
     obs_cutoff_str = obs_cutoff.strftime("%Y-%m-%d")
 
-    # Selective exclusion: remove only label-0 CVEs in the observation window.
-    # Label-1 CVEs (rapid exploitation cases with dateAdded before cutoff) are
-    # kept — they are genuine positives with reliable labels.
-    too_recent = dates_arr > obs_cutoff_str
-    obs_mask = ~(too_recent & (y_arr == 0))
-    obs_dropped = int(sum(~obs_mask))
-    obs_neg_dropped = int(sum(too_recent & (y_arr == 0)))
-    obs_pos_kept_in_window = int(sum(too_recent & (y_arr > 0)))
-    obs_kept = int(sum(obs_mask))
+    # The chronological split is applied FIRST (inside apply_point_in_time_split),
+    # THEN the eligibility filter removes censored negatives uniformly from all splits.
+    # This fixes the degenerate val/test issue where all negatives were stripped
+    # before the split (see backend/reports/investigations/mid-2023-data-drop.md).
+    from ml.split_policy import apply_point_in_time_split
+
+    split_result = apply_point_in_time_split(
+        dates=dates_arr,
+        labels=y_arr,
+        kev_dates=np.array([kev.get(c, "") for c in cve_ids_arr]),
+        obs_window_days=obs_window_days,
+        date_end=DATE_END,
+        train_cutoff=TRAIN_CUTOFF,
+        val_cutoff=VAL_CUTOFF,
+    )
+    eligible = split_result["is_fully_observed"]
+    censored = split_result["censored_mask"]
+
+    censored_count = int(np.sum(censored))
+
     print(
         f"  KEV observation window: {obs_window_days} days "
         f"(median lag from {kev_lag_stats['count']} KEV entries)"
     )
     print(
-        f"  Excluding {obs_dropped:,} unreliable negatives "
-        f"(all {obs_neg_dropped} label-0 CVEs published after {obs_cutoff_str}). "
-        f"Keeping {obs_pos_kept_in_window:,} rapid-exploitation positives in window."
+        f"  Censored negatives: {censored_count:,} "
+        f"(label-0 CVEs published after {obs_cutoff_str}). "
+        f"These are excluded from ALL splits uniformly."
     )
-    print(f"  Keeping {obs_kept:,} CVEs ({obs_kept / len(X):.1%} of pre-filter).")
-    X = X[obs_mask]
-    y_arr = y_arr[obs_mask]
-    dates_arr = dates_arr[obs_mask]
-    cve_ids_arr = cve_ids_arr[obs_mask]
-    cves = [c for c, m in zip(cves, obs_mask) if m]
+    print(
+        f"  Eligible: {int(np.sum(eligible)):,} CVEs "
+        f"({int(np.sum(eligible)) / len(X):.1%} of pre-filter)."
+    )
+
+    X = X[eligible]
+    y_arr = y_arr[eligible]
+    dates_arr = dates_arr[eligible]
+    cve_ids_arr = cve_ids_arr[eligible]
+    cves = [c for c, m in zip(cves, eligible) if m]
 
     obs_pos = int(sum(y_arr > 0))
     print(
-        f"  Final positive rate (any KEV): {obs_pos}/{obs_kept} ({obs_pos / obs_kept:.1%})"
+        f"  Final positive rate (any KEV): {obs_pos}/{int(np.sum(eligible))} "
+        f"({obs_pos / int(np.sum(eligible)):.1%})"
     )
 
     # SAVE POINT 2: training data (X, y, dates, cve_ids)
@@ -1085,6 +1098,34 @@ def phase_train(X: np.ndarray, y: np.ndarray, dates: np.ndarray):
         val_mask = (dates > TRAIN_CUTOFF) & (dates <= VAL_CUTOFF)
         test_mask = dates > VAL_CUTOFF
         print("  Using chronological split")
+
+        # ── Defensive uniform eligibility filter ────────────────────────
+        # Re-apply the observation-window filter uniformly to all splits.
+        # This is a safety net: in normal operation the data was already
+        # filtered by phase_gather, but if old unfiltered training data is
+        # loaded, this ensures censored negatives are excluded from every
+        # split equally.
+        from datetime import timedelta
+
+        obs_cutoff = datetime.strptime(DATE_END, "%Y-%m-%d") - timedelta(
+            days=DEFAULT_OBS_WINDOW_DAYS
+        )
+        obs_cutoff_str = obs_cutoff.strftime("%Y-%m-%d")
+        too_recent = dates > obs_cutoff_str
+        censored_mask = too_recent & (y == 0)
+        n_censored = int(np.sum(censored_mask))
+        if n_censored > 0:
+            print(
+                f"  [Defensive] Censored negatives found in phase_train: "
+                f"{n_censored:,} (removing from all splits)"
+            )
+        else:
+            print(
+                "  [Defensive] No censored negatives in phase_train (data was pre-filtered)."
+            )
+        train_mask = train_mask & ~censored_mask
+        val_mask = val_mask & ~censored_mask
+        test_mask = test_mask & ~censored_mask
     else:
         n = len(X)
         indices = np.random.permutation(n)
