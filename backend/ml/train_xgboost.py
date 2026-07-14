@@ -1032,10 +1032,10 @@ def phase_gather() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     )
     obs_cutoff_str = obs_cutoff.strftime("%Y-%m-%d")
 
-    # The chronological split is applied FIRST (inside apply_point_in_time_split),
-    # THEN the eligibility filter removes censored negatives uniformly from all splits.
-    # This fixes the degenerate val/test issue where all negatives were stripped
-    # before the split (see backend/reports/investigations/mid-2023-data-drop.md).
+    # Build the mature primary cohort first, keeping newer records in the
+    # prospective cohort, then split the primary cohort chronologically. This
+    # fixes the degenerate val/test issue where recent negatives were removed
+    # while recent positives remained in evaluation splits.
     from ml.split_policy import apply_point_in_time_split
 
     split_result = apply_point_in_time_split(

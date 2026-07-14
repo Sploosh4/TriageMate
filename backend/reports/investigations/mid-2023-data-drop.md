@@ -2,7 +2,15 @@
 
 **Investigation date:** 2026-07-14
 **Investigator:** Strike Team (code-writing agent)
-**Status:** ✅ Root cause identified
+**Status:** HISTORICAL DIAGNOSIS — root cause confirmed; remediation superseded
+
+> **Resolution update (2026-07-14):** This report correctly diagnosed the
+> original positive-only validation/test split. Its proposed “Fix 1” was not
+> adopted. PR #68 instead implemented the mature primary/prospective cohort
+> policy in `docs/architecture/point-in-time-label-policy.md`. A post-policy
+> gather subsequently produced 69,223 train, 20,144 validation, and 26,766
+> test records with both classes in every split. ML Gate A passed; see
+> `ml-gate-a-2026-07-14.json`.
 
 ---
 

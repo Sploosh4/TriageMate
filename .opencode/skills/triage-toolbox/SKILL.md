@@ -63,7 +63,7 @@ just train-epss              # EPSS substitution v3
 just fetch-epss-data         # fetch EPSS training data
 just generate-hostnames      # supplemental hostnames for pre-tier (legacy)
 just train-epss-v4           # EPSS substitution v4 (sector-aware)
-just retrain-all             # retrain all ML models from scratch
+just retrain-all             # retrain Pre-Tier + EPSS v4 (not Tier-1 XGBoost)
 just ingest-docs             # LanceDB vector store ingestion
 ```
 

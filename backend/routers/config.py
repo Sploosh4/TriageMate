@@ -1,7 +1,7 @@
 """
 Read-only configuration endpoint.
 Exposes all TriageMate config values grouped by domain.
-No auth required — config values are not sensitive.
+Uses the project's environment-gated authentication dependency.
 """
 
 import json
