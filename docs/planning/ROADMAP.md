@@ -12,8 +12,8 @@
 |---|---|
 | Tests | 457 pass, 0 fail, 1 skipped |
 | Open bugs | 0 (AI_PROBLEMS.md is clean) |
-| Sprints completed | 17, 18, 19, 20, 21, 22, 23, **24**, **25**, **26**, **27** |
-| Current sprint | Sprint 28 (Evidence and ML Readiness) — 🏗️ In progress |
+| Sprints completed | 17, 18, 19, 20, 21, 22, 23, **24**, **25**, **26**, **27**, **28** |
+| Current sprint | Sprint 29 (TBD) — ⏳ Planned |
 | Pipeline stages | Pre-Tier → Tier 0 → Tier 1 → Tier 2 → Tier 3 (Human Review) |
 | Enrichment sources | 14 integrations (NVD, OSV, OTX, ExploitDB, Metasploit, Tenable, GreyNoise [deprecated], CMDB [stub], Advisories [stub], MITRE, CWE classifier, Demo generator, **Synthetic Telemetry**, **Network Context**) |
 | Demo rows | 7 CVEs, scores 99/97/74/91/82/97/80 (±3 tolerance) |
@@ -188,17 +188,17 @@
 
 ---
 
-## Sprint 28 — 🏗️ In Progress (Evidence and ML Readiness)
+## Sprint 28 — ✅ Complete (Evidence and ML Readiness)
 
-*See `.opencode/plans/2026-07-14-sprint-28.md` and GitHub Milestone #12 for full detail.*
+*Executed 14 July 2026. See `.opencode/plans/2026-07-14-sprint-28.md` and GitHub Milestone #12 for full detail.*
 
 | # | Item | Status | Description |
 |---|---|---|---|
-| **1** | **Phase 7.5 — Keydown Listener Investigation** | ✅ Complete | Listener accumulation confirmed under auth flow, guard flag added |
-| **2** | **Phase 7.6 — Scoring Weight Zero Decision** | 🏗️ In Progress | Product decision: zero not supported; documenting as intentional |
-| **3** | **Phase 8 — Evidence-Needed Investigation Pass** | 🏗️ In Progress | 23 items investigated; reports in `backend/reports/investigations/` |
-| **4** | **Documentation & Tracking Update** | 🏗️ In Progress | ROADMAP update, Sprint 27 recorded as complete |
-| **5** | **ML Retraining Decision Gate** | ⏳ Pending | Assessment in progress |
+| **1** | **Phase 7.5 — Keydown Listener Investigation** | ✅ Complete | Listener accumulation confirmed under auth flow, guard flag added, JSDOM regression test written |
+| **2** | **Phase 7.6 — Scoring Weight Zero Decision** | ✅ Complete | Zero NOT supported; minimum of 1 retained as intentional design; decision record at `docs/architecture/weight-zero-decision.md` |
+| **3** | **Phase 8 — Evidence-Needed Investigation Pass** | ✅ Complete | All 23 items investigated; 7 tracked reports in `backend/reports/investigations/` |
+| **4** | **Documentation & Tracking Update** | ✅ Complete | ROADMAP updated, Sprint 27 recorded complete, INDEX.md fixed, comparison doc marked OUTDATED |
+| **5** | **ML Retraining Decision Gate** | ✅ Complete | Decision: DO NOT RETRAIN — three blocking issues identified (degenerate val/test splits, binary-vs-multi-class registry mismatch, unreliable baseline metrics) |
 
 ---
 
