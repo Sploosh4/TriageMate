@@ -7,10 +7,11 @@ import json
 import logging
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
 
 from auth import get_current_user_if_enabled
+from middleware.rate_limit import limiter, RATE_LIMIT_ADMIN, RATE_LIMIT_DEFAULT
 
 # NOTE: We import the module (not its attrs) so that reload_weights() updates
 # are visible through scoring_cfg.SCORING_WEIGHTS / scoring_cfg.TOTAL_WEIGHT.
@@ -70,18 +71,21 @@ def _build_response() -> ScoringConfigResponse:
 
 
 @router.get("/api/admin/config/scoring", response_model=ScoringConfigResponse)
-def get_scoring_config(user=Depends(get_current_user_if_enabled)):
+@limiter.limit(RATE_LIMIT_DEFAULT)
+def get_scoring_config(request: Request, user=Depends(get_current_user_if_enabled)):
     """Return current scoring weights, defaults, and validation bounds."""
     return _build_response()
 
 
 @router.put("/api/admin/config/scoring", response_model=ScoringConfigResponse)
+@limiter.limit(RATE_LIMIT_ADMIN)
 def update_scoring_config(
-    request: WeightUpdateRequest,
+    body: WeightUpdateRequest,
+    request: Request,
     user=Depends(get_current_user_if_enabled),
 ):
     """Update scoring weights. Validates and saves to scoring_weights.json."""
-    weights = request.weights
+    weights = body.weights
 
     # Validate
     required = {
@@ -137,7 +141,8 @@ def update_scoring_config(
 
 
 @router.post("/api/admin/config/scoring/reset", response_model=ScoringConfigResponse)
-def reset_scoring_config(user=Depends(get_current_user_if_enabled)):
+@limiter.limit(RATE_LIMIT_ADMIN)
+def reset_scoring_config(request: Request, user=Depends(get_current_user_if_enabled)):
     """Reset scoring weights to factory defaults."""
     reset_weights_to_defaults()
     return _build_response()

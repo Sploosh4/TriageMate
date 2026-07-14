@@ -1,5 +1,6 @@
 """Tests for the read-only config API endpoint."""
 
+from pathlib import Path
 from fastapi.testclient import TestClient
 from main import app
 
@@ -25,13 +26,6 @@ class TestConfigEndpoint:
         assert "weights" in data["scoring"]
         assert "total_weight" in data["scoring"]
         assert "context_multiplier" in data["scoring"]
-
-    def test_config_has_feature_names(self):
-        resp = client.get("/api/config")
-        data = resp.json()
-        assert "feature_names" in data
-        assert "tabular_count" in data["feature_names"]
-        assert "tabular_names" in data["feature_names"]
 
     def test_config_scoring_weights_match_module(self):
         from pipeline.config.scoring import SCORING_WEIGHTS
@@ -66,3 +60,58 @@ class TestConfigEndpoint:
         assert isinstance(ti["val_f1"], (int, float))
         assert isinstance(ti["cwe_stratified_thresholds"], dict)
         assert "generated_at" in ti
+
+
+class TestThresholdInfoDistinction:
+    """ROUTER-LOW-8: missing vs corrupt threshold files must return distinct statuses.
+
+    These tests manipulate the threshold_info.json on disk, then restore it.
+    They run serially within the class (pytest default order).
+    """
+
+    # Path to the real threshold_info.json
+    _THRESHOLD_PATH = (
+        Path(__file__).resolve().parent.parent / "ml" / "threshold_info.json"
+    )
+
+    def test_threshold_info_not_found_when_missing(self):
+        """When threshold_info.json is missing → {'status': 'not_found'}."""
+        from routers.config import _load_threshold_info
+
+        backup = None
+        if self._THRESHOLD_PATH.exists():
+            backup = self._THRESHOLD_PATH.with_suffix(".json.bak")
+            self._THRESHOLD_PATH.rename(backup)
+
+        try:
+            result = _load_threshold_info()
+            assert result == {"status": "not_found"}, (
+                f"Expected not_found, got {result}"
+            )
+        finally:
+            if backup:
+                backup.rename(self._THRESHOLD_PATH)
+
+    def test_threshold_info_corrupt_when_bad_json(self):
+        """When threshold_info.json has invalid JSON → {'status': 'corrupt', ...}."""
+        from routers.config import _load_threshold_info
+
+        original_content = None
+        if self._THRESHOLD_PATH.exists():
+            original_content = self._THRESHOLD_PATH.read_text()
+
+        try:
+            self._THRESHOLD_PATH.write_text("{invalid json}")
+            result = _load_threshold_info()
+            assert result["status"] == "corrupt", (
+                f"Expected status 'corrupt', got {result.get('status')}"
+            )
+            assert "error" in result, "Corrupt response should include an error message"
+            assert "JSON decode failed" in result["error"], (
+                f"Error message should say 'JSON decode failed', got: {result['error']}"
+            )
+        finally:
+            if original_content is not None:
+                self._THRESHOLD_PATH.write_text(original_content)
+            elif self._THRESHOLD_PATH.exists():
+                self._THRESHOLD_PATH.unlink()

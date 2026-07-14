@@ -17,6 +17,9 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler  # noqa: E402
 from fastapi import FastAPI, Depends  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
+from slowapi import _rate_limit_exceeded_handler  # noqa: E402
+from slowapi.errors import RateLimitExceeded  # noqa: E402
+from middleware.rate_limit import limiter  # noqa: E402
 from database import init_db  # noqa: E402
 from routers import admin, auth, config, queue, cases, ingest, models as models_router  # noqa: E402
 from auth import get_current_user, AUTH_DISABLED  # noqa: E402
@@ -129,6 +132,10 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="TriageMate API", version="2.5.0", lifespan=lifespan)
 
+# Wire slowapi rate limiter — per-route limits applied via @limiter.limit()
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 # TODO(cloud-deploy): restrict allow_origins to known frontend domains
 # and set allow_credentials=True when moving off localhost.
 # Tracked in ROADMAP.md § Sprint NEXT+ Item 7.
@@ -139,48 +146,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-@app.middleware("http")
-async def rate_limit_middleware(request, call_next):
-    from middleware.rate_limit import ingest_bucket, demo_bucket, clear_bucket
-
-    path = request.url.path
-    if request.method == "POST":
-        if path in ("/api/ingest", "/api/ingest/batch", "/api/ingest/tenable"):
-            if not ingest_bucket.allow():
-                from fastapi.responses import JSONResponse
-
-                return JSONResponse(
-                    status_code=429,
-                    content={
-                        "detail": "Rate limit exceeded. Too many ingest requests."
-                    },
-                    headers={"Retry-After": str(int(ingest_bucket.retry_after()))},
-                )
-        elif path == "/api/demo/generate":
-            if not demo_bucket.allow():
-                from fastapi.responses import JSONResponse
-
-                return JSONResponse(
-                    status_code=429,
-                    content={
-                        "detail": "Rate limit exceeded. Slow down demo generation."
-                    },
-                    headers={"Retry-After": str(int(demo_bucket.retry_after()))},
-                )
-        elif path == "/api/ingest/clear":
-            if not clear_bucket.allow():
-                from fastapi.responses import JSONResponse
-
-                return JSONResponse(
-                    status_code=429,
-                    content={
-                        "detail": "Rate limit exceeded. Clear is limited to 2/minute."
-                    },
-                    headers={"Retry-After": str(int(clear_bucket.retry_after()))},
-                )
-    return await call_next(request)
 
 
 app.mount(

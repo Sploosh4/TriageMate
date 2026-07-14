@@ -13,8 +13,9 @@ import json
 import logging
 import os
 from pathlib import Path
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from auth import get_current_user_if_enabled
+from middleware.rate_limit import limiter, RATE_LIMIT_DEFAULT
 from pydantic import BaseModel
 
 logger = logging.getLogger("triagemate.models")
@@ -68,7 +69,10 @@ def _registry_to_response(registry: dict) -> dict:
 
 
 @router.get("/versions")
-async def list_versions(user: dict = Depends(get_current_user_if_enabled)):
+@limiter.limit(RATE_LIMIT_DEFAULT)
+async def list_versions(
+    request: Request, user: dict = Depends(get_current_user_if_enabled)
+):
     """Return all registered model versions with metadata.
 
     Does NOT include model binaries — only metadata and activation status.
@@ -78,7 +82,10 @@ async def list_versions(user: dict = Depends(get_current_user_if_enabled)):
 
 
 @router.get("/status")
-async def get_model_status(user: dict = Depends(get_current_user_if_enabled)):
+@limiter.limit(RATE_LIMIT_DEFAULT)
+async def get_model_status(
+    request: Request, user: dict = Depends(get_current_user_if_enabled)
+):
     """Return active model info with comparison data across versions.
 
     Includes:
@@ -133,8 +140,11 @@ async def get_model_status(user: dict = Depends(get_current_user_if_enabled)):
 
 
 @router.post("/activate")
+@limiter.limit(RATE_LIMIT_DEFAULT)
 async def activate_version(
-    req: ActivateRequest, user: dict = Depends(get_current_user_if_enabled)
+    request: Request,
+    req: ActivateRequest,
+    user: dict = Depends(get_current_user_if_enabled),
 ):
     """Switch the active model version.
     Admin-only operation.
@@ -207,7 +217,10 @@ def _release_rollback_lock():
 
 
 @rollback_router.get("/api/models/versions")
-def get_model_versions(user: dict = Depends(get_current_user_if_enabled)):
+@limiter.limit(RATE_LIMIT_DEFAULT)
+def get_model_versions(
+    request: Request, user: dict = Depends(get_current_user_if_enabled)
+):
     """Return all model versions from the registry."""
     registry = _read_registry()
     return {
@@ -217,7 +230,9 @@ def get_model_versions(user: dict = Depends(get_current_user_if_enabled)):
 
 
 @rollback_router.post("/api/models/xgboost/rollback")
+@limiter.limit(RATE_LIMIT_DEFAULT)
 def rollback_xgboost(
+    request: Request,
     version: str = Query(..., description="Version tag to rollback to"),
     user: dict = Depends(get_current_user_if_enabled),
 ):

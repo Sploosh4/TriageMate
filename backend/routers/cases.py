@@ -2,9 +2,10 @@ import html
 import json
 from datetime import datetime, timezone
 from pydantic import BaseModel
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from auth import get_current_user_if_enabled
 from database import get_db
+from middleware.rate_limit import limiter, RATE_LIMIT_DEFAULT, RATE_LIMIT_NOTES
 from ingest_helpers import compliance_category as _compliance_category
 from models import (
     QueueRow,
@@ -140,7 +141,10 @@ def _band_colour(band: str) -> str:
 
 
 @router.get("/api/case/{case_id}", response_model=CaseResponse)
-def get_case(case_id: int, user: dict = Depends(get_current_user_if_enabled)):
+@limiter.limit(RATE_LIMIT_DEFAULT)
+def get_case(
+    request: Request, case_id: int, user: dict = Depends(get_current_user_if_enabled)
+):
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM vulnerabilities WHERE id = ?", (case_id,))
@@ -157,8 +161,12 @@ def get_case(case_id: int, user: dict = Depends(get_current_user_if_enabled)):
 
 
 @router.patch("/api/case/{case_id}/notes")
+@limiter.limit(RATE_LIMIT_NOTES)
 def update_notes(
-    case_id: int, body: NotesUpdate, user: dict = Depends(get_current_user_if_enabled)
+    request: Request,
+    case_id: int,
+    body: NotesUpdate,
+    user: dict = Depends(get_current_user_if_enabled),
 ):
     conn = get_db()
     cursor = conn.cursor()
@@ -175,8 +183,11 @@ def update_notes(
 
 
 @router.get("/api/review/queue", response_model=ReviewQueueResponse)
+@limiter.limit(RATE_LIMIT_DEFAULT)
 def get_review_queue(
-    flag_filter: str = "all", user: dict = Depends(get_current_user_if_enabled)
+    request: Request,
+    flag_filter: str = "all",
+    user: dict = Depends(get_current_user_if_enabled),
 ):
     conn = get_db()
     cursor = conn.cursor()
@@ -210,7 +221,10 @@ def get_review_queue(
 
 
 @router.post("/api/review/flag/{case_id}")
-def flag_for_review(case_id: int, user: dict = Depends(get_current_user_if_enabled)):
+@limiter.limit(RATE_LIMIT_DEFAULT)
+def flag_for_review(
+    request: Request, case_id: int, user: dict = Depends(get_current_user_if_enabled)
+):
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute(
@@ -226,8 +240,12 @@ def flag_for_review(case_id: int, user: dict = Depends(get_current_user_if_enabl
 
 
 @router.post("/api/case/{case_id}/review")
+@limiter.limit(RATE_LIMIT_DEFAULT)
 def submit_review(
-    case_id: int, body: ReviewRequest, user: dict = Depends(get_current_user_if_enabled)
+    request: Request,
+    case_id: int,
+    body: ReviewRequest,
+    user: dict = Depends(get_current_user_if_enabled),
 ):
     conn = get_db()
     cursor = conn.cursor()
@@ -290,7 +308,10 @@ def submit_review(
 
 
 @router.get("/api/case/{case_id}/history")
-def get_case_history(case_id: int, user: dict = Depends(get_current_user_if_enabled)):
+@limiter.limit(RATE_LIMIT_DEFAULT)
+def get_case_history(
+    request: Request, case_id: int, user: dict = Depends(get_current_user_if_enabled)
+):
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute(
