@@ -222,6 +222,7 @@ class TestFeatureParity:
 
     # ── Part 3: Model actually accepts the vector without error ────────────
 
+    @pytest.mark.artifact
     def test_model_accepts_feature_vector(self):
         """Feed a correctly-shaped vector to the model and verify no error."""
         try:
@@ -254,6 +255,7 @@ class TestFeatureParity:
 
     # ── Part 4: NPZ training columns match predictor order ─────────────────
 
+    @pytest.mark.artifact
     def test_npz_tabular_columns_match_predictor_order(self):
         """Verify the NPZ training data column names match predictor feature order."""
         npz_path = (

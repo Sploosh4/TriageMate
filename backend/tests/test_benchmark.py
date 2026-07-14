@@ -14,10 +14,13 @@ except ImportError:
 from scoring import calculate_final_score
 
 
-pytestmark = pytest.mark.skipif(
-    not _BENCHMARK_AVAILABLE,
-    reason="pytest-benchmark not installed — run: pip install pytest-benchmark",
-)
+pytestmark = [
+    pytest.mark.benchmark,
+    pytest.mark.skipif(
+        not _BENCHMARK_AVAILABLE,
+        reason="pytest-benchmark not installed — run: pip install pytest-benchmark",
+    ),
+]
 
 
 class TestScoringBenchmarks:
