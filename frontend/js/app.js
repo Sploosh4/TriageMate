@@ -16,7 +16,18 @@ function navigateToScreen(screen) {
     const el = document.getElementById(id);
     if (el) {
       el.classList.remove('active');
-      el.classList.add('hidden');
+      // Cancel any pending hide timeout for this screen
+      if (el._hideTimeout) {
+        clearTimeout(el._hideTimeout);
+        el._hideTimeout = null;
+      }
+      // Delay hiding to allow opacity transition 1→0 to paint
+      if (id !== 'screen-' + screen) {
+        el._hideTimeout = setTimeout(function() {
+          el.classList.add('hidden');
+          el._hideTimeout = null;
+        }, 250);
+      }
     }
   });
 

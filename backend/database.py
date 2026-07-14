@@ -321,6 +321,10 @@ class DatabaseManager:
                 epss_substitution_confidence REAL,
                 epss_substitution_reason TEXT,
 
+                -- Analytics tracking
+                analytics_view_count INTEGER DEFAULT 0,
+                analytics_last_viewed TEXT,
+
                 -- Asset context
                 data_classification TEXT,
                 network_zone TEXT,
@@ -558,26 +562,46 @@ class DatabaseManager:
             conn.execute(
                 "ALTER TABLE vulnerabilities ADD COLUMN pre_tier_features TEXT"
             )
-        except Exception:
+        except sqlite3.OperationalError:
             pass
+        except Exception:
+            logger.warning(
+                "Unexpected error adding pre_tier_features to vulnerabilities",
+                exc_info=True,
+            )
         try:
             conn.execute(
                 "ALTER TABLE resolved_vulnerabilities ADD COLUMN pre_tier_features TEXT"
             )
-        except Exception:
+        except sqlite3.OperationalError:
             pass
+        except Exception:
+            logger.warning(
+                "Unexpected error adding pre_tier_features to resolved_vulnerabilities",
+                exc_info=True,
+            )
 
         # Sprint 18: EPSS drift monitoring — add column if not already present
         try:
             conn.execute("ALTER TABLE vulnerabilities ADD COLUMN epss_features TEXT")
-        except Exception:
+        except sqlite3.OperationalError:
             pass
+        except Exception:
+            logger.warning(
+                "Unexpected error adding epss_features to vulnerabilities",
+                exc_info=True,
+            )
         try:
             conn.execute(
                 "ALTER TABLE resolved_vulnerabilities ADD COLUMN epss_features TEXT"
             )
-        except Exception:
+        except sqlite3.OperationalError:
             pass
+        except Exception:
+            logger.warning(
+                "Unexpected error adding epss_features to resolved_vulnerabilities",
+                exc_info=True,
+            )
 
         conn.commit()
 
@@ -636,6 +660,10 @@ class DatabaseManager:
                 epss_substituted_value REAL,
                 epss_substitution_confidence REAL,
                 epss_substitution_reason TEXT,
+
+                -- Analytics tracking
+                analytics_view_count INTEGER DEFAULT 0,
+                analytics_last_viewed TEXT,
 
                 -- Asset context
                 data_classification TEXT,

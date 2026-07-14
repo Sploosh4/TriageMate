@@ -56,6 +56,8 @@ def encode_description(description: str) -> np.ndarray:
 def encode_batch(descriptions: list[str]) -> np.ndarray:
     """Encode a batch of CVE descriptions. Returns (n_samples, 384)."""
     embedder = _get_embedder()
+    if embedder is None:
+        return np.zeros((len(descriptions), SBERT_DIM), dtype=np.float32)
     embeddings = embedder.encode(descriptions, show_progress_bar=True)
     return embeddings
 

@@ -84,6 +84,27 @@ just gate                    # full gate with a 10-CVE calibration sample
 just gate full=true          # full gate, including the full calibration audit + fuzz test
 ```
 
+## GitHub Actions verification (self-hosted VM)
+
+Use after local checks and an authorized push or PR update. These commands
+verify the repository workflow on `triagemate-vm`; they do not mutate the VM.
+
+```bash
+# Read-only runner health check
+bash .opencode/skills/triagemate-runner-ops/scripts/runner-doctor.sh
+
+# Wait for the exact PR's CI result
+gh pr checks <pr-number> --watch
+
+# Inspect recent workflow runs when a PR number is unavailable
+gh run list --workflow "TriageMate CI" --limit 10
+```
+
+The expected workflow selector is
+`[self-hosted, Linux, X64, triagemate]`. A manual command over
+`triagemate-runner ssh` is useful for diagnosis only; it is not CI evidence.
+For offline/queued runner recovery, load `triagemate-runner-ops`.
+
 ## Database (via just)
 
 ```bash

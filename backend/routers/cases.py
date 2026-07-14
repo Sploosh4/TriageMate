@@ -2,7 +2,8 @@ import html
 import json
 from datetime import datetime, timezone
 from pydantic import BaseModel
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+from auth import get_current_user_if_enabled
 from database import get_db
 from ingest_helpers import compliance_category as _compliance_category
 from models import (
@@ -139,7 +140,7 @@ def _band_colour(band: str) -> str:
 
 
 @router.get("/api/case/{case_id}", response_model=CaseResponse)
-def get_case(case_id: int):
+def get_case(case_id: int, user: dict = Depends(get_current_user_if_enabled)):
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM vulnerabilities WHERE id = ?", (case_id,))
@@ -156,7 +157,9 @@ def get_case(case_id: int):
 
 
 @router.patch("/api/case/{case_id}/notes")
-def update_notes(case_id: int, body: NotesUpdate):
+def update_notes(
+    case_id: int, body: NotesUpdate, user: dict = Depends(get_current_user_if_enabled)
+):
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute(
@@ -172,7 +175,9 @@ def update_notes(case_id: int, body: NotesUpdate):
 
 
 @router.get("/api/review/queue", response_model=ReviewQueueResponse)
-def get_review_queue(flag_filter: str = "all"):
+def get_review_queue(
+    flag_filter: str = "all", user: dict = Depends(get_current_user_if_enabled)
+):
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("""
@@ -205,7 +210,7 @@ def get_review_queue(flag_filter: str = "all"):
 
 
 @router.post("/api/review/flag/{case_id}")
-def flag_for_review(case_id: int):
+def flag_for_review(case_id: int, user: dict = Depends(get_current_user_if_enabled)):
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute(
@@ -221,7 +226,9 @@ def flag_for_review(case_id: int):
 
 
 @router.post("/api/case/{case_id}/review")
-def submit_review(case_id: int, body: ReviewRequest):
+def submit_review(
+    case_id: int, body: ReviewRequest, user: dict = Depends(get_current_user_if_enabled)
+):
     conn = get_db()
     cursor = conn.cursor()
 
@@ -283,7 +290,7 @@ def submit_review(case_id: int, body: ReviewRequest):
 
 
 @router.get("/api/case/{case_id}/history")
-def get_case_history(case_id: int):
+def get_case_history(case_id: int, user: dict = Depends(get_current_user_if_enabled)):
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute(

@@ -37,10 +37,16 @@ EPSS_REGISTRY = Path(__file__).parent / "ml" / "model_registry_epss.json"
 
 
 def _acquire_lock():
-    """Create lock file with current timestamp."""
+    """Create lock file with current timestamp. Atomic exclusive creation."""
     LOCK_FILE.parent.mkdir(parents=True, exist_ok=True)
-    LOCK_FILE.write_text(datetime.now(timezone.utc).isoformat())
-    logger.info("Retrain lock acquired")
+    try:
+        with LOCK_FILE.open("x") as f:
+            f.write(datetime.now(timezone.utc).isoformat())
+        logger.info("Retrain lock acquired")
+        return True
+    except FileExistsError:
+        logger.warning("Retrain lock already held by another process")
+        return False
 
 
 def _release_lock():
@@ -282,7 +288,8 @@ async def retrain_model(model_name: str) -> dict:
         return {"status": "skipped", "model": model_name, "reason": "lock_held"}
 
     # Acquire lock
-    _acquire_lock()
+    if not _acquire_lock():
+        return {"status": "skipped", "model": model_name, "reason": "lock_contention"}
 
     import asyncio
 
@@ -295,6 +302,9 @@ async def retrain_model(model_name: str) -> dict:
             )
 
             X_np, y_np, dates_np, cve_ids_np = load_training_data(TRAINING_DATA_FILE)
+            logger.info(
+                "Loaded %d training records with %d CVE IDs", len(X_np), len(cve_ids_np)
+            )
             phase_train(X_np, y_np, dates_np)
             metrics = {
                 "roc_auc": 0.0

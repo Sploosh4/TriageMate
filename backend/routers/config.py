@@ -7,7 +7,8 @@ No auth required — config values are not sensitive.
 import json
 import logging
 from pathlib import Path
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from auth import get_current_user_if_enabled
 from pipeline.config import thresholds, scoring, feature_names
 
 logger = logging.getLogger("triagemate.config")
@@ -15,7 +16,7 @@ router = APIRouter(tags=["Config"])
 
 
 @router.get("/api/config")
-def get_config():
+def get_config(user: dict = Depends(get_current_user_if_enabled)):
     """Return all config values grouped by domain."""
     return {
         "thresholds": {

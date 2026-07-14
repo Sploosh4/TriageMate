@@ -5,6 +5,7 @@ Free, no API key required. Returns fixed-in-version data for open-source
 packages. 1-hour TTL in-memory cache.
 """
 
+import json
 import time
 import logging
 
@@ -89,7 +90,7 @@ def query_osv(cve_id: str) -> dict:
         _CACHE[cve_id] = (now, result)
         return dict(result)
 
-    except requests.RequestException as e:
+    except (requests.RequestException, json.JSONDecodeError) as e:
         duration_ms = int((time.time() - start) * 1000)
         logger.warning(
             "OSV GET query failed for %s: %s",

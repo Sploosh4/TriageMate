@@ -65,6 +65,7 @@
 - `integrations.nvd`  (from(get_nvd_data))
 - `integrations.otx`  (from(query_otx_pulses))
 - `ml.vector_store`  (from(query_rag))
+- `pipeline.config.feature_names`  (from(TABULAR_FEATURE_ORDER))
 
 **Stdlib**
 

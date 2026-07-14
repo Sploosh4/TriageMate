@@ -52,6 +52,7 @@ _NEUTRAL_DEFAULT = {
     "resolution": "Unable to complete agentic investigation. Deferring to upstream scores.",
     "confidence": 0.30,
     "score_adjustment": 0,
+    "_fallback": True,
 }
 
 _COST_RATES = {
@@ -61,6 +62,10 @@ _COST_RATES = {
 }
 
 _MAX_TOOL_FAILURES = 3
+_MAX_DESCRIPTION_CHARS = 2000
+_MAX_TOOL_RESULT_CHARS = 5000
+_MAX_CONVERSATION_HISTORY_CHARS = 50000
+_MAX_TOOLS_PER_TURN = 5
 
 # ── Provider Configuration ────────────────────────────────────────────────
 
@@ -118,17 +123,16 @@ class AgenticEvaluator:
         self,
         max_steps: int = 15,
         cost_budget_usd: float = 0.50,
-        agent_enabled: bool = True,
     ):
         self.max_steps = max_steps
         self.cost_budget_usd = cost_budget_usd
-        self.agent_enabled = agent_enabled
         self._step_count = 0
         self._consecutive_tool_failures = 0
         self._cost_so_far = 0.0
         self._tokens_in = 0
         self._tokens_out = 0
         self._provider = LLM_PROVIDER
+        self._case_hostname: str | None = None
 
     # ── Public API ────────────────────────────────────────────────────────
 
@@ -152,6 +156,7 @@ class AgenticEvaluator:
         """
         # Reset state for this evaluation
         self._reset()
+        self._case_hostname = hostname
 
         provider = self._provider
         api_key = LLM_API_KEY
@@ -169,12 +174,22 @@ class AgenticEvaluator:
             tool_descriptions=tool_descriptions
         )
 
+        # Truncate user-controlled description to prevent unbounded input
+        truncated_description = description[:_MAX_DESCRIPTION_CHARS]
+        if len(description) > _MAX_DESCRIPTION_CHARS:
+            logger.warning(
+                "Truncated description for %s from %d to %d chars",
+                cve_id,
+                len(description),
+                _MAX_DESCRIPTION_CHARS,
+            )
+
         # Initial user prompt with minimal context
         user_content = (
             f"Investigate CVE: {cve_id}\n"
             f"Hostname: {hostname}\n"
             f"CVSS Score: {cvss_score}\n"
-            f"Description: {description}\n\n"
+            f"Description: {truncated_description}\n\n"
             "Call tools to investigate this vulnerability. "
             "When you have enough information, submit your final resolution as JSON."
         )
@@ -209,7 +224,8 @@ class AgenticEvaluator:
                 )
                 continue
 
-            # Check cost budget
+            # NOTE: This is a post-hoc check — the cost of the current LLM call has already been incurred.
+            # The cost budget is an alert/stop threshold for subsequent calls, not a hard spending cap.
             if self._cost_so_far > self.cost_budget_usd:
                 logger.warning(
                     "Agent cost budget exceeded for %s: $%.4f > $%.4f",
@@ -227,6 +243,10 @@ class AgenticEvaluator:
             content = response.get("content", "")
 
             if tool_calls:
+                # Track deduplication for this turn
+                seen_tool_calls: set[tuple[str, str]] = set()
+                tools_executed_in_turn = 0
+
                 # Execute tool calls
                 for tc in tool_calls:
                     tool_name = tc.get("function", {}).get("name", "") or tc.get(
@@ -244,7 +264,35 @@ class AgenticEvaluator:
                     except json.JSONDecodeError:
                         params = {}
 
-                    tool_result = execute_tool(tool_name, params)
+                    # Deduplication: skip identical (name, args) in same turn
+                    args_key = json.dumps(params, sort_keys=True)
+                    call_key = (tool_name, args_key)
+                    if call_key in seen_tool_calls:
+                        logger.warning(
+                            "Skipping duplicate tool call %s with identical args in turn %d",
+                            tool_name,
+                            tools_executed_in_turn,
+                        )
+                        continue
+                    seen_tool_calls.add(call_key)
+
+                    # Per-turn tool call limit
+                    if tools_executed_in_turn >= _MAX_TOOLS_PER_TURN:
+                        logger.warning(
+                            "Tool call limit (%d) reached in turn %d for %s, "
+                            "skipping remaining %d tool calls",
+                            _MAX_TOOLS_PER_TURN,
+                            self._step_count,
+                            cve_id,
+                            len(tool_calls) - tools_executed_in_turn,
+                        )
+                        break
+
+                    tools_executed_in_turn += 1
+
+                    tool_result = execute_tool(
+                        tool_name, params, case_hostname=self._case_hostname
+                    )
 
                     if tool_result.get("success"):
                         self._consecutive_tool_failures = 0
@@ -253,8 +301,8 @@ class AgenticEvaluator:
 
                     # Append assistant message with tool call
                     conversation.append(self._build_assistant_tool_call(tc))
-                    # Append tool result
-                    conversation.append(self._build_tool_result(tc, tool_result))
+                    # Append tool result (with history size check)
+                    self._append_tool_result_with_trim(conversation, tc, tool_result)
 
                     # Check consecutive failures
                     if self._consecutive_tool_failures >= _MAX_TOOL_FAILURES:
@@ -622,12 +670,67 @@ class AgenticEvaluator:
         }
 
     def _build_tool_result(self, tc: dict, tool_result: dict) -> dict:
-        """Build a tool result message."""
+        """Build a tool result message with content truncation."""
+        content = json.dumps(tool_result)
+        if len(content) > _MAX_TOOL_RESULT_CHARS:
+            logger.warning(
+                "Truncating tool result for %s from %d to %d chars",
+                tc.get("function", {}).get("name", "") or tc.get("name", ""),
+                len(content),
+                _MAX_TOOL_RESULT_CHARS,
+            )
+            content = content[:_MAX_TOOL_RESULT_CHARS]
         return {
             "role": "tool",
             "tool_call_id": tc.get("id", ""),
-            "content": json.dumps(tool_result),
+            "content": content,
         }
+
+    def _append_tool_result_with_trim(
+        self, conversation: list[dict], tc: dict, tool_result: dict
+    ):
+        """Append a tool result, trimming oldest tool result pairs if conversation exceeds size limit."""
+        # Build the tool result message first
+        tool_msg = self._build_tool_result(tc, tool_result)
+
+        # Estimate current conversation size
+        current_size = sum(len(json.dumps(m)) for m in conversation)
+
+        # Estimate the size of the new messages (assistant tool call + tool result)
+        # The assistant tool call was already appended before this is called
+        new_size = len(json.dumps(tool_msg))
+
+        if current_size + new_size > _MAX_CONVERSATION_HISTORY_CHARS:
+            logger.warning(
+                "Conversation history size %d exceeds limit %d, trimming oldest tool results",
+                current_size + new_size,
+                _MAX_CONVERSATION_HISTORY_CHARS,
+            )
+            # Remove oldest tool result pairs (assistant tool call + tool result)
+            # until we're under the limit
+            i = 0
+            while (
+                i < len(conversation) - 1
+                and current_size + new_size > _MAX_CONVERSATION_HISTORY_CHARS
+            ):
+                msg = conversation[i]
+                # Check if this is an assistant message with a tool call
+                if msg.get("role") == "assistant" and msg.get("tool_calls"):
+                    # Remove this assistant message and the following tool result
+                    removed_size = len(json.dumps(msg))
+                    if (
+                        i + 1 < len(conversation)
+                        and conversation[i + 1].get("role") == "tool"
+                    ):
+                        removed_size += len(json.dumps(conversation[i + 1]))
+                        # Remove tool result (remove later index first)
+                        conversation.pop(i + 1)
+                    conversation.pop(i)
+                    current_size -= removed_size
+                else:
+                    i += 1
+
+        conversation.append(tool_msg)
 
     def _try_parse_resolution(self, text: str) -> dict | None:
         """Try to parse a final resolution JSON from LLM text response."""
@@ -665,6 +768,16 @@ class AgenticEvaluator:
         if not isinstance(data.get("score_adjustment"), int):
             return None
         if data.get("rag_result") not in ("UNCERTAIN", "CONFIRMED", "NOT_NEEDED"):
+            return None
+
+        # Validate ranges
+        if not (0.0 <= data.get("confidence", 0.0) <= 1.0):
+            return None
+        if not (-20 <= data.get("score_adjustment", 0) <= 20):
+            return None
+        if len(data.get("conflict_note", "")) > 300:
+            return None
+        if len(data.get("resolution", "")) > 500:
             return None
 
         return data

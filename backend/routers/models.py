@@ -13,7 +13,8 @@ import json
 import logging
 import os
 from pathlib import Path
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
+from auth import get_current_user_if_enabled
 from pydantic import BaseModel
 
 logger = logging.getLogger("triagemate.models")
@@ -67,7 +68,7 @@ def _registry_to_response(registry: dict) -> dict:
 
 
 @router.get("/versions")
-async def list_versions():
+async def list_versions(user: dict = Depends(get_current_user_if_enabled)):
     """Return all registered model versions with metadata.
 
     Does NOT include model binaries — only metadata and activation status.
@@ -77,7 +78,7 @@ async def list_versions():
 
 
 @router.get("/status")
-async def get_model_status():
+async def get_model_status(user: dict = Depends(get_current_user_if_enabled)):
     """Return active model info with comparison data across versions.
 
     Includes:
@@ -132,8 +133,12 @@ async def get_model_status():
 
 
 @router.post("/activate")
-async def activate_version(req: ActivateRequest):
+async def activate_version(
+    req: ActivateRequest, user: dict = Depends(get_current_user_if_enabled)
+):
     """Switch the active model version.
+    Admin-only operation.
+
 
     Validates the version exists in the registry, persists the change to
     model_registry.json, and invalidates the in-memory model cache in the
@@ -202,7 +207,7 @@ def _release_rollback_lock():
 
 
 @rollback_router.get("/api/models/versions")
-def get_model_versions():
+def get_model_versions(user: dict = Depends(get_current_user_if_enabled)):
     """Return all model versions from the registry."""
     registry = _read_registry()
     return {
@@ -214,8 +219,11 @@ def get_model_versions():
 @rollback_router.post("/api/models/xgboost/rollback")
 def rollback_xgboost(
     version: str = Query(..., description="Version tag to rollback to"),
+    user: dict = Depends(get_current_user_if_enabled),
 ):
     """Rollback XGBoost model to a previous registry version.
+    Admin-only operation.
+
 
     Validates version exists in registry, updates active_version,
     and invalidates the in-memory cache.

@@ -9,11 +9,13 @@ See nvd.py for cache strategy and rate-limit handling.
 
 import re
 import logging
+from collections import OrderedDict
 from integrations.nvd import get_nvd_data
 
 logger = logging.getLogger("triagemate.cwe")
 
-_CACHE: dict[str, str] = {}
+_MAX_CACHE_SIZE = 1000
+_CACHE: OrderedDict = OrderedDict()
 _CACHE_HITS = 0
 _CACHE_MISSES = 0
 
@@ -52,6 +54,9 @@ def get_cwe(cve_id: str, description: str = "") -> dict:
         logger.warning("No CWE found for %s via NVD or regex fallback", cve_id)
 
     _CACHE[cve_id] = cwe
+    _CACHE.move_to_end(cve_id)
+    if len(_CACHE) > _MAX_CACHE_SIZE:
+        _CACHE.popitem(last=False)
     if _CACHE_MISSES % 10 == 0 and _CACHE_HITS > 0:
         logger.debug("CWE cache: %d hits, %d misses", _CACHE_HITS, _CACHE_MISSES)
     return {"cwe_class": cwe}

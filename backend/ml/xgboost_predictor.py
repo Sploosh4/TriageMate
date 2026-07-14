@@ -392,7 +392,18 @@ def predict(features: dict) -> dict:
     for n_t in range(step_size, n_trees + step_size, step_size):
         n_t = min(n_t, n_trees)
         margin = booster.predict(dmat, iteration_range=(0, n_t), output_margin=True)
-        p = float(1.0 / (1.0 + np.exp(-margin[0])))
+        if n_classes >= 3:
+            # For multi-class with n_classes >= 3, use softmax to get proper probabilities
+            # margin[0] is a 1D array of raw margin scores for each class
+            # Apply softmax: e^x_i / sum(e^x_j) for all classes
+            margins = margin[0]  # shape (n_classes,)
+            exp_margins = np.exp(margins - np.max(margins))  # numerical stability
+            softmax_probs = exp_margins / exp_margins.sum()
+            # Sum classes 1-4 for "any KEV" probability (class 0 = not KEV)
+            p = float(softmax_probs[1:].sum())
+        else:
+            # Binary classification: sigmoid of margin
+            p = float(1.0 / (1.0 + np.exp(-margin[0])))
         cumulative_probs.append(p)
 
     ensemble_std = float(np.std(cumulative_probs))
@@ -425,7 +436,7 @@ def _encode_classification(klass: str) -> int:
         "OFFICIAL": 2,
         "Category 1": 1,
     }  # WAICP: OFFICIAL (was PRIS Act Category 1)
-    return mapping.get(klass, 2)
+    return mapping.get(klass, 1)
 
 
 def _encode_mission(mission: str) -> int:

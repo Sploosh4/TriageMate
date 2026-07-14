@@ -693,12 +693,20 @@ _TOOL_IMPLEMENTATIONS = {
 }
 
 
-def execute_tool(tool_name: str, params: dict) -> dict:
+def execute_tool(
+    tool_name: str, params: dict, case_hostname: str | None = None
+) -> dict:
     """Execute a tool by name with the given parameters.
 
     Args:
         tool_name: Name of the tool to execute (must be in TOOL_DEFINITIONS).
         params: Dictionary of parameters to pass to the tool.
+        case_hostname: The hostname from the case under investigation.
+            If set, tools that accept a ``hostname`` parameter will validate
+            that the requested hostname matches the case hostname. This
+            prevents a compromised or prompt-injected LLM from querying
+            CMDB / network / telemetry data for hosts other than the one
+            under investigation.
 
     Returns:
         dict with keys: success, data, error
@@ -709,6 +717,32 @@ def execute_tool(tool_name: str, params: dict) -> dict:
             "success": False,
             "data": None,
             "error": f"Unknown tool: {tool_name}",
+        }
+
+    # ── Hostname binding check ──────────────────────────────────────────────
+    # If the tool accepts a hostname parameter, verify it matches the case
+    # hostname. This is a server-side guard against prompt injection that
+    # could trick the LLM into probing infrastructure beyond the current case.
+    if case_hostname and params.get("hostname") and params["hostname"] != case_hostname:
+        logger.warning(
+            "Hostname mismatch on tool '%s': requested '%s' != case '%s'",
+            tool_name,
+            params["hostname"],
+            case_hostname,
+            extra={
+                "event": "hostname_mismatch",
+                "tool": tool_name,
+                "requested_hostname": params["hostname"],
+                "case_hostname": case_hostname,
+            },
+        )
+        return {
+            "success": False,
+            "data": None,
+            "error": (
+                f"Cannot query tool '{tool_name}' for host "
+                f"'{params['hostname']}': not the case under investigation"
+            ),
         }
 
     logger.info(

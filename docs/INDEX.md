@@ -40,8 +40,9 @@
 | File | Status | Description |
 |---|---|---|
 | `planning/ROADMAP.md` | CURRENT | Forward-looking roadmap. Sprints 17–25 complete ✅. Sprint 19 added shared config module, scheduled retraining triggers, NPZ column names, concept drift monitoring, scoring property tests, and seed data freshness check. Sprint 20 added multi-step agentic LLM, customizable risk multipliers, and safe PCA. |
-| `planning/HANDOFF-2026-07-08.md` | CURRENT | Handoff document covering ML drift monitoring, Tier 2 LLM query coverage, network topology/Sentinel status, and stress testing status. Answers what was deferred post-MVP. |
+| `planning/HANDOFF-2026-07-08.md` | OUTDATED | Handoff from pre-Sprint-18 era. Drift monitoring, retraining, concept drift, and benchmark sections superseded by Sprints 18–22. Still accurate for network topology/Sentinel gaps and post-MVP items. |
 | `planning/ai-doc-strategy-2026-07-07.md` | CURRENT | This consolidation plan — how and why docs were restructured. |
+| `planning/github-label-taxonomy.md` | CURRENT | Sprint 24 label taxonomy — 25 labels (9 defaults + 16 custom), colors, descriptions. |
 | `archive/file-consolidation-plan-2026-07-07.md` | ARCHIVED | Bookkeeper's consolidation proposals — superseded by current doc structure. See `docs/INDEX.md`. |
 
 ## Reference
@@ -49,6 +50,7 @@
 | File | Status | Description |
 |---|---|---|
 | `reference/AI_PROBLEMS.md` | CURRENT | Bug tracker — all historical issues resolved. |
+| `reference/BUG_HUNT_2026-07-13.md` | CURRENT | **162 bugs found across all areas** (19 CRITICAL, 38 HIGH, 49 MEDIUM, 56 LOW). Full bug hunt report from 2026-07-13. Pipeline audit in section 9. |
 | `reference/xgboost-investigation-report.md` | CURRENT | Root cause analysis of XGBoost false-negative rate. ✅ All 8 fixes applied, model retrained 2026-07-08. |
 | `reference/graphify-output-reliability-report.md` | CURRENT | Audit and remediation specification for factual accuracy, provenance, and reproducibility of Graphify outputs. |
 | `archive/ml-implementation-plan.md` | ARCHIVED | → Replaced by `graphify_output/ml_inventory.md` (auto-generated, run `just graphify`) |
@@ -77,6 +79,7 @@
 | `archive/handoffs/SPRINT_9_HANDOFF.md` | ARCHIVED | Sprint 9 handoff — data supremacy. |
 | `archive/sprints-1-6/*.md` | ARCHIVED | Sprint 1-6 handoffs, plans, team briefings. |
 | `archive/ROADMAP-2026-07-09.md` | ARCHIVED | Sprint 1–16b roadmap — superseded by new forward-looking ROADMAP.md (9 July 2026). |
+| `archive/TASK_STORE_COLUMNS_IN_NPZ.md` | ARCHIVED | Task completed in Sprint 19, verified in Sprint 26. `feature_names` metadata already stored in `training_data.npz`. Corresponds to closed GitHub Issue #6. |
 
 ---
 
@@ -85,7 +88,7 @@
 | Question | Read |
 |---|---|---|
 | What's the current state of the project? | `planning/ROADMAP.md` |
-| What's broken? | `reference/AI_PROBLEMS.md` (all historical issues resolved) |
+| What's broken? | `reference/BUG_HUNT_2026-07-13.md` (162 bugs found, 58 confirmed actionable) + `reference/AI_PROBLEMS.md` (all historical issues resolved) |
 | What ML models exist and how do they work? | `graphify_output/ml_inventory.md` (auto-generated) |
 | How do I train the model? | `planning/ROADMAP.md` §ML Models table or `backend/ml/` scripts |
 | How do I retrain all ML models from scratch? | Use `just retrain-all` — see ROADMAP.md §Current State (ML Models table) |

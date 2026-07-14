@@ -118,15 +118,17 @@ def update_scoring_config(
             detail=f"Total weight {total} is below minimum {_MIN_TOTAL}.",
         )
 
-    # Save to config file
-    config_file = (
-        Path(__file__).resolve().parent.parent
-        / "pipeline"
-        / "config"
-        / "scoring_weights.json"
-    )
-    with open(config_file, "w") as f:
+    # Save to config file (atomic write: temp file → fsync → rename)
+    config_dir = Path(__file__).resolve().parent.parent / "pipeline" / "config"
+    config_file = config_dir / "scoring_weights.json"
+    tmp_file = config_dir / "scoring_weights.json.tmp"
+    with open(tmp_file, "w") as f:
         json.dump({"weights": weights}, f, indent=2)
+        f.flush()
+        import os
+
+        os.fsync(f.fileno())
+    tmp_file.replace(config_file)
 
     # Reload in-memory
     reload_weights()

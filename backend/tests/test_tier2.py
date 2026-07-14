@@ -519,6 +519,7 @@ class TestEvaluateTier2:
 
     _COMMON_ARGS = dict(
         cve_id="CVE-2024-TEST-EVAL",
+        hostname="test.wa.gov.au",
         cvss_score=7.5,
         description="Orchestration test vulnerability",
         rag_context="No context",
@@ -682,6 +683,7 @@ class TestEvaluateTier2WithAgent:
 
     _COMMON_ARGS = dict(
         cve_id="CVE-2024-TEST-AGENT",
+        hostname="test.wa.gov.au",
         cvss_score=7.5,
         description="Agent integration test vulnerability",
         rag_context="test.wa.gov.au some RAG context",

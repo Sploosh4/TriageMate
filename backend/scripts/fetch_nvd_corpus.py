@@ -321,7 +321,7 @@ def fetch_nvd_corpus(
                     break
                 entry = _extract_cve_entry(vuln)
                 if entry is not None:
-                    cve_id = vuln.get("cve", {}).get("id", "")
+                    cve_id = (vuln.get("cve") or {}).get("id", "")
                     if cve_id:
                         corpus[cve_id] = entry
                         chunk_total += 1

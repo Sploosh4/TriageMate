@@ -1,1 +1,0 @@
-docs/architecture/MVP_SCOPE.md

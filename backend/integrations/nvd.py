@@ -115,6 +115,17 @@ def _fetch_cve_data(cve_id: str) -> dict:
                 extra={"event": "nvd_api_call", "duration_ms": duration_ms},
             )
             return json.loads(resp.read().decode("utf-8"))
+    except urllib.error.HTTPError as e:
+        duration_ms = int((time.time() - start) * 1000)
+        logger.warning(
+            "NVD fetch failed for %s in %dms: %s",
+            cve_id,
+            duration_ms,
+            e,
+            extra={"event": "nvd_api_call", "duration_ms": duration_ms},
+        )
+        _NVD_LAST_STATUS = "degraded"
+        return {}
     except urllib.error.URLError as e:
         duration_ms = int((time.time() - start) * 1000)
         logger.warning(
@@ -126,11 +137,7 @@ def _fetch_cve_data(cve_id: str) -> dict:
         )
         _NVD_LAST_STATUS = "unreachable"
         return {}
-    except (
-        urllib.error.HTTPError,
-        json.JSONDecodeError,
-        OSError,
-    ) as e:
+    except (json.JSONDecodeError, OSError) as e:
         duration_ms = int((time.time() - start) * 1000)
         logger.warning(
             "NVD fetch failed for %s in %dms: %s",

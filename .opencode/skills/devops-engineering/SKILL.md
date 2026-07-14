@@ -38,3 +38,9 @@ All project-specific vars use `TRIAGEMATE_` prefix:
 - Database schema must be backward-compatible (SQLite is default)
 - All new Python deps go into `backend/requirements.txt`
 - Never commit secrets, `.env` files, or database files
+- For workflow, Docker, dependency, migration, or runner-label changes, finish
+  with GitHub Actions evidence on the `triagemate-vm` self-hosted runner. Run
+  local checks first, then—after an authorized push/PR update—use
+  `gh pr checks <pr-number> --watch`. Do not treat an SSH command in the VM as
+  a replacement for the workflow run. Follow `audit-checklist` for the full
+  completion gate and `triagemate-runner-ops` only for runner diagnosis.

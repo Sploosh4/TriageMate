@@ -82,6 +82,19 @@ Every schema change in `database.py` requires entries in **both** `_init_db_sqli
 - Column added to `_init_db_sqlite()` → `resolved_vulnerabilities`
 - Column added to `_init_db_pg()` → `resolved_vulnerabilities`
 - Types match across both dialects
+- New migrations are forward-only; never edit an applied revision.
+- Verify a clean SQLite upgrade before sign-off. From `backend/`, use a fresh
+  temporary database and require `alembic upgrade head` to exit successfully:
+
+  ```bash
+  tmpdir=$(mktemp -d /tmp/triagemate-alembic.XXXXXX)
+  DATABASE_URL="sqlite:///$tmpdir/fresh.db" .venv/bin/alembic upgrade head
+  DATABASE_URL="sqlite:///$tmpdir/fresh.db" .venv/bin/alembic current
+  ```
+
+- After an authorized push/PR update, require the self-hosted GitHub Actions
+  checks to pass with `gh pr checks <pr-number> --watch`. Local tests alone do
+  not verify the committed workflow revision; see `audit-checklist`.
 
 ## MCP Tool: db (SQLite)
 A local MCP server registered in `opencode.jsonc` that provides direct read-only queries against `triagemate.db`. Use it for:
