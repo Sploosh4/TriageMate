@@ -1,6 +1,6 @@
 # TriageMate — Roadmap
 
-> **Status: CURRENT** (11 July 2026)
+> **Status: CURRENT** (14 July 2026)
 > 
 > Previous roadmap archived to `docs/archive/ROADMAP-2026-07-09.md` (Sprints 1–16b complete).
 
@@ -11,9 +11,9 @@
 | Metric | Value |
 |---|---|
 | Tests | 457 pass, 0 fail, 1 skipped |
-| Open bugs | 0 (AI_PROBLEMS.md is clean) |
+| Open remediation work | 7 Sprint 29 issues (#58–#64) |
 | Sprints completed | 17, 18, 19, 20, 21, 22, 23, **24**, **25**, **26**, **27**, **28** |
-| Current sprint | Sprint 29 (TBD) — ⏳ Planned |
+| Current sprint | **Sprint 29 — Investigation Findings Remediation** 🔴 In Progress |
 | Pipeline stages | Pre-Tier → Tier 0 → Tier 1 → Tier 2 → Tier 3 (Human Review) |
 | Enrichment sources | 14 integrations (NVD, OSV, OTX, ExploitDB, Metasploit, Tenable, GreyNoise [deprecated], CMDB [stub], Advisories [stub], MITRE, CWE classifier, Demo generator, **Synthetic Telemetry**, **Network Context**) |
 | Demo rows | 7 CVEs, scores 99/97/74/91/82/97/80 (±3 tolerance) |
@@ -199,6 +199,20 @@
 | **3** | **Phase 8 — Evidence-Needed Investigation Pass** | ✅ Complete | All 23 items investigated; 7 tracked reports in `backend/reports/investigations/` |
 | **4** | **Documentation & Tracking Update** | ✅ Complete | ROADMAP updated, Sprint 27 recorded complete, INDEX.md fixed, comparison doc marked OUTDATED |
 | **5** | **ML Retraining Decision Gate** | ✅ Complete | Decision: DO NOT RETRAIN — three blocking issues identified (degenerate val/test splits, binary-vs-multi-class registry mismatch, unreliable baseline metrics) |
+
+## Sprint 29 — 🔴 In Progress (Investigation Findings Remediation)
+
+*Started 14 July 2026. See `.opencode/plans/2026-07-14-sprint-29.md` and GitHub Issues #58–#64 for full detail.*
+
+| # | Item | Status | Description |
+|---|---|---|---|
+| **1** | **Product/Security Decisions** | ⏳ Planned | rag_query hostname binding (PIPE-HIGH-5) + /api/config exposure (ROUTER-LOW-1) |
+| **2a** | **Webhook malformed-JSON handling** | ⏳ Planned | ROUTER-LOW-5 — wrap json.loads() in try/except |
+| **2b** | **Test isolation / shared-state races** | ⏳ Planned | 5 test infrastructure fixes (TEST-CRIT-1, TEST-MED-1/2, TEST-LOW-3/4/6) |
+| **2c** | **Seed-data idempotency** | ⏳ Planned | INFRA-HIGH-2 — cross-database UNIQUE constraint + conflict-safe insert |
+| **2d** | **OTX throttling handling** | ⏳ Planned | INT-MED-3 — exponential backoff retry for 429s |
+| **2e** | **Rate-limit policy and implementation** | ⏳ Planned | CORE-MED-5 — slowapi middleware with per-route limits |
+| **3** | **ML Data-Readiness Work** | ⏳ Planned | Fresh --gather, diagnose mid-2023 drop, fix registry mismatch, establish baseline. Do NOT retrain. |
 
 ---
 
