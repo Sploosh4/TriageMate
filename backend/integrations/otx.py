@@ -16,6 +16,19 @@ logger = logging.getLogger("triagemate.otx")
 _CACHE: dict[str, tuple[float, dict]] = {}
 CACHE_TTL = 3600
 API_KEY = os.getenv("TRIAGEMATE_OTX_API_KEY", "").strip()
+MAX_RATE_LIMIT_RETRIES = 3
+RATE_LIMIT_BACKOFF_SECONDS = 1.0
+
+
+def _empty_result(*, queried: bool) -> dict:
+    """Return the safe, shape-stable result used when OTX has no data."""
+    return {
+        "pulse_count": 0,
+        "indicators": 0,
+        "targeted_countries": [],
+        "pulse_names": [],
+        "queried": queried,
+    }
 
 
 def query_otx_pulses(cve_id: str) -> dict:
@@ -28,13 +41,7 @@ def query_otx_pulses(cve_id: str) -> dict:
     now = time.time()
 
     if not API_KEY:
-        return {
-            "pulse_count": 0,
-            "indicators": 0,
-            "targeted_countries": [],
-            "pulse_names": [],
-            "queried": False,
-        }
+        return _empty_result(queried=False)
 
     if cve_id in _CACHE:
         ts, data = _CACHE[cve_id]
@@ -43,11 +50,42 @@ def query_otx_pulses(cve_id: str) -> dict:
 
     start = time.time()
     try:
-        resp = requests.get(
-            f"https://otx.alienvault.com/api/v1/indicators/cve/{cve_id}/general",
-            headers={"X-OTX-API-KEY": API_KEY},
-            timeout=10,
-        )
+        for attempt in range(MAX_RATE_LIMIT_RETRIES + 1):
+            resp = requests.get(
+                f"https://otx.alienvault.com/api/v1/indicators/cve/{cve_id}/general",
+                headers={"X-OTX-API-KEY": API_KEY},
+                timeout=10,
+            )
+            if resp.status_code != 429:
+                break
+
+            if attempt == MAX_RATE_LIMIT_RETRIES:
+                logger.warning(
+                    "OTX rate limit persisted for %s after %d retries",
+                    cve_id,
+                    MAX_RATE_LIMIT_RETRIES,
+                    extra={"event": "otx_rate_limit", "cve_id": cve_id},
+                )
+                result = _empty_result(queried=True)
+                _CACHE[cve_id] = (now, result)
+                return dict(result)
+
+            retry_after = resp.headers.get("Retry-After")
+            try:
+                delay = float(retry_after) if retry_after is not None else 0.0
+            except ValueError:
+                delay = 0.0
+            delay = max(delay, RATE_LIMIT_BACKOFF_SECONDS * (2**attempt))
+            logger.info(
+                "OTX rate limited for %s; retrying in %.1fs (attempt %d/%d)",
+                cve_id,
+                delay,
+                attempt + 1,
+                MAX_RATE_LIMIT_RETRIES,
+                extra={"event": "otx_rate_limit", "cve_id": cve_id},
+            )
+            time.sleep(delay)
+
         resp.raise_for_status()
         data = resp.json()
 
@@ -97,7 +135,7 @@ def query_otx_pulses(cve_id: str) -> dict:
         _CACHE[cve_id] = (now, result)
         return dict(result)
 
-    except Exception as e:
+    except (requests.RequestException, ValueError) as e:
         duration_ms = int((time.time() - start) * 1000)
         logger.warning(
             "OTX query failed for %s: %s",
@@ -109,12 +147,6 @@ def query_otx_pulses(cve_id: str) -> dict:
                 "duration_ms": duration_ms,
             },
         )
-        result = {
-            "pulse_count": 0,
-            "indicators": 0,
-            "targeted_countries": [],
-            "pulse_names": [],
-            "queried": True,
-        }
+        result = _empty_result(queried=True)
         _CACHE[cve_id] = (now, result)
         return dict(result)
