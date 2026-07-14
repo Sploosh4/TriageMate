@@ -12,8 +12,8 @@
 |---|---|
 | Tests | 457 pass, 0 fail, 1 skipped |
 | Open bugs | 0 (AI_PROBLEMS.md is clean) |
-| Sprints completed | 17, 18, 19, 20, 21, 22, 23, **24**, **25** |
-| Current sprint | Sprint 26 (Feature Contract Enforcement) — 🏗️ In progress (PR #48 open on GitHub, CI re-running) |
+| Sprints completed | 17, 18, 19, 20, 21, 22, 23, **24**, **25**, **26**, **27** |
+| Current sprint | Sprint 28 (Evidence and ML Readiness) — 🏗️ In progress |
 | Pipeline stages | Pre-Tier → Tier 0 → Tier 1 → Tier 2 → Tier 3 (Human Review) |
 | Enrichment sources | 14 integrations (NVD, OSV, OTX, ExploitDB, Metasploit, Tenable, GreyNoise [deprecated], CMDB [stub], Advisories [stub], MITRE, CWE classifier, Demo generator, **Synthetic Telemetry**, **Network Context**) |
 | Demo rows | 7 CVEs, scores 99/97/74/91/82/97/80 (±3 tolerance) |
@@ -158,9 +158,9 @@
 
 ---
 
-## Sprint 26 — 🏗️ In Progress (Feature Contract Enforcement)
+## Sprint 26 — ✅ Complete (Feature Contract Enforcement)
 
-*See `.opencode/plans/2026-07-12-sprint-26.md` for full detail.*
+*Executed 12 July 2026. Commits `586caac`, `5b01c13`. See `.opencode/plans/2026-07-12-sprint-26.md` for full detail.*
 
 | # | Item | Status | Description |
 |---|---|---|---|
@@ -169,6 +169,36 @@
 | **2** | **Feature Contract Test** | ✅ Complete | Created `test_feature_contract.py` with 6 tests: canonical registry completeness, training compliance, inference compliance, default value consistency, NPZ column match, extra keys documentation |
 | **3** | **CI Integration** | ✅ Complete | Added `just check-feature-contract` recipe, wired into `just gate`; CI runs contract tests via existing `pytest tests/` suite |
 | **4** | **Verification** | ✅ Complete | Full test suite, quality gate, graphify parity 0 mismatches, seed verification, bookkeeper pass |
+
+---
+
+## Sprint 27 — ✅ Complete (Bug Fix Sprint)
+
+*Executed 13 July 2026. See `.opencode/plans/2026-07-13-bug-fix-sprint.md` for full detail. Merged via PR #50.*
+
+| # | Phase | Status | Description |
+|---|---|---|---|
+| **1** | **Security & Authentication** | ✅ Complete | Auth added to unprotected router endpoints, frontend XSS fixed (caseView.js), password hash leak removed, agent hostname confusion resolved |
+| **2** | **Agentic Tier-2 Safety** | ✅ Complete | Neutral-fallback routing, bounded agent input/tool calls, response validation, agent_enabled flag fix, conflict value normalization |
+| **3** | **ML Correctness** | ✅ Complete | CVE ID retention in train path, multi-class ensemble std crash fix, encoder None guard, deterministic EPSS noise, encoding default alignment, deterministic reference distributions, NVD null-cve guard |
+| **4** | **Scoring & Data Integrity** | ✅ Complete | Hardcoded patch status fix, analytics columns added to DDL, security_context_contribution migration, migration defaults/type fixes, resolved_at added to archive |
+| **5** | **Robustness & Resource Protection** | ✅ Complete | Bare except fix in ALTER TABLE, scheduler TOCTOU race fix, OSV JSONDecodeError catch, Tenable empty IPv4 guard, HTTPError dead code fix, CWE cache bounding, temp directory leak fix, connection leak fix |
+| **6** | **Pipeline Robustness** | ✅ Complete | Agent cost budget documented, atomic scoring_weights.json writes, PRE_TIER_FEATURE_NAMES populated |
+| **7** | **Frontend Polish** | ✅ Complete | Screen fade-out animation fixed, reviewQueue state management fixed, 204 No Content crash fixed, dead code removed |
+
+---
+
+## Sprint 28 — 🏗️ In Progress (Evidence and ML Readiness)
+
+*See `.opencode/plans/2026-07-14-sprint-28.md` and GitHub Milestone #12 for full detail.*
+
+| # | Item | Status | Description |
+|---|---|---|---|
+| **1** | **Phase 7.5 — Keydown Listener Investigation** | ✅ Complete | Listener accumulation confirmed under auth flow, guard flag added |
+| **2** | **Phase 7.6 — Scoring Weight Zero Decision** | 🏗️ In Progress | Product decision: zero not supported; documenting as intentional |
+| **3** | **Phase 8 — Evidence-Needed Investigation Pass** | 🏗️ In Progress | 23 items investigated; reports in `backend/reports/investigations/` |
+| **4** | **Documentation & Tracking Update** | 🏗️ In Progress | ROADMAP update, Sprint 27 recorded as complete |
+| **5** | **ML Retraining Decision Gate** | ⏳ Pending | Assessment in progress |
 
 ---
 

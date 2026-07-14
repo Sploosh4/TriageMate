@@ -77,7 +77,6 @@ __all__ = [
     "call_together",
     "evaluate_tier_2",
     "TOOL_DEFINITIONS",
-    "execute_tool",
     "get_tool_names",
     "AgenticEvaluator",
 ]
