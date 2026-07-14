@@ -10,6 +10,9 @@ const appState = {
   accordionOpen: null
 };
 
+// Guard: prevent wireEventListeners from accumulating on re-init (FE-MED-5)
+let _eventListenersWired = false;
+
 function navigateToScreen(screen) {
   const screens = ['screen-queue', 'screen-case', 'screen-review', 'screen-drift', 'screen-admin'];
   screens.forEach(function(id) {
@@ -91,7 +94,11 @@ async function init() {
     renderQueue(appState.queueData, appState.filter, appState.activeMetricFilter, appState.searchQuery);
     updateMetricBoxes(appState.queueData);
 
-    wireEventListeners();
+    // Register event listeners only once to prevent accumulation (FE-MED-5)
+    if (!_eventListenersWired) {
+      wireEventListeners();
+      _eventListenersWired = true;
+    }
   } catch (err) {
     console.error('TriageMate init failed:', err);
     document.getElementById('queue-body').innerHTML =

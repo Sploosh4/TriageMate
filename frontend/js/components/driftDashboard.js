@@ -128,10 +128,10 @@ function renderDriftDashboard(data, mlDriftData) {
   html += '<div class="drift-panel">';
   html += '<div class="drift-panel-title">Feature Drift (30-day avg)</div>';
   html += '<div class="drift-feature-table">';
-  html += '<div class="drift-feature-row"><span class="drift-feature-label">Avg CVSS</span><span class="drift-feature-value">' + data.featureDrift.avgCvss + '</span></div>';
-  html += '<div class="drift-feature-row"><span class="drift-feature-label">Avg EPSS</span><span class="drift-feature-value">' + data.featureDrift.avgEpss + '</span></div>';
-  html += '<div class="drift-feature-row"><span class="drift-feature-label">Avg Priority</span><span class="drift-feature-value">' + data.featureDrift.avgPriority + '</span></div>';
-  html += '<div class="drift-feature-row"><span class="drift-feature-label">Total Audited</span><span class="drift-feature-value">' + data.totalAudited + '</span></div>';
+  html += '<div class="drift-feature-row"><span class="drift-feature-label">Avg CVSS</span><span class="drift-feature-value">' + escHtml(data.featureDrift.avgCvss) + '</span></div>';
+  html += '<div class="drift-feature-row"><span class="drift-feature-label">Avg EPSS</span><span class="drift-feature-value">' + escHtml(data.featureDrift.avgEpss) + '</span></div>';
+  html += '<div class="drift-feature-row"><span class="drift-feature-label">Avg Priority</span><span class="drift-feature-value">' + escHtml(data.featureDrift.avgPriority) + '</span></div>';
+  html += '<div class="drift-feature-row"><span class="drift-feature-label">Total Audited</span><span class="drift-feature-value">' + escHtml(data.totalAudited) + '</span></div>';
   html += '</div></div>';
 
   // Panel 5: ML Drift (XGBoost PSI)
