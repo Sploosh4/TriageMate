@@ -386,7 +386,10 @@ class DatabaseManager:
 
                 -- Security context (Sprint 17)
                 telemetry_json TEXT,
-                network_context_json TEXT
+                network_context_json TEXT,
+
+                -- Prevent duplicate seed rows
+                UNIQUE(vulnerability_id, hostname)
             )
         """)
 
@@ -726,7 +729,10 @@ class DatabaseManager:
 
                 -- Security context (Sprint 17)
                 telemetry_json TEXT,
-                network_context_json TEXT
+                network_context_json TEXT,
+
+                -- Prevent duplicate seed rows
+                UNIQUE(vulnerability_id, hostname)
             )
         """)
 

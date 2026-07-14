@@ -1417,10 +1417,20 @@ def seed():
     """
 
     for row in SEED_ROWS:
-        cursor.execute(INSERT_SQL, row)
-        print(
-            f"  Inserted {row['vulnerability_id']} — {row['hostname']} (score {row['priority_score']}, band {row['risk_band']})"
+        # Conflict-safe insert: skip rows that already exist
+        cursor.execute(
+            "SELECT COUNT(*) FROM vulnerabilities WHERE vulnerability_id = ? AND hostname = ?",
+            (row["vulnerability_id"], row["hostname"]),
         )
+        if cursor.fetchone()[0] == 0:
+            cursor.execute(INSERT_SQL, row)
+            print(
+                f"  Inserted {row['vulnerability_id']} — {row['hostname']} (score {row['priority_score']}, band {row['risk_band']})"
+            )
+        else:
+            print(
+                f"  Skipped {row['vulnerability_id']} — {row['hostname']} (already exists)"
+            )
 
     conn.commit()
     conn.close()
