@@ -11,6 +11,7 @@ parallel test files (e.g. ``test_rollback.py``).
 """
 
 import json
+import sys
 import pytest
 from pathlib import Path
 
@@ -70,7 +71,7 @@ class TestModelVersions:
     def _inject_registry(self, isolated_registry, monkeypatch):
         """Patch this module's REGISTRY_PATH to the isolated temp copy."""
         monkeypatch.setattr(
-            __import__(__name__), "REGISTRY_PATH", Path(isolated_registry)
+            sys.modules[__name__], "REGISTRY_PATH", Path(isolated_registry)
         )
 
     async def test_list_versions(self, client):
@@ -116,7 +117,7 @@ class TestModelStatus:
     def _inject_registry(self, isolated_registry, monkeypatch):
         """Patch this module's REGISTRY_PATH to the isolated temp copy."""
         monkeypatch.setattr(
-            __import__(__name__), "REGISTRY_PATH", Path(isolated_registry)
+            sys.modules[__name__], "REGISTRY_PATH", Path(isolated_registry)
         )
 
     async def test_model_status_shape(self, client):
