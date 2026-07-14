@@ -10,7 +10,7 @@ from pathlib import Path
 from fastapi import APIRouter, Depends, Request
 from auth import get_current_user_if_enabled
 from middleware.rate_limit import limiter, RATE_LIMIT_DEFAULT
-from pipeline.config import thresholds, scoring, feature_names
+from pipeline.config import thresholds, scoring
 
 logger = logging.getLogger("triagemate.config")
 router = APIRouter(tags=["Config"])
@@ -43,10 +43,6 @@ def get_config(request: Request, user: dict = Depends(get_current_user_if_enable
             "clamp_max": scoring.CLAMP_MAX,
             "context_multiplier": scoring.CONTEXT_MULTIPLIER_VALUES,
             "telemetry_active_threshold": scoring.TELEMETRY_ACTIVE_THRESHOLD,
-        },
-        "feature_names": {
-            "tabular_count": len(feature_names.TABULAR_FEATURE_ORDER),
-            "tabular_names": feature_names.TABULAR_FEATURE_ORDER,
         },
         "threshold_info": _load_threshold_info(),
     }
