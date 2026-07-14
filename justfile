@@ -24,6 +24,18 @@ UVICORN := ".venv/bin/uvicorn"
 test:
     cd {{BACKEND}} && TRIAGEMATE_RUN_FUZZ=${TRIAGEMATE_RUN_FUZZ:-0} {{PYTEST}} tests/ -v
 
+# Report collection totals for the explicitly marked categories
+ci-report:
+    cd {{BACKEND}} && for marker in artifact integration benchmark fuzz; do echo "--- $marker ---"; {{PYTEST}} tests/ --collect-only -q -m "$marker"; done
+
+# Run artifact-dependent tests only (requires ML model artifacts)
+ci-test-artifact:
+    cd {{BACKEND}} && {{PYTEST}} tests/ -v -m artifact --tb=short
+
+# Run integration tests only
+ci-test-integration:
+    cd {{BACKEND}} && {{PYTEST}} tests/ -v -m integration
+
 # Run a specific test file (e.g., just test-file test_health)
 test-file file:
     cd {{BACKEND}} && {{PYTEST}} tests/{{file}}.py -v
@@ -39,6 +51,11 @@ bench-check:
 # Run Tier 2 unit tests with coverage (must be >= 70%)
 verify-tier2:
     cd {{BACKEND}} && {{PY}} -m pytest tests/test_tier2.py -v --cov=pipeline.tier_2 --cov-report=term --cov-fail-under=70
+
+# Produce a reproducible Gate A evidence report for a completed gather.
+# Requires explicit NPZ, log, and JSON output paths.
+ml-gate-a NPZ LOG OUTPUT:
+    cd {{BACKEND}} && {{PY}} -m scripts.ml_gate_a_check --npz-path {{NPZ}} --gather-log {{LOG}} --output-path {{OUTPUT}}
 
 # Lint check only (no changes)
 lint:

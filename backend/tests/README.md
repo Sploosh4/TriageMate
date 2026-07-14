@@ -23,3 +23,19 @@ with a database uniqueness constraint but does not expose an API-level
 duplicate-ingest contract. Do not add a test that accepts the current database
 error as intended behavior. Add a focused duplicate test only with a
 corresponding endpoint contract and implementation.
+
+## CI integration
+
+The CI workflow (`.github/workflows/ci.yml`) runs:
+- **Full suite:** All tests (including artifact and integration) in a single strict gate
+- **Marked-category report:** collection totals for artifact, integration, benchmark, and fuzz are visible in CI logs
+- **Benchmark:** Main branch only, non-blocking
+
+Not collected by CI:
+- `fuzz` — opt‑in via `TRIAGEMATE_RUN_FUZZ=1`
+- `load` — external workload tool
+
+Local category filtering:
+- `just ci-test-artifact` — artifact-dependent tests only
+- `just ci-test-integration` — integration tests only
+- `just ci-report` — show collection totals for each marked category
