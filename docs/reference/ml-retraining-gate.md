@@ -3,13 +3,13 @@
 This document describes the required human review process for ML retraining in
 TriageMate. Each gate must pass before the next phase is authorized.
 
-> **Runtime enforcement:** Automatic model retraining is disabled by default
-> (`AUTOMATIC_RETRAINING_ENABLED=false`). The scheduler does not register the
-> retraining job and `check_drift_and_retrain()` returns immediately when the
-> setting is disabled. An operator must explicitly set
-> `AUTOMATIC_RETRAINING_ENABLED=true` and restart the application to enable
-> automatic retraining. This provides a technical control that enforces the
-> Gate A → explicitly authorised Gate B workflow.
+> **Runtime enforcement:** Automatic scheduler-driven retraining is disabled by
+> default (`AUTOMATIC_RETRAINING_ENABLED=false`). When disabled, the scheduler
+> does not register the retraining job and `check_drift_and_retrain()` returns
+> immediately. This env var controls only the periodic scheduler — it does not
+> restrict or authorise manual `--train` runs, which remain under direct user
+> control. A manual baseline `--train` run should normally be performed with
+> automatic retraining disabled to avoid concurrent scheduler interference.
 
 ## Gate A: Gather Evidence and Integrity
 
@@ -60,16 +60,18 @@ After Gate A passes and the reviewer approves its evidence:
 2. Ensure each split contains both positive and negative examples.
 3. Verify the temporal coverage is sufficient for evaluation.
 4. Obtain explicit user authorization for a baseline `--train` run.
-5. Set `AUTOMATIC_RETRAINING_ENABLED=true` in the environment (`.env` file or
-   `docker-compose.yml`) and restart the application to enable the retraining
-   scheduler.
-6. Run it in a dedicated branch/workspace and preserve the pre-run artifact
+5. Run it in a dedicated branch/workspace and preserve the pre-run artifact
    fingerprints so the candidate can be compared or discarded safely.
 
-`--train` is never implicit in a Gate A command, and the automatic retraining
-scheduler is disabled by default. Passing Gate A alone does not permit model
-retraining or model-artifact replacement. The operator must explicitly opt in
-via the environment variable.
+> **Note on `AUTOMATIC_RETRAINING_ENABLED`:** This env var controls only
+> periodic scheduler-driven retraining. It is unrelated to manual `--train`
+> runs. A manual baseline `--train` should normally be performed with automatic
+> retraining **disabled** (`AUTOMATIC_RETRAINING_ENABLED=false`, the default)
+> to avoid concurrent scheduler interference. Setting it to `true` does not
+> itself authorise any training.
+
+`--train` is never implicit in a Gate A command. Passing Gate A alone does not
+permit model retraining or model-artifact replacement.
 
 ## Gate C: Post-Training Validation (post-`--train`)
 

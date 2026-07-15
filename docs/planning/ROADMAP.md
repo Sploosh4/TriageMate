@@ -11,7 +11,7 @@
 | Metric | Value |
 |---|---|
 | Tests | GitHub Actions test matrix passing on `main`; local Sprint 30 finalization: 498 passed, 1 skipped |
-| Open remediation work | #64 Gate B baseline decision; #67 PostgreSQL compatibility; #81 CI benchmark/action maintenance |
+| Open remediation work | #64 Gate B baseline decision; #67 PostgreSQL compatibility; #79 automatic-retraining guard; #81 CI benchmark/action maintenance |
 | Sprints completed | 17 through **28**; Sprint 29 implementation complete with its baseline decision still open |
 | Current sprint | **Sprint 30 — Repository Reconciliation and Gate A Finalization** 🟡 Finalizing |
 | Pipeline stages | Pre-Tier → Tier 0 → Tier 1 → Tier 2 → Tier 3 (Human Review) |
@@ -225,7 +225,7 @@
 | **3** | **Security decision implementation** | ✅ Done | PRs #75 and #76 merged; Issue #58 closed. RAG is server-scoped and fail-closed; `/api/config` omits feature names. |
 | **4** | **ML Gate A** | ✅ Done | PR #77 added strict NPZ/log coherence checks, synthetic tests, and versioned evidence from the real post-policy gather. No training was run. |
 | **5** | **Git and documentation reconciliation** | 🟡 Finalizing | Superseded PRs #69/#72/#73/#74 closed; obsolete worktrees and branches pruned; authoritative docs and tracking reconciled in Issue #78. |
-| **6** | **Automatic-retraining enforcement gap** | ✅ Done | PR #83 gates automatic retraining behind `AUTOMATIC_RETRAINING_ENABLED=false` (default-off). The scheduler no longer registers a retraining job and `check_drift_and_retrain()` returns immediately when disabled. Env var, retrain-status exposure, and tests are implemented. Issue #79, PR #83. |
+| **6** | **Automatic-retraining enforcement gap** | 🔴 Tracked | Issue #79 records that the runtime scheduler can currently bypass the review gates. Default-off/explicit-opt-in enforcement is required before the gates can be described as a technical control. |
 
 ---
 

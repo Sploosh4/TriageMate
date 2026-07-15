@@ -431,3 +431,49 @@ class TestRetrainCheckDriftLogging:
         assert any(
             "No retraining needed" in record.message for record in caplog.records
         )
+
+
+@pytest.mark.asyncio
+class TestSchedulerRegistrationGuard:
+    """Verify main.py lifespan creates/skips the APScheduler retraining job."""
+
+    async def test_scheduler_not_registered_when_disabled(self, client):
+        """(default) AUTOMATIC_RETRAINING_ENABLED=False → scheduler not started."""
+        import main as main_mod
+        from scheduler import AUTOMATIC_RETRAINING_ENABLED
+
+        assert AUTOMATIC_RETRAINING_ENABLED is False
+        # The lifespan ran with disabled default; _scheduler should be None
+        assert main_mod._scheduler is None
+
+        # Also verify via API
+        resp = await client.get("/api/system/retrain-status")
+        data = resp.json()
+        assert data["automatic_retraining_enabled"] is False
+
+    async def test_scheduler_registered_when_enabled(self, isolated_registry):
+        """AUTOMATIC_RETRAINING_ENABLED=True → scheduler job is registered."""
+        from unittest.mock import patch, MagicMock
+
+        with (
+            patch("scheduler.AUTOMATIC_RETRAINING_ENABLED", True),
+            patch("main.AsyncIOScheduler") as mock_cls,
+            patch("main.setup_logging"),
+            patch("main.init_db"),
+            patch("ml.vector_store._get_embedder"),
+            patch("ml.vector_store.init_vector_store"),
+            patch("ml.vector_store.seed_demo_documents"),
+        ):
+            mock_instance = MagicMock()
+            mock_cls.return_value = mock_instance
+
+            from main import app
+
+            # Enter the lifespan context manager directly
+            async with app.router.lifespan_context(app):
+                pass
+
+            # Verify the scheduler was created, job added, and started
+            mock_cls.assert_called_once()
+            mock_instance.add_job.assert_called_once()
+            mock_instance.start.assert_called_once()
