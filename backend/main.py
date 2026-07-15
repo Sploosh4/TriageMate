@@ -98,22 +98,28 @@ async def lifespan(app: FastAPI):
             check_drift_and_retrain,
             RETRAIN_INTERVAL_HOURS,
             RETRAIN_DRIFT_THRESHOLD,
+            AUTOMATIC_RETRAINING_ENABLED,
         )
 
-        _scheduler = AsyncIOScheduler()
-        _scheduler.add_job(
-            check_drift_and_retrain,
-            "interval",
-            hours=RETRAIN_INTERVAL_HOURS,
-            id="drift_retrain",
-            replace_existing=True,
-        )
-        _scheduler.start()
-        logger.info(
-            "Retraining scheduler registered (interval=%dh, drift_threshold=%0.3f)",
-            RETRAIN_INTERVAL_HOURS,
-            RETRAIN_DRIFT_THRESHOLD,
-        )
+        if AUTOMATIC_RETRAINING_ENABLED:
+            _scheduler = AsyncIOScheduler()
+            _scheduler.add_job(
+                check_drift_and_retrain,
+                "interval",
+                hours=RETRAIN_INTERVAL_HOURS,
+                id="drift_retrain",
+                replace_existing=True,
+            )
+            _scheduler.start()
+            logger.info(
+                "Retraining scheduler registered (interval=%dh, drift_threshold=%0.3f)",
+                RETRAIN_INTERVAL_HOURS,
+                RETRAIN_DRIFT_THRESHOLD,
+            )
+        else:
+            logger.info(
+                "Automatic retraining DISABLED — set AUTOMATIC_RETRAINING_ENABLED=true to enable"
+            )
     except Exception as e:
         logger.warning("Retraining scheduler registration skipped: %s", e)
 
