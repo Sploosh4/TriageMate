@@ -77,6 +77,40 @@ jobs:
         with:
           args: "check backend/"
 
+  postgresql-integration:
+    runs-on: [self-hosted, Linux, X64, triagemate]
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: triagemate
+          POSTGRES_PASSWORD: triagemate
+          POSTGRES_DB: triagemate
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+          pip install -r requirements-dev.txt
+      - name: Run PostgreSQL integration tests
+        env:
+          DATABASE_URL: postgresql://triagemate:triagemate@localhost:5432/triagemate
+        run: |
+          cd backend
+          python -m pytest tests/test_postgresql_integration.py -v
+
   docker-build:
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/sprint-'))
     runs-on: [self-hosted, Linux, X64, triagemate]
