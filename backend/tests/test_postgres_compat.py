@@ -2,14 +2,19 @@
 Tests for PostgreSQL compatibility in the SQLite wrapper (_PGCursor).
 
 Verifies that the _PGCursor.execute() method correctly translates
-SQLite-style parameters to psycopg2-compatible format.
+SQLite-style parameters to psycopg2-compatible format by wrapping a
+recording fake cursor with the real _PGCursor.
 """
 
-import re
+from database import _PGCursor
 
 
-class _RecordingCursor:
-    """Captures the SQL and params passed to execute()."""
+class _FakeCursor:
+    """Captures the SQL and params passed to execute().
+
+    Provides ``description`` and ``rowcount`` attributes so it is
+    compatible with _PGCursor's wrapper logic.
+    """
 
     def __init__(self):
         self.sql = None
@@ -23,19 +28,8 @@ class _RecordingCursor:
         return self
 
 
-# Duplicate the execute logic from _PGCursor for isolated testing
-def _pg_execute(sql, params=None):
-    """Simulate _PGCursor.execute() parameter translation."""
-    if params is None:
-        return sql
-    if isinstance(params, dict):
-        return re.sub(r"(?<!:):([a-zA-Z_][a-zA-Z0-9_]*)", r"%(\1)s", sql)
-    else:
-        return sql.replace("?", "%s")
-
-
 class TestPGCursorParameterTranslation:
-    """_PGCursor parameter translation tests."""
+    """_PGCursor parameter translation tests using a recording fake cursor."""
 
     def test_pg_cursor_converts_named_sqlite_parameters(self):
         """SQLite :name params become psycopg2 %(name)s."""
@@ -46,7 +40,11 @@ class TestPGCursorParameterTranslation:
                 :vulnerability_id, :hostname, :cvss_score
             )
         """
-        result = _pg_execute(sql, {"vulnerability_id": "CVE-2024-0001"})
+        fake = _FakeCursor()
+        cursor = _PGCursor(fake)
+        cursor.execute(sql, {"vulnerability_id": "CVE-2024-0001"})
+
+        result = fake.sql
         assert ":vulnerability_id" not in result, (
             f"Named param :vulnerability_id was not converted in:\n{result}"
         )
@@ -70,7 +68,11 @@ class TestPGCursorParameterTranslation:
             SET telemetry_json = :telemetry::jsonb
             WHERE id = :id
         """
-        result = _pg_execute(sql, {"telemetry": "{}", "id": 1})
+        fake = _FakeCursor()
+        cursor = _PGCursor(fake)
+        cursor.execute(sql, {"telemetry": "{}", "id": 1})
+
+        result = fake.sql
         assert "::jsonb" in result, f"PostgreSQL ::jsonb cast was lost in:\n{result}"
         assert "%(telemetry)s::jsonb" in result, (
             f"Expected %(telemetry)s::jsonb in:\n{result}"
@@ -84,7 +86,11 @@ class TestPGCursorParameterTranslation:
     def test_pg_cursor_converts_positional_parameters(self):
         """SQLite ? placeholders become %s for psycopg2 positional params."""
         sql = "SELECT * FROM vulnerabilities WHERE resolved_at >= ? AND priority_score > ?"
-        result = _pg_execute(sql, ("2024-01-01", 50))
+        fake = _FakeCursor()
+        cursor = _PGCursor(fake)
+        cursor.execute(sql, ("2024-01-01", 50))
+
+        result = fake.sql
         assert "?" not in result, (
             f"Positional placeholder ? was not converted in:\n{result}"
         )
@@ -95,11 +101,20 @@ class TestPGCursorParameterTranslation:
     def test_pg_cursor_handles_no_params(self):
         """SQL with no params should be returned unchanged."""
         sql = "SELECT 1"
-        result = _pg_execute(sql)
-        assert result == sql, f"SQL without params was modified:\n{result}"
+        fake = _FakeCursor()
+        cursor = _PGCursor(fake)
+        cursor.execute(sql)
+
+        assert fake.sql == sql, f"SQL without params was modified:\n{fake.sql}"
+        assert fake.params is None, (
+            f"Expected params to be None when no params provided, got {fake.params}"
+        )
 
     def test_pg_cursor_handles_empty_dict_params(self):
         """Empty dict params should still trigger named param conversion."""
         sql = "SELECT :x"
-        result = _pg_execute(sql, {})
-        assert "%(x)s" in result
+        fake = _FakeCursor()
+        cursor = _PGCursor(fake)
+        cursor.execute(sql, {})
+
+        assert "%(x)s" in fake.sql

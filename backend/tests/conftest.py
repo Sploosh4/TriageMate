@@ -127,8 +127,18 @@ def setup_test_db():
 
     Overrides database.DB_PATH with a temp file to isolate tests
     from development data in triagemate.db.
+
+    When DATABASE_URL points to PostgreSQL, this fixture is a no-op
+    (PostgreSQL integration tests manage their own lifecycle).
     """
     import database
+
+    # If using PostgreSQL, skip SQLite-specific setup
+    if os.getenv("DATABASE_URL", "").startswith("postgresql://"):
+        database.init_db()
+        yield
+        return
+
     from seed_data import seed
 
     _tmp_db = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
@@ -153,8 +163,23 @@ def cleanup_test_records():
     """Delete any CVE-TEST-* records after the full test session.
 
     Runs after all tests complete to prevent test data from leaking.
+    Handles both SQLite and PostgreSQL backends.
     """
     yield
+    import database
+
+    if os.getenv("DATABASE_URL", "").startswith("postgresql://"):
+        try:
+            conn = database.get_db()
+            conn.execute(
+                "DELETE FROM vulnerabilities WHERE vulnerability_id LIKE 'CVE-TEST-%'"
+            )
+            conn.commit()
+            conn.close()
+        except Exception:
+            pass
+        return
+
     import sqlite3
     import database
 
