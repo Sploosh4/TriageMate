@@ -22,7 +22,7 @@
 
 | # | File | Status | Description |
 |---|---|---|---|
-| 1 | `planning/ROADMAP.md` | CURRENT | **Master status.** What exists, what's broken, and what's next. Sprint 29 Gate A is complete; Sprint 30 is finalizing repository reconciliation. Start here. |
+| 1 | `planning/ROADMAP.md` | CURRENT | **Master status.** What exists, what's broken, and what's next. Sprint 30 repository reconciliation is complete; Gate B baseline training remains separately authorized future work. Start here. |
 | 2 | `architecture/MVP_SCOPE.md` | OUTDATED | Sprint 1 scope boundaries. Many deferred items are now done. See caution banner. |
 | 3 | `reference/AI_PROBLEMS.md` | CURRENT | Bug tracker. All historical issues resolved. |
 | 4 | `archive/ml-implementation-plan.md` | ARCHIVED | → Replaced by `graphify_output/ml_inventory.md` (auto-generated, run `just graphify`) |
@@ -43,7 +43,7 @@
 
 | File | Status | Description |
 |---|---|---|
-| `planning/ROADMAP.md` | CURRENT | Forward-looking roadmap. Sprint 29 implementation and Gate A are complete; baseline training requires separate future authorization. Sprint 30 reconciles Git and documentation. |
+| `planning/ROADMAP.md` | CURRENT | Forward-looking roadmap. Sprints 29–30 are complete; baseline training requires separate future authorization. |
 | `planning/HANDOFF-2026-07-08.md` | OUTDATED | Handoff from pre-Sprint-18 era. Drift monitoring, retraining, concept drift, and benchmark sections superseded by Sprints 18–22. Still accurate for network topology/Sentinel gaps and post-MVP items. |
 | `planning/ai-doc-strategy-2026-07-07.md` | CURRENT | This consolidation plan — how and why docs were restructured. |
 | `planning/github-label-taxonomy.md` | CURRENT | Sprint 24 label taxonomy — 25 labels (9 defaults + 16 custom), colors, descriptions. |
@@ -57,7 +57,7 @@
 | `reference/BUG_HUNT_2026-07-13.md` | CURRENT | **162 bugs found across all areas** (19 CRITICAL, 38 HIGH, 49 MEDIUM, 56 LOW). Full bug hunt report from 2026-07-13. Pipeline audit in section 9. |
 | `reference/xgboost-investigation-report.md` | CURRENT | Root cause analysis of XGBoost false-negative rate. ✅ All 8 fixes applied, model retrained 2026-07-08. |
 | `reference/graphify-output-reliability-report.md` | CURRENT | Audit and remediation specification for factual accuracy, provenance, and reproducibility of Graphify outputs. |
-| `reference/ml-retraining-gate.md` | CURRENT | Authoritative review workflow: Gate A evidence, Gate B baseline training requiring separate future authorization, and Gate C validation. Issue #79 tracks runtime enforcement. |
+| `reference/ml-retraining-gate.md` | CURRENT | Authoritative review workflow: Gate A evidence, separately authorized Gate B baseline training, and Gate C validation. Automatic scheduler-driven retraining is default-off and requires explicit operator opt-in (Issue #79, PR #83). |
 | `../backend/reports/investigations/ml-gate-a-2026-07-14.json` | CURRENT | Versioned evidence from the first post-policy gather: artifact/schema fingerprints and coherent train/validation/test counts. |
 | `../backend/reports/investigations/mid-2023-data-drop.md` | OUTDATED | Historical diagnosis of the positive-only split. Root cause remains useful; its proposed fix was superseded by PR #68. |
 | `../backend/reports/investigations/ml-retraining-decision-gate.md` | OUTDATED | Historical Sprint 28 decision report. Current operational guidance is `reference/ml-retraining-gate.md`. |
