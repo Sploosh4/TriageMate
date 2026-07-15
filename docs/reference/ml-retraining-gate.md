@@ -3,12 +3,13 @@
 This document describes the required human review process for ML retraining in
 TriageMate. Each gate must pass before the next phase is authorized.
 
-> **Runtime enforcement gap:** The current application scheduler can still call
-> model training automatically after a drift threshold is crossed. Issue #79
-> tracks the default-off/explicit-opt-in guard. Until that issue is resolved,
-> these gates are mandatory operating policy but are not a complete technical
-> control. Do not leave an application instance running with automatic
-> retraining assumptions you have not reviewed.
+> **Runtime enforcement:** Automatic scheduler-driven retraining is disabled by
+> default (`AUTOMATIC_RETRAINING_ENABLED=false`). When disabled, the scheduler
+> does not register the retraining job and `check_drift_and_retrain()` returns
+> immediately. This env var controls only the periodic scheduler — it does not
+> restrict or authorise manual `--train` runs, which remain under direct user
+> control. A manual baseline `--train` run should normally be performed with
+> automatic retraining disabled to avoid concurrent scheduler interference.
 
 ## Gate A: Gather Evidence and Integrity
 
@@ -62,9 +63,15 @@ After Gate A passes and the reviewer approves its evidence:
 5. Run it in a dedicated branch/workspace and preserve the pre-run artifact
    fingerprints so the candidate can be compared or discarded safely.
 
-`--train` is never implicit in a Gate A command. Baseline metrics are
-produced by a candidate training run that requires separate future user authorization; passing Gate A
-alone does not permit that run or model-artifact replacement.
+> **Note on `AUTOMATIC_RETRAINING_ENABLED`:** This env var controls only
+> periodic scheduler-driven retraining. It is unrelated to manual `--train`
+> runs. A manual baseline `--train` should normally be performed with automatic
+> retraining **disabled** (`AUTOMATIC_RETRAINING_ENABLED=false`, the default)
+> to avoid concurrent scheduler interference. Setting it to `true` does not
+> itself authorise any training.
+
+`--train` is never implicit in a Gate A command. Passing Gate A alone does not
+permit model retraining or model-artifact replacement.
 
 ## Gate C: Post-Training Validation (post-`--train`)
 
