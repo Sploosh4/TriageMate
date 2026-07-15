@@ -87,7 +87,7 @@ The merged workflow changes each CI job from `runs-on: ubuntu-latest` to:
 runs-on: [self-hosted, Linux, X64, triagemate]
 ```
 
-With one local runner, matrix and independent jobs execute sequentially rather than in parallel. Use `github-basics` for branch, PR, CI-evidence, and merge workflow; this guide covers VM/runner operation only.
+With one local runner, matrix and independent jobs execute sequentially rather than in parallel. The runner VM is CI infrastructure, not a development workspace or worktree. Use `github-basics` for OpenCode workspace, branch, PR, CI-evidence, merge, and cleanup workflow; this guide covers VM/runner operation only.
 
 ## Validation evidence
 

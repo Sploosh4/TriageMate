@@ -7,7 +7,7 @@ description: Tier 2 cloud LLM integration, API call architecture, prompt enginee
 
 ## GitHub Workflow
 
-For repository coordination, load `github-basics`; report branch, SHA, and verification evidence to the Commander, which delegates GitHub lifecycle work to `git-steward`.
+Use the current assigned task workspace; never create or switch worktrees. Report the workspace path, branch, SHA, and verification evidence to the Commander; `git-steward` owns Git/GitHub lifecycle actions.
 
 ## Providers
 Primary → Backup → KNOWN_CONFLICTS fallback → neutral default

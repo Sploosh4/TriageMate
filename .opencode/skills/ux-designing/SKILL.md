@@ -7,7 +7,7 @@ description: Visual design, CSS architecture, layout, color palette, accessibili
 
 ## GitHub Workflow
 
-For repository coordination, load `github-basics`; report branch, SHA, and verification evidence to the Commander, which delegates GitHub lifecycle work to `git-steward`.
+Use the current assigned task workspace; never create or switch worktrees. Report the workspace path, branch, SHA, and verification evidence to the Commander; `git-steward` owns Git/GitHub lifecycle actions.
 
 ## Visual Reference
 `demo-reference.html` is the canonical visual spec — all changes must match it exactly.

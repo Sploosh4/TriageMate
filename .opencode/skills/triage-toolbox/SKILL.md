@@ -7,7 +7,7 @@ description: Project-level CLI commands, justfile, Docker, dev server, testing, 
 
 ## GitHub Workflow
 
-Load `github-basics` for repository coordination. Implementation agents report branch, SHA, and test evidence to the Commander, which delegates a self-contained task to `git-steward`; only explicitly authorized actions may merge, delete, close, or push directly to `main`.
+Use the current assigned task workspace; never create or switch worktrees. Implementation agents report the workspace path, branch, SHA, and test evidence to the Commander; `git-steward` owns Git/GitHub lifecycle actions, and only exact authority permits merge, deletion, closure, or a direct push to `main`.
 
 **Primary interface: `just`** (34 recipes). Run `just --list` from the project root to see all available commands. The justfile lives at `./justfile`.
 

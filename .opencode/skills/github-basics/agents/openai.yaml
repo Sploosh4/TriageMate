@@ -1,4 +1,4 @@
 interface:
   display_name: "GitHub Basics"
-  short_description: "Basic GitHub workflow guidance"
-  default_prompt: "Use $github-basics for basic GitHub workflow guidance."
+  short_description: "Safe workspace, branch, PR, CI, and cleanup workflow"
+  default_prompt: "Use $github-basics to select exactly one workspace mode and safely coordinate branches, PRs, CI, tracking, and authorized cleanup."

@@ -21,6 +21,7 @@
 **Why this description:**
 - Repository topology is a distinct coordination responsibility, separate from product implementation and audit.
 - The Commander relays a self-contained task package to `git-steward` for branch, PR, CI, and tracking work while retaining approval authority for irreversible actions; this avoids assuming one fresh subagent can inherit another's context.
+- OpenCode's GUI workspace is already the task worktree. All agents assigned to that task share it; only independent Issues receive separate GUI workspaces. Manual worktrees are a CLI fallback, never an extra layer inside a GUI workspace.
 - “Does not implement product code” prevents repository maintenance from becoming a competing implementation workspace.
 
 ---
