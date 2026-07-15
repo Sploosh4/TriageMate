@@ -7,7 +7,7 @@ description: Tier 2 cloud LLM integration, API call architecture, prompt enginee
 
 ## GitHub Workflow
 
-Test `gh` access before relying on it. Use subagent operations when Level 4+ verified; otherwise route mutations through the commander.
+For repository coordination, load `github-basics`; report branch, SHA, and verification evidence to the Commander, which delegates GitHub lifecycle work to `git-steward`.
 
 ## Providers
 Primary → Backup → KNOWN_CONFLICTS fallback → neutral default

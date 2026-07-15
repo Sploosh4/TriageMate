@@ -7,7 +7,7 @@ description: Python, FastAPI, SQLite, database schema, pipeline logic, API endpo
 
 ## GitHub Workflow
 
-Test `gh` access before relying on it. Use subagent operations when Level 4+ verified; otherwise route mutations through the commander.
+For repository coordination, load `github-basics`; report branch, SHA, and verification evidence to the Commander, which delegates GitHub lifecycle work to `git-steward`.
 
 ## Stack
 - Python 3.12 with type hints

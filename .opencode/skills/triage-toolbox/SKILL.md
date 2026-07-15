@@ -7,7 +7,7 @@ description: Project-level CLI commands, justfile, Docker, dev server, testing, 
 
 ## GitHub Workflow
 
-Test `gh` access before relying on it. Use subagent operations when Level 4+ verified; otherwise route mutations through the commander.
+Load `github-basics` for repository coordination. Implementation agents report branch, SHA, and test evidence to the Commander, which delegates a self-contained task to `git-steward`; only explicitly authorized actions may merge, delete, close, or push directly to `main`.
 
 **Primary interface: `just`** (34 recipes). Run `just --list` from the project root to see all available commands. The justfile lives at `./justfile`.
 
@@ -15,7 +15,7 @@ Test `gh` access before relying on it. Use subagent operations when Level 4+ ver
 
 ```bash
 just test                    # complete pytest suite (fuzz test skipped)
-just test full=true          # complete pytest suite, including fuzz testing
+TRIAGEMATE_RUN_FUZZ=1 just test  # include the opt-in fuzz test
 just test-file test_health   # run specific test file
 just lint                    # ruff check + format check
 just lint-fix                # ruff auto-fix + format
@@ -54,9 +54,10 @@ just build-vendor-index      # build vendor popularity index
 
 ## ML Training (via just)
 
+**Training is human-authorized only.** Do not run a model-changing command without explicit user approval. Before Tier-1 XGBoost `--train`, the required Gate A/Gate B evidence in `docs/reference/ml-retraining-gate.md` must be reviewed; other model-training workflows still require an approved, model-appropriate evaluation plan. Long gathers/training runs are performed by the user when they choose.
+
 ```bash
-just train-xgboost           # full pipeline (gather + train)
-just train-xgboost --train   # train only
+just train-xgboost --train   # Tier-1 XGBoost train only — requires Gate B authorization
 just train-xgboost --gather  # gather only
 just train-pretier           # pre-tier RF classifier
 just train-epss              # EPSS substitution v3
@@ -81,7 +82,7 @@ just audit-all               # run all four audits in sequence
 
 ```bash
 just gate                    # full gate with a 10-CVE calibration sample
-just gate full=true          # full gate, including the full calibration audit + fuzz test
+TRIAGEMATE_FULL=true just gate  # full gate, including calibration audit + fuzz test
 ```
 
 ## GitHub Actions verification (self-hosted VM)

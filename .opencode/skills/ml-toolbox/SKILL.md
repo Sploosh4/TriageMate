@@ -7,17 +7,18 @@ description: ML CLI commands for training, synthetic data, corpus building, data
 
 ## GitHub Workflow
 
-Test `gh` access before relying on it. Use subagent operations when Level 4+ verified; otherwise route mutations through the commander.
+For repository coordination, load `github-basics`; report branch, SHA, and verification evidence to the Commander, which delegates GitHub lifecycle work to `git-steward`.
 
 All commands run from `backend/`.
 
 ## Training
 
+**Human authorization required.** Do not run model-changing commands without explicit user approval. For Tier-1 XGBoost `--train`, review Gate A/Gate B evidence in `docs/reference/ml-retraining-gate.md`; use `--gather` for evidence collection only. Other training commands require an approved, model-appropriate evaluation plan.
+
 ```bash
 # XGBoost exploitation model (Tier 1)
-python -m ml.train_xgboost              # full pipeline (gather + train)
-python -m ml.train_xgboost --train       # train only (skip gather)
-python -m ml.train_xgboost --gather      # gather only (skip train)
+python -m ml.train_xgboost --train       # train only — requires Gate B authorization
+python -m ml.train_xgboost --gather      # gather only — does not train
 
 # Pre-Tier RandomForest classifier
 python -m ml.train_pre_tier                # JSON files (legacy)

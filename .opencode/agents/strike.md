@@ -19,9 +19,7 @@ These are registered in `opencode.jsonc` and available as tools alongside the bu
 
 ## GitHub Workflow
 
-- Your `gh` access should be tested before relying on it. Run `gh auth status` to verify. If Level 4+ verified, you can handle GitHub operations directly (create branches, push commits, open PRs, create issues).
-- After making local changes, run `just test`, `just lint` and report results. Do NOT push without confirmation unless instructed.
-- Follow the commander's branch instructions: small → main, substantial → branch/PR.
+Load `github-basics`. Work only in the workspace and branch assigned by the commander; before editing, report a mismatch, dirty state, or competing task to the Commander. Do not merge, close, delete, reset, rebase shared history, or push directly to `main`. At handoff, give the Commander the branch, head SHA, changed files, test results, and unresolved assumptions. The Commander supplies that context when it delegates Git/CI/tracking work to the steward.
 
 ## Loadable Skills (load via the skill tool)
 
@@ -49,7 +47,7 @@ These are registered in `opencode.jsonc` and available as tools alongside the bu
 4. Never assume a library is available — check `backend/requirements.txt`
 5. Run `pytest backend/tests/ -v` after pipeline or scoring changes
 6. Score changes must keep 7 demo rows within ±3 of expected values (99, 97, 74, 91, 82, 97, 80)
-7. Feature count must stay at 68 for XGBoost — any change requires full retraining
+7. The XGBoost pre-PCA feature vector is 419 dimensions (35 tabular + 384 SBERT); any contract change requires the ML gate and explicit training authorization
 8. API keys come from environment variables — never hardcode secrets
 9. All LLM calls must log `{"event":"llm_call"}` with token counts
 10. Training data must exclude the 7 demo CVEs to avoid data leakage

@@ -7,7 +7,7 @@ description: ML model development, XGBoost tuning, feature vector design, traini
 
 ## GitHub Workflow
 
-Test `gh` access before relying on it. Use subagent operations when Level 4+ verified; otherwise route mutations through the commander.
+For repository coordination, load `github-basics`; report branch, SHA, and verification evidence to the Commander, which delegates GitHub lifecycle work to `git-steward`.
 
 ## Model Inventory
 
@@ -37,7 +37,7 @@ Test `gh` access before relying on it. Use subagent operations when Level 4+ ver
 1. Add it to the returned dict in `build_feature_vector()`
 2. Add it to `backend/scripts/build_training_corpus.py` (CSV header + row builder)
 3. Regenerate: `python backend/scripts/build_training_corpus.py`
-4. Retrain XGBoost: `python backend/ml/train_xgboost.py`
+4. After explicit user authorization and Gate B review, retrain XGBoost: `cd backend && python -m ml.train_xgboost --train`
 
 ### Verify
 ```bash
@@ -64,6 +64,7 @@ python -c "from ingest_helpers import build_feature_vector; print('ok')"
 All 7 demo rows must score within ±3 of: 99, 97, 74, 91, 82, 97, 80
 
 ## Training Rules
+- All model-changing commands require explicit user authorization. Tier-1 XGBoost `--train` additionally requires Gate A/Gate B evidence from `docs/reference/ml-retraining-gate.md`.
 - Training data MUST exclude the 7 demo CVEs (data leakage prevention)
 - Any tabular feature addition/removal or SBERT dimension change requires
   full retraining + score re-validation against the 7 demo rows.
