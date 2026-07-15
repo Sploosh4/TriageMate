@@ -16,12 +16,12 @@
 ---
 
 ### git-steward
-> Repository steward for TriageMate. Owns Git worktree, branch, pull request, CI, Issue/Milestone, merge-readiness, and safe recovery coordination; does not implement product code.
+> Repository publishing steward for TriageMate. Validates the user-created OpenCode workspace and existing branch, then owns commits, pushes, pull requests, CI, Issue/Milestone tracking, merge-readiness, and safe recovery; never creates or switches repository topology and does not implement product code.
 
 **Why this description:**
 - Repository topology is a distinct coordination responsibility, separate from product implementation and audit.
-- The Commander relays a self-contained task package to `git-steward` for branch, PR, CI, and tracking work while retaining approval authority for irreversible actions; this avoids assuming one fresh subagent can inherit another's context.
-- OpenCode's GUI workspace is already the task worktree. All agents assigned to that task share it; only independent Issues receive separate GUI workspaces. Manual worktrees are a CLI fallback, never an extra layer inside a GUI workspace.
+- The Commander relays a self-contained task package to `git-steward` for commit, push, PR, CI, and tracking work while retaining approval authority for irreversible actions; this avoids assuming one fresh subagent can inherit another's context.
+- Only the user creates a task workspace manually through OpenCode. The GUI workspace already supplies the task worktree and branch, all assigned agents share them, and agents never create or switch repository topology. Independent Issues require separate user-created GUI workspaces; there is no manual/CLI fallback.
 - “Does not implement product code” prevents repository maintenance from becoming a competing implementation workspace.
 
 ---

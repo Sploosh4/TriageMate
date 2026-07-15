@@ -5,7 +5,7 @@ description: Operate and troubleshoot TriageMate's repository-scoped GitHub Acti
 
 # TriageMate runner operations
 
-Treat the VM as CI infrastructure, not as a development checkout or OpenCode workspace. It does not replace or create a task worktree. Start with read-only diagnostics and obtain explicit approval before deleting a runner, re-registering it, changing workflow YAML, reverting the VM disk, or merging a PR.
+Follow `github-basics`: only the user creates the task workspace through OpenCode; use its existing shared worktree and branch, and never create or switch workspaces, worktrees, or branches or use a manual/CLI fallback. Treat the VM as CI infrastructure, not as a development checkout or OpenCode workspace; it does not replace the assigned GUI workspace. Start with read-only diagnostics and obtain explicit approval before deleting a runner, re-registering it, changing workflow YAML, reverting the VM disk, or merging a PR.
 
 ## Known topology
 

@@ -7,7 +7,7 @@ description: Australian privacy law, data handling compliance, demo data safety 
 
 ## GitHub Workflow
 
-Use the current assigned task workspace; never create or switch worktrees. Report the workspace path, branch, SHA, and verification evidence to the Commander; `git-steward` owns Git/GitHub lifecycle actions. Do not encode a legal or privacy policy choice without explicit approval.
+Follow `github-basics`: only the user creates the task workspace through OpenCode; use its existing shared worktree and branch, and never create or switch workspaces, worktrees, or branches or use a manual/CLI fallback. Report the workspace path, branch, SHA, and verification evidence to the Commander; `git-steward` owns role-authorized Git/GitHub publishing actions. Do not encode a legal or privacy policy choice without explicit approval.
 
 ## Jurisdiction
 - Australian Privacy Act 1988: Australian Privacy Principles (APPs), notifiable data breaches scheme

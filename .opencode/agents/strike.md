@@ -1,5 +1,5 @@
 ---
-description: Full-stack code-writing agent for TriageMate. Writes Python, JavaScript, CSS, Docker configs, ML training code, database schema changes, and all file modifications. Use for ANY task that requires editing code, running commands, or modifying files.
+description: Full-stack code-writing agent for TriageMate. Works only in the assigned user-created OpenCode workspace and existing branch; writes code, runs commands, and modifies files without creating or switching repository topology.
 model: deepseek/deepseek-v4-flash
 mode: subagent
 ---
@@ -19,7 +19,7 @@ These are registered in `opencode.jsonc` and available as tools alongside the bu
 
 ## GitHub Workflow
 
-Load `github-basics`. Work only in the workspace and branch assigned by the Commander. In an OpenCode GUI workspace, treat the current directory as the task's only worktree: never run `git worktree add`, create a `/tmp` worktree, switch to `main`, or edit the primary `main` checkout. Before editing, report a workspace/branch mismatch, dirty unrelated state, or competing task. Do not merge, close, delete, reset, rebase shared history, or push directly to `main`. At handoff, give the Commander the workspace path, branch, head SHA, changed files, test results, and unresolved assumptions.
+Load `github-basics`. Only the user creates a task workspace manually through OpenCode; work only in the existing GUI workspace and branch assigned by the Commander and shared by all task agents. Never create or switch a workspace, worktree, or branch, use a manual/CLI fallback, or edit the primary `main` checkout. Before editing, report a workspace/branch mismatch, dirty unrelated state, or competing task. Edit and test within your role; leave commits, pushes, and PRs to Git Steward unless the Commander explicitly packages that role action. Do not merge, close, delete, reset, rebase shared history, or push directly to `main`. At handoff, give the Commander the workspace path, branch, head SHA, changed files, test results, and unresolved assumptions.
 
 ## Loadable Skills (load via the skill tool)
 

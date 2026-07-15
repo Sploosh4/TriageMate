@@ -7,7 +7,7 @@ description: Python, FastAPI, SQLite, database schema, pipeline logic, API endpo
 
 ## GitHub Workflow
 
-Use the current assigned task workspace; never create or switch worktrees. Report the workspace path, branch, SHA, and verification evidence to the Commander; `git-steward` owns Git/GitHub lifecycle actions.
+Follow `github-basics`: only the user creates the task workspace through OpenCode; use its existing shared worktree and branch, and never create or switch workspaces, worktrees, or branches or use a manual/CLI fallback. Report the workspace path, branch, SHA, and verification evidence to the Commander; `git-steward` owns role-authorized Git/GitHub publishing actions.
 
 ## Stack
 - Python 3.12 with type hints

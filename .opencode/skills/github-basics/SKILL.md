@@ -1,6 +1,6 @@
 ---
 name: github-basics
-description: "Safely manage TriageMate Git and GitHub lifecycle work: workspace ownership, branch and PR preflight, CI evidence, Issues, Milestones, authorized merges, and recovery. Use for any repository coordination or GitHub mutation."
+description: "Safely manage TriageMate Git and GitHub lifecycle work from the user-created OpenCode workspace and its existing branch: preflight, commits, pushes, PRs, CI evidence, tracking, authorized merges, and recovery."
 ---
 
 # GitHub workflow
@@ -9,28 +9,22 @@ Use this skill for repository coordination. The `git-steward` owns normal Git/Gi
 
 ## Safety invariants
 
-- One task has one owned workspace, one worktree, one branch, and normally one PR. Subagents for that task share the assigned workspace; they do not receive separate workspaces.
-- Select exactly one workspace mode before making changes. Never combine an OpenCode GUI workspace with a manually created worktree for the same task.
+- Only the user creates a task workspace manually through OpenCode. The GUI workspace already supplies the task's one worktree and branch; all agents assigned to that task share them.
+- No agent may create or switch a workspace, worktree, or branch. There is no manual/CLI worktree fallback. Never run `git worktree add`, `git switch`, or `git checkout` to change branches, and never edit the separate primary `main` checkout.
 - `main` is integration-only. Never push directly to it, merge, close a PR/Issue, delete a branch/workspace/worktree, drop a stash, reset, rebase shared history, or force-push without explicit Commander or user authority for that exact action.
 - `gh auth status` confirms authentication only. It does not grant authority to mutate remote state.
 - A change is not implemented, completed, or safe to document as such until its intended commit is merged to `origin/main` and the relevant CI evidence is recorded.
 
-## Workspace mode
+## User-created OpenCode workspace
 
-### OpenCode GUI-managed workspace — default for OpenCode tasks
-
-- The current GUI workspace is already the task's only worktree. Use its current path and branch.
-- Never run `git worktree add`, create a `/tmp` worktree, switch this workspace to `main`, or edit the separate primary `main` checkout.
+- The current GUI workspace is the task's only worktree. Use its existing path and branch exactly as assigned.
 - Before editing, verify that the workspace belongs to the assigned Issue and was created from the intended base. If it is stale, dirty with unrelated changes, or assigned to another task, report the mismatch; do not repurpose it.
-- The user creates one GUI workspace per independent Issue. Commander, Strike, Auditor, Bookkeeper, Intel, and Git Steward work inside that same task workspace.
-
-### Manual/CLI worktree — fallback only
-
-Use a manual worktree only when no OpenCode GUI workspace exists and the Commander explicitly assigns manual mode, an owner, and a path. Only Git Steward creates or removes it. Never create a manual worktree merely because another agent needs to inspect or verify the same task.
+- The user creates one GUI workspace per independent Issue. Commander, Strike, Auditor, Bookkeeper, Intel, and Git Steward work inside that same task workspace and on its existing branch.
+- If no suitable GUI workspace exists, stop and ask the user to create one through OpenCode. Do not construct a substitute with Git or the CLI.
 
 ## Preflight before edits or remote changes
 
-From the repository root, inspect state before selecting or creating a branch:
+From the assigned workspace root, validate the existing workspace and branch before edits or remote changes:
 
 ```bash
 git fetch --prune origin
@@ -42,12 +36,12 @@ gh auth status
 gh pr list --state open --limit 100
 ```
 
-Record the selected workspace mode and repository root (`git rev-parse --show-toplevel`). Confirm the assigned Issue, target base, existing PRs, and worktrees do not already cover the task. If ownership, a dirty worktree, a duplicate PR, a second worktree for the same task, or the correct base is unclear, stop and report it to the Commander; do not create another workspace or "clean up" another agent's state.
+Record the repository root (`git rev-parse --show-toplevel`), current branch, and head SHA. Confirm they match the Commander's assigned Issue, target base, workspace, and existing branch, and that existing PRs and worktrees do not already cover the task. If ownership, a dirty worktree, a duplicate PR, a second worktree for the same task, or the correct base is unclear, stop and report it to the Commander; do not create, switch, repurpose, or clean repository topology.
 
 ## Change and PR workflow
 
-1. The Commander assigns the Issue, workspace mode, base, branch name, workspace owner, allowed scope, and verification requirements. Git Steward records this allocation.
-2. In GUI mode, use the already assigned workspace and branch. In explicitly assigned manual mode, Git Steward creates or selects the worktree. Keep commits scoped and inspect `git diff --check` plus the intended test results before committing.
+1. The user creates the task workspace manually through OpenCode. The Commander assigns the Issue, expected base, existing GUI workspace and branch, allowed scope, expected PR, and verification requirements; Git Steward validates and records that allocation without creating or selecting repository topology.
+2. Work only in the already assigned GUI workspace and existing branch. Keep commits scoped and inspect `git diff --check` plus the intended test results before committing.
 3. Push the branch and create one PR linked to the Issue and milestone. State the exact head SHA, changed files, tests, and known limitations in the handoff.
 4. Verify CI for the exact PR head, not merely a similarly named run:
 
@@ -56,7 +50,7 @@ Record the selected workspace mode and repository root (`git rev-parse --show-to
    gh pr view <pr-number> --json headRefOid,baseRefName,state,mergeStateStatus,url
    ```
 
-5. Merge only after explicit authorization. After merge, update the integration checkout with a fast-forward pull, confirm `main == origin/main`, and check the resulting main CI where the workflow runs differently for pushes.
+5. Merge only after explicit authorization. After merge, verify the resulting `origin/main` SHA and main CI where the workflow runs differently for pushes. Do not switch the task workspace to `main` or update the separate primary `main` checkout; report any local integration-checkout maintenance for the user to handle separately.
 
 ## Tracking and documentation
 
@@ -66,6 +60,6 @@ Record the selected workspace mode and repository root (`git rev-parse --show-to
 
 ## Safe cleanup and recovery
 
-After a confirmed merge and successful `main` CI, remove only the merged branch/workspace/worktree explicitly approved for cleanup. The user deletes an OpenCode GUI workspace through the GUI after its agent session is closed; Git Steward removes an explicitly assigned manual worktree. Do not use `gh pr merge --delete-branch` while the branch is checked out by any worktree.
+After a confirmed merge and successful `main` CI, cleanup still requires explicit authority for the exact branch or GUI workspace. The user closes the agent session and deletes the GUI workspace through OpenCode. Git Steward may delete the merged remote branch only when separately authorized and safe; it never removes the GUI worktree directly. Do not use `gh pr merge --delete-branch` while the branch is checked out by any worktree.
 
 For abandoned or confusing work: preserve the branch name and commit SHA first, inspect all worktrees and stashes, and report a recovery plan. Force-removal, stash dropping, reset, or history rewriting requires separate explicit authority.

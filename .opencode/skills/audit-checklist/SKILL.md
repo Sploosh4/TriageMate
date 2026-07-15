@@ -7,6 +7,10 @@ description: Technical audit procedures, ML calibration checks, schema parity va
 
 This skill grows over time as audit patterns emerge. Add new sections when an agent repeatedly does the same verification.
 
+## GitHub Workflow
+
+Follow `github-basics`: only the user creates the task workspace through OpenCode; use its existing shared worktree and branch, and never create or switch workspaces, worktrees, or branches or use a manual/CLI fallback. Auditors report evidence and do not mutate GitHub state.
+
 ---
 
 ## 1. ML Calibration Audit 🔴 HUMAN ONLY (~5 min)
@@ -109,7 +113,7 @@ Verify that any recent `database.py` change has entries in both `_init_db_sqlite
 ## GitHub Workflow Verification
 
 When auditing changes that involve GitHub:
-- Confirm exactly one workspace mode was assigned. In OpenCode GUI mode, verify the current workspace is the task's only worktree and no nested/manual `/tmp` worktree was created for it.
+- Verify the user-created OpenCode GUI workspace, its existing branch, and its worktree match the assignment; confirm no agent-created or switched workspace, worktree, or branch exists for the task.
 - Verify the submitted branch/PR has the stated base and exact head SHA; do not infer evidence from a similarly named run.
 - Check for a duplicate PR, competing worktree, or relevant stash before recommending merge or cleanup.
 - For code changes, verify the required PR checks and, after merge, the relevant `main` workflow checks. Record URLs/SHA/status.

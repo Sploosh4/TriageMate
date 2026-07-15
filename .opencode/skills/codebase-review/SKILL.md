@@ -9,7 +9,7 @@ description: Review an unfamiliar codebase methodically while preserving workspa
 
 > **Agents:** When the commander delegates a review task with this skill loaded, follow the numbered methodology below. Flag any deviation.
 
-Review from the current assigned workspace. Do not create, remove, clean, or switch worktrees/workspaces; record the current root, branch, and dirty state, and report an ownership mismatch before continuing.
+Follow `github-basics`: only the user creates the task workspace through OpenCode. Review from its existing shared worktree and branch; never create or switch workspaces, worktrees, or branches or use a manual/CLI fallback. Record the current root, branch, and dirty state, and report an ownership mismatch before continuing.
 
 ---
 

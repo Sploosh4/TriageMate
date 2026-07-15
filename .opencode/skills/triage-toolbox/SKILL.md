@@ -7,7 +7,7 @@ description: Project-level CLI commands, justfile, Docker, dev server, testing, 
 
 ## GitHub Workflow
 
-Use the current assigned task workspace; never create or switch worktrees. Implementation agents report the workspace path, branch, SHA, and test evidence to the Commander; `git-steward` owns Git/GitHub lifecycle actions, and only exact authority permits merge, deletion, closure, or a direct push to `main`.
+Follow `github-basics`: only the user creates the task workspace through OpenCode; use its existing shared worktree and branch, and never create or switch workspaces, worktrees, or branches or use a manual/CLI fallback. Implementation agents report the workspace path, branch, SHA, and test evidence to the Commander; `git-steward` owns role-authorized Git/GitHub publishing actions, and only exact authority permits merge, deletion, closure, or a direct push to `main`.
 
 **Primary interface: `just`** (34 recipes). Run `just --list` from the project root to see all available commands. The justfile lives at `./justfile`.
 

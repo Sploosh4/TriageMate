@@ -5,7 +5,7 @@ After completing every task, the commander MUST delegate to bookkeeper for a fre
 
 ## GitHub Workflow Overview
 
-- **Authoritative workflow:** `github-basics` and `git-steward` govern all repository/GitHub actions: one task = one owned workspace = one worktree = one branch = one PR; an OpenCode GUI workspace is already the task's worktree, so agents must never create a nested/manual worktree or edit the primary `main` checkout from it; `main` is integration-only, and merges, branch/workspace/worktree deletion, Issue/PR closure, or direct-main pushes require explicit authority for that exact action.
+- **Authoritative workflow:** `github-basics` and `git-steward` govern all repository/GitHub actions. Only the user creates a task workspace manually through OpenCode; that GUI workspace already supplies the task's one worktree and branch, and every agent assigned to the task shares them. Agents must never create or switch workspaces, worktrees, or branches, use a manual/CLI fallback, or edit the primary `main` checkout. They may edit, test, commit, push, and open a PR from the assigned branch only through their defined roles. `main` is integration-only, and merges, branch deletion, GUI-workspace deletion, Issue/PR closure, or direct-main pushes require explicit authority for that exact action; the user performs GUI-workspace deletion through OpenCode.
 - **Canonical tracking:** GitHub Issues and Milestones serve as the canonical source of truth for task tracking and release planning.
 - **Execution reference:** Detailed sprint execution plans live in `.opencode/plans/` and reference their corresponding GitHub Issues and Milestones.
 
