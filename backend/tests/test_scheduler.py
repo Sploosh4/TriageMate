@@ -186,6 +186,7 @@ class TestRetrainStatusEndpoint:
         data = response.json()
 
         expected_keys = {
+            "automatic_retraining_enabled",
             "retrain_interval_hours",
             "drift_threshold",
             "lock_held",
@@ -208,6 +209,16 @@ class TestRetrainStatusEndpoint:
         )
 
 
+class TestAutomaticRetrainingEnabledDefault:
+    """Verify the default-off behaviour of AUTOMATIC_RETRAINING_ENABLED."""
+
+    def test_automatic_retraining_disabled_by_default(self):
+        """AUTOMATIC_RETRAINING_ENABLED should be False by default."""
+        from scheduler import AUTOMATIC_RETRAINING_ENABLED
+
+        assert AUTOMATIC_RETRAINING_ENABLED is False
+
+
 @pytest.mark.asyncio
 class TestRetrainNoDriftNoAction:
     """When no drift is detected, no retrain should be triggered."""
@@ -225,7 +236,10 @@ class TestRetrainNoDriftNoAction:
             "epss": safe_psi,
         }
 
-        with patch("scheduler.retrain_model") as mock_retrain:
+        with (
+            patch("scheduler.retrain_model") as mock_retrain,
+            patch("scheduler.AUTOMATIC_RETRAINING_ENABLED", True),
+        ):
             await check_drift_and_retrain()
             # Verify retrain_model was NOT called
             mock_retrain.assert_not_called()
@@ -243,7 +257,10 @@ class TestRetrainNoDriftNoAction:
             "epss": 0.0,
         }
 
-        with patch("scheduler.retrain_model", new_callable=AsyncMock) as mock_retrain:
+        with (
+            patch("scheduler.retrain_model", new_callable=AsyncMock) as mock_retrain,
+            patch("scheduler.AUTOMATIC_RETRAINING_ENABLED", True),
+        ):
             mock_retrain.return_value = {
                 "status": "success",
                 "model": "xgboost",
@@ -252,6 +269,27 @@ class TestRetrainNoDriftNoAction:
             await check_drift_and_retrain()
             # Verify retrain_model was called for xgboost
             mock_retrain.assert_called_once_with("xgboost")
+
+    @patch("scheduler.poll_drift_status")
+    async def test_retrain_not_called_when_disabled(self, mock_poll):
+        """check_drift_and_retrain should NOT retrain even with drift when disabled."""
+        from scheduler import check_drift_and_retrain, RETRAIN_DRIFT_THRESHOLD
+
+        # Set one model above threshold
+        high_psi = RETRAIN_DRIFT_THRESHOLD + 0.1
+        mock_poll.return_value = {
+            "xgboost": high_psi,
+            "pre_tier": 0.0,
+            "epss": 0.0,
+        }
+
+        with (
+            patch("scheduler.retrain_model", new_callable=AsyncMock) as mock_retrain,
+            patch("scheduler.AUTOMATIC_RETRAINING_ENABLED", False),
+        ):
+            await check_drift_and_retrain()
+            # Verify retrain_model was NOT called despite high drift
+            mock_retrain.assert_not_called()
 
 
 @pytest.mark.asyncio
@@ -382,7 +420,10 @@ class TestRetrainCheckDriftLogging:
 
         caplog.set_level(logging.INFO, logger="triagemate.scheduler")
 
-        with patch("scheduler.retrain_model", new_callable=AsyncMock):
+        with (
+            patch("scheduler.retrain_model", new_callable=AsyncMock),
+            patch("scheduler.AUTOMATIC_RETRAINING_ENABLED", True),
+        ):
             await check_drift_and_retrain()
 
         # Should log the drift summary

@@ -42,7 +42,12 @@ def get_retrain_status(
 
     Reports lock state, interval configuration, and drift threshold.
     """
-    from scheduler import LOCK_FILE, RETRAIN_INTERVAL_HOURS, RETRAIN_DRIFT_THRESHOLD
+    from scheduler import (
+        LOCK_FILE,
+        RETRAIN_INTERVAL_HOURS,
+        RETRAIN_DRIFT_THRESHOLD,
+        AUTOMATIC_RETRAINING_ENABLED,
+    )
 
     lock_held = LOCK_FILE.exists()
     lock_age_hours = None
@@ -57,6 +62,7 @@ def get_retrain_status(
             pass
 
     return {
+        "automatic_retraining_enabled": AUTOMATIC_RETRAINING_ENABLED,
         "retrain_interval_hours": RETRAIN_INTERVAL_HOURS,
         "drift_threshold": RETRAIN_DRIFT_THRESHOLD,
         "lock_held": lock_held,

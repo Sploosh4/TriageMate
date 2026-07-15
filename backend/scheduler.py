@@ -22,6 +22,9 @@ RETRAIN_INTERVAL_HOURS = int(os.getenv("RETRAIN_INTERVAL_HOURS", "168"))  # 7 da
 RETRAIN_DRIFT_THRESHOLD = float(
     os.getenv("RETRAIN_DRIFT_THRESHOLD", str(DRIFT_WARNING_PSI))
 )
+AUTOMATIC_RETRAINING_ENABLED = (
+    os.getenv("AUTOMATIC_RETRAINING_ENABLED", "false").lower() == "true"
+)
 
 # ─── Lock file (prevents concurrent retrains) ────────────────────────────────
 LOCK_FILE = Path(__file__).parent / "ml" / ".retrain.lock"
@@ -462,6 +465,12 @@ async def check_drift_and_retrain():
     Called periodically by APScheduler. Logs drift values and triggers
     retraining for any model whose composite PSI exceeds the threshold.
     """
+    if not AUTOMATIC_RETRAINING_ENABLED:
+        logger.info(
+            "Automatic retraining is DISABLED — skipping drift check and retrain"
+        )
+        return
+
     logger.info(
         "Drift check starting (threshold=%.3f, interval=%dh)",
         RETRAIN_DRIFT_THRESHOLD,
