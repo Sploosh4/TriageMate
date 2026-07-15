@@ -10,10 +10,10 @@
 
 | Metric | Value |
 |---|---|
-| Tests | GitHub Actions test matrix passing on `main`; local Sprint 30 finalization: 498 passed, 1 skipped |
-| Open remediation work | #64 Gate B baseline decision; #67 PostgreSQL compatibility; #79 automatic-retraining guard; #81 CI benchmark/action maintenance |
-| Sprints completed | 17 through **28**; Sprint 29 implementation complete with its baseline decision still open |
-| Current sprint | **Sprint 30 — Repository Reconciliation and Gate A Finalization** 🟡 Finalizing |
+| Tests | GitHub Actions matrix passing on `main` after PR #83 (Python 3.11/3.12, frontend lint, lint-only, Docker build) |
+| Open remediation work | #64 Gate B baseline decision; #67 PostgreSQL compatibility; #81 CI benchmark/action maintenance |
+| Sprints completed | 17 through **30**; Issue #64 remains a separately authorized future ML baseline decision |
+| Current sprint | No active sprint — Sprint 30 repository reconciliation is complete |
 | Pipeline stages | Pre-Tier → Tier 0 → Tier 1 → Tier 2 → Tier 3 (Human Review) |
 | Enrichment sources | 14 integrations (NVD, OSV, OTX, ExploitDB, Metasploit, Tenable, GreyNoise [deprecated], CMDB [stub], Advisories [stub], MITRE, CWE classifier, Demo generator, **Synthetic Telemetry**, **Network Context**) |
 | Demo rows | 7 CVEs, scores 99/97/74/91/82/97/80 (±3 tolerance) |
@@ -214,7 +214,7 @@
 | **2e** | **Rate-limit policy and implementation** | ✅ Done | CORE-MED-5 and ROUTER-LOW-8 — slowapi per-route limits, CI-installed dependency, and threshold-file status distinction. Merged in PR #66. |
 | **3** | **ML Data-Readiness Work** | 🟡 Gate A Complete | PR #68 implemented mature primary/prospective cohorts. The post-policy gather produced 69,223/20,144/26,766 train/validation/test records with both classes, and Gate A passed in PR #77. Issue #64 remains open because a baseline `--train` run requires separate user authorization. |
 
-## Sprint 30 — 🟡 Finalizing (Repository Reconciliation and Gate A)
+## Sprint 30 — ✅ Complete (Repository Reconciliation and Gate A)
 
 *Started 14 July 2026. See `.opencode/plans/2026-07-14-sprint-30.md`, GitHub Milestone #14, and Issue #78.*
 
@@ -224,8 +224,8 @@
 | **2** | **CI category reporting** | ✅ Done | PR #71 merged at `58e18ed`; duplicate PR #72 closed. The single strict test gate remains authoritative. |
 | **3** | **Security decision implementation** | ✅ Done | PRs #75 and #76 merged; Issue #58 closed. RAG is server-scoped and fail-closed; `/api/config` omits feature names. |
 | **4** | **ML Gate A** | ✅ Done | PR #77 added strict NPZ/log coherence checks, synthetic tests, and versioned evidence from the real post-policy gather. No training was run. |
-| **5** | **Git and documentation reconciliation** | 🟡 Finalizing | Superseded PRs #69/#72/#73/#74 closed; obsolete worktrees and branches pruned; authoritative docs and tracking reconciled in Issue #78. |
-| **6** | **Automatic-retraining enforcement gap** | 🔴 Tracked | Issue #79 records that the runtime scheduler can currently bypass the review gates. Default-off/explicit-opt-in enforcement is required before the gates can be described as a technical control. |
+| **5** | **Git and documentation reconciliation** | ✅ Done | Superseded PRs #69/#72/#73/#74 closed; obsolete worktrees and branches pruned; authoritative docs and tracking reconciled in Issue #78. |
+| **6** | **Automatic-retraining enforcement** | ✅ Done | PR #83 makes scheduler-driven retraining default-off behind `AUTOMATIC_RETRAINING_ENABLED`; the status endpoint exposes the setting, and tests cover disabled and explicit-opt-in paths. Issue #79 closed. |
 
 ---
 
