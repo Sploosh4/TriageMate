@@ -57,7 +57,7 @@
 | `reference/BUG_HUNT_2026-07-13.md` | CURRENT | **162 bugs found across all areas** (19 CRITICAL, 38 HIGH, 49 MEDIUM, 56 LOW). Full bug hunt report from 2026-07-13. Pipeline audit in section 9. |
 | `reference/xgboost-investigation-report.md` | CURRENT | Root cause analysis of XGBoost false-negative rate. ✅ All 8 fixes applied, model retrained 2026-07-08. |
 | `reference/graphify-output-reliability-report.md` | CURRENT | Audit and remediation specification for factual accuracy, provenance, and reproducibility of Graphify outputs. |
-| `reference/ml-retraining-gate.md` | CURRENT | Authoritative review workflow: Gate A evidence, Gate B baseline training requiring separate future authorization, and Gate C validation. Issue #79 tracks runtime enforcement. |
+| `reference/ml-retraining-gate.md` | CURRENT | Authoritative review workflow: Gate A evidence, Gate B baseline training requiring separate future authorization, and Gate C validation. Runtime enforcement implemented via `AUTOMATIC_RETRAINING_ENABLED` opt-in (Issue #79, PR #83). |
 | `../backend/reports/investigations/ml-gate-a-2026-07-14.json` | CURRENT | Versioned evidence from the first post-policy gather: artifact/schema fingerprints and coherent train/validation/test counts. |
 | `../backend/reports/investigations/mid-2023-data-drop.md` | OUTDATED | Historical diagnosis of the positive-only split. Root cause remains useful; its proposed fix was superseded by PR #68. |
 | `../backend/reports/investigations/ml-retraining-decision-gate.md` | OUTDATED | Historical Sprint 28 decision report. Current operational guidance is `reference/ml-retraining-gate.md`. |
