@@ -39,7 +39,7 @@ services:
       - TRIAGEMATE_CMDB_PROVIDER=${TRIAGEMATE_CMDB_PROVIDER:-stub}
       # NVD API key (optional — rate-limited without one)
       - NVD_API_KEY=${NVD_API_KEY:-}
-      # Automatic retraining (disabled by default — requires explicit opt-in for Gate B)
+      # Automatic periodic retraining (disabled by default — does not authorize manual training)
       - AUTOMATIC_RETRAINING_ENABLED=${AUTOMATIC_RETRAINING_ENABLED:-false}
       # Disable HuggingFace HTTP in container (model pre-cached in image)
       - HF_HUB_OFFLINE=1
