@@ -70,11 +70,14 @@ def get_retrain_status(
     }
 
 
-def _relative_time(ts_str: str | None) -> str:
-    if not ts_str:
+def _relative_time(ts_val: str | datetime | None) -> str:
+    if not ts_val:
         return ""
     try:
-        ts = datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
+        if isinstance(ts_val, datetime):
+            ts = ts_val
+        else:
+            ts = datetime.fromisoformat(str(ts_val).replace("Z", "+00:00"))
         if ts.tzinfo is None:
             ts = ts.replace(tzinfo=timezone.utc)
         delta = datetime.now(timezone.utc) - ts
@@ -89,7 +92,7 @@ def _relative_time(ts_str: str | None) -> str:
         days = hours // 24
         return f"{days}d ago"
     except Exception:
-        return ts_str
+        return str(ts_val)
 
 
 @router.get("/api/queue", response_model=QueueResponse)
