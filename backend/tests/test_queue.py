@@ -8,9 +8,11 @@ NOTE: Response keys are camelCase because the Pydantic models use
       `alias_generator = camel_case` (see backend/models.py).
 """
 
-import pytest
+from datetime import datetime, timezone
 
-pytestmark = pytest.mark.asyncio
+import pytest
+from routers.queue import _relative_time
+
 
 # Expected priority scores in descending order (matching the seed data)
 # Queue is sorted by priority_score DESC, id ASC — this order reflects that sort.
@@ -32,6 +34,8 @@ REQUIRED_ROW_KEYS = {
 
 class TestQueueEndpoint:
     """Queue endpoint smoke tests."""
+
+    pytestmark = pytest.mark.asyncio
 
     async def test_queue_returns_200(self, client):
         """GET /api/queue should return HTTP 200."""
@@ -126,3 +130,49 @@ class TestQueueEndpoint:
                 f"Queue not sorted by priority descending at index {i}: "
                 f"{scores[i]} < {scores[i + 1]}"
             )
+
+
+class TestRelativeTime:
+    """_relative_time() unit tests — exercises both str and datetime inputs."""
+
+    def test_relative_time_accepts_postgres_datetime(self):
+        """PostgreSQL returns timestamps as datetime values, unlike SQLite."""
+        assert _relative_time(datetime.now(timezone.utc)) == "now"
+
+    def test_relative_time_accepts_sqlite_string(self):
+        """SQLite returns timestamps as ISO-8601 strings."""
+        assert _relative_time(datetime.now(timezone.utc).isoformat()) == "now"
+
+    def test_relative_time_accepts_naive_datetime(self):
+        """Naive datetime (no tzinfo) should be assumed UTC."""
+        result = _relative_time(datetime.now(timezone.utc).replace(tzinfo=None))
+        assert result in ("now", "0m ago", "1m ago"), f"Unexpected result: {result}"
+
+    def test_relative_time_returns_empty_for_none(self):
+        """None input returns empty string."""
+        assert _relative_time(None) == ""
+
+    def test_relative_time_returns_empty_for_empty_string(self):
+        """Empty string input returns empty string."""
+        assert _relative_time("") == ""
+
+    def test_relative_time_handles_minutes_ago(self):
+        """Timestamps ~5 minutes ago should return '5m ago'."""
+        from datetime import timedelta
+
+        past = datetime.now(timezone.utc) - timedelta(minutes=5)
+        assert _relative_time(past) == "5m ago"
+
+    def test_relative_time_handles_hours_ago(self):
+        """Timestamps ~3 hours ago should return '3h ago'."""
+        from datetime import timedelta
+
+        past = datetime.now(timezone.utc) - timedelta(hours=3)
+        assert _relative_time(past) == "3h ago"
+
+    def test_relative_time_handles_days_ago(self):
+        """Timestamps ~2 days ago should return '2d ago'."""
+        from datetime import timedelta
+
+        past = datetime.now(timezone.utc) - timedelta(days=2)
+        assert _relative_time(past) == "2d ago"

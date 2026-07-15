@@ -17,6 +17,7 @@ All existing callers of get_db() work unchanged.
 """
 
 import os
+import re
 from pathlib import Path
 import sqlite3
 import logging
@@ -94,12 +95,17 @@ class _PGCursor:
         self.description = cursor.description
 
     def execute(self, sql, params=None):
-        # Convert ? placeholders (SQLite style) to %s (psycopg2 style)
-        if params is not None:
-            pg_sql = sql.replace("?", "%s")
+        if params is None:
+            self._cursor.execute(sql)
+        elif isinstance(params, dict):
+            # Convert SQLite named parameters (:name) to psycopg2 style (%(name)s)
+            # Use negative lookbehind for :: to preserve PostgreSQL casts (e.g., :payload::jsonb)
+            pg_sql = re.sub(r"(?<!:):([a-zA-Z_][a-zA-Z0-9_]*)", r"%(\1)s", sql)
             self._cursor.execute(pg_sql, params)
         else:
-            self._cursor.execute(sql)
+            # Convert ? placeholders (SQLite style) to %s (psycopg2 style) for positional params
+            pg_sql = sql.replace("?", "%s")
+            self._cursor.execute(pg_sql, params)
         self.rowcount = self._cursor.rowcount
         self.description = self._cursor.description
         return self
