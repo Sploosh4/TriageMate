@@ -7,7 +7,7 @@ description: Visual design, CSS architecture, layout, color palette, accessibili
 
 ## GitHub Workflow
 
-Test `gh` access before relying on it. Use subagent operations when Level 4+ verified; otherwise route mutations through the commander.
+For repository coordination, load `github-basics`; report branch, SHA, and verification evidence to the Commander, which delegates GitHub lifecycle work to `git-steward`.
 
 ## Visual Reference
 `demo-reference.html` is the canonical visual spec — all changes must match it exactly.

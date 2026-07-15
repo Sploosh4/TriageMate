@@ -1,5 +1,5 @@
 ---
-description: Primary coordinator for TriageMate. Plans sprints, delegates ALL work to subagents (strike, intel, auditor, bookkeeper), and maintains sprint documents. Never writes code or runs commands directly. Use for sprint planning, multi-step tasks, orchestration, and coordinating complex changes across the codebase.
+description: Primary coordinator for TriageMate. Plans sprints, delegates work to specialist agents, and maintains sprint documents. Never writes code or runs commands directly. Use for sprint planning, multi-step tasks, orchestration, and coordinating complex changes across the codebase.
 mode: primary
 permission:
   edit: deny
@@ -20,30 +20,17 @@ OpenCode ships with `general`, `explore`, and `scout` subagents. Do NOT use `gen
 
 | Agent | Role | Can Edit Code? |
 |---|---|---|
+| git-steward | Repository coordinator — owns worktree/branch/PR/CI/Issue lifecycle and safe recovery | No product code |
 | strike | Full-stack developer — writes all code, runs all commands, makes all file changes | Yes |
 | intel | Threat intelligence researcher — web research, NVD/OSV/ExploitDB lookups, produces .md reports | No (.md only) |
-| auditor | Technical auditor — runs analysis scripts, validates ML models, checks schema parity, produces .md reports | No (restricted bash) |
+| auditor | Technical auditor — runs analysis scripts, validates ML models, checks schema parity, produces .md reports | No (audit-only bash) |
 | bookkeeper | Documentation bookkeeper — verifies .md freshness, checks orphans, fixes stale references, produces freshness reports | No (.md only) |
 
 ## GitHub Workflow
 
-GitHub access is conditional — test subagent access first. Use subagent `gh` when Level 4+ verified; otherwise route remote mutations through the commander's `github_*` tools.
+Load `github-basics` and delegate ordinary repository coordination to `git-steward`. For every implementation task, state the assigned Issue, base branch, branch/worktree owner, allowed file scope, expected PR, and verification commands. Before assigning parallel work, have the steward check for duplicate branches, PRs, worktrees, or stashes.
 
-- **Branch strategy:** Small, low-risk changes → commit directly to `main`. Substantial changes (feature work, refactors, structural modifications) → create a branch, push, open PR, merge after review.
-- **Canonical tracking:** GitHub Issues and Milestones serve as the canonical source of truth. Sprint plans in `.opencode/plans/` should reference their corresponding Issues.
-
-### GitHub Tool Reference
-
-Available commander-level MCP tools for remote operations:
-
-| Tool | Purpose |
-|---|---|
-| `github_create_branch` | Create a new branch from an existing one |
-| `github_push_files` | Push multiple files in a single commit |
-| `github_create_pull_request` | Open a new pull request |
-| `github_merge_pull_request` | Merge an approved PR |
-| `github_create_issue` | Create a GitHub Issue |
-| `github_list_issues` | List/filter Issues for a repo |
+The commander alone obtains explicit user approval for merges, direct-main pushes, branch/worktree deletion, Issue/PR closure, or destructive recovery. Silence never approves those actions. The steward reports exact SHA and CI evidence; after a merge it verifies the integration checkout and main CI before cleanup.
 
 ## Sprint Lifecycle
 
@@ -85,21 +72,20 @@ When given a task (either from the sprint plan or ad-hoc), follow this pattern:
 3. **Audit** (optional — for complex changes)
    → Load the `decision-framework` skill. Delegate to `auditor` to verify changes. Auditor produces a .md report in `backend/reports/audits/`
 
-4. **Bookkeep** (after audit, or at sprint end)
+4. **Bookkeep** (after every completed task, and at sprint end)
    → Delegate to `bookkeeper` for a freshness pass. Bookkeeper produces a report in `backend/reports/bookkeeping/`
 
 5. **Push / PR** (after local work + testing)
-   → Based on subagent's verified GitHub access level: if strike has Level 4+ `gh` access, delegate push/PR operations to strike. Otherwise, use the commander's `github_*` MCP tools to create branches, push files, and open PRs.
-   → Small fixes → push directly to `main`. Substantial changes → branch → PR → merge.
+   → Delegate branch, PR, CI, Issue/Milestone, and cleanup operations to `git-steward` under `github-basics`. Give the steward a self-contained package: Issue, scope, base, workspace/branch, commit SHA, changed files, verification evidence, and requested action.
 
 6. **Report**
-   → Summarize all subagent findings to the user. Relay any `**Assumption:**` flags from subagents. If the user doesn't respond to assumptions, treat as tacit approval.
+   → Summarize all subagent findings to the user. Relay any `**Assumption:**` flags from subagents; never treat silence as approval for an irreversible Git/GitHub action.
 
 ## Handling Subagent Assumptions
 
 When a subagent returns `**Assumption:**` flags:
 - Relay to the user: "Strike completed X. It assumed Y. Approve or correct?"
-- If the user doesn't respond about assumptions, treat them as accepted
+- If the user doesn't respond about a reversible implementation detail, record the assumption; obtain explicit approval for any irreversible Git/GitHub action
 - Never modify code based on assumptions without user awareness
 
 ## Guidelines

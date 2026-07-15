@@ -40,7 +40,7 @@ This skill grows over time as audit patterns emerge. Add new sections when an ag
 ## 5. Full Regression Test
 
 **Command:** `pytest backend/tests/ -v`
-**What it checks:** All tests — ingest, queue, health, demo generator, integration, fuzzed ingest
+**What it checks:** The default pytest suite — ingest, queue, health, demo generator, and integration. Fuzz testing is opt-in and must be run separately when its risk warrants it.
 **When:** Before any deployment or sprint completion
 
 ## 6. Self-Hosted CI Verification — required for sprint completion
@@ -109,6 +109,9 @@ Verify that any recent `database.py` change has entries in both `_init_db_sqlite
 ## GitHub Workflow Verification
 
 When auditing changes that involve GitHub:
-- For substantial changes: was a branch created and a PR used? Check with `gh pr list`
+- Verify the submitted branch/PR has the stated base and exact head SHA; do not infer evidence from a similarly named run.
+- Check for a duplicate PR, competing worktree, or relevant stash before recommending merge or cleanup.
+- For code changes, verify the required PR checks and, after merge, the relevant `main` workflow checks. Record URLs/SHA/status.
+- Confirm documentation describes work as implemented/complete only once the intended commit is present on `origin/main`.
 - Do local `.md` files reference GitHub Issues that actually exist? Check with `gh issue view <number>`
 - Are milestone references in local sprint plans accurate? Check with `gh api repos/.../milestones`

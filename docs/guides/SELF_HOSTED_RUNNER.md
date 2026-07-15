@@ -3,7 +3,7 @@
 **Installed:** 13 July 2026
 **Status at handoff:** Online and validated
 **GitHub runner:** `triagemate-vm`
-**Workflow change:** PR #49, targeting `sprint-26-feature-contract`
+**Workflow routing:** Merged to `main`; TriageMate CI uses this runner selector
 
 ## What was installed
 
@@ -81,13 +81,13 @@ bash .opencode/skills/triagemate-runner-ops/scripts/runner-doctor.sh
 
 ## Workflow routing
 
-PR #49 changes each CI job from `runs-on: ubuntu-latest` to:
+The merged workflow changes each CI job from `runs-on: ubuntu-latest` to:
 
 ```yaml
 runs-on: [self-hosted, Linux, X64, triagemate]
 ```
 
-PR #49 was deliberately not merged automatically. Until that change reaches the relevant branch, its workflows continue to use GitHub-hosted runners. With one local runner, matrix and independent jobs execute sequentially rather than in parallel.
+With one local runner, matrix and independent jobs execute sequentially rather than in parallel. Use `github-basics` for branch, PR, CI-evidence, and merge workflow; this guide covers VM/runner operation only.
 
 ## Validation evidence
 

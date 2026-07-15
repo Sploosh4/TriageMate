@@ -148,11 +148,11 @@
 
 | # | Item | Status | Description |
 |---|---|---|---|
-| **0** | **Audit Current State** | ✅ Complete | Verified Sprint 24, tested subagent `gh` access (Level 5/5), inventoried 16 project + 2 global skills |
+| **0** | **Audit Current State** | ✅ Complete | Verified Sprint 24 and inventoried 16 project + 2 global skills; the historical access test is superseded by the current `github-basics`/`git-steward` workflow |
 | **1** | **Sprint 25 Infra** | ✅ Complete | Created 7 GitHub Issues (#40-#46), updated ROADMAP.md |
-| **2** | **Core Agent Updates** | ✅ Complete | Updated AGENTS.md + 5 agent files for GitHub-native conditional-access workflow |
+| **2** | **Core Agent Updates** | ✅ Complete | Historical agent update; its conditional-access workflow was superseded by the current Commander → `git-steward` model |
 | **3** | **Skill File Updates** | ✅ Complete | Updated 14 of 15 project skills; updated github-basics and archived-files (under 25 words) |
-| **4** | **Capability Test** | ✅ Complete | Validated Level 5/5 branch/PR/merge workflow via PR #47 |
+| **4** | **Capability Test** | ✅ Complete | Historical PR #47 capability test; current authority and lifecycle rules are defined by `github-basics` |
 | **5** | **Verification** | ✅ Complete | Bookkeeper, cross-file checks |
 | **6** | **Quality Gate & Commit** | ✅ Complete | `just gate`, commit, push |
 

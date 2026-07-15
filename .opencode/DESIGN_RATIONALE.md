@@ -1,17 +1,27 @@
 # Agent & Skill Descriptions — Design Rationale
 
-## Agents (5)
+## Agents (6)
 
 ---
 
 ### commander
-> Primary coordinator for TriageMate. Delegates ALL work to subagents (strike, intel, auditor, bookkeeper). Never writes code or runs commands directly. Use for multi-step tasks, sprint planning, orchestration, and coordinating complex changes across the codebase.
+> Primary coordinator for TriageMate. Delegates work to specialist subagents, including git-steward, strike, intel, auditor, and bookkeeper. Never writes code or runs commands directly. Use for multi-step tasks, sprint planning, orchestration, and coordinating complex changes across the codebase.
 
 **Why this description:**
 - "Coordinates" / "delegates" / "orchestration" are the keywords — the AI should think of commander as a dispatcher, not a doer.
 - "Never writes code or runs commands directly" is explicit so the AI doesn't attempt direct work. Combined with the `edit: deny, bash: deny, write: deny` permissions, this makes delegation the only available path.
 - "Multi-step tasks, sprint planning" covers the commander's role across the full sprint lifecycle — not just immediate requests.
 - `mode: primary` means it can be the default agent. The description is broad enough to handle any opening prompt but specific enough that the AI knows its role.
+
+---
+
+### git-steward
+> Repository steward for TriageMate. Owns Git worktree, branch, pull request, CI, Issue/Milestone, merge-readiness, and safe recovery coordination; does not implement product code.
+
+**Why this description:**
+- Repository topology is a distinct coordination responsibility, separate from product implementation and audit.
+- The Commander relays a self-contained task package to `git-steward` for branch, PR, CI, and tracking work while retaining approval authority for irreversible actions; this avoids assuming one fresh subagent can inherit another's context.
+- “Does not implement product code” prevents repository maintenance from becoming a competing implementation workspace.
 
 ---
 
@@ -42,7 +52,7 @@
 
 **Why this description:**
 - "Technical auditor" — distinguishes from intel's research focus. Auditor verifies what exists; intel researches what's out there.
-- "Runs analysis scripts" signals that auditor can execute commands (unlike intel) — but only analysis commands (restricted bash).
+- "Runs analysis scripts" signals that auditor can execute audit commands (unlike intel) while remaining report-only for product code and GitHub state.
 - Specific audit types listed: ML calibration, schema parity, feature vector contracts. These keywords match when the user says "check the calibration" or "validate the schema."
 - "Pre-deployment checks, sprint quality gates" covers the auditor's role in the workflow — post-strike verification.
 - "Produces .md audit reports" makes the output format explicit, matching the report directory convention.
@@ -50,12 +60,12 @@
 ---
 
 ### bookkeeper
-> Documentation bookkeeper for TriageMate. Verifies .md freshness, checks for orphaned references, consolidates stale docs, and produces freshness reports. Run after every audit, sprint completion, or when asked "are the docs up to date?".
+> Documentation bookkeeper for TriageMate. Verifies .md freshness, checks for orphaned references, consolidates stale docs, and produces freshness reports. Run after every completed task, sprint completion, or when asked "are the docs up to date?".
 
 **Why this description:**
 - Added after sprint experience showed documentation drift between agent descriptions, skill files, and code was the #1 source of rework loops.
 - "Freshness" / "orphans" / "consolidates" — the keywords signal this agent maintains structural integrity of the project's documentation, not its content.
-- "After every audit, sprint completion" encodes the trigger pattern so the commander knows when to invoke it.
+- "After every completed task, sprint completion" encodes the mandatory trigger pattern so the commander knows when to invoke it.
 - Produces .md reports like auditor and intel — consistent output convention across all subagents.
 
 ---
