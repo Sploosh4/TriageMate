@@ -5,7 +5,7 @@ description: Operate and troubleshoot TriageMate's repository-scoped GitHub Acti
 
 # TriageMate runner operations
 
-Treat the VM as CI infrastructure, not as a development checkout. Start with read-only diagnostics and obtain explicit approval before deleting a runner, re-registering it, changing workflow YAML, reverting the VM disk, or merging a PR.
+Treat the VM as CI infrastructure, not as a development checkout or OpenCode workspace. It does not replace or create a task worktree. Start with read-only diagnostics and obtain explicit approval before deleting a runner, re-registering it, changing workflow YAML, reverting the VM disk, or merging a PR.
 
 ## Known topology
 

@@ -7,7 +7,7 @@ description: Australian privacy law, data handling compliance, demo data safety 
 
 ## GitHub Workflow
 
-For repository coordination, load `github-basics`; report branch, SHA, and verification evidence to the Commander, which delegates GitHub lifecycle work to `git-steward`.
+Use the current assigned task workspace; never create or switch worktrees. Report the workspace path, branch, SHA, and verification evidence to the Commander; `git-steward` owns Git/GitHub lifecycle actions. Do not encode a legal or privacy policy choice without explicit approval.
 
 ## Jurisdiction
 - Australian Privacy Act 1988: Australian Privacy Principles (APPs), notifiable data breaches scheme

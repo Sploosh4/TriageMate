@@ -7,7 +7,7 @@ description: Decide when a TriageMate agent should proceed, flag an assumption, 
 
 Proceed with reversible, in-scope work supported by repository evidence. State assumptions only when they materially affect the implementation, verification, security posture, data interpretation, or user-visible result.
 
-Request explicit approval before product-policy decisions, ML training, production/deployment changes, direct pushes to `main`, merges, PR/Issue closure, deletion, resets, force-pushes, or any action that cannot be safely undone.
+Request explicit approval before product-policy decisions, ML training, production/deployment changes, direct pushes to `main`, merges, PR/Issue closure, workspace/worktree/branch deletion, resets, force-pushes, or any action that cannot be safely undone. Creating a second or manual worktree when an OpenCode GUI workspace is assigned is a scope/topology error, not a reversible implementation detail: stop and report it instead.
 
 When blocked, report: the evidence, the smallest decision needed, safe alternatives, and the work that can continue without it. Do not treat silence as approval for an irreversible action.
 

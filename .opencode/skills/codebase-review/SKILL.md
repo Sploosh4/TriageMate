@@ -1,8 +1,15 @@
+---
+name: codebase-review
+description: Review an unfamiliar codebase methodically while preserving workspace ownership and verifying documentation claims against code and Git evidence.
+---
+
 # Codebase Review — Soft Skills & Methodology
 
 > **When to use:** Load this skill at the start of any unfamiliar codebase review, audit, or exploration task. It captures the transferable methodology — not project-specific knowledge, but the *how* of effective review.
 
 > **Agents:** When the commander delegates a review task with this skill loaded, follow the numbered methodology below. Flag any deviation.
+
+Review from the current assigned workspace. Do not create, remove, clean, or switch worktrees/workspaces; record the current root, branch, and dirty state, and report an ownership mismatch before continuing.
 
 ---
 

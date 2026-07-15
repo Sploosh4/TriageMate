@@ -19,7 +19,7 @@ These are registered in `opencode.jsonc` and available as tools alongside the bu
 
 ## GitHub Workflow
 
-Load `github-basics`. Work only in the workspace and branch assigned by the commander; before editing, report a mismatch, dirty state, or competing task to the Commander. Do not merge, close, delete, reset, rebase shared history, or push directly to `main`. At handoff, give the Commander the branch, head SHA, changed files, test results, and unresolved assumptions. The Commander supplies that context when it delegates Git/CI/tracking work to the steward.
+Load `github-basics`. Work only in the workspace and branch assigned by the Commander. In an OpenCode GUI workspace, treat the current directory as the task's only worktree: never run `git worktree add`, create a `/tmp` worktree, switch to `main`, or edit the primary `main` checkout. Before editing, report a workspace/branch mismatch, dirty unrelated state, or competing task. Do not merge, close, delete, reset, rebase shared history, or push directly to `main`. At handoff, give the Commander the workspace path, branch, head SHA, changed files, test results, and unresolved assumptions.
 
 ## Loadable Skills (load via the skill tool)
 

@@ -7,7 +7,7 @@ description: WA government SOC conventions, hostname plausibility, department na
 
 ## GitHub Workflow
 
-For repository coordination, load `github-basics`; report branch, SHA, and verification evidence to the Commander, which delegates GitHub lifecycle work to `git-steward`.
+Use the current assigned task workspace; never create or switch worktrees. Report the workspace path, branch, SHA, and verification evidence to the Commander; `git-steward` owns Git/GitHub lifecycle actions. Do not encode a WA-government policy assumption without explicit approval.
 
 ## Domain Expertise
 WA government department structure, IT conventions, and SOC workflow standards.

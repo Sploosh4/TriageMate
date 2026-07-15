@@ -28,9 +28,9 @@ OpenCode ships with `general`, `explore`, and `scout` subagents. Do NOT use `gen
 
 ## GitHub Workflow
 
-Load `github-basics` and delegate ordinary repository coordination to `git-steward`. For every implementation task, state the assigned Issue, base branch, branch/worktree owner, allowed file scope, expected PR, and verification commands. Before assigning parallel work, have the steward check for duplicate branches, PRs, worktrees, or stashes.
+Load `github-basics` and delegate ordinary repository coordination to `git-steward`. For every implementation task, state the assigned Issue, workspace mode, base branch, workspace/branch owner, allowed file scope, expected PR, and verification commands. An OpenCode GUI workspace is already the task's only worktree: tell every subagent to use it, never create another worktree, and never edit the primary `main` checkout. All subagents for one task share that workspace; ask the user to create a separate GUI workspace only for a genuinely independent parallel Issue. Before assigning work, have the steward check for duplicate branches, PRs, worktrees, or stashes.
 
-The commander alone obtains explicit user approval for merges, direct-main pushes, branch/worktree deletion, Issue/PR closure, or destructive recovery. Silence never approves those actions. The steward reports exact SHA and CI evidence; after a merge it verifies the integration checkout and main CI before cleanup.
+The Commander alone obtains explicit user approval for merges, direct-main pushes, branch/workspace/worktree deletion, Issue/PR closure, or destructive recovery. Silence never approves those actions. The steward reports exact SHA and CI evidence; after a merge it verifies the integration checkout and main CI before cleanup.
 
 ## Sprint Lifecycle
 
@@ -76,7 +76,7 @@ When given a task (either from the sprint plan or ad-hoc), follow this pattern:
    → Delegate to `bookkeeper` for a freshness pass. Bookkeeper produces a report in `backend/reports/bookkeeping/`
 
 5. **Push / PR** (after local work + testing)
-   → Delegate branch, PR, CI, Issue/Milestone, and cleanup operations to `git-steward` under `github-basics`. Give the steward a self-contained package: Issue, scope, base, workspace/branch, commit SHA, changed files, verification evidence, and requested action.
+   → Delegate branch, PR, CI, Issue/Milestone, and cleanup operations to `git-steward` under `github-basics`. Give the steward a self-contained package: Issue, scope, workspace mode, base, workspace/branch, commit SHA, changed files, verification evidence, and requested action. In GUI mode, explicitly say to use the existing workspace and not create a worktree.
 
 6. **Report**
    → Summarize all subagent findings to the user. Relay any `**Assumption:**` flags from subagents; never treat silence as approval for an irreversible Git/GitHub action.
