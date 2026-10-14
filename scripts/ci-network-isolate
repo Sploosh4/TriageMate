@@ -1,0 +1,15 @@
+#!/bin/bash
+# Install root-owned at /usr/local/sbin/triagemate-ci-isolate on the dedicated runner.
+set -euo pipefail
+export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+[[ $EUID == 0 && ${SUDO_USER:-} == runner && ${SUDO_UID:-0} != 0 ]] || {
+  echo 'Invoke this helper through sudo as runner.' >&2; exit 1;
+}
+[[ ${SUDO_UID} =~ ^[0-9]+$ && ${SUDO_GID} =~ ^[0-9]+$ ]] || exit 1
+# All privileged instructions are fixed. Caller arguments execute only after
+# dropping user/group privileges and preventing privilege gain.
+exec /usr/bin/unshare --net --fork --kill-child /bin/bash -ceu '
+  /usr/sbin/ip link set lo up
+  uid=$1; gid=$2; shift 2
+  exec /usr/bin/setpriv --reuid "$uid" --regid "$gid" --init-groups --no-new-privs --bounding-set=-all -- /usr/bin/env -- "$@"
+' _ "$SUDO_UID" "$SUDO_GID" "$@"

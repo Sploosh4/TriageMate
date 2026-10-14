@@ -1,0 +1,24 @@
+{
+  "equivalences": {
+    "component": {
+      "predecessor": "4e17ffed6bfd432cae79790a8b4004d352fb2f1a68478d32817ebedef6d15d91",
+      "refactored": "bd963377a47e4e0e4c53d1e5d2c2fe944253203097234bdce9631123576ca887"
+    },
+    "selected": {
+      "predecessor": "16b2207a6d3aabaf5ada1a5415e608bdd9141681e61448e835a89ea694b26569",
+      "refactored": "353abbf6091b93b508a023791eeb85fa11693ce9050e8745ebedb13073c07cc5"
+    }
+  },
+  "predecessor_source_sha256": {
+    "component_assessment.py": "4823a8a57b1f2bb5cc24d78d272c6921a1ded9a4b61b8e9c3ac362f89f69d79f",
+    "component_check.py": "c28fde46138d4b36cdb22328ce3fe43808805bddfb1fd660ee470c47ebaca463",
+    "component_snapshot.py": "8f45985890afe44916e88657d0708e5499d59cd7f839d4b1be12a83d2be7280a",
+    "component_store.py": "aa72746830ba204fec7ea742f90214c87d5bfef97813027f12296b70fe4d5975",
+    "contract.py": "c3ca1e8c50967da47f130bac8d5ecb0ad4c11061f17f2c6d9c84332c19509902",
+    "selected_component_store.py": "9f99f3a83e69ed083bfaa83215ac1b1912b26b689134898f7b9e93c006a2385b",
+    "servicing_manifest.py": "c3f3e32b93691727e53a6904aa32ef88f94724a325dc1f813c24a6d0030b5d2f",
+    "staging.py": "c40faea3c260e00d8619e147158779a69fcb2759fadc85b193a351464517aceb"
+  },
+  "reason": "Database version guard routing, assessment/persistence import relocation and exact fingerprint equivalence plumbing only; interpretation and persistence report construction unchanged.",
+  "source_revision": "d34acea2ac0938b005cae962a62591c20b69084d"
+}

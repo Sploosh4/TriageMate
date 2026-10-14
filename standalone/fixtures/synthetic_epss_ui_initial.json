@@ -1,0 +1,17 @@
+{
+  "origin": "synthetic",
+  "fixture_id": "triagemate-epss-ui-demonstration",
+  "data": [
+    {
+      "cve": "CVE-2099-900001",
+      "epss": "0.12345678901234567890123456789",
+      "percentile": "0.75",
+      "date": "2026-09-11"
+    },
+    {
+      "cve": "CVE-2099-900002",
+      "epss": "0",
+      "date": "2026-09-11"
+    }
+  ]
+}

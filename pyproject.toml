@@ -1,0 +1,57 @@
+[project]
+name = "triagemate"
+version = "0.1.0"
+description = "Cybersecurity vulnerability triage application"
+license = "GPL-3.0-only"
+license-files = ["LICENSE", "NOTICE", "LICENSES/*.txt"]
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "cryptography==50.0.0",
+    "defusedxml==0.7.1",
+    "fastapi==0.143.0",
+    "httpx==0.28.1",
+    "ijson==3.5.1",
+    "psycopg2-binary==2.9.12",
+    "pydantic==2.13.4",
+    "pyjwt==2.13.0",
+    "uvicorn==0.54.0",
+]
+
+[dependency-groups]
+ci = [
+    "PyYAML==6.0.3",
+    "pytest==9.1.1",
+    "pytest-asyncio==1.4.0",
+    "pytest-cov==7.1.0",
+    "pytest-xdist==3.8.0",
+    "ruff==0.15.20",
+    "mypy==2.3.1",
+    "types-psycopg2==2.9.21.20260911",
+]
+dev = [
+    { include-group = "ci" },
+    "pre-commit>=4.0.0",
+]
+[tool.uv]
+default-groups = ["dev"]
+package = false
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["backend/tests"]
+markers = [
+    "full_baseline: audits the entire retained evidence baseline; required in the full gate",
+    "xdist_group(name): mark test to run in serial xdist group",
+    "integration: exercises multiple application components end-to-end",
+]
+
+[tool.ruff.lint]
+# Syntax, import/name correctness; Ruff formatting owns whitespace/layout.
+select = ["E4", "E7", "E9", "F"]
+
+[tool.mypy]
+python_version = "3.12"
+files = ["backend/configuration", "backend/database"]
+strict = true
+warn_unused_configs = true
+show_error_codes = true

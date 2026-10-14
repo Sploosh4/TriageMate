@@ -1,0 +1,24 @@
+# Ruff is pinned to the same version as the pyproject CI group so the hook,
+# local environment, and CI cannot disagree about what "lint clean" means.
+# Update both values together. Exclusions come from pyproject.toml.
+#
+# This uses the upstream hook repository rather than a `language: system`
+# entry pointing at .venv: that entry hard-coded the POSIX
+# `.venv/bin/python` layout and could never run on Windows, where the
+# interpreter lives in `.venv\Scripts\`.
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.20
+    hooks:
+      - id: ruff-check
+      - id: ruff-format
+        args: ["--check"]
+
+  - repo: local
+    hooks:
+      - id: conventions
+        name: Python types and frontend conventions
+        entry: uv run --locked --no-sync python scripts/check_conventions.py
+        language: system
+        pass_filenames: false
+        always_run: true

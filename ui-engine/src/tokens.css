@@ -1,0 +1,23 @@
+:root {
+  color-scheme: dark;
+  --color-bg: #101725;
+  --color-surface: #20292e;
+  --color-inset: #172025;
+  --color-border: #425056;
+  --color-text: #f1f4f5;
+  --color-muted: #b4c0c6;
+  --color-orange: #f45b20;
+  --color-teal: #51dccb;
+  --color-focus: #9ffff0;
+  --font-body: Inter, 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'SFMono-Regular', Consolas, monospace;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --radius: 3px;
+  --size-toolbar-icon: 18px;
+  --size-toolbar-button: 32px;
+}

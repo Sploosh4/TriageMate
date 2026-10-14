@@ -1,0 +1,118 @@
+[
+  {
+    "kind": "text",
+    "text": "Windows evidence from the latest retained inventory. Collection times and identity decisions remain visible; missing evidence does not establish patch compliance."
+  },
+  {
+    "kind": "query",
+    "sql": "WITH inventory AS (\n SELECT * FROM evidence_pipeline.current_windows_inventory_runs\n WHERE origin<>'synthetic' ORDER BY finished_at DESC,collection_attempt_id DESC LIMIT 1\n), review AS (\n SELECT r.* FROM evidence_pipeline.current_windows_os_reviews r\n JOIN inventory i ON i.tenant_id=r.tenant_id AND i.entra_device_id::text=r.entra_device_id\n  AND i.machine_guid::text=r.machine_guid\n WHERE r.origin<>'synthetic'\n)\nSELECT 'Identity decision' AS measure,\n COALESCE((SELECT string_agg(DISTINCT CASE identity_state WHEN 'selected_from_compatible_retained_evidence' THEN 'Current provider identity selected from dated evidence' WHEN 'conflicting_reviews' THEN 'Conflicting retained reviews — selection blocked' WHEN 'newer_inventory_requires_review' THEN 'Newer inventory requires review' ELSE 'Identity unresolved' END, '; ') FROM review), 'No retained OS review for this inventory device') AS value\nUNION ALL SELECT 'Windows version', COALESCE((SELECT string_agg(DISTINCT windows_version, '; ') FROM review), 'Unknown')\nUNION ALL SELECT 'Native observed (UTC)', COALESCE((SELECT max(native_observed_at)::text FROM review), 'Unknown')\nUNION ALL SELECT 'Provider export collected (UTC)', COALESCE((SELECT max(provider_observed_at)::text FROM review), 'Unknown')\nUNION ALL SELECT 'Missing-update source result',\n COALESCE((SELECT string_agg(DISTINCT CASE WHEN identity_state<>'selected_from_compatible_retained_evidence'\n THEN 'Identity unresolved or newer inventory needs review'\n WHEN report->>'missing_state'='none_reported' THEN 'No missing updates reported — not proof of full patch compliance'\n ELSE 'Source reports missing updates; inspect source records' END, '; ') FROM review), 'Not assessed')\nUNION ALL SELECT 'Selected-identity CVEs reported in retained export',\n CASE WHEN (SELECT count(*) FROM review WHERE identity_state='selected_from_compatible_retained_evidence')=1\n THEN (SELECT count(DISTINCT f.cve_id)::text FROM evidence_pipeline.current_windows_os_findings f JOIN review r USING(review_id))\n ELSE 'Not assessable' END"
+  },
+  {
+    "kind": "heading",
+    "text": "Windows update status"
+  },
+  {
+    "kind": "text",
+    "text": "“Observed installed” is positive evidence from a bounded native HotFix query. Replacement status follows explicit Microsoft relationships for the exact Windows release and architecture; it does not prove remediation of every CVE. Historical candidates outside those paths, including hotpatch variants, retain unknown current applicability."
+  },
+  {
+    "kind": "query",
+    "sql": "WITH inventory AS (\n SELECT * FROM evidence_pipeline.current_windows_inventory_runs\n WHERE origin<>'synthetic' ORDER BY finished_at DESC,collection_attempt_id DESC LIMIT 1\n), review AS (\n SELECT r.* FROM evidence_pipeline.current_windows_os_reviews r\n JOIN inventory i ON i.tenant_id=r.tenant_id AND i.entra_device_id::text=r.entra_device_id\n  AND i.machine_guid::text=r.machine_guid\n WHERE r.origin<>'synthetic'\n)\nSELECT u.kb AS update_reference,u.status,u.observed_installed_replacement,\n u.product_label,u.native_observed_at AS native_observation_utc,u.evidence_basis\nFROM evidence_pipeline.current_windows_os_update_status u JOIN review r USING(review_id)\nORDER BY CASE u.status WHEN 'Observed installed' THEN 0\n WHEN 'Source reported missing; applicability not independently verified' THEN 1\n WHEN 'Historical candidate; current applicability unknown' THEN 2 ELSE 3 END,u.kb"
+  },
+  {
+    "kind": "heading",
+    "text": "Provider identity evidence"
+  },
+  {
+    "kind": "text",
+    "text": "Selection requires the same tenant and registration, exact native Windows version and architecture, and compatible observation times. An older provider record can still be labelled Active by Microsoft. Its historical findings are not transferred to the selected record."
+  },
+  {
+    "kind": "query",
+    "sql": "WITH inventory AS (\n SELECT * FROM evidence_pipeline.current_windows_inventory_runs\n WHERE origin<>'synthetic' ORDER BY finished_at DESC,collection_attempt_id DESC LIMIT 1\n), review AS (\n SELECT r.* FROM evidence_pipeline.current_windows_os_reviews r\n JOIN inventory i ON i.tenant_id=r.tenant_id AND i.entra_device_id::text=r.entra_device_id\n  AND i.machine_guid::text=r.machine_guid\n WHERE r.origin<>'synthetic'\n)\nSELECT p.native_device_id AS provider_identity,\n CASE p.evidence_state WHEN 'selected' THEN 'Selected for dated review' WHEN 'historical_incompatible_os' THEN 'Historical identity with incompatible Windows version' ELSE 'Unresolved' END AS evidence_state,\n CASE p.identity_state WHEN 'selected_from_compatible_retained_evidence' THEN 'Resolved for this dated review' ELSE 'Selection blocked; inspect identity decision' END AS review_decision,\n p.provider_evidence->'windows_versions' AS reported_windows_versions,\n p.provider_evidence->>'first_seen' AS first_seen_utc,p.provider_evidence->>'last_seen' AS last_seen_utc,\n p.provider_evidence->>'health_status' AS provider_health,\n p.native_observed_at AS native_observation_utc,p.provider_observed_at AS export_collection_utc\nFROM evidence_pipeline.current_windows_os_provider_evidence p JOIN review r USING(review_id)\nORDER BY p.evidence_state DESC,p.native_device_id"
+  },
+  {
+    "kind": "heading",
+    "text": "Selected-identity vulnerability evidence"
+  },
+  {
+    "kind": "text",
+    "text": "These charts use the exact selected provider identity in the retained per-device export. Empty charts mean no CVE rows in that export only when the identity decision above is resolved. They do not establish exhaustive vulnerability coverage. Inventory recognition remains separate from assessment coverage."
+  },
+  {
+    "kind": "query",
+    "sql": "WITH inventory AS (\n SELECT * FROM evidence_pipeline.current_windows_inventory_runs\n WHERE origin<>'synthetic' ORDER BY finished_at DESC,collection_attempt_id DESC LIMIT 1\n), review AS (\n SELECT r.* FROM evidence_pipeline.current_windows_os_reviews r\n JOIN inventory i ON i.tenant_id=r.tenant_id AND i.entra_device_id::text=r.entra_device_id\n  AND i.machine_guid::text=r.machine_guid\n WHERE r.origin<>'synthetic'\n)\nSELECT COALESCE(f.source_severity_label,'Unknown') AS label,count(DISTINCT f.cve_id)::integer AS total\nFROM evidence_pipeline.current_windows_os_findings f JOIN review r USING(review_id)\nGROUP BY f.source_severity_label ORDER BY total DESC,label",
+    "chart": {
+      "title": "Selected identity: reported CVEs by severity",
+      "type": "bar",
+      "sql": "WITH inventory AS (\n SELECT * FROM evidence_pipeline.current_windows_inventory_runs\n WHERE origin<>'synthetic' ORDER BY finished_at DESC,collection_attempt_id DESC LIMIT 1\n), review AS (\n SELECT r.* FROM evidence_pipeline.current_windows_os_reviews r\n JOIN inventory i ON i.tenant_id=r.tenant_id AND i.entra_device_id::text=r.entra_device_id\n  AND i.machine_guid::text=r.machine_guid\n WHERE r.origin<>'synthetic'\n)\nSELECT COALESCE(f.source_severity_label,'Unknown') AS label,count(DISTINCT f.cve_id)::integer AS total\nFROM evidence_pipeline.current_windows_os_findings f JOIN review r USING(review_id)\nGROUP BY f.source_severity_label ORDER BY total DESC,label",
+      "x": "label",
+      "y": "total",
+      "width": 440,
+      "height": 300,
+      "wrap": "left"
+    }
+  },
+  {
+    "kind": "query",
+    "sql": "WITH inventory AS (\n SELECT * FROM evidence_pipeline.current_windows_inventory_runs\n WHERE origin<>'synthetic' ORDER BY finished_at DESC,collection_attempt_id DESC LIMIT 1\n), review AS (\n SELECT r.* FROM evidence_pipeline.current_windows_os_reviews r\n JOIN inventory i ON i.tenant_id=r.tenant_id AND i.entra_device_id::text=r.entra_device_id\n  AND i.machine_guid::text=r.machine_guid\n WHERE r.origin<>'synthetic'\n)\nSELECT CASE WHEN a.recognition->>'state'='recognized' THEN 'Recognized'\n WHEN a.source_accounting->>'state'='reported' THEN 'Source identified' ELSE 'Identity incomplete' END AS label,\n count(*)::integer AS total FROM evidence_pipeline.current_native_inventory_accounting a\n JOIN inventory i ON a.collection_attempt_id=i.collection_attempt_id GROUP BY 1 ORDER BY total DESC,label",
+    "chart": {
+      "title": "Inventory identity coverage",
+      "type": "doughnut",
+      "sql": "WITH inventory AS (\n SELECT * FROM evidence_pipeline.current_windows_inventory_runs\n WHERE origin<>'synthetic' ORDER BY finished_at DESC,collection_attempt_id DESC LIMIT 1\n), review AS (\n SELECT r.* FROM evidence_pipeline.current_windows_os_reviews r\n JOIN inventory i ON i.tenant_id=r.tenant_id AND i.entra_device_id::text=r.entra_device_id\n  AND i.machine_guid::text=r.machine_guid\n WHERE r.origin<>'synthetic'\n)\nSELECT CASE WHEN a.recognition->>'state'='recognized' THEN 'Recognized'\n WHEN a.source_accounting->>'state'='reported' THEN 'Source identified' ELSE 'Identity incomplete' END AS label,\n count(*)::integer AS total FROM evidence_pipeline.current_native_inventory_accounting a\n JOIN inventory i ON a.collection_attempt_id=i.collection_attempt_id GROUP BY 1 ORDER BY total DESC,label",
+      "x": "label",
+      "y": "total",
+      "width": 440,
+      "height": 300,
+      "wrap": "right"
+    }
+  },
+  {
+    "kind": "heading",
+    "text": "Published exploitation context"
+  },
+  {
+    "kind": "text",
+    "text": "Top 15 distinct CVEs reported for the selected identity, ordered by collected KEV membership and EPSS probability. Absence from collected KEV does not establish absence of exploitation. EPSS does not determine patch applicability."
+  },
+  {
+    "kind": "query",
+    "sql": "WITH inventory AS (\n SELECT * FROM evidence_pipeline.current_windows_inventory_runs\n WHERE origin<>'synthetic' ORDER BY finished_at DESC,collection_attempt_id DESC LIMIT 1\n), review AS (\n SELECT r.* FROM evidence_pipeline.current_windows_os_reviews r\n JOIN inventory i ON i.tenant_id=r.tenant_id AND i.entra_device_id::text=r.entra_device_id\n  AND i.machine_guid::text=r.machine_guid\n WHERE r.origin<>'synthetic'\n)\n, findings AS (\n SELECT DISTINCT f.cve_id FROM evidence_pipeline.current_windows_os_findings f JOIN review r USING(review_id)\n), epss AS (\n SELECT DISTINCT ON (e.cve_id) e.cve_id,e.probability,e.score_date\n FROM evidence_pipeline.current_public_epss_observations e JOIN findings f USING(cve_id)\n WHERE e.origin='public' ORDER BY e.cve_id,e.score_date DESC NULLS LAST,e.selected_finished_at DESC,e.receipt_id DESC\n), kev AS (\n SELECT DISTINCT cve_id FROM evidence_pipeline.current_public_kev_observations WHERE origin='public' AND membership\n)\nSELECT f.cve_id,CASE WHEN k.cve_id IS NULL THEN 'Not in collected KEV' ELSE 'Known exploited — CISA KEV' END AS exploitation,\n e.probability::double precision AS epss_probability,e.score_date\nFROM findings f LEFT JOIN epss e USING(cve_id) LEFT JOIN kev k USING(cve_id)\nORDER BY (k.cve_id IS NOT NULL) DESC,e.probability DESC NULLS LAST,f.cve_id LIMIT 15"
+  },
+  {
+    "kind": "heading",
+    "text": "Current source-reported missing updates"
+  },
+  {
+    "kind": "text",
+    "text": "Original rows from the exact selected machine endpoint are retained below, including any non-OS recommendations. An empty table must be read alongside the explicit result and collection time above."
+  },
+  {
+    "kind": "query",
+    "sql": "WITH inventory AS (\n SELECT * FROM evidence_pipeline.current_windows_inventory_runs\n WHERE origin<>'synthetic' ORDER BY finished_at DESC,collection_attempt_id DESC LIMIT 1\n), review AS (\n SELECT r.* FROM evidence_pipeline.current_windows_os_reviews r\n JOIN inventory i ON i.tenant_id=r.tenant_id AND i.entra_device_id::text=r.entra_device_id\n  AND i.machine_guid::text=r.machine_guid\n WHERE r.origin<>'synthetic'\n)\nSELECT m->>'id' AS update_reference,m->>'name' AS source_title,m->'productsNames' AS source_products,\n m->>'url' AS source_url,r.provider_observed_at AS export_collection_utc\nFROM review r CROSS JOIN LATERAL jsonb_array_elements(COALESCE(NULLIF(r.report->'missing_updates','null'::jsonb),'[]'::jsonb)) m\nWHERE r.identity_state='selected_from_compatible_retained_evidence' ORDER BY update_reference"
+  },
+  {
+    "kind": "heading",
+    "text": "Microsoft replacement evidence"
+  },
+  {
+    "kind": "text",
+    "text": "These retained edges explain the same-product replacement paths used above. Repeated CVE receipts are grouped into one relationship with a receipt count and collection-date range; the underlying table retains each receipt. Product scope is explicit; source collection time is not a patch release date."
+  },
+  {
+    "kind": "query",
+    "sql": "WITH inventory AS (\n SELECT * FROM evidence_pipeline.current_windows_inventory_runs\n WHERE origin<>'synthetic' ORDER BY finished_at DESC,collection_attempt_id DESC LIMIT 1\n), review AS (\n SELECT r.* FROM evidence_pipeline.current_windows_os_reviews r\n JOIN inventory i ON i.tenant_id=r.tenant_id AND i.entra_device_id::text=r.entra_device_id\n  AND i.machine_guid::text=r.machine_guid\n WHERE r.origin<>'synthetic'\n)\nSELECT e.replacing_kb,e.replaced_kb,e.product_label,\n min(e.collected_at) AS first_source_collection_utc,max(e.collected_at) AS latest_source_collection_utc,\n count(DISTINCT e.receipt_id) AS supporting_receipts,string_agg(DISTINCT e.source_url, '; ') AS source_urls\nFROM evidence_pipeline.current_windows_os_replacement_evidence e JOIN review r USING(review_id)\nGROUP BY e.replacing_kb,e.replaced_kb,e.product_label\nORDER BY e.replacing_kb,e.replaced_kb"
+  },
+  {
+    "kind": "heading",
+    "text": "Evidence provenance and limits"
+  },
+  {
+    "kind": "text",
+    "text": "Native identity, installed-update observation and provider exports were collected separately. The retained collection tenant binding is checked against the registered inventory; Microsoft payloads do not independently identify their tenant. No exact Defender assessment-completion time, exhaustive installed-update inventory or complete Windows Update applicability scan is established. Original bytes remain in the restricted evidence store."
+  },
+  {
+    "kind": "query",
+    "sql": "WITH inventory AS (\n SELECT * FROM evidence_pipeline.current_windows_inventory_runs\n WHERE origin<>'synthetic' ORDER BY finished_at DESC,collection_attempt_id DESC LIMIT 1\n), review AS (\n SELECT r.* FROM evidence_pipeline.current_windows_os_reviews r\n JOIN inventory i ON i.tenant_id=r.tenant_id AND i.entra_device_id::text=r.entra_device_id\n  AND i.machine_guid::text=r.machine_guid\n WHERE r.origin<>'synthetic'\n)\nSELECT s.key AS source_document,s.value->>'sha256' AS source_sha256,s.value->>'url' AS source_url,\n s.value->>'started_at' AS request_started_utc,s.value->>'finished_at' AS request_finished_utc,\n r.input_fingerprint AS retained_bundle_sha256,r.review_id\nFROM review r CROSS JOIN LATERAL jsonb_each(r.report->'sources') s ORDER BY s.key"
+  }
+]

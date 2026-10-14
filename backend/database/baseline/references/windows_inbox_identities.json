@@ -1,0 +1,28 @@
+{
+  "interpretation": "identity_only_not_advisory_alias_or_os_build_mapping",
+  "packages": [
+    {
+      "name": "Microsoft.Windows.SecureAssessmentBrowser",
+      "family": "Take a Test",
+      "package_family": "Microsoft.Windows.SecureAssessmentBrowser_cw5n1h2txyewy",
+      "publisher": "CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+      "is_framework": false,
+      "profile": "native-windows-published-component-identities-v1",
+      "source_url": "https://learn.microsoft.com/en-us/education/windows/edu-take-a-test-kiosk-mode",
+      "source_sha256": "e53e0af57b349f42b41c200cf01973e21feb31613b05d1a26a0c6a5e1594c7ee",
+      "collected_at": "2026-09-20T17:27:19.358434+00:00"
+    },
+    {
+      "name": "windows.immersivecontrolpanel",
+      "family": "Windows Settings",
+      "package_family": "windows.immersivecontrolpanel_cw5n1h2txyewy",
+      "publisher": "CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+      "is_framework": false,
+      "profile": "native-windows-published-component-identities-v1",
+      "source_url": "https://learn.microsoft.com/en-us/windows/configuration/assigned-access/examples",
+      "source_sha256": "1368492740b34b05eba2777188dc839ff2e86b802e3027f831cd36dc758d0af9",
+      "collected_at": "2026-09-20T17:27:19.843035+00:00",
+      "name_reference_url": "https://devblogs.microsoft.com/insidemsix/types-of-packaged-applications/"
+    }
+  ]
+}

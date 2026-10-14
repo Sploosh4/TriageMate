@@ -1,0 +1,27 @@
+{
+  "interpretation": "exact_component_identity_from_published_file_list_not_edition_support_removal_authority_or_advisory_alias",
+  "packages": [
+    {
+      "name": "Microsoft.BioEnrollment",
+      "family": "Windows Bio Enrollment Experience",
+      "package_family": "Microsoft.BioEnrollment_cw5n1h2txyewy",
+      "is_framework": false,
+      "publisher": "CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+      "source_url": "https://learn.microsoft.com/en-us/windows/iot/iot-enterprise/optimize/removable-packages/microsoft-windows-bioenrollment-ux",
+      "source_sha256": "8582d4f8fb82e46fc461b65a435bb9b10eafce2a1fed012fdb972411fe1435bc",
+      "collected_at": "2026-09-20T14:45:57.622893+00:00",
+      "profile": "native-windows-component-references-v1"
+    },
+    {
+      "name": "Microsoft.MicrosoftEdgeDevToolsClient",
+      "family": "Microsoft Edge Developer Tools Client",
+      "package_family": "Microsoft.MicrosoftEdgeDevToolsClient_8wekyb3d8bbwe",
+      "is_framework": false,
+      "publisher": "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+      "source_url": "https://learn.microsoft.com/en-us/windows/iot/iot-enterprise/optimize/removable-packages/microsoft-windows-microsoftedgedevtoolsclient",
+      "source_sha256": "447e09cd8449f033d57514fe13869df18aed3ffec426615cfd9ae5c89fd83573",
+      "collected_at": "2026-09-20T14:45:59.041570+00:00",
+      "profile": "native-windows-component-references-v1"
+    }
+  ]
+}

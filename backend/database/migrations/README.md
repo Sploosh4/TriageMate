@@ -1,0 +1,7 @@
+# Future database revisions
+
+`MIGRATIONS` is the single ordered registry for changes after `triagemate-baseline-v1`; it is currently empty. Each revision supplies a unique version, immutable SQL and one or more independently constructed exact post-change catalogue contracts. Array order is authoritative. Do not infer ordering from file names or revive pre-baseline version lists.
+
+`backend.database.schema.upgrade()` verifies the installed version, previously applied artifact hashes and complete trusted catalogue before applying a revision. It executes each revision, requires an exact trusted post-state and advances the existing installation record in the caller's transaction. The caller commits only after the whole requested upgrade succeeds and rolls back on any failure. Repeating an upgrade verifies the existing result; it does not rerun SQL. An unknown version, edited prior artifact or unexpected post-state is an error, not permission to repair or discard evidence.
+
+Construct contracts on isolated synthetic databases and demonstrate that positive behaviour, malformed input, authority boundaries and evidence attribution remain correct. A contract calculated from a database under investigation is not an independent authority. Existing-baseline adoption can retain the predecessor's four deparsed-definition differences, so a future revision must either provide exact contracts for both supported layouts or explicitly reconcile those definitions with behavioural and data-preservation evidence. No arbitrary SQL normalization occurs during verification.

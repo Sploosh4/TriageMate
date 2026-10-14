@@ -1,0 +1,58 @@
+{
+  "annotations": {
+    "empty": {
+      "bootstrap": "empty-evidence-v1",
+      "epss_functions_sha256": "034494e2da61ffeea782f5e589f64413424c588add7ad8a659082a36c9123ae7",
+      "epss_import": "offline-synthetic-epss-v1",
+      "sha256": {
+        "calculation.sql": "19d0175c9579c5a737ae3d4b4423a688b31019045d722d7514d2aa1306dda6f5",
+        "catalogue_metadata.sql": "23ea356449c25c36e998ed117e69dcc3ed25854b421a061d2688176c43683bf6",
+        "constraints.sql": "fdbb990d5d7e3ef7c75342eeba7e20b3279baf7448a0f813baa6b4eb314754c2",
+        "reader_grants.sql": "e7da702f1e158dc8e8d7d0ffb12508aaab06480d0209f60275a717d1e09f2643",
+        "schema.sql": "b7595838eea440ace173353c329e2059c37a2d9b9d2b3f553d79986339622fe6",
+        "views.sql": "c9061c4cd6b6bdb8c39f72d29d1b45c36ddc8515564328cc3c35ca7618e4ea84"
+      },
+      "synthetic": false,
+      "version": 1
+    },
+    "synthetic": {
+      "epss_functions_sha256": "034494e2da61ffeea782f5e589f64413424c588add7ad8a659082a36c9123ae7",
+      "epss_import": "offline-synthetic-epss-v1",
+      "sha256": {
+        "calculation.sql": "19d0175c9579c5a737ae3d4b4423a688b31019045d722d7514d2aa1306dda6f5",
+        "catalogue_metadata.sql": "23ea356449c25c36e998ed117e69dcc3ed25854b421a061d2688176c43683bf6",
+        "constraints.sql": "fdbb990d5d7e3ef7c75342eeba7e20b3279baf7448a0f813baa6b4eb314754c2",
+        "fixtures.json": "bbd964983552531bf071402990de5e36f60cc9ead4b9c25f4adde379615f27b6",
+        "manage.py": "1a41213ae6d214f099f87fca0ad706beda15280883df53d7e76b21bb06b7d6a6",
+        "reader_grants.sql": "e7da702f1e158dc8e8d7d0ffb12508aaab06480d0209f60275a717d1e09f2643",
+        "runtime-provenance.json": "bf9e73c019d3d61e09477996fd252bf8856f5f168925c305dc8ae72e9ac8373f",
+        "schema.sql": "b7595838eea440ace173353c329e2059c37a2d9b9d2b3f553d79986339622fe6",
+        "views.sql": "c9061c4cd6b6bdb8c39f72d29d1b45c36ddc8515564328cc3c35ca7618e4ea84"
+      },
+      "synthetic": true,
+      "version": 1
+    },
+    "runner": {
+      "epss_functions_sha256": "034494e2da61ffeea782f5e589f64413424c588add7ad8a659082a36c9123ae7",
+      "epss_import": "offline-synthetic-epss-v1",
+      "sha256": {
+        "calculation.sql": "19d0175c9579c5a737ae3d4b4423a688b31019045d722d7514d2aa1306dda6f5",
+        "catalogue_metadata.sql": "23ea356449c25c36e998ed117e69dcc3ed25854b421a061d2688176c43683bf6",
+        "constraints.sql": "fdbb990d5d7e3ef7c75342eeba7e20b3279baf7448a0f813baa6b4eb314754c2",
+        "fixtures.json": "bbd964983552531bf071402990de5e36f60cc9ead4b9c25f4adde379615f27b6",
+        "manage.py": "1a41213ae6d214f099f87fca0ad706beda15280883df53d7e76b21bb06b7d6a6",
+        "reader_grants.sql": "e7da702f1e158dc8e8d7d0ffb12508aaab06480d0209f60275a717d1e09f2643",
+        "runtime-provenance.json": "bf9e73c019d3d61e09477996fd252bf8856f5f168925c305dc8ae72e9ac8373f",
+        "schema.sql": "b7595838eea440ace173353c329e2059c37a2d9b9d2b3f553d79986339622fe6",
+        "views.sql": "c9061c4cd6b6bdb8c39f72d29d1b45c36ddc8515564328cc3c35ca7618e4ea84"
+      },
+      "synthetic": true,
+      "version": 1
+    }
+  },
+  "accepted_manage_hashes": [
+    "075b8a46c5e4db58209dbc41aac85c946705f2a4b3f7d6b6d9784d68f909591c",
+    "2423f1870c107798b249f21046f7fe63b7264e714f737085bf61ce80a4a0c02e",
+    "5fa79fa1c97db2e1bd323630e2e5337f4c391e40522a48e71b5355f34f56585a"
+  ]
+}

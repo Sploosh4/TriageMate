@@ -1,0 +1,17 @@
+# Project-scoped MCP configuration for trusted Codex clients.
+# Secrets are referenced by environment-variable name and are never stored here.
+
+[mcp_servers.openaiDeveloperDocs]
+url = "https://developers.openai.com/mcp"
+enabled = true
+required = false
+default_tools_approval_mode = "auto"
+
+[mcp_servers.playwright]
+command = "bash"
+args = ["-lc", "root=$(git rev-parse --show-toplevel) && cd \"$root\" && exec \"$root/node_modules/.bin/playwright-mcp\" --headless --isolated --output-dir \"$root/.playwright-mcp\""]
+enabled = true
+required = false
+default_tools_approval_mode = "prompt"
+startup_timeout_sec = 30
+tool_timeout_sec = 120

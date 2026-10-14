@@ -1,0 +1,41 @@
+{
+  "interpretation": "identity_only_not_advisory_aliases",
+  "packages": [
+    {
+      "name": "Microsoft.ApplicationCompatibilityEnhancements",
+      "family": "Windows Application Compatibility Enhancements",
+      "package_family": "Microsoft.ApplicationCompatibilityEnhancements_8wekyb3d8bbwe",
+      "publisher": "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+      "source_url": "https://displaycatalog.mp.microsoft.com/v7.0/products/9PCSD6N03BKV?market=US&languages=en-us",
+      "source_sha256": "a2aad328d31b683638d7f1a344938bdf8200ec6049c4b1c13e5597e8fbed8ab6",
+      "collected_at": "2026-09-20T15:09:01.794494+00:00"
+    },
+    {
+      "name": "Microsoft.WidgetsPlatformRuntime",
+      "family": "Widgets Platform Runtime",
+      "package_family": "Microsoft.WidgetsPlatformRuntime_8wekyb3d8bbwe",
+      "publisher": "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+      "source_url": "https://displaycatalog.mp.microsoft.com/v7.0/products/9N3RK8ZV2ZR8?market=US&languages=en-us",
+      "source_sha256": "a751acdd9e13e168deeab24177b8489c91bdedda58605cd9e0a1b8cf335aab86",
+      "collected_at": "2026-09-20T15:09:01.865142+00:00"
+    },
+    {
+      "name": "MicrosoftWindows.CrossDevice",
+      "family": "Cross Device Experience Host",
+      "package_family": "MicrosoftWindows.CrossDevice_cw5n1h2txyewy",
+      "publisher": "CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+      "source_url": "https://displaycatalog.mp.microsoft.com/v7.0/products/9NTXGKQ8P7N0?market=US&languages=en-us",
+      "source_sha256": "de4706443fd6cd44cff38e500b123edb37953b27505caf36b20153ba94e345f1",
+      "collected_at": "2026-09-20T15:09:03.884299+00:00"
+    },
+    {
+      "name": "Microsoft.StartExperiencesApp",
+      "family": "Start Experiences App",
+      "package_family": "Microsoft.StartExperiencesApp_8wekyb3d8bbwe",
+      "publisher": "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+      "source_url": "https://displaycatalog.mp.microsoft.com/v7.0/products/9PC1H9VN18CM?market=US&languages=en-us",
+      "source_sha256": "b513d4e384348e6f4f044dd3e37872c4aa6ed183dc633cbe41802a105d674ac5",
+      "collected_at": "2026-09-20T15:09:04.948420+00:00"
+    }
+  ]
+}

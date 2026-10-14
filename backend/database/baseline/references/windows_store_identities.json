@@ -1,0 +1,46 @@
+{
+  "profile": "native-windows-store-identities-v1",
+  "interpretation": "identity_only_not_advisory_aliases",
+  "packages": [
+    {
+      "name": "Microsoft.HEIFImageExtension",
+      "family": "HEIF Image Extension",
+      "package_family": "Microsoft.HEIFImageExtension_8wekyb3d8bbwe",
+      "source_url": "https://displaycatalog.mp.microsoft.com/v7.0/products/9PMMSR1CGPWG?market=US&languages=en-us",
+      "source_sha256": "23ef5fd6c8dbf1189250578b4dad0d625dac868cf4026dab99d4fa865e0e86dd",
+      "collected_at": "2026-09-20T03:55:39.563532+00:00"
+    },
+    {
+      "name": "Microsoft.WebpImageExtension",
+      "family": "WebP Image Extension",
+      "package_family": "Microsoft.WebpImageExtension_8wekyb3d8bbwe",
+      "source_url": "https://displaycatalog.mp.microsoft.com/v7.0/products/9PG2DK419DRG?market=US&languages=en-us",
+      "source_sha256": "ccac11510b010880000bb78526b09e43a686e8c37be153365159352d3dd3ae9b",
+      "collected_at": "2026-09-20T03:55:40.469061+00:00"
+    },
+    {
+      "name": "Microsoft.RawImageExtension",
+      "family": "Raw Image Extension",
+      "package_family": "Microsoft.RawImageExtension_8wekyb3d8bbwe",
+      "source_url": "https://displaycatalog.mp.microsoft.com/v7.0/products/9NCTDW2W1BH8?market=US&languages=en-us",
+      "source_sha256": "82e20764d759e869e82c787318a6361998b5746a65a025eeecf6b6c7873af0ad",
+      "collected_at": "2026-09-20T03:55:41.553012+00:00"
+    },
+    {
+      "name": "Microsoft.MPEG2VideoExtension",
+      "family": "MPEG-2 Video Extension",
+      "package_family": "Microsoft.MPEG2VideoExtension_8wekyb3d8bbwe",
+      "source_url": "https://displaycatalog.mp.microsoft.com/v7.0/products/9N95Q1ZZPMH4?market=US&languages=en-us",
+      "source_sha256": "76c0e1021fe39b09371adabfb904ae524675c96ea390022868a9e892ab732571",
+      "collected_at": "2026-09-20T03:55:42.577223+00:00"
+    },
+    {
+      "name": "Microsoft.WebMediaExtensions",
+      "family": "Web Media Extensions",
+      "package_family": "Microsoft.WebMediaExtensions_8wekyb3d8bbwe",
+      "source_url": "https://displaycatalog.mp.microsoft.com/v7.0/products/9N5TDP8VCMHS?market=US&languages=en-us",
+      "source_sha256": "ee4205b5db312ca6f96b86149532169b547a9500ebe64cd2c2b1373a0ba6432e",
+      "collected_at": "2026-09-20T03:55:43.353597+00:00"
+    }
+  ]
+}

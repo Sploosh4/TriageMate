@@ -1,0 +1,27 @@
+{
+  "annotation": {
+    "epss_functions_sha256": "034494e2da61ffeea782f5e589f64413424c588add7ad8a659082a36c9123ae7",
+    "epss_import": "offline-synthetic-epss-v1",
+    "sha256": {
+      "calculation.sql": "19d0175c9579c5a737ae3d4b4423a688b31019045d722d7514d2aa1306dda6f5",
+      "catalogue_metadata.sql": "23ea356449c25c36e998ed117e69dcc3ed25854b421a061d2688176c43683bf6",
+      "constraints.sql": "fdbb990d5d7e3ef7c75342eeba7e20b3279baf7448a0f813baa6b4eb314754c2",
+      "fixtures.json": "bbd964983552531bf071402990de5e36f60cc9ead4b9c25f4adde379615f27b6",
+      "manage.py": "1a41213ae6d214f099f87fca0ad706beda15280883df53d7e76b21bb06b7d6a6",
+      "reader_grants.sql": "e7da702f1e158dc8e8d7d0ffb12508aaab06480d0209f60275a717d1e09f2643",
+      "runtime-provenance.json": "bf9e73c019d3d61e09477996fd252bf8856f5f168925c305dc8ae72e9ac8373f",
+      "schema.sql": "b7595838eea440ace173353c329e2059c37a2d9b9d2b3f553d79986339622fe6",
+      "views.sql": "c9061c4cd6b6bdb8c39f72d29d1b45c36ddc8515564328cc3c35ca7618e4ea84"
+    },
+    "synthetic": true,
+    "version": 1
+  },
+  "archive": "runner.dump.gz",
+  "construction": "backend/database/retained_runner/construction.json",
+  "origin": "synthetic",
+  "sha256": "a0c1ed0f75603d105dc65ec777999e94f7a9200c3f295469be29107416e7baaf",
+  "source_fixture_sha256": "f271db37b861cdf754a951715a69b586dfd567a54bc8a3da4ff110b001bf30c8",
+  "table_count": 149,
+  "total_rows": 280,
+  "uncompressed_sha256": "873315b96933262fcc5de91f3a5694c020a46c62b2c208645ee38f385b214eb8"
+}

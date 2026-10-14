@@ -1,0 +1,20 @@
+{
+  "profile": "native-windows-media-package-identities-v1",
+  "source_url": "https://chromium.googlesource.com/chromium/src/+/375869ebc88c041e6493d10543722631aee04df2/media/base/win/media_foundation_package_runtime_locator.cc?format=TEXT",
+  "source_sha256": "af43148e042a327841648dab73dbee110d55adc94964b3211438d1801b243495",
+  "interpretation": "identity_only_not_advisory_aliases",
+  "packages": [
+    {
+      "name": "Microsoft.AV1VideoExtension",
+      "family": "AV1 video codec package"
+    },
+    {
+      "name": "Microsoft.HEVCVideoExtension",
+      "family": "HEVC video codec package"
+    },
+    {
+      "name": "Microsoft.VP9VideoExtensions",
+      "family": "VP9 video codec package"
+    }
+  ]
+}

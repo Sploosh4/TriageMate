@@ -1,0 +1,10 @@
+{
+  "private": true,
+  "license": "GPL-3.0-only",
+  "devDependencies": {
+    "@playwright/mcp": "0.0.79"
+  },
+  "overrides": {
+    "js-yaml": "4.3.1"
+  }
+}

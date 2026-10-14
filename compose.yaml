@@ -1,0 +1,47 @@
+name: triagemate
+services:
+  db:
+    image: postgres:16.15-bookworm@sha256:0ea6700a3b4f0ae6ce746519073558aed4d88a79d8d07622a9a644946c7319c4
+    environment:
+      POSTGRES_USER: tm_mock_owner
+      POSTGRES_DB: triagemate
+      POSTGRES_PASSWORD: ${TRIAGEMATE_DB_OWNER_PASSWORD:?Run the setup command to generate .env first}
+      POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256
+    volumes:
+      - database:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U tm_mock_owner -d triagemate]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+    stop_grace_period: 60s
+  app:
+    build: .
+    image: triagemate:local
+    environment:
+      TRIAGEMATE_DB_OWNER_PASSWORD: ${TRIAGEMATE_DB_OWNER_PASSWORD:?Run the setup command first}
+      TRIAGEMATE_ALLOWED_HOSTS: localhost,127.0.0.1
+    ports:
+      - "127.0.0.1:${TRIAGEMATE_PORT:-5190}:8000"
+    volumes:
+      - application:/var/lib/triagemate
+    tmpfs:
+      - /tmp:mode=1777
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      start_period: 120s
+      retries: 3
+    restart: unless-stopped
+    stop_grace_period: 360s
+volumes:
+  database:
+  application:

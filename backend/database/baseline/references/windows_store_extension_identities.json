@@ -1,0 +1,87 @@
+{
+  "profile": "native-windows-store-identities-v1",
+  "interpretation": "identity_only_not_advisory_aliases",
+  "packages": [
+    {
+      "name": "Microsoft.HEIFImageExtension",
+      "family": "HEIF Image Extension",
+      "package_family": "Microsoft.HEIFImageExtension_8wekyb3d8bbwe",
+      "source_url": "https://displaycatalog.mp.microsoft.com/v7.0/products/9PMMSR1CGPWG?market=US&languages=en-us",
+      "source_sha256": "23ef5fd6c8dbf1189250578b4dad0d625dac868cf4026dab99d4fa865e0e86dd",
+      "collected_at": "2026-09-20T03:55:39.563532+00:00",
+      "publisher": "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
+    },
+    {
+      "name": "Microsoft.WebpImageExtension",
+      "family": "WebP Image Extension",
+      "package_family": "Microsoft.WebpImageExtension_8wekyb3d8bbwe",
+      "source_url": "https://displaycatalog.mp.microsoft.com/v7.0/products/9PG2DK419DRG?market=US&languages=en-us",
+      "source_sha256": "ccac11510b010880000bb78526b09e43a686e8c37be153365159352d3dd3ae9b",
+      "collected_at": "2026-09-20T03:55:40.469061+00:00",
+      "publisher": "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
+    },
+    {
+      "name": "Microsoft.RawImageExtension",
+      "family": "Raw Image Extension",
+      "package_family": "Microsoft.RawImageExtension_8wekyb3d8bbwe",
+      "source_url": "https://displaycatalog.mp.microsoft.com/v7.0/products/9NCTDW2W1BH8?market=US&languages=en-us",
+      "source_sha256": "82e20764d759e869e82c787318a6361998b5746a65a025eeecf6b6c7873af0ad",
+      "collected_at": "2026-09-20T03:55:41.553012+00:00",
+      "publisher": "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
+    },
+    {
+      "name": "Microsoft.MPEG2VideoExtension",
+      "family": "MPEG-2 Video Extension",
+      "package_family": "Microsoft.MPEG2VideoExtension_8wekyb3d8bbwe",
+      "source_url": "https://displaycatalog.mp.microsoft.com/v7.0/products/9N95Q1ZZPMH4?market=US&languages=en-us",
+      "source_sha256": "76c0e1021fe39b09371adabfb904ae524675c96ea390022868a9e892ab732571",
+      "collected_at": "2026-09-20T03:55:42.577223+00:00",
+      "publisher": "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
+    },
+    {
+      "name": "Microsoft.WebMediaExtensions",
+      "family": "Web Media Extensions",
+      "package_family": "Microsoft.WebMediaExtensions_8wekyb3d8bbwe",
+      "source_url": "https://displaycatalog.mp.microsoft.com/v7.0/products/9N5TDP8VCMHS?market=US&languages=en-us",
+      "source_sha256": "ee4205b5db312ca6f96b86149532169b547a9500ebe64cd2c2b1373a0ba6432e",
+      "collected_at": "2026-09-20T03:55:43.353597+00:00",
+      "publisher": "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
+    },
+    {
+      "name": "Microsoft.AVCEncoderVideoExtension",
+      "family": "AVC Encoder Video Extension",
+      "package_family": "Microsoft.AVCEncoderVideoExtension_8wekyb3d8bbwe",
+      "publisher": "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+      "source_url": "https://displaycatalog.mp.microsoft.com/v7.0/products/9PB0TRCNRHFX?market=US&languages=en-us",
+      "source_sha256": "0b7d0cc2911985f9afea3b772e7dbe619654a3225165546a14529445fe490405",
+      "collected_at": "2026-09-20T04:01:21.085991+00:00"
+    },
+    {
+      "name": "Clipchamp.Clipchamp",
+      "family": "Microsoft Clipchamp",
+      "package_family": "Clipchamp.Clipchamp_yxz26nhyzhsrt",
+      "publisher": "CN=33F0F141-36F3-4EC2-A77D-51B53D0BA0E4",
+      "source_url": "https://displaycatalog.mp.microsoft.com/v7.0/products/9P1J8S7CCWWT?market=US&languages=en-us",
+      "source_sha256": "5c7f6c2b93a952444829ee3af3d0c2499d254592c45ec033cb5497cfd623664f",
+      "collected_at": "2026-09-20T04:01:22.129549+00:00"
+    },
+    {
+      "name": "MicrosoftWindows.Client.WebExperience",
+      "family": "Windows Web Experience Pack",
+      "package_family": "MicrosoftWindows.Client.WebExperience_cw5n1h2txyewy",
+      "publisher": "CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+      "source_url": "https://displaycatalog.mp.microsoft.com/v7.0/products/9MSSGKG348SP?market=US&languages=en-us",
+      "source_sha256": "41b8c50a1400d6dd9b0924365884dad9ca8fc905ba6b5f17893b6e0b1c055909",
+      "collected_at": "2026-09-20T04:01:23.042680+00:00"
+    },
+    {
+      "name": "Microsoft.BingSearch",
+      "family": "Microsoft Bing",
+      "package_family": "Microsoft.BingSearch_8wekyb3d8bbwe",
+      "publisher": "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+      "source_url": "https://displaycatalog.mp.microsoft.com/v7.0/products/9NZBF4GT040C?market=US&languages=en-us",
+      "source_sha256": "0259ad945c35da2b17c0284bdc8bc0f25c486a1f0341af9a30f17ae28ca64b79",
+      "collected_at": "2026-09-20T04:01:24.203876+00:00"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "interpretation": "identity_only_not_advisory_alias_or_os_build_mapping",
+  "packages": [
+    {
+      "name": "Microsoft.Windows.CloudExperienceHost",
+      "family": "Microsoft Windows Cloud Experience Host",
+      "package_family": "Microsoft.Windows.CloudExperienceHost_cw5n1h2txyewy",
+      "publisher": "CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+      "is_framework": false,
+      "profile": "native-windows-published-component-identities-v1",
+      "source_url": "https://learn.microsoft.com/en-us/windows/client-management/mdm/applocker-csp",
+      "source_sha256": "081354d1bb3b786b6188168716dd790bd6cbb4f745abdb2c52a1d3fc43f4005f",
+      "collected_at": "2026-09-20T18:06:30.232850+00:00"
+    }
+  ]
+}

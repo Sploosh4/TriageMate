@@ -1,0 +1,84 @@
+.code-editor {
+  min-width: 0;
+  margin: 8px 0 12px;
+}
+.code-editor .cm-editor {
+  background: var(--color-inset);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  font: 14px/1.7 var(--font-mono);
+}
+.code-editor .cm-editor.cm-focused {
+  outline: 1px solid var(--color-focus);
+}
+.code-editor .cm-scroller {
+  overflow: auto;
+  font-family: var(--font-mono);
+}
+.code-editor .cm-content {
+  min-height: 150px;
+  padding: 10px 0;
+  caret-color: var(--color-focus);
+}
+.code-editor .cm-line {
+  padding: 0 12px;
+}
+.code-editor .cm-gutters {
+  background: var(--color-inset);
+  color: var(--color-muted);
+  border-color: var(--color-border);
+}
+.code-editor .cm-activeLine {
+  background: #51dccb09;
+}
+.code-editor .cm-selectionBackground,
+.code-editor .cm-content ::selection {
+  background: #42616b !important;
+}
+.code-editor .cm-cursor {
+  border-left-color: var(--color-focus);
+}
+.code-editor .cm-tooltip,
+.code-editor .cm-panels {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+.code-editor .cm-tooltip-autocomplete > ul > li[aria-selected] {
+  background: #365b60;
+  color: var(--color-text);
+}
+.code-editor .cm-tooltip-autocomplete {
+  max-width: min(540px, 90vw);
+}
+.code-editor .cm-completionDetail {
+  color: var(--color-muted);
+}
+.code-editor .cm-searchMatch {
+  background: #88572d;
+}
+.code-editor .cm-searchMatch-selected {
+  background: #a36129;
+}
+.code-editor .cm-search input {
+  color: var(--color-text);
+  background: var(--color-inset);
+}
+.code-editor .cm-search .cm-button {
+  color: var(--color-text);
+  background: var(--color-inset);
+  border-color: var(--color-border);
+}
+.code-editor.full-source {
+  height: auto;
+  min-height: 400px;
+  margin: 0;
+}
+.code-editor.full-source .cm-content {
+  min-height: 400px;
+}
+.code-editor.fenced-sql {
+  padding: 0;
+  background: transparent;
+}

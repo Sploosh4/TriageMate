@@ -1,0 +1,12 @@
+{
+  "interpretation": "identity_only_not_advisory_aliases",
+  "packages": [
+    {
+      "name": "Microsoft.Windows.StartMenuExperienceHost",
+      "family": "Windows Start menu",
+      "package_family": "Microsoft.Windows.StartMenuExperienceHost_cw5n1h2txyewy",
+      "source_url": "https://learn.microsoft.com/en-us/troubleshoot/windows-client/shell-experience/troubleshoot-start-menu-errors",
+      "source_sha256": "29ecf8d87ccb54f6c9b1acadf852dbe42116691e674dff601edff47a3be1511d"
+    }
+  ]
+}

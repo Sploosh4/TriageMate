@@ -1,0 +1,13 @@
+{
+  "predecessor": "pipeline-windows-os-native-facts-v113",
+  "signature_alternatives_sha256": {
+    "synthetic": [
+      "9040b876232b06079ebcd737a300e8515e88febf5dd40dd480f7fe12634151f0"
+    ]
+  },
+  "signature_sha256": {
+    "empty": "e1db1bf204ee1c0b9f20ffd51dabc0299d78e75025e0083ed4fb68f6fae18aec",
+    "synthetic": "b2e4f9ec8bf46488af64f71c0cd4b25d7953fbe9aca56db7eac101b1f2071c81",
+    "runner": "baa4db430d7310fbd520790b399ea3b934d96096427fa7ce08789e266025b267"
+  }
+}

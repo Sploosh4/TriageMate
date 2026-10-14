@@ -1,0 +1,35 @@
+{
+  "interpretation": "exact_published_package_identity_not_advisory_alias_or_servicing_version_mapping",
+  "packages": [
+    {
+      "name": "Microsoft.UI.Xaml.CBS",
+      "family": "Microsoft.UI.Xaml.CBS",
+      "package_family": "Microsoft.UI.Xaml.CBS_8wekyb3d8bbwe",
+      "is_framework": true,
+      "publisher": "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+      "source_url": "https://learn.microsoft.com/en-us/troubleshoot/windows-client/setup-upgrade-and-drivers/sysprep-as-system-windows-11",
+      "source_sha256": "8194df471d78a5c103eecc1e98dd33b03953be8bb778ecb383056720db0e4ef7",
+      "collected_at": "2026-09-20T14:21:55.847144+00:00"
+    },
+    {
+      "name": "MicrosoftWindows.Client.CBS",
+      "family": "MicrosoftWindows.Client.CBS",
+      "package_family": "MicrosoftWindows.Client.CBS_cw5n1h2txyewy",
+      "is_framework": false,
+      "publisher": "CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+      "source_url": "https://learn.microsoft.com/en-us/troubleshoot/windows-client/setup-upgrade-and-drivers/sysprep-as-system-windows-11",
+      "source_sha256": "8194df471d78a5c103eecc1e98dd33b03953be8bb778ecb383056720db0e4ef7",
+      "collected_at": "2026-09-20T14:21:55.847215+00:00"
+    },
+    {
+      "name": "MicrosoftWindows.Client.Core",
+      "family": "MicrosoftWindows.Client.Core",
+      "package_family": "MicrosoftWindows.Client.Core_cw5n1h2txyewy",
+      "is_framework": false,
+      "publisher": "CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+      "source_url": "https://learn.microsoft.com/en-us/troubleshoot/windows-client/setup-upgrade-and-drivers/sysprep-as-system-windows-11",
+      "source_sha256": "8194df471d78a5c103eecc1e98dd33b03953be8bb778ecb383056720db0e4ef7",
+      "collected_at": "2026-09-20T14:21:55.847266+00:00"
+    }
+  ]
+}

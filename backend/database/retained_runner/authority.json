@@ -1,0 +1,62 @@
+{
+  "memberships": [
+    [
+      "triagemate_retention_approver",
+      "triagemate",
+      "triagemate",
+      false,
+      true,
+      true
+    ],
+    [
+      "triagemate_retention_executor",
+      "triagemate",
+      "triagemate",
+      false,
+      true,
+      true
+    ]
+  ],
+  "roles": [
+    [
+      "triagemate_retention_approver",
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      -1,
+      null,
+      []
+    ],
+    [
+      "triagemate_retention_executor",
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      -1,
+      null,
+      []
+    ],
+    [
+      "triagemate_test_application",
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      -1,
+      null,
+      []
+    ]
+  ],
+  "settings": []
+}

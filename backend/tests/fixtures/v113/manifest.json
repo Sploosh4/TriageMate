@@ -1,0 +1,75 @@
+{
+  "origin": "synthetic",
+  "source_revision": "d34acea2ac0938b005cae962a62591c20b69084d",
+  "postgresql_major": 16,
+  "predecessor": "pipeline-windows-os-native-facts-v113",
+  "profiles": {
+    "empty": {
+      "archive": "empty.dump.gz",
+      "sha256": "1957f3fe4ea7d3986259c3ef93671efbd1a223ca0297f31daf09891e859d8782",
+      "annotation": {
+        "bootstrap": "empty-evidence-v1",
+        "epss_functions_sha256": "034494e2da61ffeea782f5e589f64413424c588add7ad8a659082a36c9123ae7",
+        "epss_import": "offline-synthetic-epss-v1",
+        "sha256": {
+          "calculation.sql": "19d0175c9579c5a737ae3d4b4423a688b31019045d722d7514d2aa1306dda6f5",
+          "catalogue_metadata.sql": "23ea356449c25c36e998ed117e69dcc3ed25854b421a061d2688176c43683bf6",
+          "constraints.sql": "fdbb990d5d7e3ef7c75342eeba7e20b3279baf7448a0f813baa6b4eb314754c2",
+          "reader_grants.sql": "e7da702f1e158dc8e8d7d0ffb12508aaab06480d0209f60275a717d1e09f2643",
+          "schema.sql": "b7595838eea440ace173353c329e2059c37a2d9b9d2b3f553d79986339622fe6",
+          "views.sql": "c9061c4cd6b6bdb8c39f72d29d1b45c36ddc8515564328cc3c35ca7618e4ea84"
+        },
+        "synthetic": false,
+        "version": 1
+      },
+      "fixture_rows": 0,
+      "uncompressed_sha256": "00b53c52c1d6e4edf2f355b01253867defb786d8fe3452d35d205849ffb7f3d0"
+    },
+    "synthetic": {
+      "archive": "synthetic.dump.gz",
+      "sha256": "232ac0623cfa1609284f95782795362bd89452d509ecf452711c51a351618d26",
+      "annotation": {
+        "epss_functions_sha256": "034494e2da61ffeea782f5e589f64413424c588add7ad8a659082a36c9123ae7",
+        "epss_import": "offline-synthetic-epss-v1",
+        "sha256": {
+          "calculation.sql": "19d0175c9579c5a737ae3d4b4423a688b31019045d722d7514d2aa1306dda6f5",
+          "catalogue_metadata.sql": "23ea356449c25c36e998ed117e69dcc3ed25854b421a061d2688176c43683bf6",
+          "constraints.sql": "fdbb990d5d7e3ef7c75342eeba7e20b3279baf7448a0f813baa6b4eb314754c2",
+          "fixtures.json": "bbd964983552531bf071402990de5e36f60cc9ead4b9c25f4adde379615f27b6",
+          "manage.py": "1a41213ae6d214f099f87fca0ad706beda15280883df53d7e76b21bb06b7d6a6",
+          "reader_grants.sql": "e7da702f1e158dc8e8d7d0ffb12508aaab06480d0209f60275a717d1e09f2643",
+          "runtime-provenance.json": "bf9e73c019d3d61e09477996fd252bf8856f5f168925c305dc8ae72e9ac8373f",
+          "schema.sql": "b7595838eea440ace173353c329e2059c37a2d9b9d2b3f553d79986339622fe6",
+          "views.sql": "c9061c4cd6b6bdb8c39f72d29d1b45c36ddc8515564328cc3c35ca7618e4ea84"
+        },
+        "synthetic": true,
+        "version": 1
+      },
+      "fixture_rows": 277,
+      "uncompressed_sha256": "bbc02b36681e57857d2590e42c1e65ac88f2cd9c0705a7d603b68a710a09fb5d"
+    },
+    "runner": {
+      "archive": "runner.dump.gz",
+      "sha256": "f271db37b861cdf754a951715a69b586dfd567a54bc8a3da4ff110b001bf30c8",
+      "annotation": {
+        "epss_functions_sha256": "034494e2da61ffeea782f5e589f64413424c588add7ad8a659082a36c9123ae7",
+        "epss_import": "offline-synthetic-epss-v1",
+        "sha256": {
+          "calculation.sql": "19d0175c9579c5a737ae3d4b4423a688b31019045d722d7514d2aa1306dda6f5",
+          "catalogue_metadata.sql": "23ea356449c25c36e998ed117e69dcc3ed25854b421a061d2688176c43683bf6",
+          "constraints.sql": "fdbb990d5d7e3ef7c75342eeba7e20b3279baf7448a0f813baa6b4eb314754c2",
+          "fixtures.json": "bbd964983552531bf071402990de5e36f60cc9ead4b9c25f4adde379615f27b6",
+          "manage.py": "1a41213ae6d214f099f87fca0ad706beda15280883df53d7e76b21bb06b7d6a6",
+          "reader_grants.sql": "e7da702f1e158dc8e8d7d0ffb12508aaab06480d0209f60275a717d1e09f2643",
+          "runtime-provenance.json": "bf9e73c019d3d61e09477996fd252bf8856f5f168925c305dc8ae72e9ac8373f",
+          "schema.sql": "b7595838eea440ace173353c329e2059c37a2d9b9d2b3f553d79986339622fe6",
+          "views.sql": "c9061c4cd6b6bdb8c39f72d29d1b45c36ddc8515564328cc3c35ca7618e4ea84"
+        },
+        "synthetic": true,
+        "version": 1
+      },
+      "fixture_rows": 277,
+      "uncompressed_sha256": "f80624dcb53548358823ded44ddeb3ce95c62b8050989434fbbd61c4f0eefaff"
+    }
+  }
+}

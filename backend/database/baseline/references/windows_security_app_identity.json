@@ -1,0 +1,16 @@
+{
+  "interpretation": "identity_only_not_platform_version_or_advisory_alias",
+  "packages": [
+    {
+      "name": "Microsoft.SecHealthUI",
+      "family": "Windows Security app",
+      "package_family": "Microsoft.SecHealthUI_8wekyb3d8bbwe",
+      "publisher": "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+      "is_framework": false,
+      "profile": "native-windows-published-component-identities-v1",
+      "source_url": "https://support.microsoft.com/en-au/servicing/os/windows/2021/10/windows-security-app-update",
+      "source_sha256": "bd6920c08cac186fe32156ac44c09237d8cf2d66754b3b55d7be127e7f237ad0",
+      "collected_at": "2026-09-20T16:56:15.754075+00:00"
+    }
+  ]
+}

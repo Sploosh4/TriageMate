@@ -1,0 +1,167 @@
+{
+  "status": "Approved synthetic test inputs; verified against actual PostgreSQL during step 2. No product applicability policy implied.",
+  "calculation": "evidence.evaluate_completeness: identical SQL function used by the computer views and fixture tests",
+  "computer_cases": [
+    {
+      "case_alias": "C1",
+      "computer_alias": "C1",
+      "definition": "workstation-v1",
+      "applicability_state": "resolved",
+      "input": "Project typed values from selected source observations; do not duplicate evidence in fixture cells",
+      "expected": {
+        "completeness": 5,
+        "completeness_total": 5
+      }
+    },
+    {
+      "case_alias": "C2",
+      "computer_alias": "C2",
+      "definition": "workstation-v1",
+      "applicability_state": "resolved",
+      "input": "Project typed values from selected source observations; do not duplicate evidence in fixture cells",
+      "expected": {
+        "completeness": 4,
+        "completeness_total": 5
+      }
+    },
+    {
+      "case_alias": "C3",
+      "computer_alias": "C3",
+      "definition": "server-v1",
+      "applicability_state": "resolved",
+      "input": "Project typed values from selected source observations; do not duplicate evidence in fixture cells",
+      "expected": {
+        "completeness": 4,
+        "completeness_total": 4
+      }
+    },
+    {
+      "case_alias": "C4",
+      "computer_alias": "C4",
+      "definition": null,
+      "applicability_state": "unresolved",
+      "input": "Project typed values from selected source observations; do not duplicate evidence in fixture cells",
+      "expected": {
+        "completeness": null,
+        "completeness_total": null
+      }
+    }
+  ],
+  "boundary_cases": [
+    {
+      "case_alias": "B1",
+      "definition": "boundary-v1",
+      "applicability_state": "resolved",
+      "cells": [
+        {
+          "field_key": "boolean_flag",
+          "value_kind": "boolean",
+          "value": false
+        },
+        {
+          "field_key": "numeric_value",
+          "value_kind": "numeric",
+          "value": 0
+        },
+        {
+          "field_key": "text_value",
+          "value_kind": "text",
+          "value": null
+        }
+      ],
+      "expected": {
+        "completeness": 2,
+        "completeness_total": 3
+      }
+    },
+    {
+      "case_alias": "B2",
+      "definition": "boundary-v1",
+      "applicability_state": "resolved",
+      "cells": [
+        {
+          "field_key": "boolean_flag",
+          "value_kind": "boolean",
+          "value": false
+        },
+        {
+          "field_key": "numeric_value",
+          "value_kind": "numeric",
+          "value": 0
+        },
+        {
+          "field_key": "text_value",
+          "value_kind": "text",
+          "value": ""
+        }
+      ],
+      "expected": {
+        "completeness": 2,
+        "completeness_total": 3
+      }
+    },
+    {
+      "case_alias": "B3",
+      "definition": "boundary-v1",
+      "applicability_state": "resolved",
+      "cells": [
+        {
+          "field_key": "boolean_flag",
+          "value_kind": "boolean",
+          "value": false
+        },
+        {
+          "field_key": "numeric_value",
+          "value_kind": "numeric",
+          "value": 0
+        },
+        {
+          "field_key": "text_value",
+          "value_kind": "text",
+          "value": "populated"
+        }
+      ],
+      "expected": {
+        "completeness": 3,
+        "completeness_total": 3
+      }
+    },
+    {
+      "case_alias": "B4",
+      "definition": "boundary-v1",
+      "applicability_state": "resolved",
+      "cells": [
+        {
+          "field_key": "boolean_flag",
+          "value_kind": "boolean",
+          "value": null
+        },
+        {
+          "field_key": "numeric_value",
+          "value_kind": "numeric",
+          "value": 0
+        },
+        {
+          "field_key": "text_value",
+          "value_kind": "text",
+          "value": "populated"
+        }
+      ],
+      "expected": {
+        "completeness": 2,
+        "completeness_total": 3
+      }
+    }
+  ],
+  "zero_case": {
+    "case_alias": "Z1",
+    "definition": "zero-v1",
+    "applicability_state": "resolved",
+    "cells": [],
+    "expected": {
+      "completeness": 0,
+      "completeness_total": 0,
+      "percentage": null
+    }
+  }
+}

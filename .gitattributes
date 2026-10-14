@@ -1,0 +1,14 @@
+# Generated CSV catalogues use RFC 4180 CRLF; preserve their recorded bytes.
+*.csv -text whitespace=cr-at-eol
+backend/database/baseline/schema.sql whitespace=-blank-at-eof
+# Baseline hashes use the current retained CRLF representation on every host.
+backend/database/baseline/** text eol=crlf
+backend/database/retained_runner/*.json text eol=crlf
+backend/database/retained_runner/*.sql text eol=crlf
+# Keep frontend source and native shell scripts consistent in Windows/WSL checkouts.
+ui-engine/** text=auto eol=lf
+*.sh text eol=lf
+*.vbs text eol=crlf
+*.cmd text eol=crlf
+# Distributed npm license files retain their verbatim upstream line endings.
+docs/ui/engine/FrontendThirdPartyNotices.txt -text

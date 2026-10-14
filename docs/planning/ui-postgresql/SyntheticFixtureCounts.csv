@@ -1,0 +1,48 @@
+table,proposed_rows,scope
+organisations,2,Queryable evidence
+microsoft_tenants,2,Queryable evidence
+source_connections,7,Queryable evidence
+collection_attempts,8,Queryable evidence
+source_revisions,65,Queryable evidence
+observation_receipts,65,Queryable evidence
+app_settings,0,Deferred behaviour; schema review only
+collection_schedules,0,Deferred behaviour; schema review only
+computers,4,Queryable evidence
+provider_devices,12,Queryable evidence
+computer_source_links,12,Product relationship; synthetic assignments only
+device_observations,12,Queryable evidence
+software,5,Queryable evidence
+software_observations,5,Queryable evidence
+classification_observations,4,Queryable evidence
+classification_decisions,0,Deferred behaviour; schema review only
+vulnerabilities,2,Queryable evidence
+vulnerability_details,2,Queryable evidence
+vulnerability_references,1,Queryable evidence
+cvss_observations,2,Queryable evidence
+epss_observations,2,Queryable evidence
+kev_observations,2,Queryable evidence
+exploit_observations,1,Queryable evidence
+vulnerability_findings,4,Queryable evidence
+vulnerability_events,2,Queryable evidence
+patches,3,Queryable evidence
+patch_vulnerabilities,3,Queryable evidence
+patch_applicability,3,Queryable evidence
+patch_replacements,1,Queryable evidence
+device_missing_patches,3,Queryable evidence
+advisories,2,Queryable evidence
+recommendations,2,Queryable evidence
+advisory_cves,1,Queryable evidence
+advisory_products,2,Queryable evidence
+recommendation_cves,1,Queryable evidence
+recommendation_products,2,Queryable evidence
+recommendation_patches,1,Queryable evidence
+recommendation_devices,2,Queryable evidence
+update_policy_observations,1,Queryable evidence
+antivirus_observations,1,Queryable evidence
+notifications,0,Deferred behaviour; schema review only
+notification_attempts,0,Deferred behaviour; schema review only
+notification_user_state,0,Deferred behaviour; schema review only
+completeness_definitions,4,Mock-only support; not product policy
+completeness_fields,12,Mock-only support; not product policy
+mock_snapshot_selections,7,Mock-only support; not product policy
+mock_fix_matches,5,Mock-only support; not product policy

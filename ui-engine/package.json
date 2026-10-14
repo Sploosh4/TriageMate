@@ -1,0 +1,40 @@
+{
+  "name": "triagemate-frontend",
+  "private": true,
+  "license": "GPL-3.0-only",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc --noEmit && vite build && node scripts/frontend_notices.mjs",
+    "notices:update": "node scripts/frontend_notices.mjs --update-docs",
+    "test:notices": "node --test scripts/test_frontend_notices.mjs",
+    "test": "playwright test",
+    "lint": "eslint src tests *.ts --max-warnings=0",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,css,json}\" \"tests/**/*.ts\" \"*.{ts,mjs,json}\"",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css,json}\" \"tests/**/*.ts\" \"*.{ts,mjs,json}\""
+  },
+  "dependencies": {
+    "@codemirror/autocomplete": "6.20.3",
+    "@codemirror/commands": "6.11.0",
+    "@codemirror/lang-sql": "6.10.0",
+    "@codemirror/language": "6.12.4",
+    "@codemirror/search": "6.7.2",
+    "@codemirror/state": "6.7.4",
+    "@codemirror/view": "6.43.11",
+    "@lezer/highlight": "1.2.3",
+    "react": "19.1.1",
+    "react-dom": "19.1.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@playwright/test": "1.55.1",
+    "@types/react": "19.1.12",
+    "@types/react-dom": "19.1.9",
+    "eslint": "10.11.0",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "prettier": "3.9.8",
+    "typescript": "5.9.2",
+    "typescript-eslint": "8.70.1",
+    "vite": "7.3.6"
+  }
+}

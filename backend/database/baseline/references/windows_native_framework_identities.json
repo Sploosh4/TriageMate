@@ -1,0 +1,27 @@
+{
+  "packages": [
+    {
+      "name": "Microsoft.NET.Native.Framework.2.2",
+      "family": "Microsoft .Net Native Framework Package 2.2",
+      "publisher": "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+      "source_url": "https://api.nuget.org/v3-flatcontainer/runtime.win10-x64.microsoft.net.native.sharedlibrary/2.2.3/runtime.win10-x64.microsoft.net.native.sharedlibrary.2.2.3.nupkg",
+      "source_sha256": "d8511f43aed5bdf2fc1a1e0a13492616f66d7e06d7519bedea9300c94ad44f93",
+      "archive_member": "tools/SharedLibrary/ret/Native/Microsoft.NET.Native.Framework.2.2.appx",
+      "manifest_sha256": "6a8f415526a62ac93dc93850ce58b533e0ea93acf3e7fa72f917d123d664c210",
+      "reference_package_version": "2.2.27405.0",
+      "interpretation": "identity_only_not_installed_version_correspondence"
+    },
+    {
+      "name": "Microsoft.NET.Native.Runtime.2.2",
+      "family": "Microsoft .Net Native Runtime Package 2.2",
+      "publisher": "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+      "source_url": "https://api.nuget.org/v3-flatcontainer/runtime.win10-x64.microsoft.net.native.compiler/2.2.3/runtime.win10-x64.microsoft.net.native.compiler.2.2.3.nupkg",
+      "source_sha256": "82a5068a94b1c7635afd9f31c169ab166d666dd1566b5f810bdee4a7328e2798",
+      "archive_member": "tools/Runtime/x64/Microsoft.NET.Native.Runtime.2.2.appx",
+      "manifest_sha256": "d97e577008c9cf9baa9939be4babe4690e5f1e6ad1e97234b2f40ee22927d7fe",
+      "reference_package_version": "2.2.27328.0",
+      "interpretation": "identity_only_not_installed_version_correspondence"
+    }
+  ],
+  "interpretation": "identity_only_not_advisory_aliases"
+}

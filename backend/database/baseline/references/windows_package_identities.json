@@ -1,0 +1,148 @@
+{
+  "profile": "native-windows-published-package-identities-v1",
+  "source_url": "https://raw.githubusercontent.com/The-Virtual-Desktop-Team/Windows-Desktop-Optimization-Tool/2136d06113776f7df01ad168329e615f35e909cd/Configurations/Templates/AppxPackages.json",
+  "source_sha256": "e2e3750f197b5ad8f9248bb4412b8479534cb1e891c80e6724620922233f2616",
+  "interpretation": "identity_only_not_advisory_aliases",
+  "packages": [
+    {
+      "name": "Microsoft.BingNews",
+      "family": "Microsoft News",
+      "reference_url": "https://www.microsoft.com/en-us/p/microsoft-news/9wzdncrfhvfw"
+    },
+    {
+      "name": "Microsoft.BingWeather",
+      "family": "MSN Weather",
+      "reference_url": "https://www.microsoft.com/en-us/p/msn-weather/9wzdncrfj3q2"
+    },
+    {
+      "name": "Microsoft.DesktopAppInstaller",
+      "family": "App Installer",
+      "reference_url": "https://apps.microsoft.com/detail/9NBLGGH4NNS1"
+    },
+    {
+      "name": "Microsoft.GamingApp",
+      "family": "Xbox",
+      "reference_url": "https://www.microsoft.com/en-us/p/xbox/9mv0b5hzvk9z"
+    },
+    {
+      "name": "Microsoft.GetHelp",
+      "family": "Get Help",
+      "reference_url": "https://docs.microsoft.com/en-us/windows-hardware/customize/desktop/customize-get-help-app"
+    },
+    {
+      "name": "Microsoft.MicrosoftOfficeHub",
+      "family": "Microsoft Office Hub",
+      "reference_url": "https://www.microsoft.com/en-us/p/office/9wzdncrd29v9"
+    },
+    {
+      "name": "Microsoft.MicrosoftSolitaireCollection",
+      "family": "Microsoft Solitaire Collection",
+      "reference_url": "https://www.microsoft.com/en-us/p/microsoft-solitaire-collection/9wzdncrfhwd2"
+    },
+    {
+      "name": "Microsoft.MicrosoftStickyNotes",
+      "family": "Microsoft Sticky Notes",
+      "reference_url": "https://www.microsoft.com/en-us/p/microsoft-sticky-notes/9nblggh4qghw"
+    },
+    {
+      "name": "Microsoft.Paint",
+      "family": "Paint",
+      "reference_url": "https://apps.microsoft.com/detail/9PCFS5B6T72H"
+    },
+    {
+      "name": "Microsoft.PowerAutomateDesktop",
+      "family": "Power Automate Desktop",
+      "reference_url": "https://flow.microsoft.com/en-us/desktop/"
+    },
+    {
+      "name": "Microsoft.ScreenSketch",
+      "family": "Snipping Tool",
+      "reference_url": "https://www.microsoft.com/en-us/p/snip-sketch/9mz95kl8mr0l"
+    },
+    {
+      "name": "Microsoft.StorePurchaseApp",
+      "family": "Store Purchase App",
+      "reference_url": ""
+    },
+    {
+      "name": "Microsoft.Todos",
+      "family": "Microsoft To Do",
+      "reference_url": "https://www.microsoft.com/en-us/p/microsoft-to-do-lists-tasks-reminders/9nblggh5r558"
+    },
+    {
+      "name": "Microsoft.Windows.Photos",
+      "family": "Microsoft Photos",
+      "reference_url": "https://www.microsoft.com/en-us/p/microsoft-photos/9wzdncrfjbh4"
+    },
+    {
+      "name": "Microsoft.WindowsAlarms",
+      "family": "Windows Clock",
+      "reference_url": "https://www.microsoft.com/en-us/p/windows-alarms-clock/9wzdncrfj3pr"
+    },
+    {
+      "name": "Microsoft.WindowsCalculator",
+      "family": "Windows Calculator",
+      "reference_url": "https://www.microsoft.com/en-us/p/windows-calculator/9wzdncrfhvn5"
+    },
+    {
+      "name": "Microsoft.WindowsCamera",
+      "family": "Windows Camera",
+      "reference_url": "https://www.microsoft.com/en-us/p/windows-camera/9wzdncrfjbbg"
+    },
+    {
+      "name": "Microsoft.WindowsFeedbackHub",
+      "family": "Feedback Hub",
+      "reference_url": "https://www.microsoft.com/en-us/p/feedback-hub/9nblggh4r32n"
+    },
+    {
+      "name": "Microsoft.WindowsNotepad",
+      "family": "Windows Notepad",
+      "reference_url": "https://www.microsoft.com/en-us/p/windows-notepad/9msmlrh6lzf3"
+    },
+    {
+      "name": "Microsoft.WindowsStore",
+      "family": "Microsoft Store",
+      "reference_url": "https://blogs.windows.com/windowsexperience/2021/06/24/building-a-new-open-microsoft-store-on-windows-11/"
+    },
+    {
+      "name": "Microsoft.WindowsSoundRecorder",
+      "family": "Windows Sound Recorder",
+      "reference_url": "https://www.microsoft.com/en-us/p/windows-voice-recorder/9wzdncrfhwkn"
+    },
+    {
+      "name": "Microsoft.WindowsTerminal",
+      "family": "Windows Terminal",
+      "reference_url": "https://www.microsoft.com/en-us/p/windows-terminal/9n0dx20hk701"
+    },
+    {
+      "name": "Microsoft.Xbox.TCUI",
+      "family": "Xbox Title Callable UI",
+      "reference_url": "https://docs.microsoft.com/en-us/gaming/xbox-live/features/general/tcui/live-tcui-overview"
+    },
+    {
+      "name": "Microsoft.XboxGamingOverlay",
+      "family": "Xbox Game Bar",
+      "reference_url": "https://www.microsoft.com/en-us/p/xbox-game-bar/9nzkpstsnw4p"
+    },
+    {
+      "name": "Microsoft.XboxIdentityProvider",
+      "family": "Xbox Identity Provider",
+      "reference_url": "https://www.microsoft.com/en-us/p/xbox-identity-provider/9wzdncrd1hkw"
+    },
+    {
+      "name": "Microsoft.XboxSpeechToTextOverlay",
+      "family": "Xbox Speech To Text Overlay",
+      "reference_url": "https://support.xbox.com/help/account-profile/accessibility/use-game-chat-transcription"
+    },
+    {
+      "name": "Microsoft.YourPhone",
+      "family": "Phone Link",
+      "reference_url": "https://www.microsoft.com/en-us/p/Your-phone/9nmpj99vjbwv"
+    },
+    {
+      "name": "Microsoft.ZuneMusic",
+      "family": "Windows Media Player",
+      "reference_url": "https://www.microsoft.com/en-us/p/groove-music/9wzdncrfj3pt"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+# Application configuration contracts
+
+The supported deployment is the [two-container setup](../../docs/guides/CONTAINERS.md). Container bootstrap explicitly uses `/var/lib/triagemate` for private database configuration/credentials, durable state and input bundles. Docker mounts the application named volume there. Source credentials and live collection configuration are not created merely by starting containers.
+
+`paths.load_paths()` returns immutable `ApplicationPaths` without creating directories, reading credentials or relocating evidence. Retained consumers can explicitly select absolute `TRIAGEMATE_CONFIG_DIR`, `TRIAGEMATE_DATA_DIR`, `TRIAGEMATE_STATE_DIR`, `TRIAGEMATE_CACHE_DIR`, `TRIAGEMATE_RUNTIME_DIR` and `TRIAGEMATE_WORKSPACE_DIR`. Overrides reject traversal; relative XDG base values are ignored. Home/XDG defaults are retained technical compatibility behavior, not native application startup instructions.
+
+`validate_directory()` checks owned private writable/searchable directories, rejects symlink ancestry and requires mode 0700. It does not repair permissions. Explicit `TRIAGEMATE_DATABASE_TARGET` selects the shared [database contract](../database/README.md); missing configured files must not silently choose another database. Operations requires explicit `TRIAGEMATE_OPERATIONS_CONFIG`; discovering a file never activates schedules.
+
+The retained `legacy`/`configured` storage-layout and service-path adapters support existing clients and transition tests. Authored workspace/shutdown roots in those contracts are compatibility fields; the refactored application has no Markdown workspace or custom browser shutdown. Container startup/drain is owned by `app/` and Docker Compose. Do not restore obsolete UI launchers merely because an adapter remains.
+
+`storage_manifest.inventory_tree()` observes descriptor-bound directories without following links, hashes files with bounded reads and rejects special files, unsafe ownership/write permissions and observed mutation. It records relative paths, bytes, SHA-256, modification times and executable intent. It is not an atomic filesystem snapshot or authority to activate a destination.
+
+`storage_copy.copy_tree_verified()` creates a new private staging tree under an existing mode-0700 parent, verifies matching manifests and syncs files/directories. It never overwrites, deletes originals or activates configuration. Source/destination cannot overlap; failed partial copies remain for explicit investigation. Drain writers and preserve verified source/configuration/backup receipts before any activation.
+
+Explicit retained-directory selections are unique non-overlapping source-relative directories. Their identities are recorded, but omitted children are not copied or claimed as hash-verified. This supports deliberate transition accounting, not filtering malformed evidence. Private manifest filenames and evidence remain outside Git. Database standards and transition machinery are retained pending the [standards discussion](../../docs/architecture/REFACTOR_STANDARDS.md).

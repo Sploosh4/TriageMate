@@ -1,0 +1,6 @@
+[run]
+# Measure current Microsoft collection and shared validation code.
+source = .
+omit =
+    tests/*
+    vendor/*

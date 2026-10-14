@@ -1,0 +1,24 @@
+{
+  "profile": "native-windows-system-identities-v1",
+  "interpretation": "identity_only_not_advisory_aliases",
+  "source_url": "https://learn.microsoft.com/en-us/windows/client-management/mdm/applocker-csp#inbox-apps-and-components",
+  "source_sha256": "081354d1bb3b786b6188168716dd790bd6cbb4f745abdb2c52a1d3fc43f4005f",
+  "packages": [
+    {
+      "name": "Microsoft.AAD.BrokerPlugin",
+      "family": "Work or school account"
+    },
+    {
+      "name": "Microsoft.AccountsControl",
+      "family": "Email and accounts"
+    },
+    {
+      "name": "Microsoft.CredDialogHost",
+      "family": "Credentials Dialog Host"
+    },
+    {
+      "name": "c5e2524a-ea46-4f67-841f-6a9465d9d515",
+      "family": "File Explorer"
+    }
+  ]
+}

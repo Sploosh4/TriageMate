@@ -1,0 +1,42 @@
+{
+  "profile": "native-windows-framework-identities-v1",
+  "interpretation": "identity_only_not_advisory_aliases",
+  "packages": [
+    {
+      "name": "Microsoft.VCLibs.140.00",
+      "family": "Visual C++ UWP framework 14",
+      "source_url": "https://learn.microsoft.com/en-us/windows-app/troubleshoot-basic",
+      "source_sha256": "f5fe6a1b776db8818adb381c0e7612896e119afde6778781d559e23e63c60375"
+    },
+    {
+      "name": "Microsoft.VCLibs.140.00.UWPDesktop",
+      "family": "Visual C++ Desktop Bridge framework 14",
+      "source_url": "https://learn.microsoft.com/en-us/windows-app/troubleshoot-basic",
+      "source_sha256": "f5fe6a1b776db8818adb381c0e7612896e119afde6778781d559e23e63c60375"
+    },
+    {
+      "name": "Microsoft.WindowsAppRuntime.2",
+      "family": "Windows App Runtime 2",
+      "source_url": "https://learn.microsoft.com/en-us/windows-app/troubleshoot-basic",
+      "source_sha256": "f5fe6a1b776db8818adb381c0e7612896e119afde6778781d559e23e63c60375"
+    },
+    {
+      "name": "Microsoft.UI.Xaml.2.8",
+      "family": "Microsoft UI XAML framework 2.8",
+      "source_url": "https://github.com/microsoft/microsoft-ui-xaml/releases/download/v2.8.6/Microsoft.UI.Xaml.2.8.x64.appx",
+      "source_sha256": "249d2afb41cc009494841372bd6dd2df46f87386d535ddf8d9f32c97226d2e46"
+    },
+    {
+      "name": "Microsoft.WindowsAppRuntime.1.7",
+      "family": "Windows App Runtime 1.7",
+      "source_url": "https://github.com/microsoft/WindowsAppSDK/wiki/WinAppSDK-Released-Artifacts/1e6bada959624bd587c8a9e62e2dbcdd1cc24297",
+      "source_sha256": "164b68eebdab8790ba8ff0bb0b79dfe42c46fe50d995a1ae677b04329d9ea100"
+    },
+    {
+      "name": "Microsoft.WindowsAppRuntime.1.8",
+      "family": "Windows App Runtime 1.8",
+      "source_url": "https://github.com/microsoft/WindowsAppSDK/wiki/WinAppSDK-Released-Artifacts/1e6bada959624bd587c8a9e62e2dbcdd1cc24297",
+      "source_sha256": "164b68eebdab8790ba8ff0bb0b79dfe42c46fe50d995a1ae677b04329d9ea100"
+    }
+  ]
+}

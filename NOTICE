@@ -1,0 +1,22 @@
+TriageMate
+Copyright 2026 Sploosh4
+
+SPDX-License-Identifier: GPL-3.0-only
+
+TriageMate is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, version 3 only. See LICENSE for the complete terms.
+
+TriageMate is distributed WITHOUT ANY WARRANTY; without even the implied
+warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+This choice does not revoke valid earlier license grants. Third-party works
+retain their copyright, licenses and notices; the project license does not
+replace those grants. The preserved Apache-2.0 text is in LICENSES/Apache-2.0.txt.
+The native SQL parser contains separately licensed PostgreSQL, BSD-3-Clause,
+BSD-2-Clause and xxHash code. See docs/ui/engine/ParserThirdPartyNotices.md.
+Installed dependencies retain their respective licenses.
+Bundled frontend dependencies retain their MIT copyright and license texts
+in ui-engine/dist/third-party-notices.txt and the application's
+/third-party-notices.txt endpoint. See
+docs/ui/engine/FrontendThirdPartyNotices.txt and FrontendThirdPartyNotices.md.

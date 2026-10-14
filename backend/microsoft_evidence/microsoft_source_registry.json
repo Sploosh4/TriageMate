@@ -1,0 +1,1014 @@
+{
+  "inputs": [
+    {
+      "application_permissions": [
+        "Device.Read.All"
+      ],
+      "exactness": "Exact",
+      "forbidden_fields": [],
+      "input_id": "ms-entra-directory-device-v1",
+      "inventory": {
+        "current_use_level": "Receipt-bound PostgreSQL evidence and current SQL views; no custom Queue scoring",
+        "currently_used": false,
+        "high_risk_vulnerabilities": true,
+        "implementation_status": "Current collector/import/query path implemented with synthetic verification; historical stores remain retired",
+        "most_beneficial_patch": true,
+        "other": false,
+        "production_source_potential": 9,
+        "remaining_gap": "Broader live entitlement and coverage remain unverified; repository acceptance uses synthetic or public fixtures.",
+        "request_limits": "Microsoft service limits",
+        "requirements": "Entra application with Device.Read.All and validated tenant scope",
+        "ssvc_automation": false,
+        "test_demo_quality": 9
+      },
+      "official_sources": [
+        "https://learn.microsoft.com/en-us/graph/api/device-list?view=graph-rest-1.0"
+      ],
+      "openapi_coverage": "Covered by pinned Graph v1.0 OpenAPI",
+      "operations": [
+        "GET /devices?$select=id,deviceId,displayName,accountEnabled,operatingSystem,operatingSystemVersion,isManaged,isCompliant,trustType,registrationDateTime,approximateLastSignInDateTime"
+      ],
+      "product": "Microsoft Graph v1.0",
+      "product_condition": "Entra tenant",
+      "provider_schemas": [
+        "microsoft.graph.device collection"
+      ],
+      "retained_fields": [
+        "id",
+        "deviceId",
+        "displayName",
+        "accountEnabled",
+        "operatingSystem",
+        "operatingSystemVersion",
+        "isManaged",
+        "isCompliant",
+        "trustType",
+        "registrationDateTime",
+        "approximateLastSignInDateTime"
+      ],
+      "row": 1,
+      "signal": "Directory device identity and state",
+      "source_contract_id": "ms-source-v1:21a9b07345b719dcdc99403109f29f31ca96d751fdded4586f26bdcbab625143"
+    },
+    {
+      "application_permissions": [
+        "User.Read.All"
+      ],
+      "exactness": "Exact",
+      "forbidden_fields": [],
+      "input_id": "ms-entra-directory-user-v1",
+      "inventory": {
+        "current_use_level": "Inactive; obsolete implementation removed; retained source contract only",
+        "currently_used": false,
+        "high_risk_vulnerabilities": true,
+        "implementation_status": "Deliberately archived; long-term deferral well after the 23 September meeting",
+        "most_beneficial_patch": false,
+        "other": true,
+        "production_source_potential": 8,
+        "remaining_gap": "Optional future source; assess coverage and maintenance cost before enabling it in a self-hosted installation.",
+        "request_limits": "Microsoft service limits",
+        "requirements": "Entra application with User.Read.All",
+        "ssvc_automation": false,
+        "test_demo_quality": 8
+      },
+      "official_sources": [
+        "https://learn.microsoft.com/en-us/graph/api/user-list?view=graph-rest-1.0"
+      ],
+      "openapi_coverage": "Covered by pinned Graph v1.0 OpenAPI",
+      "operations": [
+        "GET /users?$select=id,displayName,userPrincipalName,accountEnabled,userType"
+      ],
+      "product": "Microsoft Graph v1.0",
+      "product_condition": "Entra tenant",
+      "provider_schemas": [
+        "microsoft.graph.user collection"
+      ],
+      "retained_fields": [
+        "id",
+        "displayName",
+        "userPrincipalName",
+        "accountEnabled",
+        "userType"
+      ],
+      "row": 2,
+      "signal": "Directory user identity",
+      "source_contract_id": "ms-source-v1:10c1ed5268db9fd7352c870ddd44879919070e9813b9d7aa323cfbcf8909f737"
+    },
+    {
+      "application_permissions": [
+        "Group.Read.All"
+      ],
+      "exactness": "Exact",
+      "forbidden_fields": [],
+      "input_id": "ms-entra-directory-group-v1",
+      "inventory": {
+        "current_use_level": "Inactive; obsolete implementation removed; retained source contract only",
+        "currently_used": false,
+        "high_risk_vulnerabilities": true,
+        "implementation_status": "Deliberately archived; long-term deferral well after the 23 September meeting",
+        "most_beneficial_patch": false,
+        "other": true,
+        "production_source_potential": 8,
+        "remaining_gap": "Optional future source; assess coverage and maintenance cost before enabling it in a self-hosted installation.",
+        "request_limits": "Microsoft service limits",
+        "requirements": "Entra application with Group.Read.All",
+        "ssvc_automation": false,
+        "test_demo_quality": 8
+      },
+      "official_sources": [
+        "https://learn.microsoft.com/en-us/graph/api/group-list?view=graph-rest-1.0"
+      ],
+      "openapi_coverage": "Covered by pinned Graph v1.0 OpenAPI",
+      "operations": [
+        "GET /groups?$select=id,displayName,groupTypes,mailEnabled,securityEnabled,membershipRule,membershipRuleProcessingState"
+      ],
+      "product": "Microsoft Graph v1.0",
+      "product_condition": "Entra tenant",
+      "provider_schemas": [
+        "microsoft.graph.group collection"
+      ],
+      "retained_fields": [
+        "id",
+        "displayName",
+        "groupTypes",
+        "mailEnabled",
+        "securityEnabled",
+        "membershipRule",
+        "membershipRuleProcessingState"
+      ],
+      "row": 3,
+      "signal": "Directory group identity",
+      "source_contract_id": "ms-source-v1:ac229bb07476228a2fc0bd9f55a70468854a5213e0faf06c64ce03a0a03e072b"
+    },
+    {
+      "application_permissions": [
+        "GroupMember.Read.All"
+      ],
+      "exactness": "Exact for direct membership; transitive paths are derived locally",
+      "forbidden_fields": [],
+      "input_id": "ms-entra-direct-group-member-v1",
+      "inventory": {
+        "current_use_level": "Inactive; obsolete implementation removed; retained source contract only",
+        "currently_used": false,
+        "high_risk_vulnerabilities": true,
+        "implementation_status": "Deliberately archived; long-term deferral well after the 23 September meeting",
+        "most_beneficial_patch": false,
+        "other": true,
+        "production_source_potential": 8,
+        "remaining_gap": "Optional future source; assess coverage and maintenance cost before enabling it in a self-hosted installation.",
+        "request_limits": "Microsoft service limits",
+        "requirements": "Entra application with GroupMember.Read.All; Member.Read.Hidden only for approved hidden membership",
+        "ssvc_automation": false,
+        "test_demo_quality": 9
+      },
+      "official_sources": [
+        "https://learn.microsoft.com/en-us/graph/api/group-list-members?view=graph-rest-1.0"
+      ],
+      "openapi_coverage": "Covered by pinned Graph v1.0 OpenAPI",
+      "operations": [
+        "GET /groups/{group-id}/members?$select=id for each retained group"
+      ],
+      "product": "Microsoft Graph v1.0",
+      "product_condition": "Member.Read.Hidden only when hidden membership is approved",
+      "provider_schemas": [
+        "microsoft.graph.directoryObject collection"
+      ],
+      "retained_fields": [
+        "groupId",
+        "id",
+        "@odata.type"
+      ],
+      "row": 4,
+      "signal": "Directory group membership",
+      "source_contract_id": "ms-source-v1:31738a530190589533a01b6803228f4bcc6d936c3093dfc4918d7a8d56109470"
+    },
+    {
+      "application_permissions": [
+        "Application.Read.All"
+      ],
+      "exactness": "Exact",
+      "forbidden_fields": [],
+      "input_id": "ms-entra-enterprise-app-assignment-v1",
+      "inventory": {
+        "current_use_level": "Inactive; obsolete implementation removed; retained source contract only",
+        "currently_used": false,
+        "high_risk_vulnerabilities": true,
+        "implementation_status": "Deliberately archived; long-term deferral well after the 23 September meeting",
+        "most_beneficial_patch": false,
+        "other": true,
+        "production_source_potential": 8,
+        "remaining_gap": "Optional future source; assess coverage and maintenance cost before enabling it in a self-hosted installation.",
+        "request_limits": "Microsoft service limits",
+        "requirements": "Entra application with Application.Read.All and approved consent",
+        "ssvc_automation": false,
+        "test_demo_quality": 7
+      },
+      "official_sources": [
+        "https://learn.microsoft.com/en-us/graph/api/serviceprincipal-list-approleassignedto?view=graph-rest-1.0"
+      ],
+      "openapi_coverage": "Covered by pinned Graph v1.0 OpenAPI",
+      "operations": [
+        "GET /servicePrincipals?$select=id,appId,displayName,appRoles",
+        "GET /servicePrincipals/{servicePrincipal-id}/appRoleAssignedTo?$select=id,appRoleId,createdDateTime,principalId,principalType,resourceId"
+      ],
+      "product": "Microsoft Graph v1.0",
+      "product_condition": "Entra tenant and approved administrator consent",
+      "provider_schemas": [
+        "microsoft.graph.servicePrincipal collection",
+        "microsoft.graph.appRoleAssignment collection"
+      ],
+      "retained_fields": [
+        "id",
+        "appId",
+        "displayName",
+        "appRoles",
+        "appRoleId",
+        "createdDateTime",
+        "principalId",
+        "principalType",
+        "resourceId"
+      ],
+      "row": 5,
+      "signal": "Enterprise application assignment",
+      "source_contract_id": "ms-source-v1:1b4f5d6b4c4a8a6890f3450c800cf06659c61fe3f36fbce549d5875a9f0270b5"
+    },
+    {
+      "application_permissions": [
+        "DeviceManagementManagedDevices.Read.All"
+      ],
+      "exactness": "Exact",
+      "forbidden_fields": [],
+      "input_id": "ms-intune-managed-device-v1",
+      "inventory": {
+        "current_use_level": "Receipt-bound PostgreSQL evidence and current SQL views; no custom Queue scoring",
+        "currently_used": false,
+        "high_risk_vulnerabilities": true,
+        "implementation_status": "Current collector/import/query path implemented with synthetic verification; historical stores remain retired",
+        "most_beneficial_patch": true,
+        "other": false,
+        "production_source_potential": 9,
+        "remaining_gap": "Broader live entitlement and coverage remain unverified; repository acceptance uses synthetic or public fixtures.",
+        "request_limits": "Microsoft service limits",
+        "requirements": "Active Intune licence and DeviceManagementManagedDevices.Read.All",
+        "ssvc_automation": false,
+        "test_demo_quality": 9
+      },
+      "official_sources": [
+        "https://learn.microsoft.com/en-us/graph/api/intune-devices-manageddevice-list?view=graph-rest-1.0",
+        "https://learn.microsoft.com/en-us/graph/api/intune-devices-manageddevice-get?view=graph-rest-1.0"
+      ],
+      "openapi_coverage": "Covered by pinned Graph v1.0 OpenAPI",
+      "operations": [
+        "GET /deviceManagement/managedDevices?$select=id,azureADDeviceId,deviceName,userId,managedDeviceOwnerType,managementState,enrolledDateTime,lastSyncDateTime,operatingSystem,osVersion,complianceState,manufacturer,model,serialNumber",
+        "GET /deviceManagement/managedDevices/{managedDeviceId}"
+      ],
+      "product": "Microsoft Graph v1.0",
+      "product_condition": "Active Intune licence",
+      "provider_schemas": [
+        "microsoft.graph.managedDevice collection"
+      ],
+      "retained_fields": [
+        "id",
+        "azureADDeviceId",
+        "deviceName",
+        "userId",
+        "managedDeviceOwnerType",
+        "managementState",
+        "enrolledDateTime",
+        "lastSyncDateTime",
+        "operatingSystem",
+        "osVersion",
+        "complianceState",
+        "manufacturer",
+        "model",
+        "serialNumber"
+      ],
+      "row": 6,
+      "signal": "Managed device identity and state",
+      "source_contract_id": "ms-source-v1:807e86b58672b02ee5275bf0042e2d0e70796ff5bdaaca35e99a63b3bbcefda4"
+    },
+    {
+      "application_permissions": [
+        "DeviceManagementManagedDevices.Read.All"
+      ],
+      "exactness": "Exact inventory evidence; not vulnerability evidence",
+      "forbidden_fields": [],
+      "input_id": "ms-intune-detected-app-v1",
+      "inventory": {
+        "current_use_level": "Receipt-bound PostgreSQL evidence and current SQL views; no custom Queue scoring",
+        "currently_used": false,
+        "high_risk_vulnerabilities": true,
+        "implementation_status": "Current collector/import/query path implemented with synthetic verification; historical stores remain retired",
+        "most_beneficial_patch": true,
+        "other": false,
+        "production_source_potential": 7,
+        "remaining_gap": "Broader live entitlement and coverage remain unverified; repository acceptance uses synthetic or public fixtures.",
+        "request_limits": "Microsoft service limits",
+        "requirements": "Active Intune licence and DeviceManagementManagedDevices.Read.All",
+        "ssvc_automation": false,
+        "test_demo_quality": 8
+      },
+      "official_sources": [
+        "https://learn.microsoft.com/en-us/graph/api/intune-devices-detectedapp-list?view=graph-rest-1.0",
+        "https://learn.microsoft.com/en-us/graph/api/resources/intune-devices-manageddevice?view=graph-rest-beta"
+      ],
+      "openapi_coverage": "Inventory covered by pinned Graph v1.0 OpenAPI; device relationship documented in Graph beta",
+      "operations": [
+        "GET /deviceManagement/detectedApps",
+        "GET /deviceManagement/managedDevices/{managedDeviceId}/detectedApps"
+      ],
+      "product": "Microsoft Graph v1.0 inventory / beta device relationship",
+      "product_condition": "Active Intune licence",
+      "provider_schemas": [
+        "microsoft.graph.detectedApp collection"
+      ],
+      "retained_fields": [
+        "id",
+        "displayName",
+        "version",
+        "publisher",
+        "platform",
+        "sizeInByte",
+        "deviceCount"
+      ],
+      "row": 7,
+      "signal": "Detected application identity and version",
+      "source_contract_id": "ms-source-v1:4019ad3d706936b57a785265f9c9777100d2ba3f6204740e077e42eab1fe4fff"
+    },
+    {
+      "application_permissions": [
+        "DeviceManagementManagedDevices.Read.All"
+      ],
+      "exactness": "Exact relationship; no separate Microsoft link entity",
+      "forbidden_fields": [],
+      "input_id": "ms-intune-detected-app-device-edge-v1",
+      "inventory": {
+        "current_use_level": "Receipt-bound PostgreSQL evidence and current SQL views; no custom Queue scoring",
+        "currently_used": false,
+        "high_risk_vulnerabilities": true,
+        "implementation_status": "Current collector/import/query path implemented with synthetic verification; historical stores remain retired",
+        "most_beneficial_patch": true,
+        "other": false,
+        "production_source_potential": 8,
+        "remaining_gap": "Broader live entitlement and coverage remain unverified; repository acceptance uses synthetic or public fixtures.",
+        "request_limits": "Microsoft service limits",
+        "requirements": "Active Intune licence and DeviceManagementManagedDevices.Read.All",
+        "ssvc_automation": false,
+        "test_demo_quality": 9
+      },
+      "official_sources": [
+        "https://learn.microsoft.com/en-us/graph/api/intune-devices-manageddevice-list?view=graph-rest-1.0"
+      ],
+      "openapi_coverage": "Covered by pinned Graph v1.0 OpenAPI",
+      "operations": [
+        "GET /deviceManagement/detectedApps/{detectedApp-id}/managedDevices for each retained application"
+      ],
+      "product": "Microsoft Graph v1.0",
+      "product_condition": "Active Intune licence",
+      "provider_schemas": [
+        "microsoft.graph.managedDevice collection"
+      ],
+      "retained_fields": [
+        "detectedAppId",
+        "id",
+        "version"
+      ],
+      "row": 8,
+      "signal": "Detected-application-to-device link",
+      "source_contract_id": "ms-source-v1:c5e9e5ca9e191bc0ae4ef74050e4995f5dca9a53f8674da320bd027255d34bbb"
+    },
+    {
+      "application_permissions": [
+        "DeviceManagementConfiguration.ReadWrite.All"
+      ],
+      "exactness": "Exact for deployment status only; no named-KB installation proof",
+      "forbidden_fields": [],
+      "input_id": "ms-intune-quality-update-status-v1",
+      "inventory": {
+        "current_use_level": "Receipt-bound PostgreSQL evidence and current SQL views; no custom Queue scoring",
+        "currently_used": false,
+        "high_risk_vulnerabilities": true,
+        "implementation_status": "Current collector/import/query path implemented with synthetic verification; historical stores remain retired",
+        "most_beneficial_patch": true,
+        "other": false,
+        "production_source_potential": 7,
+        "remaining_gap": "Broader live entitlement and coverage remain unverified; repository acceptance uses synthetic or public fixtures. Deployment state does not prove named-KB installation.",
+        "request_limits": "Microsoft service limits",
+        "requirements": "Active Intune licence and security approval for DeviceManagementConfiguration.ReadWrite.All",
+        "ssvc_automation": false,
+        "test_demo_quality": 8
+      },
+      "official_sources": [
+        "https://learn.microsoft.com/en-us/intune/device-management/reports/ref-graph-available-reports"
+      ],
+      "openapi_coverage": "Beta OpenAPI covers the job envelope; the report catalogue defines downloaded columns",
+      "operations": [
+        "POST /deviceManagement/reports/exportJobs for QualityUpdateDeviceStatusByPolicy with a PolicyId filter and explicit select",
+        "GET /deviceManagement/reports/exportJobs/{id} until complete",
+        "DOWNLOAD the returned short-lived URL"
+      ],
+      "product": "Microsoft Graph beta",
+      "product_condition": "Active Intune licence and explicit security approval for the documented write permission",
+      "provider_schemas": [
+        "microsoft.graph.deviceManagementExportJob",
+        "QualityUpdateDeviceStatusByPolicy report row"
+      ],
+      "retained_fields": [
+        "AADDeviceId",
+        "AggregateState",
+        "AggregateState_loc",
+        "CurrentDeviceUpdateStatus",
+        "CurrentDeviceUpdateStatus_loc",
+        "CurrentDeviceUpdateSubstatus",
+        "CurrentDeviceUpdateSubstatus_loc",
+        "DeviceId",
+        "DeviceName",
+        "EventDateTimeUTC",
+        "LastWUScanTimeUTC",
+        "LatestAlertMessage",
+        "LatestAlertMessage_loc",
+        "OwnerType",
+        "PolicyId",
+        "UPN"
+      ],
+      "row": 9,
+      "signal": "Device update and KB installation status",
+      "source_contract_id": "ms-source-v1:6f882becbd211865f5f4aa2ee829762eaa72fe9c38e191c83745f8ddb6f38d84"
+    },
+    {
+      "application_permissions": [
+        "Machine.Read.All"
+      ],
+      "exactness": "Exact",
+      "forbidden_fields": [],
+      "input_id": "ms-defender-machine-v1",
+      "inventory": {
+        "current_use_level": "Receipt-bound PostgreSQL evidence and current SQL views; no custom Queue scoring",
+        "currently_used": false,
+        "high_risk_vulnerabilities": true,
+        "implementation_status": "Current collector/import/query path implemented with synthetic verification; historical stores remain retired",
+        "most_beneficial_patch": true,
+        "other": false,
+        "production_source_potential": 9,
+        "remaining_gap": "Broader live entitlement and coverage remain unverified; repository acceptance uses synthetic or public fixtures.",
+        "request_limits": "100 calls per minute and 1,500 per hour",
+        "requirements": "Defender entitlement, Machine.Read.All, RBAC scope, and onboarded sensors",
+        "ssvc_automation": false,
+        "test_demo_quality": 9
+      },
+      "official_sources": [
+        "https://learn.microsoft.com/en-us/defender-endpoint/api/get-machines"
+      ],
+      "openapi_coverage": "Not covered by Graph OpenAPI",
+      "operations": [
+        "GET https://api.security.microsoft.com/api/machines"
+      ],
+      "product": "Defender for Endpoint",
+      "product_condition": "Defender entitlement, RBAC device scope, and onboarded sensors",
+      "provider_schemas": [
+        "Defender Machine collection"
+      ],
+      "retained_fields": [
+        "id",
+        "aadDeviceId",
+        "computerDnsName",
+        "firstSeen",
+        "lastSeen",
+        "osPlatform",
+        "version",
+        "osBuild",
+        "osArchitecture",
+        "osProcessor",
+        "onboardingStatus",
+        "healthStatus",
+        "riskScore",
+        "exposureLevel",
+        "rbacGroupId",
+        "machineTags"
+      ],
+      "row": 10,
+      "signal": "Endpoint machine identity and sensor state",
+      "source_contract_id": "ms-source-v1:eb8b3ddc2714ac43852bd27d28705ead97549b9659847eb5fc8de6e1e22e3004"
+    },
+    {
+      "application_permissions": [
+        "Vulnerability.Read.All"
+      ],
+      "exactness": "Exact",
+      "forbidden_fields": [],
+      "input_id": "ms-defender-machine-cve-v1",
+      "inventory": {
+        "current_use_level": "Receipt-bound PostgreSQL evidence and current SQL views; no custom Queue scoring",
+        "currently_used": false,
+        "high_risk_vulnerabilities": true,
+        "implementation_status": "Current collector/import/query path implemented with synthetic verification; historical stores remain retired",
+        "most_beneficial_patch": true,
+        "other": false,
+        "production_source_potential": 9,
+        "remaining_gap": "Broader live entitlement and coverage remain unverified; repository acceptance uses synthetic or public fixtures.",
+        "request_limits": "Microsoft service limits",
+        "requirements": "Applicable Defender vulnerability entitlement and Vulnerability.Read.All",
+        "ssvc_automation": false,
+        "test_demo_quality": 9
+      },
+      "official_sources": [
+        "https://learn.microsoft.com/en-us/defender-endpoint/api/get-all-vulnerabilities-by-machines"
+      ],
+      "openapi_coverage": "Not covered by Graph OpenAPI",
+      "operations": [
+        "GET https://api.security.microsoft.com/api/vulnerabilities/machinesVulnerabilities"
+      ],
+      "product": "Defender Vulnerability Management",
+      "product_condition": "Applicable Defender vulnerability entitlement and RBAC scope",
+      "provider_schemas": [
+        "microsoft.windowsDefenderATP.api.PublicAssetVulnerabilityDto collection"
+      ],
+      "retained_fields": [
+        "id",
+        "cveId",
+        "machineId",
+        "fixingKbId",
+        "productName",
+        "productVendor",
+        "productVersion",
+        "severity"
+      ],
+      "row": 11,
+      "signal": "Machine CVE finding",
+      "source_contract_id": "ms-source-v1:487e484699363a88086a6519c248fe3709798b7b3c273e021d3fea5e02fe4664"
+    },
+    {
+      "application_permissions": [
+        "Vulnerability.Read.All"
+      ],
+      "exactness": "Exact Microsoft context; reconcile with designated public CVE authorities",
+      "forbidden_fields": [],
+      "input_id": "ms-defender-vulnerability-catalogue-v1",
+      "inventory": {
+        "current_use_level": "Receipt-bound catalogue claims and current SQL view, separate from device findings",
+        "currently_used": false,
+        "high_risk_vulnerabilities": true,
+        "implementation_status": "Current command, offset pagination, durable replay, restricted persistence and SQL query verified with synthetic input",
+        "most_beneficial_patch": true,
+        "other": false,
+        "production_source_potential": 8,
+        "remaining_gap": "Live catalogue entitlement remains unverified; source exposed counts do not identify individual devices.",
+        "request_limits": "Bounded $top/$skip pages; maximum $top 8,000; obey provider throttling",
+        "requirements": "Applicable Defender vulnerability entitlement and Vulnerability.Read.All",
+        "ssvc_automation": false,
+        "test_demo_quality": 7
+      },
+      "official_sources": [
+        "https://learn.microsoft.com/en-us/defender-endpoint/api/get-all-vulnerabilities",
+        "https://learn.microsoft.com/en-us/defender-endpoint/api/get-vulnerability-by-id"
+      ],
+      "openapi_coverage": "Not covered by Graph OpenAPI",
+      "operations": [
+        "GET https://api.security.microsoft.com/api/vulnerabilities",
+        "GET https://api.security.microsoft.com/api/vulnerabilities/{cveId}"
+      ],
+      "product": "Defender Vulnerability Management",
+      "product_condition": "Applicable Defender vulnerability entitlement",
+      "provider_schemas": [
+        "Defender Vulnerability collection"
+      ],
+      "retained_fields": [
+        "id",
+        "name",
+        "description",
+        "severity",
+        "cvssV3",
+        "cvssVector",
+        "exposedMachines",
+        "publishedOn",
+        "updatedOn",
+        "firstDetected",
+        "publicExploit",
+        "exploitVerified",
+        "exploitInKit",
+        "exploitTypes",
+        "exploitUris",
+        "cveSupportability",
+        "epss",
+        "status",
+        "tags"
+      ],
+      "row": 12,
+      "signal": "Vulnerability catalogue record",
+      "source_contract_id": "ms-source-v1:0026e6f797f3262c97e63d99e85f522cdab9fedab14138204af1c80aa56eb09c"
+    },
+    {
+      "application_permissions": [
+        "Software.Read.All",
+        "Vulnerability.Read.All"
+      ],
+      "exactness": "Exact as a two-schema join; enrichment alone does not identify addressed CVEs",
+      "forbidden_fields": [],
+      "input_id": "ms-defender-missing-kb-v1",
+      "inventory": {
+        "current_use_level": "Receipt-bound PostgreSQL evidence and current SQL views; no custom Queue scoring",
+        "currently_used": false,
+        "high_risk_vulnerabilities": true,
+        "implementation_status": "Current collector/import/query path implemented with synthetic verification; historical stores remain retired",
+        "most_beneficial_patch": true,
+        "other": false,
+        "production_source_potential": 8,
+        "remaining_gap": "Broader live entitlement and coverage remain unverified; repository acceptance uses synthetic or public fixtures.",
+        "request_limits": "Microsoft service limits",
+        "requirements": "Applicable Defender entitlement; Vulnerability.Read.All and Software.Read.All for enrichment",
+        "ssvc_automation": false,
+        "test_demo_quality": 7
+      },
+      "official_sources": [
+        "https://learn.microsoft.com/en-us/defender-endpoint/api/get-missing-kbs-machine"
+      ],
+      "openapi_coverage": "Not covered by Graph OpenAPI",
+      "operations": [
+        "GET https://api.security.microsoft.com/api/vulnerabilities/machinesVulnerabilities",
+        "GET https://api.security.microsoft.com/api/machines/{machineId}/getmissingkbs when enrichment is approved"
+      ],
+      "product": "Defender Vulnerability Management",
+      "product_condition": "Applicable Defender vulnerability entitlement; Software.Read.All only for enrichment",
+      "provider_schemas": [
+        "PublicAssetVulnerabilityDto collection",
+        "microsoft.windowsDefenderATP.api.PublicProductFixDto collection"
+      ],
+      "retained_fields": [
+        "machineId",
+        "cveId",
+        "fixingKbId",
+        "productName",
+        "productVendor",
+        "productVersion",
+        "id",
+        "name",
+        "productsNames",
+        "url",
+        "machineMissedOn",
+        "cveAddressed"
+      ],
+      "row": 13,
+      "signal": "Missing or fixing KB evidence",
+      "source_contract_id": "ms-source-v1:c1ede1b4fb73f671a40f4acbbdebe97d7705ab3dcaf351d6204ec42bfbf51157"
+    },
+    {
+      "application_permissions": [
+        "Machine.Read.All"
+      ],
+      "exactness": "Provisional route; freeze only after an authorized synthetic-tenant smoke test resolves conflicting official pages",
+      "forbidden_fields": [],
+      "input_id": "ms-defender-antivirus-health-v1",
+      "inventory": {
+        "current_use_level": "Receipt-bound PostgreSQL evidence and current SQL views; no custom Queue scoring",
+        "currently_used": false,
+        "high_risk_vulnerabilities": true,
+        "implementation_status": "Current collector/import/query path implemented with synthetic verification; historical stores remain retired",
+        "most_beneficial_patch": false,
+        "other": true,
+        "production_source_potential": 7,
+        "remaining_gap": "Broader live entitlement and coverage remain unverified; repository acceptance uses synthetic or public fixtures.",
+        "request_limits": "Microsoft service limits",
+        "requirements": "Defender for Endpoint Plan 2 or Defender for Business and Machine.Read.All",
+        "ssvc_automation": false,
+        "test_demo_quality": 7
+      },
+      "official_sources": [
+        "https://learn.microsoft.com/en-us/defender-endpoint/api/device-health-export-antivirus-health-report-api"
+      ],
+      "openapi_coverage": "Not covered by Graph OpenAPI",
+      "operations": [
+        "GET https://api.security.microsoft.com/api/deviceavinfo"
+      ],
+      "product": "Defender for Endpoint",
+      "product_condition": "Defender for Endpoint Plan 2 or Defender for Business",
+      "provider_schemas": [
+        "Defender DeviceAvInfo collection"
+      ],
+      "retained_fields": [
+        "id",
+        "machineId",
+        "computerDnsName",
+        "osKind",
+        "osPlatform",
+        "osVersion",
+        "avMode",
+        "avSignatureVersion",
+        "avEngineVersion",
+        "avPlatformVersion",
+        "lastSeenTime",
+        "quickScanResult",
+        "quickScanError",
+        "quickScanTime",
+        "fullScanResult",
+        "fullScanError",
+        "fullScanTime",
+        "dataRefreshTimestamp",
+        "avEngineUpdateTime",
+        "avSignatureUpdateTime",
+        "avPlatformUpdateTime",
+        "avIsSignatureUpToDate",
+        "avIsEngineUpToDate",
+        "avIsPlatformUpToDate",
+        "avSignaturePublishTime",
+        "rbacGroupId",
+        "rbacGroupName"
+      ],
+      "row": 14,
+      "signal": "Endpoint antivirus health",
+      "source_contract_id": "ms-source-v1:4383f7edd858f884e851662272052df29f9262d2a8da0eafa7c14df5499be3fa"
+    },
+    {
+      "application_permissions": [
+        "ThreatHunting.Read.All"
+      ],
+      "exactness": "Exact only for complete positive activity partitions; never negative exploit proof",
+      "forbidden_fields": [
+        "AdditionalFields",
+        "ProcessCommandLine",
+        "InitiatingProcessCommandLine",
+        "AccountName",
+        "AccountDomain",
+        "FolderPath",
+        "InitiatingProcessFolderPath"
+      ],
+      "input_id": "ms-defender-device-activity-v1",
+      "inventory": {
+        "current_use_level": "Inactive; obsolete implementation removed; retained source contract only",
+        "currently_used": false,
+        "high_risk_vulnerabilities": true,
+        "implementation_status": "Deliberately archived; long-term deferral well after the 23 September meeting",
+        "most_beneficial_patch": false,
+        "other": false,
+        "production_source_potential": 7,
+        "remaining_gap": "Optional future source; assess coverage and maintenance cost before enabling it in a self-hosted installation.",
+        "request_limits": "100,000 rows, 64 MB, 10 minutes per query, and 30-day native range",
+        "requirements": "ThreatHunting.Read.All plus approved data source, taxonomy, purpose, retention, and partition policy",
+        "ssvc_automation": true,
+        "test_demo_quality": 9
+      },
+      "official_sources": [
+        "https://learn.microsoft.com/en-us/graph/api/security-security-runhuntingquery?view=graph-rest-1.0",
+        "https://learn.microsoft.com/en-us/defender-xdr/advanced-hunting-overview",
+        "https://learn.microsoft.com/en-us/defender-xdr/advanced-hunting-deviceevents-table"
+      ],
+      "openapi_coverage": "Graph OpenAPI covers the action envelope; the projected row and completeness proof are query-defined",
+      "operations": [
+        "POST /security/runHuntingQuery with a version-controlled DeviceEvents query projecting Timestamp,DeviceId,DeviceName,ActionType,FileName,SHA1,SHA256,ReportId"
+      ],
+      "product": "Microsoft Graph v1.0",
+      "product_condition": "Applicable Defender XDR source, RBAC scope, taxonomy, purpose, retention, and partition approval",
+      "provider_schemas": [
+        "microsoft.graph.security.huntingQueryResults",
+        "query-defined DeviceEvents projection"
+      ],
+      "retained_fields": [
+        "Timestamp",
+        "DeviceId",
+        "DeviceName",
+        "ActionType",
+        "FileName",
+        "SHA1",
+        "SHA256",
+        "ReportId",
+        "KQL hash",
+        "partition-contract hash",
+        "requested timespan",
+        "returned schema",
+        "per-partition count",
+        "retained-row count",
+        "collection time"
+      ],
+      "row": 15,
+      "signal": "Endpoint exploit or activity event",
+      "source_contract_id": "ms-source-v1:49ed4b40b2d4d30f0429aa8b71a7d4fe0e16e9e69eb9694fa2548df50a9349e8"
+    },
+    {
+      "application_permissions": [
+        "Vulnerability.Read.All"
+      ],
+      "exactness": "Documented JSON export; preserve source timestamp ambiguity",
+      "forbidden_fields": [],
+      "input_id": "ms-defender-vulnerability-baseline-v1",
+      "inventory": {
+        "current_use_level": "Assessment history; no patch execution or inferred whole-device remediation",
+        "currently_used": false,
+        "high_risk_vulnerabilities": true,
+        "implementation_status": "Collector command, durable replay, restricted receipts and SQL query path implemented; synthetic regressions pass",
+        "most_beneficial_patch": true,
+        "other": false,
+        "production_source_potential": 0,
+        "remaining_gap": "Core-input milestone gate pending. Live entitlement remains unverified; source references absent from the pinned device snapshot remain explicitly unbound.",
+        "request_limits": "30 calls/minute, 1000/hour; generated every six hours; delta window at most 14 days",
+        "requirements": "Vulnerability.Read.All and supported Defender entitlement",
+        "ssvc_automation": false,
+        "test_demo_quality": 0
+      },
+      "official_sources": [
+        "https://learn.microsoft.com/en-us/defender-endpoint/api/get-assessment-software-vulnerabilities"
+      ],
+      "openapi_coverage": "Not covered by Graph OpenAPI",
+      "operations": [
+        "GET https://api.security.microsoft.com/api/machines/SoftwareVulnerabilitiesByMachine"
+      ],
+      "product": "Defender Vulnerability Management",
+      "product_condition": "Applicable Defender vulnerability entitlement and RBAC scope",
+      "provider_schemas": [
+        "Defender software assessment JSON collection"
+      ],
+      "retained_fields": [
+        "id",
+        "deviceId",
+        "softwareVendor",
+        "softwareName",
+        "softwareVersion",
+        "cveId",
+        "rbacGroupId",
+        "deviceName",
+        "osPlatform",
+        "osVersion",
+        "osArchitecture",
+        "rbacGroupName",
+        "vulnerabilitySeverityLevel",
+        "exploitabilityLevel",
+        "recommendationReference",
+        "recommendedSecurityUpdate",
+        "recommendedSecurityUpdateId",
+        "recommendedSecurityUpdateUrl",
+        "firstSeenTimestamp",
+        "lastSeenTimestamp",
+        "cvssScore",
+        "isOnboarded",
+        "securityUpdateAvailable",
+        "diskPaths",
+        "registryPaths"
+      ],
+      "row": 16,
+      "signal": "Full software vulnerability assessment",
+      "source_contract_id": "ms-source-v1:5a8862cfbcca9a9b275185706fd2197f26c00295830a355230eaaa1d00dab26d"
+    },
+    {
+      "application_permissions": [
+        "Vulnerability.Read.All"
+      ],
+      "exactness": "Documented JSON export; preserve source timestamp ambiguity",
+      "forbidden_fields": [],
+      "input_id": "ms-defender-vulnerability-events-v1",
+      "inventory": {
+        "current_use_level": "Assessment history; no patch execution or inferred whole-device remediation",
+        "currently_used": false,
+        "high_risk_vulnerabilities": true,
+        "implementation_status": "Collector command, durable replay, restricted receipts and SQL query path implemented; synthetic regressions pass",
+        "most_beneficial_patch": true,
+        "other": false,
+        "production_source_potential": 0,
+        "remaining_gap": "Core-input milestone gate pending. Live entitlement remains unverified; source references absent from the pinned device snapshot remain explicitly unbound.",
+        "request_limits": "30 calls/minute, 1000/hour; generated every six hours; delta window at most 14 days",
+        "requirements": "Vulnerability.Read.All and supported Defender entitlement",
+        "ssvc_automation": false,
+        "test_demo_quality": 0
+      },
+      "official_sources": [
+        "https://learn.microsoft.com/en-us/defender-endpoint/api/get-assessment-software-vulnerabilities"
+      ],
+      "openapi_coverage": "Not covered by Graph OpenAPI",
+      "operations": [
+        "GET https://api.security.microsoft.com/api/machines/SoftwareVulnerabilityChangesByMachine"
+      ],
+      "product": "Defender Vulnerability Management",
+      "product_condition": "Applicable Defender vulnerability entitlement and RBAC scope",
+      "provider_schemas": [
+        "Defender software assessment JSON collection"
+      ],
+      "retained_fields": [
+        "id",
+        "deviceId",
+        "softwareVendor",
+        "softwareName",
+        "softwareVersion",
+        "cveId",
+        "rbacGroupId",
+        "deviceName",
+        "osPlatform",
+        "osVersion",
+        "osArchitecture",
+        "rbacGroupName",
+        "vulnerabilitySeverityLevel",
+        "exploitabilityLevel",
+        "recommendationReference",
+        "recommendedSecurityUpdate",
+        "recommendedSecurityUpdateId",
+        "recommendedSecurityUpdateUrl",
+        "firstSeenTimestamp",
+        "lastSeenTimestamp",
+        "cvssScore",
+        "isOnboarded",
+        "securityUpdateAvailable",
+        "diskPaths",
+        "registryPaths",
+        "status",
+        "eventTimestamp"
+      ],
+      "row": 17,
+      "signal": "Software vulnerability source changes",
+      "source_contract_id": "ms-source-v1:4c048204cd2e9256a8f6b3325293f73b13d5ffa691c1743f8f926a5877941e8e"
+    },
+    {
+      "application_permissions": [
+        "SecurityRecommendation.Read.All"
+      ],
+      "exactness": "Documented source advice and direct associations",
+      "forbidden_fields": [],
+      "input_id": "ms-defender-recommendation-v1",
+      "inventory": {
+        "current_use_level": "Source advice only; collection does not change devices",
+        "currently_used": false,
+        "high_risk_vulnerabilities": true,
+        "implementation_status": "Collector command, durable replay, restricted receipts and SQL query path implemented; synthetic regressions pass",
+        "most_beneficial_patch": true,
+        "other": false,
+        "production_source_potential": 0,
+        "remaining_gap": "Core-input milestone gate pending. Live entitlement remains unverified; source references absent from the pinned device snapshot remain explicitly unbound.",
+        "request_limits": "Recommendations support $top up to 10000 and $skip; obey source throttling",
+        "requirements": "SecurityRecommendation.Read.All and supported Defender entitlement",
+        "ssvc_automation": false,
+        "test_demo_quality": 0
+      },
+      "official_sources": [
+        "https://learn.microsoft.com/en-us/defender-endpoint/api/get-all-recommendations",
+        "https://learn.microsoft.com/en-us/defender-endpoint/api/get-security-recommendations",
+        "https://learn.microsoft.com/en-us/defender-endpoint/api/get-recommendation-machines"
+      ],
+      "openapi_coverage": "Not covered by Graph OpenAPI",
+      "operations": [
+        "GET https://api.security.microsoft.com/api/recommendations",
+        "GET https://api.security.microsoft.com/api/machines/{machineId}/recommendations"
+      ],
+      "product": "Defender Vulnerability Management",
+      "product_condition": "Applicable Defender vulnerability entitlement and RBAC scope",
+      "provider_schemas": [
+        "Defender recommendation JSON collection"
+      ],
+      "retained_fields": [
+        "id",
+        "recommendationName",
+        "vendor",
+        "productName",
+        "recommendedVersion",
+        "recommendedProgram",
+        "recommendedVendor",
+        "recommendationCategory",
+        "subCategory",
+        "remediationType",
+        "status",
+        "weaknesses",
+        "totalMachineCount",
+        "exposedMachinesCount"
+      ],
+      "row": 18,
+      "signal": "Device security recommendations",
+      "source_contract_id": "ms-source-v1:2f72e95d00703ebaf8ca07de8debb581763dc9d3830e560c80524db9c45e5ceb"
+    },
+    {
+      "application_permissions": [
+        "SecurityRecommendation.Read.All"
+      ],
+      "exactness": "Documented source advice and direct associations",
+      "forbidden_fields": [],
+      "input_id": "ms-defender-recommendation-device-v1",
+      "inventory": {
+        "current_use_level": "Source advice only; collection does not change devices",
+        "currently_used": false,
+        "high_risk_vulnerabilities": true,
+        "implementation_status": "Collector command, durable replay, restricted receipts and SQL query path implemented; synthetic regressions pass",
+        "most_beneficial_patch": true,
+        "other": false,
+        "production_source_potential": 0,
+        "remaining_gap": "Core-input milestone gate pending. Live entitlement remains unverified; source references absent from the pinned device snapshot remain explicitly unbound.",
+        "request_limits": "Recommendations support $top up to 10000 and $skip; obey source throttling",
+        "requirements": "SecurityRecommendation.Read.All and supported Defender entitlement",
+        "ssvc_automation": false,
+        "test_demo_quality": 0
+      },
+      "official_sources": [
+        "https://learn.microsoft.com/en-us/defender-endpoint/api/get-all-recommendations",
+        "https://learn.microsoft.com/en-us/defender-endpoint/api/get-recommendation-machines"
+      ],
+      "openapi_coverage": "Not covered by Graph OpenAPI",
+      "operations": [
+        "GET https://api.security.microsoft.com/api/recommendations/{id}/machineReferences"
+      ],
+      "product": "Defender Vulnerability Management",
+      "product_condition": "Applicable Defender vulnerability entitlement and RBAC scope",
+      "provider_schemas": [
+        "Defender recommendation JSON collection"
+      ],
+      "retained_fields": [
+        "id"
+      ],
+      "row": 19,
+      "signal": "Explicit recommendation/device associations",
+      "source_contract_id": "ms-source-v1:82e3346af5f24f3c3593e1c87d2da3bde909981f0115edb06c7caf2d17da82a0"
+    }
+  ],
+  "registry_version": "microsoft-source-registry-v1"
+}

@@ -1,0 +1,231 @@
+{
+  "profile": "windows-app-runtime-explicit-release-reference-v2",
+  "source_url": "https://github.com/microsoft/WindowsAppSDK/wiki/WinAppSDK-Released-Artifacts/1e6bada959624bd587c8a9e62e2dbcdd1cc24297",
+  "source_markdown_url": "https://raw.githubusercontent.com/wiki/microsoft/WindowsAppSDK/WinAppSDK-Released-Artifacts.md",
+  "source_markdown_sha256": "164b68eebdab8790ba8ff0bb0b79dfe42c46fe50d995a1ae677b04329d9ea100",
+  "interpretation": "exact_publisher_release_correspondence_not_applicability",
+  "supported_product_families": [
+    "Microsoft.WindowsAppRuntime.1.5",
+    "Microsoft.WindowsAppRuntime.1.6",
+    "Microsoft.WindowsAppRuntime.1.7",
+    "Microsoft.WindowsAppRuntime.1.8"
+  ],
+  "mappings": [
+    {
+      "product": "Microsoft.WindowsAppRuntime.1.5",
+      "msix_version": "5001.119.156.0",
+      "sdk_release": "1.5.3",
+      "nuget_version": "1.5.240428000"
+    },
+    {
+      "product": "Microsoft.WindowsAppRuntime.1.5",
+      "msix_version": "5001.159.55.0",
+      "sdk_release": "1.5.4",
+      "nuget_version": "1.5.240607001"
+    },
+    {
+      "product": "Microsoft.WindowsAppRuntime.1.5",
+      "msix_version": "5001.178.1908.0",
+      "sdk_release": "1.5.5",
+      "nuget_version": "1.5.240627000"
+    },
+    {
+      "product": "Microsoft.WindowsAppRuntime.1.5",
+      "msix_version": "5001.214.1843.0",
+      "sdk_release": "1.5.6",
+      "nuget_version": "1.5.240802000"
+    },
+    {
+      "product": "Microsoft.WindowsAppRuntime.1.5",
+      "msix_version": "5001.275.500.0",
+      "sdk_release": "1.5.7",
+      "nuget_version": "1.5.241001000"
+    },
+    {
+      "product": "Microsoft.WindowsAppRuntime.1.5",
+      "msix_version": "5001.311.2039.0",
+      "sdk_release": "1.5.8",
+      "nuget_version": "1.5.241107002"
+    },
+    {
+      "product": "Microsoft.WindowsAppRuntime.1.5",
+      "msix_version": "5001.373.1736.0",
+      "sdk_release": "1.5.9",
+      "nuget_version": "1.5.250108004"
+    },
+    {
+      "product": "Microsoft.WindowsAppRuntime.1.5",
+      "msix_version": "5001.58.448.0",
+      "sdk_release": "1.5.0",
+      "nuget_version": "1.5.240227000"
+    },
+    {
+      "product": "Microsoft.WindowsAppRuntime.1.5",
+      "msix_version": "5001.70.1338.0",
+      "sdk_release": "1.5.1",
+      "nuget_version": "1.5.240311000"
+    },
+    {
+      "product": "Microsoft.WindowsAppRuntime.1.5",
+      "msix_version": "5001.95.533.0",
+      "sdk_release": "1.5.2",
+      "nuget_version": "1.5.240404000"
+    },
+    {
+      "product": "Microsoft.WindowsAppRuntime.1.6",
+      "msix_version": "6000.242.101.0",
+      "sdk_release": "1.6.0",
+      "nuget_version": "1.6.240829007"
+    },
+    {
+      "product": "Microsoft.WindowsAppRuntime.1.6",
+      "msix_version": "6000.266.2241.0",
+      "sdk_release": "1.6.1",
+      "nuget_version": "1.6.240923002"
+    },
+    {
+      "product": "Microsoft.WindowsAppRuntime.1.6",
+      "msix_version": "6000.311.13.0",
+      "sdk_release": "1.6.2",
+      "nuget_version": "1.6.241106002"
+    },
+    {
+      "product": "Microsoft.WindowsAppRuntime.1.6",
+      "msix_version": "6000.318.2304.0",
+      "sdk_release": "1.6.3",
+      "nuget_version": "1.6.241114003"
+    },
+    {
+      "product": "Microsoft.WindowsAppRuntime.1.6",
+      "msix_version": "6000.373.1641.0",
+      "sdk_release": "1.6.4",
+      "nuget_version": "1.6.250108002"
+    },
+    {
+      "product": "Microsoft.WindowsAppRuntime.1.6",
+      "msix_version": "6000.401.2352.0",
+      "sdk_release": "1.6.5",
+      "nuget_version": "1.6.250205002"
+    },
+    {
+      "product": "Microsoft.WindowsAppRuntime.1.6",
+      "msix_version": "6000.424.1611.0",
+      "sdk_release": "1.6.6",
+      "nuget_version": "1.6.250228001"
+    },
+    {
+      "product": "Microsoft.WindowsAppRuntime.1.6",
+      "msix_version": "6000.457.2140.0",
+      "sdk_release": "1.6.7",
+      "nuget_version": "1.6.250402001"
+    },
+    {
+      "product": "Microsoft.WindowsAppRuntime.1.6",
+      "msix_version": "6000.486.517.0",
+      "sdk_release": "1.6.8",
+      "nuget_version": "1.6.250430001"
+    },
+    {
+      "product": "Microsoft.WindowsAppRuntime.1.6",
+      "msix_version": "6000.519.329.0",
+      "sdk_release": "1.6.9",
+      "nuget_version": "1.6.250602001"
+    },
+    {
+      "product": "Microsoft.WindowsAppRuntime.1.7",
+      "msix_version": "7000.435.154.0",
+      "sdk_release": "1.7.0",
+      "nuget_version": "1.7.250310001"
+    },
+    {
+      "product": "Microsoft.WindowsAppRuntime.1.7",
+      "msix_version": "7000.456.1632.0",
+      "sdk_release": "1.7.1",
+      "nuget_version": "1.7.250401001"
+    },
+    {
+      "product": "Microsoft.WindowsAppRuntime.1.7",
+      "msix_version": "7000.498.2246.0",
+      "sdk_release": "1.7.2",
+      "nuget_version": "1.7.250513003"
+    },
+    {
+      "product": "Microsoft.WindowsAppRuntime.1.7",
+      "msix_version": "7000.522.1444.0",
+      "sdk_release": "1.7.3",
+      "nuget_version": "1.7.250606001"
+    },
+    {
+      "product": "Microsoft.WindowsAppRuntime.1.7",
+      "msix_version": "7000.617.2103.0",
+      "sdk_release": "1.7.4",
+      "nuget_version": "1.7.250909003"
+    },
+    {
+      "product": "Microsoft.WindowsAppRuntime.1.7",
+      "msix_version": "7000.652.1806.0",
+      "sdk_release": "1.7.5",
+      "nuget_version": "1.7.251014001"
+    },
+    {
+      "product": "Microsoft.WindowsAppRuntime.1.7",
+      "msix_version": "7000.676.1651.0",
+      "sdk_release": "1.7.6",
+      "nuget_version": "1.7.251107005"
+    },
+    {
+      "product": "Microsoft.WindowsAppRuntime.1.7",
+      "msix_version": "7000.744.1258.0",
+      "sdk_release": "1.7.7",
+      "nuget_version": "1.7.260114001"
+    },
+    {
+      "product": "Microsoft.WindowsAppRuntime.1.7",
+      "msix_version": "7000.770.750.0",
+      "sdk_release": "1.7.8",
+      "nuget_version": "1.7.260208005"
+    },
+    {
+      "product": "Microsoft.WindowsAppRuntime.1.7",
+      "msix_version": "7000.785.2325.0",
+      "sdk_release": "1.7.9",
+      "nuget_version": "1.7.260224002"
+    },
+    {
+      "product": "Microsoft.WindowsAppRuntime.1.8",
+      "msix_version": "8000.616.304.0",
+      "sdk_release": "1.8.0",
+      "nuget_version": "1.8.250907003"
+    },
+    {
+      "product": "Microsoft.WindowsAppRuntime.1.8",
+      "msix_version": "8000.625.330.0",
+      "sdk_release": "1.8.1",
+      "nuget_version": "1.8.250916003"
+    },
+    {
+      "product": "Microsoft.WindowsAppRuntime.1.8",
+      "msix_version": "8000.642.119.0",
+      "sdk_release": "1.8.2",
+      "nuget_version": "1.8.251003001"
+    },
+    {
+      "product": "Microsoft.WindowsAppRuntime.1.8",
+      "msix_version": "8000.675.1142.0",
+      "sdk_release": "1.8.3",
+      "nuget_version": "1.8.251106002"
+    },
+    {
+      "product": "Microsoft.WindowsAppRuntime.1.8",
+      "msix_version": "8000.731.1532.0",
+      "sdk_release": "1.8.4",
+      "nuget_version": "1.8.260101001"
+    },
+    {
+      "product": "Microsoft.WindowsAppRuntime.1.8",
+      "msix_version": "8000.770.947.0",
+      "sdk_release": "1.8.5",
+      "nuget_version": "1.8.260209005"
+    }
+  ]
+}

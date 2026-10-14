@@ -1,0 +1,333 @@
+table,column,postgresql_type,nullable,key,scope
+organisations,id,uuid,NO,PK,Queryable evidence
+organisations,title,text,NO,,Queryable evidence
+organisations,description,text,YES,,Queryable evidence
+organisations,tags,text[],NO,,Queryable evidence
+organisations,revision,integer,NO,,Queryable evidence
+microsoft_tenants,id,uuid,NO,PK,Queryable evidence
+microsoft_tenants,external_tenant_id,text,NO,,Queryable evidence
+microsoft_tenants,cloud_label,text,NO,,Queryable evidence
+source_connections,id,uuid,NO,PK,Queryable evidence
+source_connections,source_name,text,NO,,Queryable evidence
+source_connections,input_kind,text,NO,,Queryable evidence
+source_connections,tenant_id,uuid,YES,,Queryable evidence
+source_connections,collector_reference,text,YES,,Queryable evidence
+source_connections,scope_reference,text,NO,,Queryable evidence
+collection_attempts,id,uuid,NO,PK,Queryable evidence
+collection_attempts,connection_id,uuid,NO,,Queryable evidence
+collection_attempts,started_at,timestamptz,NO,,Queryable evidence
+collection_attempts,finished_at,timestamptz,YES,,Queryable evidence
+collection_attempts,outcome,text,NO,,Queryable evidence
+collection_attempts,complete,boolean,NO,,Queryable evidence
+collection_attempts,error_code,text,YES,,Queryable evidence
+collection_attempts,safe_error_detail,text,YES,,Queryable evidence
+collection_attempts,revision,integer,NO,,Queryable evidence
+source_revisions,id,uuid,NO,PK,Queryable evidence
+source_revisions,connection_id,uuid,NO,,Queryable evidence
+source_revisions,source_record_id,text,NO,,Queryable evidence
+source_revisions,source_updated_at,timestamptz,YES,,Queryable evidence
+source_revisions,collected_at,timestamptz,NO,,Queryable evidence
+source_revisions,content_hash,text,NO,,Queryable evidence
+source_revisions,origin,text,NO,,Queryable evidence
+source_revisions,source_url,text,YES,,Queryable evidence
+source_revisions,licence_or_provenance,text,NO,,Queryable evidence
+observation_receipts,id,uuid,NO,PK,Queryable evidence
+observation_receipts,source_revision_id,uuid,NO,,Queryable evidence
+observation_receipts,collection_attempt_id,uuid,NO,,Queryable evidence
+app_settings,key,text,NO,PK,Deferred behaviour; schema review only
+app_settings,value,integer,NO,,Deferred behaviour; schema review only
+app_settings,revision,integer,NO,,Deferred behaviour; schema review only
+app_settings,updated_at,timestamptz,NO,,Deferred behaviour; schema review only
+app_settings,actor_reference,text,NO,,Deferred behaviour; schema review only
+collection_schedules,input_kind,text,NO,PK,Deferred behaviour; schema review only
+collection_schedules,interval_seconds,integer,NO,,Deferred behaviour; schema review only
+collection_schedules,revision,integer,NO,,Deferred behaviour; schema review only
+collection_schedules,updated_at,timestamptz,NO,,Deferred behaviour; schema review only
+collection_schedules,actor_reference,text,NO,,Deferred behaviour; schema review only
+computers,id,uuid,NO,PK,Queryable evidence
+computers,organisation_id,uuid,YES,,Queryable evidence
+computers,display_name,text,YES,,Queryable evidence
+provider_devices,id,uuid,NO,PK,Queryable evidence
+provider_devices,connection_id,uuid,NO,,Queryable evidence
+provider_devices,native_device_id,text,NO,,Queryable evidence
+provider_devices,microsoft_registration_id,text,YES,,Queryable evidence
+computer_source_links,id,uuid,NO,PK,Product relationship; synthetic assignments only
+computer_source_links,computer_id,uuid,NO,,Product relationship; synthetic assignments only
+computer_source_links,provider_device_id,uuid,NO,,Product relationship; synthetic assignments only
+computer_source_links,match_basis,text,NO,,Product relationship; synthetic assignments only
+computer_source_links,matched_at,timestamptz,NO,,Product relationship; synthetic assignments only
+device_observations,id,uuid,NO,PK,Queryable evidence
+device_observations,provider_device_id,uuid,NO,,Queryable evidence
+device_observations,receipt_id,uuid,NO,,Queryable evidence
+device_observations,observed_at,timestamptz,YES,,Queryable evidence
+device_observations,display_name,text,YES,,Queryable evidence
+device_observations,operating_system,text,YES,,Queryable evidence
+device_observations,os_version,text,YES,,Queryable evidence
+device_observations,os_build,text,YES,,Queryable evidence
+device_observations,release_label,text,YES,,Queryable evidence
+device_observations,management_state,text,YES,,Queryable evidence
+device_observations,join_type,text,YES,,Queryable evidence
+device_observations,account_enabled,boolean,YES,,Queryable evidence
+device_observations,compliance_state,text,YES,,Queryable evidence
+device_observations,compliant_flag,boolean,YES,,Queryable evidence
+device_observations,managed_flag,boolean,YES,,Queryable evidence
+device_observations,enrolled_at,timestamptz,YES,,Queryable evidence
+device_observations,registered_at,timestamptz,YES,,Queryable evidence
+device_observations,first_seen,timestamptz,YES,,Queryable evidence
+device_observations,last_seen,timestamptz,YES,,Queryable evidence
+device_observations,last_sync,timestamptz,YES,,Queryable evidence
+device_observations,approximate_last_sign_in,timestamptz,YES,,Queryable evidence
+device_observations,onboarding_status,text,YES,,Queryable evidence
+device_observations,sensor_health,text,YES,,Queryable evidence
+device_observations,owner_type,text,YES,,Queryable evidence
+device_observations,manufacturer,text,YES,,Queryable evidence
+device_observations,model,text,YES,,Queryable evidence
+device_observations,serial_number,text,YES,,Queryable evidence
+software,id,uuid,NO,PK,Queryable evidence
+software,publisher,text,YES,,Queryable evidence
+software,product_name,text,NO,,Queryable evidence
+software,version,text,YES,,Queryable evidence
+software,platform,text,YES,,Queryable evidence
+software_observations,id,uuid,NO,PK,Queryable evidence
+software_observations,software_id,uuid,NO,,Queryable evidence
+software_observations,provider_device_id,uuid,NO,,Queryable evidence
+software_observations,receipt_id,uuid,NO,,Queryable evidence
+software_observations,observed_at,timestamptz,YES,,Queryable evidence
+software_observations,source_application_id,text,NO,,Queryable evidence
+classification_observations,id,uuid,NO,PK,Queryable evidence
+classification_observations,provider_device_id,uuid,NO,,Queryable evidence
+classification_observations,receipt_id,uuid,NO,,Queryable evidence
+classification_observations,category,text,YES,,Queryable evidence
+classification_observations,device_type,text,YES,,Queryable evidence
+classification_observations,subtype,text,YES,,Queryable evidence
+classification_observations,observed_at,timestamptz,YES,,Queryable evidence
+classification_decisions,id,uuid,NO,PK,Deferred behaviour; schema review only
+classification_decisions,provider_device_id,uuid,NO,,Deferred behaviour; schema review only
+classification_decisions,selected_type,text,NO,,Deferred behaviour; schema review only
+classification_decisions,actor_kind,text,NO,,Deferred behaviour; schema review only
+classification_decisions,actor_reference,text,NO,,Deferred behaviour; schema review only
+classification_decisions,reason,text,NO,,Deferred behaviour; schema review only
+classification_decisions,decided_at,timestamptz,NO,,Deferred behaviour; schema review only
+classification_decisions,revision,integer,NO,,Deferred behaviour; schema review only
+classification_decisions,supersedes_decision_id,uuid,YES,,Deferred behaviour; schema review only
+vulnerabilities,cve_id,text,NO,PK,Queryable evidence
+vulnerability_details,id,uuid,NO,PK,Queryable evidence
+vulnerability_details,cve_id,text,NO,,Queryable evidence
+vulnerability_details,receipt_id,uuid,NO,,Queryable evidence
+vulnerability_details,title,text,YES,,Queryable evidence
+vulnerability_details,description,text,YES,,Queryable evidence
+vulnerability_details,source_severity_label,text,YES,,Queryable evidence
+vulnerability_details,published_at,timestamptz,YES,,Queryable evidence
+vulnerability_details,updated_at,timestamptz,YES,,Queryable evidence
+vulnerability_details,supportability,text,YES,,Queryable evidence
+vulnerability_references,id,uuid,NO,PK,Queryable evidence
+vulnerability_references,cve_id,text,NO,,Queryable evidence
+vulnerability_references,receipt_id,uuid,NO,,Queryable evidence
+vulnerability_references,url,text,NO,,Queryable evidence
+vulnerability_references,label,text,YES,,Queryable evidence
+cvss_observations,id,uuid,NO,PK,Queryable evidence
+cvss_observations,cve_id,text,NO,,Queryable evidence
+cvss_observations,receipt_id,uuid,NO,,Queryable evidence
+cvss_observations,publisher,text,NO,,Queryable evidence
+cvss_observations,version,text,NO,,Queryable evidence
+cvss_observations,score,numeric,NO,,Queryable evidence
+cvss_observations,vector,text,YES,,Queryable evidence
+cvss_observations,published_at,timestamptz,YES,,Queryable evidence
+epss_observations,id,uuid,NO,PK,Queryable evidence
+epss_observations,cve_id,text,NO,,Queryable evidence
+epss_observations,receipt_id,uuid,NO,,Queryable evidence
+epss_observations,probability,numeric,NO,,Queryable evidence
+epss_observations,percentile,numeric,YES,,Queryable evidence
+epss_observations,score_date,date,YES,,Queryable evidence
+epss_observations,model_version,text,YES,,Queryable evidence
+kev_observations,id,uuid,NO,PK,Queryable evidence
+kev_observations,cve_id,text,NO,,Queryable evidence
+kev_observations,receipt_id,uuid,NO,,Queryable evidence
+kev_observations,membership,boolean,NO,,Queryable evidence
+kev_observations,date_added,date,YES,,Queryable evidence
+kev_observations,required_action,text,YES,,Queryable evidence
+kev_observations,source_due_date,date,YES,,Queryable evidence
+exploit_observations,id,uuid,NO,PK,Queryable evidence
+exploit_observations,cve_id,text,NO,,Queryable evidence
+exploit_observations,receipt_id,uuid,NO,,Queryable evidence
+exploit_observations,public_code,boolean,YES,,Queryable evidence
+exploit_observations,verified_code,boolean,YES,,Queryable evidence
+exploit_observations,in_kit,boolean,YES,,Queryable evidence
+exploit_observations,exploit_types,text[],YES,,Queryable evidence
+exploit_observations,reference_urls,text[],YES,,Queryable evidence
+vulnerability_findings,id,uuid,NO,PK,Queryable evidence
+vulnerability_findings,provider_device_id,uuid,NO,,Queryable evidence
+vulnerability_findings,software_id,uuid,NO,,Queryable evidence
+vulnerability_findings,cve_id,text,NO,,Queryable evidence
+vulnerability_findings,receipt_id,uuid,NO,,Queryable evidence
+vulnerability_findings,source_finding_id,text,NO,,Queryable evidence
+vulnerability_findings,source_severity_label,text,YES,,Queryable evidence
+vulnerability_findings,fixing_patch_id,uuid,YES,,Queryable evidence
+vulnerability_findings,observed_at,timestamptz,YES,,Queryable evidence
+vulnerability_events,id,uuid,NO,PK,Queryable evidence
+vulnerability_events,provider_device_id,uuid,NO,,Queryable evidence
+vulnerability_events,software_id,uuid,NO,,Queryable evidence
+vulnerability_events,cve_id,text,NO,,Queryable evidence
+vulnerability_events,receipt_id,uuid,NO,,Queryable evidence
+vulnerability_events,source_event_id,text,YES,,Queryable evidence
+vulnerability_events,event_fingerprint,text,NO,,Queryable evidence
+vulnerability_events,event_kind,text,NO,,Queryable evidence
+vulnerability_events,event_time,timestamptz,NO,,Queryable evidence
+vulnerability_events,first_seen,timestamptz,YES,,Queryable evidence
+vulnerability_events,last_seen,timestamptz,YES,,Queryable evidence
+vulnerability_events,source_scope_reference,text,NO,,Queryable evidence
+vulnerability_events,recommendation_reference,text,YES,,Queryable evidence
+vulnerability_events,recommended_update_id,text,YES,,Queryable evidence
+vulnerability_events,update_available,boolean,YES,,Queryable evidence
+patches,id,uuid,NO,PK,Queryable evidence
+patches,source_patch_id,text,NO,,Queryable evidence
+patches,receipt_id,uuid,NO,,Queryable evidence
+patches,title,text,NO,,Queryable evidence
+patches,url,text,YES,,Queryable evidence
+patches,published_at,timestamptz,YES,,Queryable evidence
+patches,product_names,text[],YES,,Queryable evidence
+patch_vulnerabilities,id,uuid,NO,PK,Queryable evidence
+patch_vulnerabilities,patch_id,uuid,NO,,Queryable evidence
+patch_vulnerabilities,cve_id,text,NO,,Queryable evidence
+patch_vulnerabilities,receipt_id,uuid,NO,,Queryable evidence
+patch_applicability,id,uuid,NO,PK,Queryable evidence
+patch_applicability,patch_id,uuid,NO,,Queryable evidence
+patch_applicability,software_product,text,NO,,Queryable evidence
+patch_applicability,publisher,text,YES,,Queryable evidence
+patch_applicability,platform,text,YES,,Queryable evidence
+patch_applicability,version_expression,text,YES,,Queryable evidence
+patch_applicability,architecture,text,YES,,Queryable evidence
+patch_applicability,receipt_id,uuid,NO,,Queryable evidence
+patch_replacements,id,uuid,NO,PK,Queryable evidence
+patch_replacements,patch_id,uuid,NO,,Queryable evidence
+patch_replacements,superseded_patch_id,uuid,NO,,Queryable evidence
+patch_replacements,receipt_id,uuid,NO,,Queryable evidence
+device_missing_patches,id,uuid,NO,PK,Queryable evidence
+device_missing_patches,provider_device_id,uuid,NO,,Queryable evidence
+device_missing_patches,patch_id,uuid,NO,,Queryable evidence
+device_missing_patches,receipt_id,uuid,NO,,Queryable evidence
+device_missing_patches,observed_at,timestamptz,YES,,Queryable evidence
+device_missing_patches,reported_machine_count,bigint,YES,,Queryable evidence
+device_missing_patches,reported_cve_count,bigint,YES,,Queryable evidence
+advisories,id,uuid,NO,PK,Queryable evidence
+advisories,source_advisory_id,text,NO,,Queryable evidence
+advisories,title,text,NO,,Queryable evidence
+advisories,publisher,text,NO,,Queryable evidence
+advisories,url,text,NO,,Queryable evidence
+advisories,published_at,timestamptz,YES,,Queryable evidence
+advisories,updated_at,timestamptz,YES,,Queryable evidence
+advisories,content_or_reference,text,NO,,Queryable evidence
+advisories,receipt_id,uuid,NO,,Queryable evidence
+recommendations,id,uuid,NO,PK,Queryable evidence
+recommendations,source_recommendation_id,text,NO,,Queryable evidence
+recommendations,advisory_id,uuid,YES,,Queryable evidence
+recommendations,title,text,NO,,Queryable evidence
+recommendations,recommendation_text,text,YES,,Queryable evidence
+recommendations,vendor,text,YES,,Queryable evidence
+recommendations,product_name,text,YES,,Queryable evidence
+recommendations,recommended_version,text,YES,,Queryable evidence
+recommendations,recommended_program,text,YES,,Queryable evidence
+recommendations,recommended_vendor,text,YES,,Queryable evidence
+recommendations,category,text,YES,,Queryable evidence
+recommendations,subcategory,text,YES,,Queryable evidence
+recommendations,remediation_type,text,YES,,Queryable evidence
+recommendations,source_status,text,YES,,Queryable evidence
+recommendations,receipt_id,uuid,NO,,Queryable evidence
+advisory_cves,advisory_id,uuid,NO,Composite PK,Queryable evidence
+advisory_cves,cve_id,text,NO,Composite PK,Queryable evidence
+advisory_cves,receipt_id,uuid,NO,Composite PK,Queryable evidence
+advisory_products,advisory_id,uuid,NO,Composite PK,Queryable evidence
+advisory_products,software_id,uuid,NO,Composite PK,Queryable evidence
+advisory_products,receipt_id,uuid,NO,Composite PK,Queryable evidence
+recommendation_cves,recommendation_id,uuid,NO,Composite PK,Queryable evidence
+recommendation_cves,cve_id,text,NO,Composite PK,Queryable evidence
+recommendation_cves,receipt_id,uuid,NO,Composite PK,Queryable evidence
+recommendation_products,recommendation_id,uuid,NO,Composite PK,Queryable evidence
+recommendation_products,software_id,uuid,NO,Composite PK,Queryable evidence
+recommendation_products,receipt_id,uuid,NO,Composite PK,Queryable evidence
+recommendation_patches,recommendation_id,uuid,NO,Composite PK,Queryable evidence
+recommendation_patches,patch_id,uuid,NO,Composite PK,Queryable evidence
+recommendation_patches,receipt_id,uuid,NO,Composite PK,Queryable evidence
+recommendation_devices,recommendation_id,uuid,NO,Composite PK,Queryable evidence
+recommendation_devices,provider_device_id,uuid,NO,Composite PK,Queryable evidence
+recommendation_devices,receipt_id,uuid,NO,Composite PK,Queryable evidence
+update_policy_observations,id,uuid,NO,PK,Queryable evidence
+update_policy_observations,provider_device_id,uuid,NO,,Queryable evidence
+update_policy_observations,receipt_id,uuid,NO,,Queryable evidence
+update_policy_observations,source_device_id,text,NO,,Queryable evidence
+update_policy_observations,source_registration_id,text,YES,,Queryable evidence
+update_policy_observations,policy_id,text,NO,,Queryable evidence
+update_policy_observations,device_name,text,YES,,Queryable evidence
+update_policy_observations,owner_type,text,YES,,Queryable evidence
+update_policy_observations,aggregate_state,text,YES,,Queryable evidence
+update_policy_observations,aggregate_state_localized,text,YES,,Queryable evidence
+update_policy_observations,current_status,text,YES,,Queryable evidence
+update_policy_observations,current_status_localized,text,YES,,Queryable evidence
+update_policy_observations,current_substatus,text,YES,,Queryable evidence
+update_policy_observations,current_substatus_localized,text,YES,,Queryable evidence
+update_policy_observations,event_time,timestamptz,YES,,Queryable evidence
+update_policy_observations,last_wu_scan_at,timestamptz,YES,,Queryable evidence
+update_policy_observations,alert_message,text,YES,,Queryable evidence
+update_policy_observations,alert_message_localized,text,YES,,Queryable evidence
+antivirus_observations,id,uuid,NO,PK,Queryable evidence
+antivirus_observations,provider_device_id,uuid,NO,,Queryable evidence
+antivirus_observations,receipt_id,uuid,NO,,Queryable evidence
+antivirus_observations,source_record_id,text,YES,,Queryable evidence
+antivirus_observations,device_name,text,YES,,Queryable evidence
+antivirus_observations,os_kind,text,YES,,Queryable evidence
+antivirus_observations,os_platform,text,YES,,Queryable evidence
+antivirus_observations,os_version,text,YES,,Queryable evidence
+antivirus_observations,mode,text,YES,,Queryable evidence
+antivirus_observations,signature_version,text,YES,,Queryable evidence
+antivirus_observations,engine_version,text,YES,,Queryable evidence
+antivirus_observations,platform_version,text,YES,,Queryable evidence
+antivirus_observations,signature_updated_at,timestamptz,YES,,Queryable evidence
+antivirus_observations,engine_updated_at,timestamptz,YES,,Queryable evidence
+antivirus_observations,platform_updated_at,timestamptz,YES,,Queryable evidence
+antivirus_observations,signature_current,boolean,YES,,Queryable evidence
+antivirus_observations,engine_current,boolean,YES,,Queryable evidence
+antivirus_observations,platform_current,boolean,YES,,Queryable evidence
+antivirus_observations,signature_published_at,timestamptz,YES,,Queryable evidence
+antivirus_observations,refreshed_at,timestamptz,YES,,Queryable evidence
+antivirus_observations,last_seen_at,timestamptz,YES,,Queryable evidence
+antivirus_observations,quick_scan_result,text,YES,,Queryable evidence
+antivirus_observations,quick_scan_error,text,YES,,Queryable evidence
+antivirus_observations,quick_scan_at,timestamptz,YES,,Queryable evidence
+antivirus_observations,full_scan_result,text,YES,,Queryable evidence
+antivirus_observations,full_scan_error,text,YES,,Queryable evidence
+antivirus_observations,full_scan_at,timestamptz,YES,,Queryable evidence
+antivirus_observations,source_rbac_group_id,text,YES,,Queryable evidence
+antivirus_observations,source_rbac_group_name,text,YES,,Queryable evidence
+notifications,id,uuid,NO,PK,Deferred behaviour; schema review only
+notifications,connection_id,uuid,NO,,Deferred behaviour; schema review only
+notifications,scope_reference,text,NO,,Deferred behaviour; schema review only
+notifications,category,text,NO,,Deferred behaviour; schema review only
+notifications,urgency,text,NO,,Deferred behaviour; schema review only
+notifications,episode_started_at,timestamptz,NO,,Deferred behaviour; schema review only
+notifications,first_failure_id,uuid,NO,,Deferred behaviour; schema review only
+notifications,latest_failure_id,uuid,NO,,Deferred behaviour; schema review only
+notifications,failure_count,integer,NO,,Deferred behaviour; schema review only
+notifications,status,text,NO,,Deferred behaviour; schema review only
+notifications,resolved_at,timestamptz,YES,,Deferred behaviour; schema review only
+notifications,recovery_attempt_id,uuid,YES,,Deferred behaviour; schema review only
+notifications,revision,integer,NO,,Deferred behaviour; schema review only
+notifications,page_path,text,NO,,Deferred behaviour; schema review only
+notification_attempts,notification_id,uuid,NO,Composite PK,Deferred behaviour; schema review only
+notification_attempts,collection_attempt_id,uuid,NO,Composite PK,Deferred behaviour; schema review only
+notification_user_state,notification_id,uuid,NO,Composite PK,Deferred behaviour; schema review only
+notification_user_state,mock_actor_id,text,NO,Composite PK,Deferred behaviour; schema review only
+notification_user_state,read_at,timestamptz,YES,,Deferred behaviour; schema review only
+notification_user_state,dismissed_at,timestamptz,YES,,Deferred behaviour; schema review only
+notification_user_state,revision,integer,NO,,Deferred behaviour; schema review only
+completeness_definitions,id,uuid,NO,PK,Mock-only support; not product policy
+completeness_definitions,name,text,NO,,Mock-only support; not product policy
+completeness_definitions,revision,integer,NO,,Mock-only support; not product policy
+completeness_definitions,purpose,text,NO,,Mock-only support; not product policy
+completeness_fields,definition_id,uuid,NO,Composite PK,Mock-only support; not product policy
+completeness_fields,field_key,text,NO,Composite PK,Mock-only support; not product policy
+completeness_fields,value_kind,text,NO,,Mock-only support; not product policy
+mock_snapshot_selections,connection_id,uuid,NO,PK,Mock-only support; not product policy
+mock_snapshot_selections,collection_attempt_id,uuid,NO,,Mock-only support; not product policy
+mock_fix_matches,finding_id,uuid,NO,Composite PK,Mock-only support; not product policy
+mock_fix_matches,patch_id,uuid,NO,Composite PK,Mock-only support; not product policy
+mock_fix_matches,applicability_id,uuid,NO,,Mock-only support; not product policy

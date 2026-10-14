@@ -1,0 +1,61 @@
+
+# =* catches future "pip install x>=..." shell misquote artifacts
+=*
+Opencode Error Logs/
+Training Outcome Temp.txt
+
+# Local environment and secrets
+.env.*
+!.env.example
+*.log
+
+# Python tooling
+.python-version
+.mypy_cache/
+.pytype/
+
+# Frontend/dependency tooling
+node_modules/
+dist/
+build/
+
+backend/data/*.csv
+backend/data/*.json
+backend/data/import-staging/
+backend/data/import-backups/
+backend/data/config/
+backend/*.db
+backend/*.db.pre_retrain
+backend/Other Computer Data/
+# pytest-benchmark output + load-test reports (ephemeral)
+backend/.benchmarks/
+backend/reports/stress/
+reports/stress/
+*.db
+*.db.backup
+*.db-shm
+*.db-wal
+*.db-journal
+.DS_Store
+.env
+# Dedicated lab connection guides remain local under the authorized lab exception.
+docs/guides/lab/
+# Runtime notification pages can contain local source scopes and collection history.
+docs/ui/pages/System/TriageMate/Notifiations/collection-*.md
+docs/ui/pages/System/TriageMate/Notifiations/operation-*.md
+.idea/
+.vscode/
+*.pyc
+__pycache__/
+*.pyo
+.venv/
+venv/
+.coverage
+htmlcov/
+.pytest_cache/
+.ruff_cache/
+Thumbs.db
+
+backend/reports/stress/
+.playwright-mcp/
+.codex/bin/

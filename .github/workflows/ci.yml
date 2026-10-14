@@ -1,0 +1,40 @@
+name: Container checks
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: containers-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  containers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Unit and boundary checks in a disposable container
+        run: |
+          docker build --target checks -t triagemate-checks .
+          docker run --rm triagemate-checks
+      - name: Build and start the two services
+        run: |
+          printf 'TRIAGEMATE_DB_OWNER_PASSWORD=%s\n' "$(openssl rand -hex 32)" > .env
+          docker compose up -d --build --wait --wait-timeout 300
+          curl --fail http://127.0.0.1:5190/api/health
+          test "$(docker compose ps --services --status running | wc -l)" -eq 2
+      - name: Inspect failures
+        if: failure()
+        run: docker compose logs --tail=100
+      - name: Stop disposable CI services
+        if: always()
+        run: docker compose down

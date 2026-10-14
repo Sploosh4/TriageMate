@@ -1,0 +1,2286 @@
+{
+  "version": 1,
+  "origin": "synthetic",
+  "tables": {
+    "organisations": [
+      {
+        "id": "17893206-36ca-5504-ba21-41a8d49c0c26",
+        "title": "Synthetic Organisation 1",
+        "description": "Invented fixture",
+        "tags": [
+          "synthetic"
+        ],
+        "revision": 1
+      },
+      {
+        "id": "6bf95c9b-ef66-548e-944d-b0c1fb84ac27",
+        "title": "Synthetic Organisation 2",
+        "description": "Invented fixture",
+        "tags": [
+          "synthetic"
+        ],
+        "revision": 1
+      }
+    ],
+    "microsoft_tenants": [
+      {
+        "id": "2323c94b-b776-598e-8f08-69202624ac25",
+        "external_tenant_id": "bacc7f46-db28-58f1-afb0-eb5f2a0e41fc",
+        "cloud_label": "synthetic"
+      },
+      {
+        "id": "a9d222de-222b-5629-a7a7-d7bd21690f08",
+        "external_tenant_id": "0bd3cb7e-5e96-59cb-abb5-cac8eb67c0c4",
+        "cloud_label": "synthetic"
+      }
+    ],
+    "source_connections": [
+      {
+        "id": "5f812b55-8656-55c3-8dc7-940411d35b6e",
+        "source_name": "Entra",
+        "input_kind": "synthetic-entra",
+        "tenant_id": "2323c94b-b776-598e-8f08-69202624ac25",
+        "collector_reference": null,
+        "scope_reference": "synthetic-scope-1"
+      },
+      {
+        "id": "77330292-5181-51a4-9fb1-f1ce9c09e750",
+        "source_name": "Intune",
+        "input_kind": "synthetic-intune",
+        "tenant_id": "2323c94b-b776-598e-8f08-69202624ac25",
+        "collector_reference": null,
+        "scope_reference": "synthetic-scope-1"
+      },
+      {
+        "id": "571dde71-fc8a-5cba-a90f-5ee7f727dadd",
+        "source_name": "Defender",
+        "input_kind": "synthetic-defender",
+        "tenant_id": "2323c94b-b776-598e-8f08-69202624ac25",
+        "collector_reference": null,
+        "scope_reference": "synthetic-scope-1"
+      },
+      {
+        "id": "87b49f9d-869b-55b9-a847-9055d16c1c80",
+        "source_name": "Entra",
+        "input_kind": "synthetic-entra",
+        "tenant_id": "a9d222de-222b-5629-a7a7-d7bd21690f08",
+        "collector_reference": null,
+        "scope_reference": "synthetic-scope-2"
+      },
+      {
+        "id": "510238f0-698c-52c7-9ef4-bc54640ddf56",
+        "source_name": "Intune",
+        "input_kind": "synthetic-intune",
+        "tenant_id": "a9d222de-222b-5629-a7a7-d7bd21690f08",
+        "collector_reference": null,
+        "scope_reference": "synthetic-scope-2"
+      },
+      {
+        "id": "685a9133-94e5-538d-93b0-2782ca227d38",
+        "source_name": "Defender",
+        "input_kind": "synthetic-defender",
+        "tenant_id": "a9d222de-222b-5629-a7a7-d7bd21690f08",
+        "collector_reference": null,
+        "scope_reference": "synthetic-scope-2"
+      },
+      {
+        "id": "707beba9-7cac-5949-8df4-fe080e6710a0",
+        "source_name": "synthetic-reference-context",
+        "input_kind": "synthetic-reference",
+        "tenant_id": null,
+        "collector_reference": null,
+        "scope_reference": "synthetic-context"
+      }
+    ],
+    "collection_attempts": [
+      {
+        "id": "79bf7c29-7f77-574c-adea-6b05d67159ce",
+        "connection_id": "5f812b55-8656-55c3-8dc7-940411d35b6e",
+        "started_at": "2026-09-11T07:55:00Z",
+        "finished_at": "2026-09-11T08:00:00Z",
+        "outcome": "success",
+        "complete": true,
+        "error_code": null,
+        "safe_error_detail": null,
+        "revision": 1
+      },
+      {
+        "id": "ca7ef9d4-ecdb-5d99-bcbb-866e66759461",
+        "connection_id": "77330292-5181-51a4-9fb1-f1ce9c09e750",
+        "started_at": "2026-09-11T07:55:00Z",
+        "finished_at": "2026-09-11T08:00:00Z",
+        "outcome": "success",
+        "complete": true,
+        "error_code": null,
+        "safe_error_detail": null,
+        "revision": 1
+      },
+      {
+        "id": "528c85b8-0923-5c2c-a8ff-7964a0f225c2",
+        "connection_id": "571dde71-fc8a-5cba-a90f-5ee7f727dadd",
+        "started_at": "2026-09-11T07:55:00Z",
+        "finished_at": "2026-09-11T08:00:00Z",
+        "outcome": "success",
+        "complete": true,
+        "error_code": null,
+        "safe_error_detail": null,
+        "revision": 1
+      },
+      {
+        "id": "77482a2f-0e5e-5ed6-a387-099f00b79053",
+        "connection_id": "87b49f9d-869b-55b9-a847-9055d16c1c80",
+        "started_at": "2026-09-11T07:55:00Z",
+        "finished_at": "2026-09-11T08:00:00Z",
+        "outcome": "success",
+        "complete": true,
+        "error_code": null,
+        "safe_error_detail": null,
+        "revision": 1
+      },
+      {
+        "id": "cc1fd8c2-4e7b-5247-b4fd-9240a05de6c0",
+        "connection_id": "510238f0-698c-52c7-9ef4-bc54640ddf56",
+        "started_at": "2026-09-11T07:55:00Z",
+        "finished_at": "2026-09-11T08:00:00Z",
+        "outcome": "success",
+        "complete": true,
+        "error_code": null,
+        "safe_error_detail": null,
+        "revision": 1
+      },
+      {
+        "id": "0426cf20-7ab8-5787-8ba4-7b875428a869",
+        "connection_id": "685a9133-94e5-538d-93b0-2782ca227d38",
+        "started_at": "2026-09-11T07:55:00Z",
+        "finished_at": "2026-09-11T08:00:00Z",
+        "outcome": "success",
+        "complete": true,
+        "error_code": null,
+        "safe_error_detail": null,
+        "revision": 1
+      },
+      {
+        "id": "05893495-6d1d-58f3-8854-c20c2400eb56",
+        "connection_id": "707beba9-7cac-5949-8df4-fe080e6710a0",
+        "started_at": "2026-09-11T07:55:00Z",
+        "finished_at": "2026-09-11T08:00:00Z",
+        "outcome": "success",
+        "complete": true,
+        "error_code": null,
+        "safe_error_detail": null,
+        "revision": 1
+      },
+      {
+        "id": "ca48ac2b-0689-5039-be8b-7ff6209c3130",
+        "connection_id": "77330292-5181-51a4-9fb1-f1ce9c09e750",
+        "started_at": "2026-09-11T10:00:00Z",
+        "finished_at": "2026-09-11T10:01:00Z",
+        "outcome": "failure",
+        "complete": false,
+        "error_code": "SYN_UNAVAILABLE",
+        "safe_error_detail": "Synthetic failure; no request made.",
+        "revision": 1
+      }
+    ],
+    "mock_snapshot_selections": [
+      {
+        "connection_id": "5f812b55-8656-55c3-8dc7-940411d35b6e",
+        "collection_attempt_id": "79bf7c29-7f77-574c-adea-6b05d67159ce"
+      },
+      {
+        "connection_id": "77330292-5181-51a4-9fb1-f1ce9c09e750",
+        "collection_attempt_id": "ca7ef9d4-ecdb-5d99-bcbb-866e66759461"
+      },
+      {
+        "connection_id": "571dde71-fc8a-5cba-a90f-5ee7f727dadd",
+        "collection_attempt_id": "528c85b8-0923-5c2c-a8ff-7964a0f225c2"
+      },
+      {
+        "connection_id": "87b49f9d-869b-55b9-a847-9055d16c1c80",
+        "collection_attempt_id": "77482a2f-0e5e-5ed6-a387-099f00b79053"
+      },
+      {
+        "connection_id": "510238f0-698c-52c7-9ef4-bc54640ddf56",
+        "collection_attempt_id": "cc1fd8c2-4e7b-5247-b4fd-9240a05de6c0"
+      },
+      {
+        "connection_id": "685a9133-94e5-538d-93b0-2782ca227d38",
+        "collection_attempt_id": "0426cf20-7ab8-5787-8ba4-7b875428a869"
+      },
+      {
+        "connection_id": "707beba9-7cac-5949-8df4-fe080e6710a0",
+        "collection_attempt_id": "05893495-6d1d-58f3-8854-c20c2400eb56"
+      }
+    ],
+    "computers": [
+      {
+        "id": "71edc1f5-a14e-53e2-af9b-ba4f5a42012f",
+        "organisation_id": "17893206-36ca-5504-ba21-41a8d49c0c26",
+        "display_name": "fixture-host"
+      },
+      {
+        "id": "ba064b7d-43f7-5409-a379-c6b9c796846f",
+        "organisation_id": "17893206-36ca-5504-ba21-41a8d49c0c26",
+        "display_name": "fixture-host"
+      },
+      {
+        "id": "40ee5a0a-02da-5d46-9b14-74e12efbd911",
+        "organisation_id": "6bf95c9b-ef66-548e-944d-b0c1fb84ac27",
+        "display_name": "fixture-server"
+      },
+      {
+        "id": "7fa21054-386d-55d0-bd53-bb40369d8887",
+        "organisation_id": "6bf95c9b-ef66-548e-944d-b0c1fb84ac27",
+        "display_name": "fixture-unknown"
+      }
+    ],
+    "provider_devices": [
+      {
+        "id": "6fa3d645-786a-5139-8d72-7c866b592548",
+        "connection_id": "5f812b55-8656-55c3-8dc7-940411d35b6e",
+        "native_device_id": "SYN-EntraC1",
+        "microsoft_registration_id": "34b2e677-4277-583c-bdda-78c121da4ac8"
+      },
+      {
+        "id": "f276055e-e5e2-5ad1-84d4-4b515858eba3",
+        "connection_id": "77330292-5181-51a4-9fb1-f1ce9c09e750",
+        "native_device_id": "SYN-IntuneC1",
+        "microsoft_registration_id": "34b2e677-4277-583c-bdda-78c121da4ac8"
+      },
+      {
+        "id": "b0b38e2b-5ae6-5ed1-a0c0-da15fb3b813d",
+        "connection_id": "571dde71-fc8a-5cba-a90f-5ee7f727dadd",
+        "native_device_id": "SYN-DefenderC1",
+        "microsoft_registration_id": "34b2e677-4277-583c-bdda-78c121da4ac8"
+      },
+      {
+        "id": "8146bd87-eb16-577b-979e-709aa598380d",
+        "connection_id": "5f812b55-8656-55c3-8dc7-940411d35b6e",
+        "native_device_id": "SYN-EntraC2",
+        "microsoft_registration_id": "efa3d62b-3d5a-5475-bc63-0d7ab8694e34"
+      },
+      {
+        "id": "1c9ea21a-a26f-59ee-964a-109f8f473bfe",
+        "connection_id": "77330292-5181-51a4-9fb1-f1ce9c09e750",
+        "native_device_id": "SYN-IntuneC2",
+        "microsoft_registration_id": "efa3d62b-3d5a-5475-bc63-0d7ab8694e34"
+      },
+      {
+        "id": "ace18920-808a-5add-8b63-57274fb7f70c",
+        "connection_id": "571dde71-fc8a-5cba-a90f-5ee7f727dadd",
+        "native_device_id": "SYN-DefenderC2",
+        "microsoft_registration_id": "efa3d62b-3d5a-5475-bc63-0d7ab8694e34"
+      },
+      {
+        "id": "1bbd6396-f498-5518-baca-80260bd75648",
+        "connection_id": "87b49f9d-869b-55b9-a847-9055d16c1c80",
+        "native_device_id": "SYN-EntraC3",
+        "microsoft_registration_id": "645cc258-9844-5396-86c6-16b3e2d2e30a"
+      },
+      {
+        "id": "4a0265bd-4746-5bbf-9060-49d6b0a7238c",
+        "connection_id": "510238f0-698c-52c7-9ef4-bc54640ddf56",
+        "native_device_id": "SYN-IntuneC3",
+        "microsoft_registration_id": "645cc258-9844-5396-86c6-16b3e2d2e30a"
+      },
+      {
+        "id": "9aa25c3f-73e4-5adf-92ff-42f3765025e0",
+        "connection_id": "685a9133-94e5-538d-93b0-2782ca227d38",
+        "native_device_id": "SYN-DefenderC3",
+        "microsoft_registration_id": "645cc258-9844-5396-86c6-16b3e2d2e30a"
+      },
+      {
+        "id": "1eb96a39-04a4-5c98-a4d7-7f7e5932d41c",
+        "connection_id": "87b49f9d-869b-55b9-a847-9055d16c1c80",
+        "native_device_id": "SYN-EntraC4",
+        "microsoft_registration_id": "84b3f8af-78e9-5880-8370-6c0e2fae9aea"
+      },
+      {
+        "id": "7d026cd6-5d38-5619-9ba2-f4e1444ea278",
+        "connection_id": "510238f0-698c-52c7-9ef4-bc54640ddf56",
+        "native_device_id": "SYN-IntuneC4",
+        "microsoft_registration_id": "84b3f8af-78e9-5880-8370-6c0e2fae9aea"
+      },
+      {
+        "id": "feb6b117-569c-53a1-9dd2-62cd602e278f",
+        "connection_id": "685a9133-94e5-538d-93b0-2782ca227d38",
+        "native_device_id": "SYN-DefenderC4",
+        "microsoft_registration_id": "84b3f8af-78e9-5880-8370-6c0e2fae9aea"
+      }
+    ],
+    "computer_source_links": [
+      {
+        "id": "8f5db8de-486e-5832-a4cc-4f439f718b1c",
+        "computer_id": "71edc1f5-a14e-53e2-af9b-ba4f5a42012f",
+        "provider_device_id": "6fa3d645-786a-5139-8d72-7c866b592548",
+        "match_basis": "explicit synthetic registration link",
+        "matched_at": "2026-09-11T08:00:00Z"
+      },
+      {
+        "id": "f3452b2e-918e-5061-a0fd-135ab1382d74",
+        "computer_id": "71edc1f5-a14e-53e2-af9b-ba4f5a42012f",
+        "provider_device_id": "f276055e-e5e2-5ad1-84d4-4b515858eba3",
+        "match_basis": "explicit synthetic registration link",
+        "matched_at": "2026-09-11T08:00:00Z"
+      },
+      {
+        "id": "d52ced05-5547-5f48-a86b-05cde9576927",
+        "computer_id": "71edc1f5-a14e-53e2-af9b-ba4f5a42012f",
+        "provider_device_id": "b0b38e2b-5ae6-5ed1-a0c0-da15fb3b813d",
+        "match_basis": "explicit synthetic registration link",
+        "matched_at": "2026-09-11T08:00:00Z"
+      },
+      {
+        "id": "1eeeabdb-86cb-5c19-b594-9a55b1e1bc5f",
+        "computer_id": "ba064b7d-43f7-5409-a379-c6b9c796846f",
+        "provider_device_id": "8146bd87-eb16-577b-979e-709aa598380d",
+        "match_basis": "explicit synthetic registration link",
+        "matched_at": "2026-09-11T08:00:00Z"
+      },
+      {
+        "id": "7274b7d6-ca43-5d52-9d59-03263fd254db",
+        "computer_id": "ba064b7d-43f7-5409-a379-c6b9c796846f",
+        "provider_device_id": "1c9ea21a-a26f-59ee-964a-109f8f473bfe",
+        "match_basis": "explicit synthetic registration link",
+        "matched_at": "2026-09-11T08:00:00Z"
+      },
+      {
+        "id": "8549db3f-8f65-50ac-a447-4412aa7f6437",
+        "computer_id": "ba064b7d-43f7-5409-a379-c6b9c796846f",
+        "provider_device_id": "ace18920-808a-5add-8b63-57274fb7f70c",
+        "match_basis": "explicit synthetic registration link",
+        "matched_at": "2026-09-11T08:00:00Z"
+      },
+      {
+        "id": "f93893df-3418-57b2-8ccd-e5edf28773f4",
+        "computer_id": "40ee5a0a-02da-5d46-9b14-74e12efbd911",
+        "provider_device_id": "1bbd6396-f498-5518-baca-80260bd75648",
+        "match_basis": "explicit synthetic registration link",
+        "matched_at": "2026-09-11T08:00:00Z"
+      },
+      {
+        "id": "cce477b6-b35f-5aeb-83b1-22ad0fea901f",
+        "computer_id": "40ee5a0a-02da-5d46-9b14-74e12efbd911",
+        "provider_device_id": "4a0265bd-4746-5bbf-9060-49d6b0a7238c",
+        "match_basis": "explicit synthetic registration link",
+        "matched_at": "2026-09-11T08:00:00Z"
+      },
+      {
+        "id": "eeae6741-84c9-5059-bf32-95870158f241",
+        "computer_id": "40ee5a0a-02da-5d46-9b14-74e12efbd911",
+        "provider_device_id": "9aa25c3f-73e4-5adf-92ff-42f3765025e0",
+        "match_basis": "explicit synthetic registration link",
+        "matched_at": "2026-09-11T08:00:00Z"
+      },
+      {
+        "id": "31ccae15-b186-5f3a-8bda-6bf6a11e4b9b",
+        "computer_id": "7fa21054-386d-55d0-bd53-bb40369d8887",
+        "provider_device_id": "1eb96a39-04a4-5c98-a4d7-7f7e5932d41c",
+        "match_basis": "explicit synthetic registration link",
+        "matched_at": "2026-09-11T08:00:00Z"
+      },
+      {
+        "id": "d0bf38d6-0450-5dee-aa83-732e86b192f9",
+        "computer_id": "7fa21054-386d-55d0-bd53-bb40369d8887",
+        "provider_device_id": "7d026cd6-5d38-5619-9ba2-f4e1444ea278",
+        "match_basis": "explicit synthetic registration link",
+        "matched_at": "2026-09-11T08:00:00Z"
+      },
+      {
+        "id": "c603f7e5-5c42-5164-9c21-8449019b6bc1",
+        "computer_id": "7fa21054-386d-55d0-bd53-bb40369d8887",
+        "provider_device_id": "feb6b117-569c-53a1-9dd2-62cd602e278f",
+        "match_basis": "explicit synthetic registration link",
+        "matched_at": "2026-09-11T08:00:00Z"
+      }
+    ],
+    "source_revisions": [
+      {
+        "id": "2bb260f5-efa7-5904-bcdb-405c3a7719a6",
+        "connection_id": "5f812b55-8656-55c3-8dc7-940411d35b6e",
+        "source_record_id": "SYN:device_observations:observation:EntraC1",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "e2ff3d06fe1fc0017c39bd753a526138def5decad9c150835a0fbd38f9a61bc4",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/device_observations:observation:EntraC1",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "6108a906-2c9c-5539-a1fd-f69cf66e51dc",
+        "connection_id": "77330292-5181-51a4-9fb1-f1ce9c09e750",
+        "source_record_id": "SYN:device_observations:observation:IntuneC1",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "c1d127b5ad7947c31c9528e5edf1460700ddbba1e016d35f76f599958bb79afc",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/device_observations:observation:IntuneC1",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "d98d8bcc-3dbd-51bf-ae1a-a79f29f4bac9",
+        "connection_id": "571dde71-fc8a-5cba-a90f-5ee7f727dadd",
+        "source_record_id": "SYN:device_observations:observation:DefenderC1",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "7a0310c1a5ede4d56c5f5298157f29589644dd980eac6ff1d59214aad536b31e",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/device_observations:observation:DefenderC1",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "d6ef3aba-39be-5d68-839b-b594e16091f3",
+        "connection_id": "571dde71-fc8a-5cba-a90f-5ee7f727dadd",
+        "source_record_id": "SYN:classification_observations:classification:C1",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "de424c224134bcd9f0aeea899a2a78d71b020723fa1c10ee51d9181e4f894c19",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/classification_observations:classification:C1",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "95fddc66-303f-5e0b-96b8-90417f237fd9",
+        "connection_id": "5f812b55-8656-55c3-8dc7-940411d35b6e",
+        "source_record_id": "SYN:device_observations:observation:EntraC2",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "09a83429a0902e2029a4bf408b82bc58f4242a2eec0e52b6ee9382ef2233657d",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/device_observations:observation:EntraC2",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "987b8655-1b65-5544-9015-e80c4890152b",
+        "connection_id": "77330292-5181-51a4-9fb1-f1ce9c09e750",
+        "source_record_id": "SYN:device_observations:observation:IntuneC2",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "2694c835136bbe91d18e1b9c36695167dcf7def933c02cebe50416424d3ba74f",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/device_observations:observation:IntuneC2",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "c6ce9ae9-cbeb-5a72-8b9f-477624ae2adb",
+        "connection_id": "571dde71-fc8a-5cba-a90f-5ee7f727dadd",
+        "source_record_id": "SYN:device_observations:observation:DefenderC2",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "081995696e41dc5e3e85822c6797a530a238f5419cd78d362bfd3e81a30adc1f",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/device_observations:observation:DefenderC2",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "3738c9cf-77fc-563c-8770-5d92cb1fdb22",
+        "connection_id": "571dde71-fc8a-5cba-a90f-5ee7f727dadd",
+        "source_record_id": "SYN:classification_observations:classification:C2",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "fe50df82e4e604d4f285beeff00647b2b5d92da972296905090e46e284574207",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/classification_observations:classification:C2",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "61688016-c0e9-5136-9cc9-42239aadf72c",
+        "connection_id": "87b49f9d-869b-55b9-a847-9055d16c1c80",
+        "source_record_id": "SYN:device_observations:observation:EntraC3",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "ea49a0a7cc18e2729d43498edb31f85c7e300c3d13c535ba550aa76fb6185676",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/device_observations:observation:EntraC3",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "9acf1519-0cdd-54ae-b009-22873945b070",
+        "connection_id": "510238f0-698c-52c7-9ef4-bc54640ddf56",
+        "source_record_id": "SYN:device_observations:observation:IntuneC3",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "b62fde5517373075515d4c22abb1c83c4b9803a77f59f47982d79f3e7a62c02a",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/device_observations:observation:IntuneC3",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "28803bdd-6849-594c-b622-65e917c41d25",
+        "connection_id": "685a9133-94e5-538d-93b0-2782ca227d38",
+        "source_record_id": "SYN:device_observations:observation:DefenderC3",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "d77493dd70d844bd6fa9e6c0912a167787fb704199601d30d4ff21c8f6547df6",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/device_observations:observation:DefenderC3",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "f0cc80bd-ce75-54d2-91dc-21062f0de6f0",
+        "connection_id": "685a9133-94e5-538d-93b0-2782ca227d38",
+        "source_record_id": "SYN:classification_observations:classification:C3",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "ea37ef6f9a0344df76b4e9aede7f73c1d08b2cb803ca8414fe49263f57288cea",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/classification_observations:classification:C3",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "6f946ff0-a8b2-5570-9d5e-fe62c0fa0d9f",
+        "connection_id": "87b49f9d-869b-55b9-a847-9055d16c1c80",
+        "source_record_id": "SYN:device_observations:observation:EntraC4",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "ccb637efac036a1dd95c49c6c884d22ec8cce05561e7e8b1579bf5d7d9782de7",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/device_observations:observation:EntraC4",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "a592a0cc-af78-58fc-8d2b-7b51c5efb67d",
+        "connection_id": "510238f0-698c-52c7-9ef4-bc54640ddf56",
+        "source_record_id": "SYN:device_observations:observation:IntuneC4",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "e64c0bf5785e205007e9e5738e9593f199476d0eb62bbcf4b17b9da459856506",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/device_observations:observation:IntuneC4",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "11ff3a8b-2282-5dd1-97d7-2251f007c846",
+        "connection_id": "685a9133-94e5-538d-93b0-2782ca227d38",
+        "source_record_id": "SYN:device_observations:observation:DefenderC4",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "de13cfd99258e4cbfbf68dc2997d41959687c689ddd1342700e46e06df2c1c4b",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/device_observations:observation:DefenderC4",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "7278e117-63b3-5b4f-be38-eac68c55bb93",
+        "connection_id": "685a9133-94e5-538d-93b0-2782ca227d38",
+        "source_record_id": "SYN:classification_observations:classification:C4",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "f83621b23871b818de41df63d7da02d3eb2ba708f770de5cb2ea8fe44c61593f",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/classification_observations:classification:C4",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "f8b56dee-3bb3-55df-806b-934fc704a857",
+        "connection_id": "77330292-5181-51a4-9fb1-f1ce9c09e750",
+        "source_record_id": "SYN:software_observations:software:C1:A1",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "a833a72d6c02b3bc274d219776ce9a7b2df7f19e2a188fa7994171736b21463e",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/software_observations:software:C1:A1",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "65c21f46-e79c-5001-ab17-4853d421c2ae",
+        "connection_id": "77330292-5181-51a4-9fb1-f1ce9c09e750",
+        "source_record_id": "SYN:software_observations:software:C1:B1",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "961bd4d6ca6a2d7a4f0589bf097ab3c98a0117d4827b41a2cc279166c78330ca",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/software_observations:software:C1:B1",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "64a74c8b-11bf-50b0-8159-a6c0564bfd78",
+        "connection_id": "77330292-5181-51a4-9fb1-f1ce9c09e750",
+        "source_record_id": "SYN:software_observations:software:C2:A1",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "de9c1b59293e4ed79970f74bb45f4f64427dc68c929ab6b7e81f7d59b29bb838",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/software_observations:software:C2:A1",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "022fe40c-77bd-5d10-bf34-22e879c5d941",
+        "connection_id": "510238f0-698c-52c7-9ef4-bc54640ddf56",
+        "source_record_id": "SYN:software_observations:software:C3:G1",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "0f2e73fc5685c5f2a3656106e9dd4e96f88e5c26709c1c5cf04dbc0d03a39fd9",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/software_observations:software:C3:G1",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "d8e111d9-4f3a-5baf-a2db-ce6ed286ec46",
+        "connection_id": "510238f0-698c-52c7-9ef4-bc54640ddf56",
+        "source_record_id": "SYN:software_observations:software:C4:D1",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "4508b27866a4db99ffd5c8551f7a07aa4ea41689bb8915dfccc05970390fb9a6",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/software_observations:software:C4:D1",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "fec63a78-30f1-504c-a5fe-33f2e672a431",
+        "connection_id": "707beba9-7cac-5949-8df4-fe080e6710a0",
+        "source_record_id": "SYN:vulnerability_details:details:CVE-2099-10001",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "534b6841e020db148da4f0e6307d25974f2d63eed79fdbe368e1af263670042c",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/vulnerability_details:details:CVE-2099-10001",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "0333a402-86f1-56b1-9ff5-b20176945943",
+        "connection_id": "707beba9-7cac-5949-8df4-fe080e6710a0",
+        "source_record_id": "SYN:cvss_observations:cvss:CVE-2099-10001",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "a5edb4c6a8f205391693e7014f326d84a8d4d9dcdc8790f2859c79291de52f36",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/cvss_observations:cvss:CVE-2099-10001",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "d2f542ff-93cf-5fd5-9dbd-06fe7e7f2458",
+        "connection_id": "707beba9-7cac-5949-8df4-fe080e6710a0",
+        "source_record_id": "SYN:epss_observations:epss:CVE-2099-10001",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "a001121f802f462faf4e4c8f880fd0d993b751707ff5bd95a09a466d69ecd6f2",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/epss_observations:epss:CVE-2099-10001",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "5760ce1c-ec14-5412-903e-6d0789208c15",
+        "connection_id": "707beba9-7cac-5949-8df4-fe080e6710a0",
+        "source_record_id": "SYN:kev_observations:kev:CVE-2099-10001",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "c272d04be0b3debc2430696912fc9ec959a50e3863931e884b78d6cd7a78fabd",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/kev_observations:kev:CVE-2099-10001",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "c02fa602-5723-5c4e-8b37-6a3b4ece3baa",
+        "connection_id": "707beba9-7cac-5949-8df4-fe080e6710a0",
+        "source_record_id": "SYN:vulnerability_details:details:CVE-2099-10002",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "1e6cff5b36f233f7b3243498ce74ab3c443efbc6db30801e8d32ce2b1b5e465b",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/vulnerability_details:details:CVE-2099-10002",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "a49f1410-ae11-540b-bfdf-8289ff1e9247",
+        "connection_id": "707beba9-7cac-5949-8df4-fe080e6710a0",
+        "source_record_id": "SYN:cvss_observations:cvss:CVE-2099-10002",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "106b091e0f73eb7521a373d089deffd38c8c11a72887ee33bb76050e4c4545e8",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/cvss_observations:cvss:CVE-2099-10002",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "ddae9c9d-d616-505f-8f84-4150830bef54",
+        "connection_id": "707beba9-7cac-5949-8df4-fe080e6710a0",
+        "source_record_id": "SYN:epss_observations:epss:CVE-2099-10002",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "e675719208f17fb8aabc6e8f57cf3aecea1bc0c64dc7d4da0be9b4f2b2df8aa7",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/epss_observations:epss:CVE-2099-10002",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "6c7c3830-02ac-550d-b57d-a06a922600b2",
+        "connection_id": "707beba9-7cac-5949-8df4-fe080e6710a0",
+        "source_record_id": "SYN:kev_observations:kev:CVE-2099-10002",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "92ab3e2030cbe39909fb1a55486836dcb376195399b688d4b6b28d7156add352",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/kev_observations:kev:CVE-2099-10002",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "b3ad7c44-77be-58a0-bffa-021450f85021",
+        "connection_id": "707beba9-7cac-5949-8df4-fe080e6710a0",
+        "source_record_id": "SYN:vulnerability_references:reference",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "0c6958280f615131396618c81d366dbe694bc52d5a6de5d1b1eb974f25822892",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/vulnerability_references:reference",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "59bfb186-66b1-56a9-b7e4-e02127b0efe6",
+        "connection_id": "707beba9-7cac-5949-8df4-fe080e6710a0",
+        "source_record_id": "SYN:exploit_observations:exploit",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "f8241f8bdd56aaa6595c81841c75f1bbe9589fbc5a2d4463abb07e2183f37398",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/exploit_observations:exploit",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "55c4c82f-6198-5f11-85e4-6305ad66409a",
+        "connection_id": "707beba9-7cac-5949-8df4-fe080e6710a0",
+        "source_record_id": "SYN:patches:PA",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "50cec114c59d50d1a75c02987dc9117e07b4331e8d04cec6775e51bec44dd775",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/patches:PA",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "fb410784-7ba7-5962-9cf5-43e9f47e80e2",
+        "connection_id": "707beba9-7cac-5949-8df4-fe080e6710a0",
+        "source_record_id": "SYN:patch_vulnerabilities:pv:PA",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "722af32a3d720de7daf1c5a70de1efa26fff92412cb79c189eeb18eb636a5c4f",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/patch_vulnerabilities:pv:PA",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "8036b095-9df7-5c9d-9301-4fbc88f4df7f",
+        "connection_id": "707beba9-7cac-5949-8df4-fe080e6710a0",
+        "source_record_id": "SYN:patch_applicability:app:PA",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "f2ef9dc0e3d3b318351785916d539a67d249aacd13229a24789371f5894b8dbd",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/patch_applicability:app:PA",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "ab4db955-7faf-5035-b7ca-9a7e4e310ad7",
+        "connection_id": "707beba9-7cac-5949-8df4-fe080e6710a0",
+        "source_record_id": "SYN:patches:PA2",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "a0afd6cc90b081c9dff9b4a17451fa62cfe10644df82389a36edad0d6826915c",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/patches:PA2",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "28871e59-5e8b-5a95-a929-44eccf7e460c",
+        "connection_id": "707beba9-7cac-5949-8df4-fe080e6710a0",
+        "source_record_id": "SYN:patch_vulnerabilities:pv:PA2",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "3c8f2729ebedb671901415ea1caa95db9c0c8aca4b7fa19037591d9ba4d426be",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/patch_vulnerabilities:pv:PA2",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "99cfee5e-fa72-55ab-824a-937fd4c0d0c2",
+        "connection_id": "707beba9-7cac-5949-8df4-fe080e6710a0",
+        "source_record_id": "SYN:patch_applicability:app:PA2",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "17ef82a922438464da2b9a59a1712d2b39d42dd1da0991e793d688eb541ff1a2",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/patch_applicability:app:PA2",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "91eba1d0-f399-5ff0-8885-7001d03227c3",
+        "connection_id": "707beba9-7cac-5949-8df4-fe080e6710a0",
+        "source_record_id": "SYN:patches:PB",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "81f63ad605a02c862fa73fc1c184145050e86ac47003c61fe182865d750e04c4",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/patches:PB",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "ff6d2939-75b2-582b-adc1-1eb3706e6166",
+        "connection_id": "707beba9-7cac-5949-8df4-fe080e6710a0",
+        "source_record_id": "SYN:patch_vulnerabilities:pv:PB",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "249ee733a4dc00ed5bab29953f8a720ab257fc29a2e0ec4bec5c8aa3ef3b179a",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/patch_vulnerabilities:pv:PB",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "d42f59f7-f1fd-5b1d-8b88-f59814228652",
+        "connection_id": "707beba9-7cac-5949-8df4-fe080e6710a0",
+        "source_record_id": "SYN:patch_applicability:app:PB",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "a98dfd378515eee8241ac90bcb3e851f38267d3178ed084669abc1b64fbab369",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/patch_applicability:app:PB",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "081b439d-566e-5057-8c17-b8a74d4f6377",
+        "connection_id": "707beba9-7cac-5949-8df4-fe080e6710a0",
+        "source_record_id": "SYN:patch_replacements:replace",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "fb0c890660f7bd6f1860f980e844cf6e9b0114d5339028be1cee67e755c8f875",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/patch_replacements:replace",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "462d8c09-4e83-5864-a57e-124c689ff968",
+        "connection_id": "571dde71-fc8a-5cba-a90f-5ee7f727dadd",
+        "source_record_id": "SYN:vulnerability_findings:F1",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "b969a140c14f0a985bbea179fed2d08f7db265df3a0e05265b74bd11e39926fe",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/vulnerability_findings:F1",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "65e5b722-46d9-5a75-9aa2-46fcab42e963",
+        "connection_id": "571dde71-fc8a-5cba-a90f-5ee7f727dadd",
+        "source_record_id": "SYN:vulnerability_findings:F2",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "e58d7748870f50acf16d9e78be4885982fc77cb5abfb9b4dcb780d0b7271d671",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/vulnerability_findings:F2",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "5c2794d7-9646-581d-8c64-5949d6738376",
+        "connection_id": "571dde71-fc8a-5cba-a90f-5ee7f727dadd",
+        "source_record_id": "SYN:vulnerability_findings:F3",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "9e2f77234b67b091c2acfcebf47aa522c3eaf3ed0442da8097c905e1145f569d",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/vulnerability_findings:F3",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "09b9053c-808b-5cfc-9d37-4e340b97b123",
+        "connection_id": "571dde71-fc8a-5cba-a90f-5ee7f727dadd",
+        "source_record_id": "SYN:vulnerability_findings:F4",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "d82dedb6a2835f8b1149754aecf3f4459fe1dbef69211022a23585b83033d980",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/vulnerability_findings:F4",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "41abdf47-87b1-503b-b2fb-a28155bdf619",
+        "connection_id": "571dde71-fc8a-5cba-a90f-5ee7f727dadd",
+        "source_record_id": "SYN:device_missing_patches:missing:1:PA",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "7ba4c594da2c53a349a21adaa90b3bab1bafd19eabd245e7175fa6d4e1e26f49",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/device_missing_patches:missing:1:PA",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "46c44b87-9a85-5645-a8ff-23c760da83a9",
+        "connection_id": "571dde71-fc8a-5cba-a90f-5ee7f727dadd",
+        "source_record_id": "SYN:device_missing_patches:missing:2:PA",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "a7244ffd5434f9c957a852cdecd946f0803d20a5e224972b30eea3f285cdd611",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/device_missing_patches:missing:2:PA",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "3e055b41-58ab-591f-947c-b0dbc2015cdf",
+        "connection_id": "571dde71-fc8a-5cba-a90f-5ee7f727dadd",
+        "source_record_id": "SYN:device_missing_patches:missing:1:PB",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "a55fbd3486bfeb761619ae8e07230f8e114b3ca3542dcccb268723b2d70cd3e1",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/device_missing_patches:missing:1:PB",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "96ebf59b-2ff6-54ba-b337-b1d40bb4f8c8",
+        "connection_id": "571dde71-fc8a-5cba-a90f-5ee7f727dadd",
+        "source_record_id": "SYN:vulnerability_events:E1",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "5a489bc6188305d0d1e24a840461a5e0fc6b9a06f5d990f6ae6e97196bc83d16",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/vulnerability_events:E1",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "62c4f668-4fca-5906-92ae-afc27e08f4ed",
+        "connection_id": "571dde71-fc8a-5cba-a90f-5ee7f727dadd",
+        "source_record_id": "SYN:vulnerability_events:E2",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "5af071e8968052d41b5d0cee0ef6d9205c29d39516f1d6bb58e955f47a90b1b9",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/vulnerability_events:E2",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "20be0395-145f-5d7e-bed3-e744859245d6",
+        "connection_id": "707beba9-7cac-5949-8df4-fe080e6710a0",
+        "source_record_id": "SYN:advisories:AD1",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "ab1261562163948464e723845dcf1b711f514585e4a3bee119706b524b43db39",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/advisories:AD1",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "f8f341fd-7634-5fc8-8f5a-bc1bf7e8b70e",
+        "connection_id": "707beba9-7cac-5949-8df4-fe080e6710a0",
+        "source_record_id": "SYN:recommendations:R1",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "8f6bfdae791cdf5618c995ef06eaa7c7d60bd702b59bced97bf55eba01b56a6c",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/recommendations:R1",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "9790f4f6-8eac-5b28-b024-39b3d1a2a841",
+        "connection_id": "707beba9-7cac-5949-8df4-fe080e6710a0",
+        "source_record_id": "SYN:advisory_products:1",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "7d024534d96d104cb8a7e9bd12dce902a90b1ab0181dd6168417eafa59e63725",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/advisory_products:1",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "ffaff15d-ddd7-5ec9-973a-3d256cfc5016",
+        "connection_id": "707beba9-7cac-5949-8df4-fe080e6710a0",
+        "source_record_id": "SYN:recommendation_products:1",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "6cfda953c2a21fd5deec283f2403b7f5d81008c6d2ff07716fb4e9a5e093570e",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/recommendation_products:1",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "063c9e56-50bf-543c-ad58-6c5c18e36f5a",
+        "connection_id": "707beba9-7cac-5949-8df4-fe080e6710a0",
+        "source_record_id": "SYN:advisory_cves:1",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "59f68929f01ac90728fd1552a0273585f01811a90db709d537c6deb80ce5d5bb",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/advisory_cves:1",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "512bb34b-d80b-571b-b71c-bc5a4cfe384d",
+        "connection_id": "707beba9-7cac-5949-8df4-fe080e6710a0",
+        "source_record_id": "SYN:recommendation_cves:1",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "8c8761de98c0099b4b346c0895366a77d30a739111417cd09bad2cfd780ccb15",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/recommendation_cves:1",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "a25a1e81-b181-56a7-bf4b-0988929280f8",
+        "connection_id": "707beba9-7cac-5949-8df4-fe080e6710a0",
+        "source_record_id": "SYN:recommendation_patches:1",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "89c4dce79227410f3562eda79fb4dec96fa90483a0efe1d554d1da0b1fcc20ed",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/recommendation_patches:1",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "245e73fe-1f4c-5b48-bb2c-e2c349d07462",
+        "connection_id": "707beba9-7cac-5949-8df4-fe080e6710a0",
+        "source_record_id": "SYN:recommendation_devices:DefenderC1",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "67e33c3303f90b01329f7540807e4c72145c456e739334d5aea41f66c533bfdb",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/recommendation_devices:DefenderC1",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "737d2ee0-abab-5936-9554-cefa6a8b0aa8",
+        "connection_id": "707beba9-7cac-5949-8df4-fe080e6710a0",
+        "source_record_id": "SYN:recommendation_devices:DefenderC2",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "a7609629c580ea0a8410222dadb5549faf4c612fd945c378584abdf15643eecd",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/recommendation_devices:DefenderC2",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "f1293302-2203-5d90-95cf-a5db53a04cc0",
+        "connection_id": "707beba9-7cac-5949-8df4-fe080e6710a0",
+        "source_record_id": "SYN:advisories:AD2",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "b2d841bfa91c45f095104df66669e35f7aa2f91678f54e152c9dcd91419197bc",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/advisories:AD2",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "bdd5a73e-da65-5071-ad29-5a94810edc99",
+        "connection_id": "707beba9-7cac-5949-8df4-fe080e6710a0",
+        "source_record_id": "SYN:recommendations:R2",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "cafc8daf875196c24b4cfcdb0044af642a80f245e2f5826628a2174d13d769da",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/recommendations:R2",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "1f7a7e9f-df8a-5840-91a1-cb032a8a534c",
+        "connection_id": "707beba9-7cac-5949-8df4-fe080e6710a0",
+        "source_record_id": "SYN:advisory_products:2",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "dd11ad02222f188c6a3f77605e6f9c807d77b126e31be0859b44d340aa565c9f",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/advisory_products:2",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "99278b31-9746-5239-ab09-6b2d901077b0",
+        "connection_id": "707beba9-7cac-5949-8df4-fe080e6710a0",
+        "source_record_id": "SYN:recommendation_products:2",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "b725058691499c27e29af045bb37757a5c3f7fbcf392ed22d5e1f5b815b0bf2f",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/recommendation_products:2",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "359cf622-5d82-5e86-a04f-788424380d19",
+        "connection_id": "77330292-5181-51a4-9fb1-f1ce9c09e750",
+        "source_record_id": "SYN:update_policy_observations:policy",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "94126cfa16772440d2877eaf1759cf3684cd9d766cef3233d20b89300cffdf16",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/update_policy_observations:policy",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      },
+      {
+        "id": "8c2ea2ad-5571-5722-a9b3-3db6d0ddfb75",
+        "connection_id": "571dde71-fc8a-5cba-a90f-5ee7f727dadd",
+        "source_record_id": "SYN:antivirus_observations:av",
+        "source_updated_at": "2026-09-11T07:00:00Z",
+        "collected_at": "2026-09-11T08:00:00Z",
+        "content_hash": "b4c6cd1f16f33abbb2225338fc124a9560f1ff57fd605b91da896b863f1a8f98",
+        "origin": "synthetic",
+        "source_url": "https://example.invalid/antivirus_observations:av",
+        "licence_or_provenance": "Invented TriageMate schema fixture v1; no external input."
+      }
+    ],
+    "observation_receipts": [
+      {
+        "id": "1c22a2a4-e10b-5cbb-9d81-79a0341e6624",
+        "source_revision_id": "2bb260f5-efa7-5904-bcdb-405c3a7719a6",
+        "collection_attempt_id": "79bf7c29-7f77-574c-adea-6b05d67159ce"
+      },
+      {
+        "id": "e45e039b-fb4d-5bc4-83d0-ac14ccd2624c",
+        "source_revision_id": "6108a906-2c9c-5539-a1fd-f69cf66e51dc",
+        "collection_attempt_id": "ca7ef9d4-ecdb-5d99-bcbb-866e66759461"
+      },
+      {
+        "id": "42afd2ed-344e-5a9b-b7c4-dfb225f4bb19",
+        "source_revision_id": "d98d8bcc-3dbd-51bf-ae1a-a79f29f4bac9",
+        "collection_attempt_id": "528c85b8-0923-5c2c-a8ff-7964a0f225c2"
+      },
+      {
+        "id": "d37c996f-47a9-5464-8a05-85d37f8a3757",
+        "source_revision_id": "d6ef3aba-39be-5d68-839b-b594e16091f3",
+        "collection_attempt_id": "528c85b8-0923-5c2c-a8ff-7964a0f225c2"
+      },
+      {
+        "id": "c1f221d2-c81b-516b-b4a4-d305eacacc07",
+        "source_revision_id": "95fddc66-303f-5e0b-96b8-90417f237fd9",
+        "collection_attempt_id": "79bf7c29-7f77-574c-adea-6b05d67159ce"
+      },
+      {
+        "id": "7cffec7d-495a-548f-ae31-afa6c6f2baf4",
+        "source_revision_id": "987b8655-1b65-5544-9015-e80c4890152b",
+        "collection_attempt_id": "ca7ef9d4-ecdb-5d99-bcbb-866e66759461"
+      },
+      {
+        "id": "71c48ae9-4e7d-5800-89de-41a7c83faa32",
+        "source_revision_id": "c6ce9ae9-cbeb-5a72-8b9f-477624ae2adb",
+        "collection_attempt_id": "528c85b8-0923-5c2c-a8ff-7964a0f225c2"
+      },
+      {
+        "id": "8a80c5ba-8767-5379-ac8b-8a67fd06bda1",
+        "source_revision_id": "3738c9cf-77fc-563c-8770-5d92cb1fdb22",
+        "collection_attempt_id": "528c85b8-0923-5c2c-a8ff-7964a0f225c2"
+      },
+      {
+        "id": "7fc222c1-7cf1-58d8-baa2-006e279933dc",
+        "source_revision_id": "61688016-c0e9-5136-9cc9-42239aadf72c",
+        "collection_attempt_id": "77482a2f-0e5e-5ed6-a387-099f00b79053"
+      },
+      {
+        "id": "a7f54c94-2338-516d-a7fc-c275a80df5df",
+        "source_revision_id": "9acf1519-0cdd-54ae-b009-22873945b070",
+        "collection_attempt_id": "cc1fd8c2-4e7b-5247-b4fd-9240a05de6c0"
+      },
+      {
+        "id": "3e91e1db-cd5f-5aa0-8a82-1c53ad087887",
+        "source_revision_id": "28803bdd-6849-594c-b622-65e917c41d25",
+        "collection_attempt_id": "0426cf20-7ab8-5787-8ba4-7b875428a869"
+      },
+      {
+        "id": "745bdf0f-6ad8-5dc8-bde8-91090dfa57ce",
+        "source_revision_id": "f0cc80bd-ce75-54d2-91dc-21062f0de6f0",
+        "collection_attempt_id": "0426cf20-7ab8-5787-8ba4-7b875428a869"
+      },
+      {
+        "id": "d9e0308c-4fcd-568d-af11-8b1a8873c19e",
+        "source_revision_id": "6f946ff0-a8b2-5570-9d5e-fe62c0fa0d9f",
+        "collection_attempt_id": "77482a2f-0e5e-5ed6-a387-099f00b79053"
+      },
+      {
+        "id": "9ff52b15-3288-5a55-b81f-3494b9958fbb",
+        "source_revision_id": "a592a0cc-af78-58fc-8d2b-7b51c5efb67d",
+        "collection_attempt_id": "cc1fd8c2-4e7b-5247-b4fd-9240a05de6c0"
+      },
+      {
+        "id": "5119f124-4984-592d-9cbb-6e9e8ded8b28",
+        "source_revision_id": "11ff3a8b-2282-5dd1-97d7-2251f007c846",
+        "collection_attempt_id": "0426cf20-7ab8-5787-8ba4-7b875428a869"
+      },
+      {
+        "id": "b78ff231-b825-5226-beb5-e8dccbd8e34b",
+        "source_revision_id": "7278e117-63b3-5b4f-be38-eac68c55bb93",
+        "collection_attempt_id": "0426cf20-7ab8-5787-8ba4-7b875428a869"
+      },
+      {
+        "id": "333338cb-9e31-51ef-95cd-fab468680435",
+        "source_revision_id": "f8b56dee-3bb3-55df-806b-934fc704a857",
+        "collection_attempt_id": "ca7ef9d4-ecdb-5d99-bcbb-866e66759461"
+      },
+      {
+        "id": "8893fdb7-a49f-585a-8088-1c437b23991a",
+        "source_revision_id": "65c21f46-e79c-5001-ab17-4853d421c2ae",
+        "collection_attempt_id": "ca7ef9d4-ecdb-5d99-bcbb-866e66759461"
+      },
+      {
+        "id": "e36d1791-ab6e-5100-85a4-3cf08af4e679",
+        "source_revision_id": "64a74c8b-11bf-50b0-8159-a6c0564bfd78",
+        "collection_attempt_id": "ca7ef9d4-ecdb-5d99-bcbb-866e66759461"
+      },
+      {
+        "id": "f0039f58-d4c7-569b-bdd4-7066410ed859",
+        "source_revision_id": "022fe40c-77bd-5d10-bf34-22e879c5d941",
+        "collection_attempt_id": "cc1fd8c2-4e7b-5247-b4fd-9240a05de6c0"
+      },
+      {
+        "id": "23b0fee6-6660-5b58-928c-0273bf394f85",
+        "source_revision_id": "d8e111d9-4f3a-5baf-a2db-ce6ed286ec46",
+        "collection_attempt_id": "cc1fd8c2-4e7b-5247-b4fd-9240a05de6c0"
+      },
+      {
+        "id": "3a0ba482-2713-5abc-a569-018d61d82160",
+        "source_revision_id": "fec63a78-30f1-504c-a5fe-33f2e672a431",
+        "collection_attempt_id": "05893495-6d1d-58f3-8854-c20c2400eb56"
+      },
+      {
+        "id": "c656508e-e86e-5136-a142-336d24836fcb",
+        "source_revision_id": "0333a402-86f1-56b1-9ff5-b20176945943",
+        "collection_attempt_id": "05893495-6d1d-58f3-8854-c20c2400eb56"
+      },
+      {
+        "id": "42459acc-74c0-5945-894c-43e4aa030d9f",
+        "source_revision_id": "d2f542ff-93cf-5fd5-9dbd-06fe7e7f2458",
+        "collection_attempt_id": "05893495-6d1d-58f3-8854-c20c2400eb56"
+      },
+      {
+        "id": "488d7395-79f1-5656-b977-b2f370aa1ea5",
+        "source_revision_id": "5760ce1c-ec14-5412-903e-6d0789208c15",
+        "collection_attempt_id": "05893495-6d1d-58f3-8854-c20c2400eb56"
+      },
+      {
+        "id": "d2e8ff64-bd75-5246-9da8-38793758f10b",
+        "source_revision_id": "c02fa602-5723-5c4e-8b37-6a3b4ece3baa",
+        "collection_attempt_id": "05893495-6d1d-58f3-8854-c20c2400eb56"
+      },
+      {
+        "id": "5542986a-7661-5a1d-b84c-edea55e27556",
+        "source_revision_id": "a49f1410-ae11-540b-bfdf-8289ff1e9247",
+        "collection_attempt_id": "05893495-6d1d-58f3-8854-c20c2400eb56"
+      },
+      {
+        "id": "91cf4ff2-48fb-530a-95be-39a30052e5ce",
+        "source_revision_id": "ddae9c9d-d616-505f-8f84-4150830bef54",
+        "collection_attempt_id": "05893495-6d1d-58f3-8854-c20c2400eb56"
+      },
+      {
+        "id": "cf700222-e151-5e95-b1bd-e02d128e2b54",
+        "source_revision_id": "6c7c3830-02ac-550d-b57d-a06a922600b2",
+        "collection_attempt_id": "05893495-6d1d-58f3-8854-c20c2400eb56"
+      },
+      {
+        "id": "69a31ee1-02ff-540a-8702-5960430a97a7",
+        "source_revision_id": "b3ad7c44-77be-58a0-bffa-021450f85021",
+        "collection_attempt_id": "05893495-6d1d-58f3-8854-c20c2400eb56"
+      },
+      {
+        "id": "b8a8346f-ccc6-55c7-a287-89929d790f8f",
+        "source_revision_id": "59bfb186-66b1-56a9-b7e4-e02127b0efe6",
+        "collection_attempt_id": "05893495-6d1d-58f3-8854-c20c2400eb56"
+      },
+      {
+        "id": "efb3b6c7-660f-593e-b51f-f9d0da38b6ee",
+        "source_revision_id": "55c4c82f-6198-5f11-85e4-6305ad66409a",
+        "collection_attempt_id": "05893495-6d1d-58f3-8854-c20c2400eb56"
+      },
+      {
+        "id": "6efd50d6-799f-505d-adb8-f2e6d24dfc65",
+        "source_revision_id": "fb410784-7ba7-5962-9cf5-43e9f47e80e2",
+        "collection_attempt_id": "05893495-6d1d-58f3-8854-c20c2400eb56"
+      },
+      {
+        "id": "273b9f22-0e95-543c-972e-e2ae9fd20d7c",
+        "source_revision_id": "8036b095-9df7-5c9d-9301-4fbc88f4df7f",
+        "collection_attempt_id": "05893495-6d1d-58f3-8854-c20c2400eb56"
+      },
+      {
+        "id": "8b08dc7d-da1e-5b8c-af7f-1c3275bda79f",
+        "source_revision_id": "ab4db955-7faf-5035-b7ca-9a7e4e310ad7",
+        "collection_attempt_id": "05893495-6d1d-58f3-8854-c20c2400eb56"
+      },
+      {
+        "id": "411592bb-3426-5168-a643-f13a11ec9f7c",
+        "source_revision_id": "28871e59-5e8b-5a95-a929-44eccf7e460c",
+        "collection_attempt_id": "05893495-6d1d-58f3-8854-c20c2400eb56"
+      },
+      {
+        "id": "67a76a8a-3253-535f-afbb-8308114cdd87",
+        "source_revision_id": "99cfee5e-fa72-55ab-824a-937fd4c0d0c2",
+        "collection_attempt_id": "05893495-6d1d-58f3-8854-c20c2400eb56"
+      },
+      {
+        "id": "8646ba55-24ba-5712-8265-76847b5d85f6",
+        "source_revision_id": "91eba1d0-f399-5ff0-8885-7001d03227c3",
+        "collection_attempt_id": "05893495-6d1d-58f3-8854-c20c2400eb56"
+      },
+      {
+        "id": "7dae7e3d-c6b6-5d5e-9aaf-0614eaaf5bd2",
+        "source_revision_id": "ff6d2939-75b2-582b-adc1-1eb3706e6166",
+        "collection_attempt_id": "05893495-6d1d-58f3-8854-c20c2400eb56"
+      },
+      {
+        "id": "51ae4c45-2ee3-5e16-98c1-84f0679702a9",
+        "source_revision_id": "d42f59f7-f1fd-5b1d-8b88-f59814228652",
+        "collection_attempt_id": "05893495-6d1d-58f3-8854-c20c2400eb56"
+      },
+      {
+        "id": "126fcd38-8950-565a-824e-0d970d3271bd",
+        "source_revision_id": "081b439d-566e-5057-8c17-b8a74d4f6377",
+        "collection_attempt_id": "05893495-6d1d-58f3-8854-c20c2400eb56"
+      },
+      {
+        "id": "edb3b9c5-de85-5436-9cc1-ababd84ebf4d",
+        "source_revision_id": "462d8c09-4e83-5864-a57e-124c689ff968",
+        "collection_attempt_id": "528c85b8-0923-5c2c-a8ff-7964a0f225c2"
+      },
+      {
+        "id": "715075e5-14ec-522a-98e1-fbe61d2464ab",
+        "source_revision_id": "65e5b722-46d9-5a75-9aa2-46fcab42e963",
+        "collection_attempt_id": "528c85b8-0923-5c2c-a8ff-7964a0f225c2"
+      },
+      {
+        "id": "e8b446a0-d679-5e6e-90b1-3cfc43827394",
+        "source_revision_id": "5c2794d7-9646-581d-8c64-5949d6738376",
+        "collection_attempt_id": "528c85b8-0923-5c2c-a8ff-7964a0f225c2"
+      },
+      {
+        "id": "38fc03dd-9ee3-5310-961d-de57cdc80413",
+        "source_revision_id": "09b9053c-808b-5cfc-9d37-4e340b97b123",
+        "collection_attempt_id": "528c85b8-0923-5c2c-a8ff-7964a0f225c2"
+      },
+      {
+        "id": "f40e9e35-769b-5093-a934-2059c807d54c",
+        "source_revision_id": "41abdf47-87b1-503b-b2fb-a28155bdf619",
+        "collection_attempt_id": "528c85b8-0923-5c2c-a8ff-7964a0f225c2"
+      },
+      {
+        "id": "c4c28bd4-f1ef-5595-9064-a026f5359c44",
+        "source_revision_id": "46c44b87-9a85-5645-a8ff-23c760da83a9",
+        "collection_attempt_id": "528c85b8-0923-5c2c-a8ff-7964a0f225c2"
+      },
+      {
+        "id": "d7aeb359-c58d-5506-82c2-3e2f5b5c12d1",
+        "source_revision_id": "3e055b41-58ab-591f-947c-b0dbc2015cdf",
+        "collection_attempt_id": "528c85b8-0923-5c2c-a8ff-7964a0f225c2"
+      },
+      {
+        "id": "e66f68af-4aeb-5636-954a-1dcec11324de",
+        "source_revision_id": "96ebf59b-2ff6-54ba-b337-b1d40bb4f8c8",
+        "collection_attempt_id": "528c85b8-0923-5c2c-a8ff-7964a0f225c2"
+      },
+      {
+        "id": "72be79c2-91ad-5b04-8837-526a8b32bebe",
+        "source_revision_id": "62c4f668-4fca-5906-92ae-afc27e08f4ed",
+        "collection_attempt_id": "528c85b8-0923-5c2c-a8ff-7964a0f225c2"
+      },
+      {
+        "id": "2ec20384-8955-59f3-b703-589d29445930",
+        "source_revision_id": "20be0395-145f-5d7e-bed3-e744859245d6",
+        "collection_attempt_id": "05893495-6d1d-58f3-8854-c20c2400eb56"
+      },
+      {
+        "id": "b8913cd4-a2a2-55d3-961b-1448ad4a06e9",
+        "source_revision_id": "f8f341fd-7634-5fc8-8f5a-bc1bf7e8b70e",
+        "collection_attempt_id": "05893495-6d1d-58f3-8854-c20c2400eb56"
+      },
+      {
+        "id": "5b74229e-8930-58f3-a956-bc5059e49027",
+        "source_revision_id": "9790f4f6-8eac-5b28-b024-39b3d1a2a841",
+        "collection_attempt_id": "05893495-6d1d-58f3-8854-c20c2400eb56"
+      },
+      {
+        "id": "1e2eeb8d-4207-5a7a-9cd9-2ea45148f67f",
+        "source_revision_id": "ffaff15d-ddd7-5ec9-973a-3d256cfc5016",
+        "collection_attempt_id": "05893495-6d1d-58f3-8854-c20c2400eb56"
+      },
+      {
+        "id": "40dd1e20-30b9-5012-bc03-d1595fd5e402",
+        "source_revision_id": "063c9e56-50bf-543c-ad58-6c5c18e36f5a",
+        "collection_attempt_id": "05893495-6d1d-58f3-8854-c20c2400eb56"
+      },
+      {
+        "id": "10291df9-cdd9-53b6-b28b-658c82826ab8",
+        "source_revision_id": "512bb34b-d80b-571b-b71c-bc5a4cfe384d",
+        "collection_attempt_id": "05893495-6d1d-58f3-8854-c20c2400eb56"
+      },
+      {
+        "id": "38ca819e-01cd-5e3e-9693-33ab84841b8f",
+        "source_revision_id": "a25a1e81-b181-56a7-bf4b-0988929280f8",
+        "collection_attempt_id": "05893495-6d1d-58f3-8854-c20c2400eb56"
+      },
+      {
+        "id": "af4b38d5-5ed8-5a1c-8cf4-b823fc7dbc84",
+        "source_revision_id": "245e73fe-1f4c-5b48-bb2c-e2c349d07462",
+        "collection_attempt_id": "05893495-6d1d-58f3-8854-c20c2400eb56"
+      },
+      {
+        "id": "dc1ccb0e-e318-5aaa-abe4-986398afdcbc",
+        "source_revision_id": "737d2ee0-abab-5936-9554-cefa6a8b0aa8",
+        "collection_attempt_id": "05893495-6d1d-58f3-8854-c20c2400eb56"
+      },
+      {
+        "id": "2b7bf7c5-68a2-5a32-b8f2-b8917d15ca69",
+        "source_revision_id": "f1293302-2203-5d90-95cf-a5db53a04cc0",
+        "collection_attempt_id": "05893495-6d1d-58f3-8854-c20c2400eb56"
+      },
+      {
+        "id": "f48031b8-605a-5b0c-b8de-6854c56c491b",
+        "source_revision_id": "bdd5a73e-da65-5071-ad29-5a94810edc99",
+        "collection_attempt_id": "05893495-6d1d-58f3-8854-c20c2400eb56"
+      },
+      {
+        "id": "70b67a82-bd49-5569-9bb6-b6917d5d79f0",
+        "source_revision_id": "1f7a7e9f-df8a-5840-91a1-cb032a8a534c",
+        "collection_attempt_id": "05893495-6d1d-58f3-8854-c20c2400eb56"
+      },
+      {
+        "id": "8adfe6f3-c9d9-51d0-88ca-aafa6d82505f",
+        "source_revision_id": "99278b31-9746-5239-ab09-6b2d901077b0",
+        "collection_attempt_id": "05893495-6d1d-58f3-8854-c20c2400eb56"
+      },
+      {
+        "id": "199aa7d9-d2a6-5c06-b329-16e4e3c9ca1e",
+        "source_revision_id": "359cf622-5d82-5e86-a04f-788424380d19",
+        "collection_attempt_id": "ca7ef9d4-ecdb-5d99-bcbb-866e66759461"
+      },
+      {
+        "id": "d9ef9404-917e-55e3-beb7-fb3a19c5bff1",
+        "source_revision_id": "8c2ea2ad-5571-5722-a9b3-3db6d0ddfb75",
+        "collection_attempt_id": "528c85b8-0923-5c2c-a8ff-7964a0f225c2"
+      }
+    ],
+    "device_observations": [
+      {
+        "id": "5a0899e5-1ff2-5097-8490-df2efe33f46a",
+        "receipt_id": "1c22a2a4-e10b-5cbb-9d81-79a0341e6624",
+        "provider_device_id": "6fa3d645-786a-5139-8d72-7c866b592548",
+        "observed_at": "2026-09-11T07:00:00Z",
+        "display_name": "fixture-host",
+        "operating_system": "Synthetic OS",
+        "os_version": "1.0",
+        "registered_at": "2026-09-06T00:00:00Z",
+        "approximate_last_sign_in": "2026-09-11T04:00:00Z",
+        "account_enabled": true,
+        "compliant_flag": true
+      },
+      {
+        "id": "392f6e5a-a565-534d-9d55-ecfe1603a1bc",
+        "receipt_id": "e45e039b-fb4d-5bc4-83d0-ac14ccd2624c",
+        "provider_device_id": "f276055e-e5e2-5ad1-84d4-4b515858eba3",
+        "observed_at": "2026-09-11T07:00:00Z",
+        "display_name": "fixture-host",
+        "operating_system": "Synthetic OS",
+        "os_version": "1.0",
+        "last_sync": "2026-09-11T05:00:00Z",
+        "managed_flag": true
+      },
+      {
+        "id": "eda23e35-a646-5885-9a5d-c37f9513b3db",
+        "receipt_id": "42afd2ed-344e-5a9b-b7c4-dfb225f4bb19",
+        "provider_device_id": "b0b38e2b-5ae6-5ed1-a0c0-da15fb3b813d",
+        "observed_at": "2026-09-11T07:00:00Z",
+        "display_name": "fixture-host",
+        "operating_system": "Synthetic OS",
+        "os_version": "1.0",
+        "last_seen": "2026-09-11T06:00:00Z",
+        "onboarding_status": "synthetic-onboarded",
+        "sensor_health": "synthetic-healthy"
+      },
+      {
+        "id": "77d06cc1-19d2-5250-868d-4df0e74ca302",
+        "receipt_id": "c1f221d2-c81b-516b-b4a4-d305eacacc07",
+        "provider_device_id": "8146bd87-eb16-577b-979e-709aa598380d",
+        "observed_at": "2026-09-11T07:00:00Z",
+        "display_name": "fixture-host",
+        "operating_system": "Synthetic OS",
+        "os_version": "1.0",
+        "registered_at": "2026-09-06T00:00:00Z",
+        "approximate_last_sign_in": "2026-09-11T04:00:00Z",
+        "account_enabled": true,
+        "compliant_flag": true
+      },
+      {
+        "id": "5d7ca8f8-71c1-5511-b534-11011ab51273",
+        "receipt_id": "7cffec7d-495a-548f-ae31-afa6c6f2baf4",
+        "provider_device_id": "1c9ea21a-a26f-59ee-964a-109f8f473bfe",
+        "observed_at": "2026-09-11T07:00:00Z",
+        "display_name": "fixture-host",
+        "operating_system": "Synthetic OS",
+        "os_version": "1.0",
+        "last_sync": null,
+        "managed_flag": true
+      },
+      {
+        "id": "2d14d2f0-ad4a-55cf-b718-7355c1259ad9",
+        "receipt_id": "71c48ae9-4e7d-5800-89de-41a7c83faa32",
+        "provider_device_id": "ace18920-808a-5add-8b63-57274fb7f70c",
+        "observed_at": "2026-09-11T07:00:00Z",
+        "display_name": "fixture-host",
+        "operating_system": "Synthetic OS",
+        "os_version": "1.0",
+        "last_seen": "2026-09-11T06:00:00Z",
+        "onboarding_status": "synthetic-onboarded",
+        "sensor_health": "synthetic-healthy"
+      },
+      {
+        "id": "7699f804-6c9a-50e9-83d7-4bdc2908b4de",
+        "receipt_id": "7fc222c1-7cf1-58d8-baa2-006e279933dc",
+        "provider_device_id": "1bbd6396-f498-5518-baca-80260bd75648",
+        "observed_at": "2026-09-11T07:00:00Z",
+        "display_name": "fixture-server",
+        "operating_system": "Synthetic OS",
+        "os_version": "1.0",
+        "registered_at": "2026-09-06T00:00:00Z",
+        "approximate_last_sign_in": "2026-09-11T04:00:00Z",
+        "account_enabled": true,
+        "compliant_flag": true
+      },
+      {
+        "id": "2eb3046c-4a34-5a18-896d-f1bdd1441653",
+        "receipt_id": "a7f54c94-2338-516d-a7fc-c275a80df5df",
+        "provider_device_id": "4a0265bd-4746-5bbf-9060-49d6b0a7238c",
+        "observed_at": "2026-09-11T07:00:00Z",
+        "display_name": "fixture-server",
+        "operating_system": "Synthetic OS",
+        "os_version": "1.0",
+        "last_sync": "2026-09-11T05:00:00Z",
+        "managed_flag": true
+      },
+      {
+        "id": "53128125-cb66-56c8-8537-4f60bf49418c",
+        "receipt_id": "3e91e1db-cd5f-5aa0-8a82-1c53ad087887",
+        "provider_device_id": "9aa25c3f-73e4-5adf-92ff-42f3765025e0",
+        "observed_at": "2026-09-11T07:00:00Z",
+        "display_name": "fixture-server",
+        "operating_system": "Synthetic OS",
+        "os_version": "1.0",
+        "last_seen": "2026-09-11T06:00:00Z",
+        "onboarding_status": "synthetic-onboarded",
+        "sensor_health": "synthetic-healthy"
+      },
+      {
+        "id": "3335c3a8-2e7a-56fe-97b7-7a77826722f3",
+        "receipt_id": "d9e0308c-4fcd-568d-af11-8b1a8873c19e",
+        "provider_device_id": "1eb96a39-04a4-5c98-a4d7-7f7e5932d41c",
+        "observed_at": "2026-09-11T07:00:00Z",
+        "display_name": "fixture-unknown",
+        "operating_system": "Synthetic OS",
+        "os_version": "1.0",
+        "registered_at": "2026-09-06T00:00:00Z",
+        "approximate_last_sign_in": "2026-09-11T04:00:00Z",
+        "account_enabled": false,
+        "compliant_flag": true
+      },
+      {
+        "id": "9eb8c22b-8e43-5355-a212-7492ff73f417",
+        "receipt_id": "9ff52b15-3288-5a55-b81f-3494b9958fbb",
+        "provider_device_id": "7d026cd6-5d38-5619-9ba2-f4e1444ea278",
+        "observed_at": "2026-09-11T07:00:00Z",
+        "display_name": "fixture-unknown",
+        "operating_system": "Synthetic OS",
+        "os_version": "1.0",
+        "last_sync": "2026-09-11T05:00:00Z",
+        "managed_flag": true
+      },
+      {
+        "id": "a2dcc2b1-65e6-5539-9ffe-6c6c9b6a7709",
+        "receipt_id": "5119f124-4984-592d-9cbb-6e9e8ded8b28",
+        "provider_device_id": "feb6b117-569c-53a1-9dd2-62cd602e278f",
+        "observed_at": "2026-09-11T07:00:00Z",
+        "display_name": "fixture-unknown",
+        "operating_system": "Synthetic OS",
+        "os_version": "1.0",
+        "last_seen": "2026-09-11T06:00:00Z",
+        "onboarding_status": "synthetic-onboarded",
+        "sensor_health": "synthetic-healthy"
+      }
+    ],
+    "classification_observations": [
+      {
+        "id": "349a1240-4a0e-5f45-9e1f-ada442fdf7f4",
+        "receipt_id": "d37c996f-47a9-5464-8a05-85d37f8a3757",
+        "provider_device_id": "b0b38e2b-5ae6-5ed1-a0c0-da15fb3b813d",
+        "category": "synthetic",
+        "device_type": "workstation",
+        "subtype": null,
+        "observed_at": "2026-09-11T07:00:00Z"
+      },
+      {
+        "id": "8d1068af-b3c9-55da-94de-904242dc6410",
+        "receipt_id": "8a80c5ba-8767-5379-ac8b-8a67fd06bda1",
+        "provider_device_id": "ace18920-808a-5add-8b63-57274fb7f70c",
+        "category": "synthetic",
+        "device_type": "workstation",
+        "subtype": null,
+        "observed_at": "2026-09-11T07:00:00Z"
+      },
+      {
+        "id": "262ad454-8637-5401-a9a4-2b05d4d181da",
+        "receipt_id": "745bdf0f-6ad8-5dc8-bde8-91090dfa57ce",
+        "provider_device_id": "9aa25c3f-73e4-5adf-92ff-42f3765025e0",
+        "category": "synthetic",
+        "device_type": "server",
+        "subtype": null,
+        "observed_at": "2026-09-11T07:00:00Z"
+      },
+      {
+        "id": "d6b704c3-9001-5ce9-87e6-89fa03b97406",
+        "receipt_id": "b78ff231-b825-5226-beb5-e8dccbd8e34b",
+        "provider_device_id": "feb6b117-569c-53a1-9dd2-62cd602e278f",
+        "category": null,
+        "device_type": null,
+        "subtype": null,
+        "observed_at": "2026-09-11T07:00:00Z"
+      }
+    ],
+    "software": [
+      {
+        "id": "ca54045f-302c-50be-adf0-5b03f80ee6f7",
+        "publisher": "Synthetic Publisher",
+        "product_name": "Alpha",
+        "version": "0",
+        "platform": "synthetic"
+      },
+      {
+        "id": "76c0c68a-6e57-5b77-9247-59483c05289f",
+        "publisher": "Synthetic Publisher",
+        "product_name": "Alpha",
+        "version": "1",
+        "platform": "synthetic"
+      },
+      {
+        "id": "b1ac2f3e-d4cc-5666-8e20-2088b412a9d5",
+        "publisher": "Synthetic Publisher",
+        "product_name": "Beta",
+        "version": "1",
+        "platform": "synthetic"
+      },
+      {
+        "id": "c74f35b0-3026-545a-8ee8-0b25960da700",
+        "publisher": "Synthetic Publisher",
+        "product_name": "Gamma",
+        "version": "1",
+        "platform": "synthetic"
+      },
+      {
+        "id": "f06e5a89-1f73-564d-9268-ecd47645f081",
+        "publisher": "Synthetic Publisher",
+        "product_name": "Delta",
+        "version": "1",
+        "platform": "synthetic"
+      }
+    ],
+    "software_observations": [
+      {
+        "id": "0c81f813-3b14-5779-ad6c-6ca37b41c39e",
+        "receipt_id": "333338cb-9e31-51ef-95cd-fab468680435",
+        "software_id": "76c0c68a-6e57-5b77-9247-59483c05289f",
+        "provider_device_id": "f276055e-e5e2-5ad1-84d4-4b515858eba3",
+        "observed_at": "2026-09-11T07:00:00Z",
+        "source_application_id": "SYN-A1"
+      },
+      {
+        "id": "e8bd34a3-8484-5b6d-bc63-a38499cc2f12",
+        "receipt_id": "8893fdb7-a49f-585a-8088-1c437b23991a",
+        "software_id": "b1ac2f3e-d4cc-5666-8e20-2088b412a9d5",
+        "provider_device_id": "f276055e-e5e2-5ad1-84d4-4b515858eba3",
+        "observed_at": "2026-09-11T07:00:00Z",
+        "source_application_id": "SYN-B1"
+      },
+      {
+        "id": "29c454e9-f5d0-5fa4-972d-f4d7edfd5e60",
+        "receipt_id": "e36d1791-ab6e-5100-85a4-3cf08af4e679",
+        "software_id": "76c0c68a-6e57-5b77-9247-59483c05289f",
+        "provider_device_id": "1c9ea21a-a26f-59ee-964a-109f8f473bfe",
+        "observed_at": "2026-09-11T07:00:00Z",
+        "source_application_id": "SYN-A1"
+      },
+      {
+        "id": "c3f5e3dd-ef2f-56ca-8b99-e9f8937d4611",
+        "receipt_id": "f0039f58-d4c7-569b-bdd4-7066410ed859",
+        "software_id": "c74f35b0-3026-545a-8ee8-0b25960da700",
+        "provider_device_id": "4a0265bd-4746-5bbf-9060-49d6b0a7238c",
+        "observed_at": "2026-09-11T07:00:00Z",
+        "source_application_id": "SYN-G1"
+      },
+      {
+        "id": "15dabe60-33b5-5073-a0e9-cfce9879861a",
+        "receipt_id": "23b0fee6-6660-5b58-928c-0273bf394f85",
+        "software_id": "f06e5a89-1f73-564d-9268-ecd47645f081",
+        "provider_device_id": "7d026cd6-5d38-5619-9ba2-f4e1444ea278",
+        "observed_at": "2026-09-11T07:00:00Z",
+        "source_application_id": "SYN-D1"
+      }
+    ],
+    "vulnerabilities": [
+      {
+        "cve_id": "CVE-2099-10001"
+      },
+      {
+        "cve_id": "CVE-2099-10002"
+      }
+    ],
+    "vulnerability_details": [
+      {
+        "id": "5a657271-7845-5a3d-926f-07e8149becc2",
+        "receipt_id": "3a0ba482-2713-5abc-a569-018d61d82160",
+        "cve_id": "CVE-2099-10001",
+        "title": "Synthetic vulnerability 1",
+        "description": "Invented example, not a real CVE.",
+        "source_severity_label": "Synthetic",
+        "published_at": "2026-09-06T00:00:00Z",
+        "updated_at": "2026-09-10T00:00:00Z",
+        "supportability": "synthetic"
+      },
+      {
+        "id": "fe20bc05-241c-5774-ae40-9e57cf63a2bc",
+        "receipt_id": "d2e8ff64-bd75-5246-9da8-38793758f10b",
+        "cve_id": "CVE-2099-10002",
+        "title": "Synthetic vulnerability 2",
+        "description": "Invented example, not a real CVE.",
+        "source_severity_label": "Synthetic",
+        "published_at": "2026-09-06T00:00:00Z",
+        "updated_at": "2026-09-10T00:00:00Z",
+        "supportability": "synthetic"
+      }
+    ],
+    "cvss_observations": [
+      {
+        "id": "539cdf5c-7129-5baa-9a73-71784b99d191",
+        "receipt_id": "c656508e-e86e-5136-a142-336d24836fcb",
+        "cve_id": "CVE-2099-10001",
+        "publisher": "Synthetic Publisher",
+        "version": "3.1",
+        "score": "9.8",
+        "vector": null,
+        "published_at": "2026-09-06T00:00:00Z"
+      },
+      {
+        "id": "e12362ea-b476-59c5-b3d5-3abfd43d3bc2",
+        "receipt_id": "5542986a-7661-5a1d-b84c-edea55e27556",
+        "cve_id": "CVE-2099-10002",
+        "publisher": "Synthetic Publisher",
+        "version": "3.1",
+        "score": "0",
+        "vector": null,
+        "published_at": "2026-09-06T00:00:00Z"
+      }
+    ],
+    "epss_observations": [
+      {
+        "id": "4af0a562-0414-513e-8e0f-9b2600f722c9",
+        "receipt_id": "42459acc-74c0-5945-894c-43e4aa030d9f",
+        "cve_id": "CVE-2099-10001",
+        "probability": "0.2",
+        "percentile": null,
+        "score_date": "2026-09-11",
+        "model_version": "synthetic"
+      },
+      {
+        "id": "02b575e2-7fe7-5209-824e-950543957a2f",
+        "receipt_id": "91cf4ff2-48fb-530a-95be-39a30052e5ce",
+        "cve_id": "CVE-2099-10002",
+        "probability": "0",
+        "percentile": null,
+        "score_date": "2026-09-11",
+        "model_version": "synthetic"
+      }
+    ],
+    "kev_observations": [
+      {
+        "id": "e618b938-9d9d-5856-b6b2-fd58957139f3",
+        "receipt_id": "488d7395-79f1-5656-b977-b2f370aa1ea5",
+        "cve_id": "CVE-2099-10001",
+        "membership": true,
+        "date_added": "2026-09-06",
+        "required_action": "Synthetic advice only",
+        "source_due_date": null
+      },
+      {
+        "id": "1664a8d6-f50b-5f62-be69-a7b03570a947",
+        "receipt_id": "cf700222-e151-5e95-b1bd-e02d128e2b54",
+        "cve_id": "CVE-2099-10002",
+        "membership": false,
+        "date_added": null,
+        "required_action": null,
+        "source_due_date": null
+      }
+    ],
+    "vulnerability_references": [
+      {
+        "id": "c684c209-550b-524b-b89b-53f6e7faf119",
+        "receipt_id": "69a31ee1-02ff-540a-8702-5960430a97a7",
+        "cve_id": "CVE-2099-10001",
+        "url": "https://example.invalid/cve",
+        "label": "Synthetic reference"
+      }
+    ],
+    "exploit_observations": [
+      {
+        "id": "c83c34d2-e54f-5bd3-8692-5fb33c110aef",
+        "receipt_id": "b8a8346f-ccc6-55c7-a287-89929d790f8f",
+        "cve_id": "CVE-2099-10001",
+        "public_code": true,
+        "verified_code": false,
+        "in_kit": false,
+        "exploit_types": [
+          "synthetic"
+        ],
+        "reference_urls": [
+          "https://example.invalid/exploit"
+        ]
+      }
+    ],
+    "patches": [
+      {
+        "id": "61791c15-86af-5b90-a53c-10eb4657d1af",
+        "receipt_id": "efb3b6c7-660f-593e-b51f-f9d0da38b6ee",
+        "source_patch_id": "SYN-PA",
+        "title": "Synthetic PA",
+        "url": "https://example.invalid/PA",
+        "published_at": "2026-09-10T00:00:00Z",
+        "product_names": [
+          "Alpha"
+        ]
+      },
+      {
+        "id": "89a4f833-6971-5e19-9bf0-673de5292acc",
+        "receipt_id": "8b08dc7d-da1e-5b8c-af7f-1c3275bda79f",
+        "source_patch_id": "SYN-PA2",
+        "title": "Synthetic PA2",
+        "url": "https://example.invalid/PA2",
+        "published_at": "2026-09-10T00:00:00Z",
+        "product_names": [
+          "Alpha"
+        ]
+      },
+      {
+        "id": "0c73d04b-ac6d-5132-9735-cde7067bc63f",
+        "receipt_id": "8646ba55-24ba-5712-8265-76847b5d85f6",
+        "source_patch_id": "SYN-PB",
+        "title": "Synthetic PB",
+        "url": "https://example.invalid/PB",
+        "published_at": "2026-09-10T00:00:00Z",
+        "product_names": [
+          "Beta"
+        ]
+      }
+    ],
+    "patch_vulnerabilities": [
+      {
+        "id": "e4cd760f-f5f2-588a-8bd1-0e33e5c1f2cf",
+        "receipt_id": "6efd50d6-799f-505d-adb8-f2e6d24dfc65",
+        "patch_id": "61791c15-86af-5b90-a53c-10eb4657d1af",
+        "cve_id": "CVE-2099-10001"
+      },
+      {
+        "id": "bcac00a5-6b97-5cc6-a255-07635668c71e",
+        "receipt_id": "411592bb-3426-5168-a643-f13a11ec9f7c",
+        "patch_id": "89a4f833-6971-5e19-9bf0-673de5292acc",
+        "cve_id": "CVE-2099-10001"
+      },
+      {
+        "id": "29636110-d2d5-5d1c-a893-b0bee292507c",
+        "receipt_id": "7dae7e3d-c6b6-5d5e-9aaf-0614eaaf5bd2",
+        "patch_id": "0c73d04b-ac6d-5132-9735-cde7067bc63f",
+        "cve_id": "CVE-2099-10001"
+      }
+    ],
+    "patch_applicability": [
+      {
+        "id": "8dec1fb9-e452-59b0-83f9-6c669043d0f1",
+        "receipt_id": "273b9f22-0e95-543c-972e-e2ae9fd20d7c",
+        "patch_id": "61791c15-86af-5b90-a53c-10eb4657d1af",
+        "software_product": "Alpha",
+        "publisher": "Synthetic Publisher",
+        "platform": "synthetic",
+        "version_expression": "=1",
+        "architecture": null
+      },
+      {
+        "id": "c8e5fc7e-5e8c-5795-a410-383d867a25e3",
+        "receipt_id": "67a76a8a-3253-535f-afbb-8308114cdd87",
+        "patch_id": "89a4f833-6971-5e19-9bf0-673de5292acc",
+        "software_product": "Alpha",
+        "publisher": "Synthetic Publisher",
+        "platform": "synthetic",
+        "version_expression": "=1",
+        "architecture": null
+      },
+      {
+        "id": "df852b91-d743-594c-baf6-0d61eb7363bd",
+        "receipt_id": "51ae4c45-2ee3-5e16-98c1-84f0679702a9",
+        "patch_id": "0c73d04b-ac6d-5132-9735-cde7067bc63f",
+        "software_product": "Beta",
+        "publisher": "Synthetic Publisher",
+        "platform": "synthetic",
+        "version_expression": "=1",
+        "architecture": null
+      }
+    ],
+    "patch_replacements": [
+      {
+        "id": "876f04ad-ab0c-5e59-a746-88f90ad05109",
+        "receipt_id": "126fcd38-8950-565a-824e-0d970d3271bd",
+        "patch_id": "89a4f833-6971-5e19-9bf0-673de5292acc",
+        "superseded_patch_id": "61791c15-86af-5b90-a53c-10eb4657d1af"
+      }
+    ],
+    "vulnerability_findings": [
+      {
+        "id": "c4451c83-8000-5d63-a0af-d56b02425fdd",
+        "receipt_id": "edb3b9c5-de85-5436-9cc1-ababd84ebf4d",
+        "provider_device_id": "b0b38e2b-5ae6-5ed1-a0c0-da15fb3b813d",
+        "software_id": "76c0c68a-6e57-5b77-9247-59483c05289f",
+        "cve_id": "CVE-2099-10001",
+        "source_finding_id": "SYN-F1",
+        "source_severity_label": "Synthetic",
+        "fixing_patch_id": "61791c15-86af-5b90-a53c-10eb4657d1af",
+        "observed_at": "2026-09-11T07:00:00Z"
+      },
+      {
+        "id": "22d7303a-1fd7-55f8-9240-efd7a52bc55b",
+        "receipt_id": "715075e5-14ec-522a-98e1-fbe61d2464ab",
+        "provider_device_id": "ace18920-808a-5add-8b63-57274fb7f70c",
+        "software_id": "76c0c68a-6e57-5b77-9247-59483c05289f",
+        "cve_id": "CVE-2099-10001",
+        "source_finding_id": "SYN-F2",
+        "source_severity_label": "Synthetic",
+        "fixing_patch_id": "61791c15-86af-5b90-a53c-10eb4657d1af",
+        "observed_at": "2026-09-11T07:00:00Z"
+      },
+      {
+        "id": "fcffedcf-944d-5a4d-a011-ccff29ec8102",
+        "receipt_id": "e8b446a0-d679-5e6e-90b1-3cfc43827394",
+        "provider_device_id": "b0b38e2b-5ae6-5ed1-a0c0-da15fb3b813d",
+        "software_id": "b1ac2f3e-d4cc-5666-8e20-2088b412a9d5",
+        "cve_id": "CVE-2099-10001",
+        "source_finding_id": "SYN-F3",
+        "source_severity_label": "Synthetic",
+        "fixing_patch_id": "0c73d04b-ac6d-5132-9735-cde7067bc63f",
+        "observed_at": "2026-09-11T07:00:00Z"
+      },
+      {
+        "id": "bc9e3e82-1e7b-55a7-ad3f-cad6c0db716a",
+        "receipt_id": "38fc03dd-9ee3-5310-961d-de57cdc80413",
+        "provider_device_id": "b0b38e2b-5ae6-5ed1-a0c0-da15fb3b813d",
+        "software_id": "76c0c68a-6e57-5b77-9247-59483c05289f",
+        "cve_id": "CVE-2099-10002",
+        "source_finding_id": "SYN-F4",
+        "source_severity_label": "Synthetic",
+        "fixing_patch_id": null,
+        "observed_at": "2026-09-11T07:00:00Z"
+      }
+    ],
+    "mock_fix_matches": [
+      {
+        "finding_id": "c4451c83-8000-5d63-a0af-d56b02425fdd",
+        "patch_id": "61791c15-86af-5b90-a53c-10eb4657d1af",
+        "applicability_id": "8dec1fb9-e452-59b0-83f9-6c669043d0f1"
+      },
+      {
+        "finding_id": "c4451c83-8000-5d63-a0af-d56b02425fdd",
+        "patch_id": "89a4f833-6971-5e19-9bf0-673de5292acc",
+        "applicability_id": "c8e5fc7e-5e8c-5795-a410-383d867a25e3"
+      },
+      {
+        "finding_id": "22d7303a-1fd7-55f8-9240-efd7a52bc55b",
+        "patch_id": "61791c15-86af-5b90-a53c-10eb4657d1af",
+        "applicability_id": "8dec1fb9-e452-59b0-83f9-6c669043d0f1"
+      },
+      {
+        "finding_id": "22d7303a-1fd7-55f8-9240-efd7a52bc55b",
+        "patch_id": "89a4f833-6971-5e19-9bf0-673de5292acc",
+        "applicability_id": "c8e5fc7e-5e8c-5795-a410-383d867a25e3"
+      },
+      {
+        "finding_id": "fcffedcf-944d-5a4d-a011-ccff29ec8102",
+        "patch_id": "0c73d04b-ac6d-5132-9735-cde7067bc63f",
+        "applicability_id": "df852b91-d743-594c-baf6-0d61eb7363bd"
+      }
+    ],
+    "device_missing_patches": [
+      {
+        "id": "75745973-6f14-586e-a344-72dba6d9a717",
+        "receipt_id": "f40e9e35-769b-5093-a934-2059c807d54c",
+        "provider_device_id": "b0b38e2b-5ae6-5ed1-a0c0-da15fb3b813d",
+        "patch_id": "61791c15-86af-5b90-a53c-10eb4657d1af",
+        "observed_at": "2026-09-11T07:00:00Z",
+        "reported_machine_count": 2,
+        "reported_cve_count": 1
+      },
+      {
+        "id": "eb2fc147-eeec-5ab9-b5d6-9481b1d8f5d1",
+        "receipt_id": "c4c28bd4-f1ef-5595-9064-a026f5359c44",
+        "provider_device_id": "ace18920-808a-5add-8b63-57274fb7f70c",
+        "patch_id": "61791c15-86af-5b90-a53c-10eb4657d1af",
+        "observed_at": "2026-09-11T07:00:00Z",
+        "reported_machine_count": 2,
+        "reported_cve_count": 1
+      },
+      {
+        "id": "aeef23ce-882f-5d0b-a262-48aa5fffdcbb",
+        "receipt_id": "d7aeb359-c58d-5506-82c2-3e2f5b5c12d1",
+        "provider_device_id": "b0b38e2b-5ae6-5ed1-a0c0-da15fb3b813d",
+        "patch_id": "0c73d04b-ac6d-5132-9735-cde7067bc63f",
+        "observed_at": "2026-09-11T07:00:00Z",
+        "reported_machine_count": 2,
+        "reported_cve_count": 1
+      }
+    ],
+    "vulnerability_events": [
+      {
+        "id": "95da2dd9-8d0d-5952-86af-3a66924b259c",
+        "receipt_id": "e66f68af-4aeb-5636-954a-1dcec11324de",
+        "provider_device_id": "b0b38e2b-5ae6-5ed1-a0c0-da15fb3b813d",
+        "software_id": "ca54045f-302c-50be-adf0-5b03f80ee6f7",
+        "cve_id": "CVE-2099-10001",
+        "source_event_id": "SYN-E1",
+        "event_fingerprint": "22249aa61fd2594e50910aa574afbb977f9df8f7377e6f02e19c72245d899ad8",
+        "event_kind": "Fixed",
+        "event_time": "2026-09-09T12:00:00Z",
+        "first_seen": null,
+        "last_seen": null,
+        "source_scope_reference": "synthetic-scope-1",
+        "recommendation_reference": null,
+        "recommended_update_id": null,
+        "update_available": true
+      },
+      {
+        "id": "bfe6df2c-3291-5440-8575-81f804b1405e",
+        "receipt_id": "72be79c2-91ad-5b04-8837-526a8b32bebe",
+        "provider_device_id": "b0b38e2b-5ae6-5ed1-a0c0-da15fb3b813d",
+        "software_id": "76c0c68a-6e57-5b77-9247-59483c05289f",
+        "cve_id": "CVE-2099-10001",
+        "source_event_id": "SYN-E2",
+        "event_fingerprint": "713a5bb2d170c8684937ab1dd0311be88e0d95fbd9b253333965841517794f64",
+        "event_kind": "New",
+        "event_time": "2026-09-10T12:00:00Z",
+        "first_seen": null,
+        "last_seen": null,
+        "source_scope_reference": "synthetic-scope-1",
+        "recommendation_reference": null,
+        "recommended_update_id": null,
+        "update_available": true
+      }
+    ],
+    "advisories": [
+      {
+        "id": "9ce3bba2-bbe5-5013-ab18-8bce5e9ebd1a",
+        "receipt_id": "2ec20384-8955-59f3-b703-589d29445930",
+        "source_advisory_id": "SYN-AD1",
+        "title": "Synthetic advisory 1",
+        "publisher": "Synthetic Publisher",
+        "url": "https://example.invalid/advisory/1",
+        "published_at": "2026-09-10T00:00:00Z",
+        "updated_at": null,
+        "content_or_reference": "Invented guidance"
+      },
+      {
+        "id": "228df237-fdeb-5c45-a21c-4d7e21feb7e0",
+        "receipt_id": "2b7bf7c5-68a2-5a32-b8f2-b8917d15ca69",
+        "source_advisory_id": "SYN-AD2",
+        "title": "Synthetic advisory 2",
+        "publisher": "Synthetic Publisher",
+        "url": "https://example.invalid/advisory/2",
+        "published_at": "2026-09-10T00:00:00Z",
+        "updated_at": null,
+        "content_or_reference": "Invented guidance"
+      }
+    ],
+    "recommendations": [
+      {
+        "id": "7df86fd1-3873-5371-a77b-9d6ef23937d0",
+        "receipt_id": "b8913cd4-a2a2-55d3-961b-1448ad4a06e9",
+        "source_recommendation_id": "SYN-R1",
+        "advisory_id": "9ce3bba2-bbe5-5013-ab18-8bce5e9ebd1a",
+        "title": "Synthetic recommendation 1",
+        "recommendation_text": "Synthetic update advice",
+        "product_name": "Alpha",
+        "vendor": "Synthetic Publisher"
+      },
+      {
+        "id": "bdcb17d4-9096-519a-83c6-f340e9a91bcc",
+        "receipt_id": "f48031b8-605a-5b0c-b8de-6854c56c491b",
+        "source_recommendation_id": "SYN-R2",
+        "advisory_id": "228df237-fdeb-5c45-a21c-4d7e21feb7e0",
+        "title": "Synthetic recommendation 2",
+        "recommendation_text": "Synthetic update advice",
+        "product_name": "Gamma",
+        "vendor": "Synthetic Publisher"
+      }
+    ],
+    "advisory_products": [
+      {
+        "advisory_id": "9ce3bba2-bbe5-5013-ab18-8bce5e9ebd1a",
+        "software_id": "76c0c68a-6e57-5b77-9247-59483c05289f",
+        "receipt_id": "5b74229e-8930-58f3-a956-bc5059e49027"
+      },
+      {
+        "advisory_id": "228df237-fdeb-5c45-a21c-4d7e21feb7e0",
+        "software_id": "c74f35b0-3026-545a-8ee8-0b25960da700",
+        "receipt_id": "70b67a82-bd49-5569-9bb6-b6917d5d79f0"
+      }
+    ],
+    "recommendation_products": [
+      {
+        "recommendation_id": "7df86fd1-3873-5371-a77b-9d6ef23937d0",
+        "software_id": "76c0c68a-6e57-5b77-9247-59483c05289f",
+        "receipt_id": "1e2eeb8d-4207-5a7a-9cd9-2ea45148f67f"
+      },
+      {
+        "recommendation_id": "bdcb17d4-9096-519a-83c6-f340e9a91bcc",
+        "software_id": "c74f35b0-3026-545a-8ee8-0b25960da700",
+        "receipt_id": "8adfe6f3-c9d9-51d0-88ca-aafa6d82505f"
+      }
+    ],
+    "advisory_cves": [
+      {
+        "advisory_id": "9ce3bba2-bbe5-5013-ab18-8bce5e9ebd1a",
+        "cve_id": "CVE-2099-10001",
+        "receipt_id": "40dd1e20-30b9-5012-bc03-d1595fd5e402"
+      }
+    ],
+    "recommendation_cves": [
+      {
+        "recommendation_id": "7df86fd1-3873-5371-a77b-9d6ef23937d0",
+        "cve_id": "CVE-2099-10001",
+        "receipt_id": "10291df9-cdd9-53b6-b28b-658c82826ab8"
+      }
+    ],
+    "recommendation_patches": [
+      {
+        "recommendation_id": "7df86fd1-3873-5371-a77b-9d6ef23937d0",
+        "patch_id": "89a4f833-6971-5e19-9bf0-673de5292acc",
+        "receipt_id": "38ca819e-01cd-5e3e-9693-33ab84841b8f"
+      }
+    ],
+    "recommendation_devices": [
+      {
+        "recommendation_id": "7df86fd1-3873-5371-a77b-9d6ef23937d0",
+        "provider_device_id": "b0b38e2b-5ae6-5ed1-a0c0-da15fb3b813d",
+        "receipt_id": "af4b38d5-5ed8-5a1c-8cf4-b823fc7dbc84"
+      },
+      {
+        "recommendation_id": "7df86fd1-3873-5371-a77b-9d6ef23937d0",
+        "provider_device_id": "ace18920-808a-5add-8b63-57274fb7f70c",
+        "receipt_id": "dc1ccb0e-e318-5aaa-abe4-986398afdcbc"
+      }
+    ],
+    "update_policy_observations": [
+      {
+        "id": "3ff884f7-eeee-5dfb-b911-537ee16ba533",
+        "receipt_id": "199aa7d9-d2a6-5c06-b329-16e4e3c9ca1e",
+        "provider_device_id": "f276055e-e5e2-5ad1-84d4-4b515858eba3",
+        "source_device_id": "SYN-IntuneC1",
+        "source_registration_id": "34b2e677-4277-583c-bdda-78c121da4ac8",
+        "policy_id": "SYN-POLICY",
+        "device_name": "fixture-host",
+        "aggregate_state": "synthetic-ready",
+        "event_time": "2026-09-11T06:00:00Z",
+        "last_wu_scan_at": "2026-09-11T05:00:00Z"
+      }
+    ],
+    "antivirus_observations": [
+      {
+        "id": "d90fe462-7826-5403-a736-08029aa43282",
+        "receipt_id": "d9ef9404-917e-55e3-beb7-fb3a19c5bff1",
+        "provider_device_id": "b0b38e2b-5ae6-5ed1-a0c0-da15fb3b813d",
+        "source_record_id": "SYN-AV",
+        "device_name": "fixture-host",
+        "mode": "synthetic-active",
+        "signature_version": "1.0",
+        "engine_version": "1.0",
+        "platform_version": "1.0",
+        "signature_current": false,
+        "engine_current": true,
+        "platform_current": true,
+        "refreshed_at": "2026-09-11T06:00:00Z",
+        "last_seen_at": "2026-09-11T05:00:00Z"
+      }
+    ],
+    "completeness_definitions": [
+      {
+        "id": "a78e1a8f-69c2-5517-92ca-575298133653",
+        "name": "workstation-v1",
+        "revision": 1,
+        "purpose": "Synthetic demonstration only; not product policy"
+      },
+      {
+        "id": "1112cdaf-9e52-543e-bf2f-5275a0bc39e9",
+        "name": "server-v1",
+        "revision": 1,
+        "purpose": "Synthetic demonstration only; not product policy"
+      },
+      {
+        "id": "417f6b08-da1f-5aef-9164-ae75d0820682",
+        "name": "boundary-v1",
+        "revision": 1,
+        "purpose": "Synthetic demonstration only; not product policy"
+      },
+      {
+        "id": "495b77ec-f00d-5aaf-8302-65205f3f2042",
+        "name": "zero-v1",
+        "revision": 1,
+        "purpose": "Synthetic demonstration only; not product policy"
+      }
+    ],
+    "completeness_fields": [
+      {
+        "definition_id": "a78e1a8f-69c2-5517-92ca-575298133653",
+        "field_key": "source_name",
+        "value_kind": "text"
+      },
+      {
+        "definition_id": "a78e1a8f-69c2-5517-92ca-575298133653",
+        "field_key": "os_version",
+        "value_kind": "text"
+      },
+      {
+        "definition_id": "a78e1a8f-69c2-5517-92ca-575298133653",
+        "field_key": "microsoft_registration_id",
+        "value_kind": "text"
+      },
+      {
+        "definition_id": "a78e1a8f-69c2-5517-92ca-575298133653",
+        "field_key": "defender_last_seen",
+        "value_kind": "text"
+      },
+      {
+        "definition_id": "a78e1a8f-69c2-5517-92ca-575298133653",
+        "field_key": "intune_last_sync",
+        "value_kind": "text"
+      },
+      {
+        "definition_id": "1112cdaf-9e52-543e-bf2f-5275a0bc39e9",
+        "field_key": "source_name",
+        "value_kind": "text"
+      },
+      {
+        "definition_id": "1112cdaf-9e52-543e-bf2f-5275a0bc39e9",
+        "field_key": "os_version",
+        "value_kind": "text"
+      },
+      {
+        "definition_id": "1112cdaf-9e52-543e-bf2f-5275a0bc39e9",
+        "field_key": "microsoft_registration_id",
+        "value_kind": "text"
+      },
+      {
+        "definition_id": "1112cdaf-9e52-543e-bf2f-5275a0bc39e9",
+        "field_key": "defender_last_seen",
+        "value_kind": "text"
+      },
+      {
+        "definition_id": "417f6b08-da1f-5aef-9164-ae75d0820682",
+        "field_key": "boolean_flag",
+        "value_kind": "boolean"
+      },
+      {
+        "definition_id": "417f6b08-da1f-5aef-9164-ae75d0820682",
+        "field_key": "numeric_value",
+        "value_kind": "number"
+      },
+      {
+        "definition_id": "417f6b08-da1f-5aef-9164-ae75d0820682",
+        "field_key": "text_value",
+        "value_kind": "text"
+      }
+    ],
+    "app_settings": [],
+    "collection_schedules": [],
+    "classification_decisions": [],
+    "notifications": [],
+    "notification_attempts": [],
+    "notification_user_state": []
+  }
+}
